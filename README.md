@@ -1,7 +1,7 @@
 You'll need the following https://github.com/CompEvol packages to run bdmm: 
 
-beast2
+* beast2
 
-MASTER
+* MASTER
 
-MultiTypeTree
+* MultiTypeTree
