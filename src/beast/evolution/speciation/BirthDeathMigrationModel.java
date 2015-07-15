@@ -45,7 +45,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             new Input<>("conditionOnSurvival", "condition on at least one survival? Default true.", true);
 
     public Input<Double> tolerance =
-            new Input<>("tolerance", "tolerance for numerical integration", 1e-12);  // changed from 1e-10 to 1e-12 on 10 March 2015
+            new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
 
 
     MultiTypeTree coltree;
@@ -69,8 +69,6 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 
     @Override
     public void initAndValidate() throws Exception {
-
-//        if (m_rho.get()!=null && m_rho.get().getDimension()>stateNumber.get()) throw new RuntimeException("Multiple rhosampling times not implemented yet!!!!"); // todo!
 
         super.initAndValidate();
 
@@ -141,20 +139,55 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 
     double updateRates(){
 
-        if (!transform){
+        birth = new Double[n*totalIntervals];
+        death = new Double[n*totalIntervals];
+        psi = new Double[n*totalIntervals];
+        if (SAModel) r =  new Double[n * totalIntervals];
 
-            death = deathRate.get().getValues();
-            psi = samplingRate.get().getValues();
-            birth = birthRate.get().getValues();
-
+        if (transform) {
+            transformParameters();
         }
         else {
 
-            birth = new Double[n*totalIntervals];
-            death = new Double[n*totalIntervals];
-            psi = new Double[n*totalIntervals];
+            Double[] birthRates = birthRate.get().getValues();
+            Double[] deathRates = deathRate.get().getValues();
+            Double[] samplingRates = samplingRate.get().getValues();
+            Double[] removalProbabilities = new Double[1];
 
-            transformParameters(1);
+            if (SAModel) {
+                removalProbabilities = removalProbability.get().getValues();
+                r =  new Double[n*totalIntervals];
+            }
+
+            int state;
+
+            for (int i = 0; i < n*totalIntervals; i++) {
+
+                state =  i/totalIntervals;
+
+                birth[i] = birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
+                death[i] = deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
+                psi[i] = samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
+                if (SAModel) r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+
+            }
+        }
+
+
+        if (m_rho.get() != null && (m_rho.get().getDimension()==1 ||  rhoSamplingTimes.get() != null)) {
+
+            Double[] rhos = m_rho.get().getValues();
+            rho = new Double[n*totalIntervals];
+            int state;
+
+            for (int i = 0; i < totalIntervals*n; i++) {
+
+                state =  i/totalIntervals;
+
+                rho[i]= rhoChanges>0?
+                                rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
+                                : rhos[0];
+            }
         }
 
         M = migrationMatrix.get().getValues();
@@ -203,18 +236,38 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 
         try {
 
+            if (Math.abs(T-t)<1e-10 ||  T < t) {
+                return PG0;
+            }
 
             double from = t;
             double to = t0;
+            double oneMinusRho;
 
-            int steps = Utils.index(to, times, totalIntervals) - Utils.index(from, times, totalIntervals) - 1;
-            int index = Utils.index(to, times, totalIntervals) - 1;
+            int indexFrom = Utils.index(from, times, times.length);
+            int index = Utils.index(to, times, times.length);
+
+            int steps = index - indexFrom;
+            if (Math.abs(from-times[indexFrom])<1e-10) steps--;
+            if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+                steps--;
+                index--;
+            }
+            index--;
 
             while (steps > 0){
 
                 from = times[index];// + 1e-14;
 
-                pg_integrator.integrate(PG, to, PG0, from, PG0); // solve G , store solution in G0
+                pg_integrator.integrate(PG, to, PG0, from, PG0); // solve PG , store solution in PG0
+
+                if (rhoChanges>0){
+                    for (int i=0; i<n; i++){
+                        oneMinusRho = (1-rho[i*totalIntervals + Utils.index(times[index], times, totalIntervals)]);
+                        PG0[i] *= oneMinusRho;
+                        PG0[i+n] *= oneMinusRho;
+                    }
+                }
 
                 to = times[index];
 
@@ -222,7 +275,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
                 index--;
             }
 
-            pg_integrator.integrate(PG, to, PG0, t, PG0); // solve G , store solution in G0
+            pg_integrator.integrate(PG, to, PG0, t, PG0); // solve PG , store solution in PG0
 
         }catch(Exception e){
 
@@ -251,7 +304,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
     @Override
     public double calculateTreeLogLikelihood(TreeInterface tree) {
 
-        logP = 0.;
+        if (SAModel && treeInput.isDirty()) throw new RuntimeException("Error: SA Model only implemented for fixed trees!");
 
         coltree = (MultiTypeTree) tree;
 
@@ -284,7 +337,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         collectTimes(T);
         setRho();
 
-        if (updateRates() < 0 ||  (times[totalIntervals-1] > T)) {  // set up times array & transform rates if necessary
+        if (updateRates() < 0 ||  (times[totalIntervals-1] > T)) { 
             logP =  Double.NEGATIVE_INFINITY;
             return logP;
          }
@@ -349,6 +402,12 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         if (print) System.out.println("final logL = " + logP);
 
         if (Double.isInfinite(logP)) logP = Double.NEGATIVE_INFINITY;
+
+        if (SAModel && !(removalProbability.get().getDimension()==n && removalProbability.get().getValue()==1.)) {
+            int internalNodeCount = tree.getLeafNodeCount() - ((Tree)tree).getDirectAncestorNodeCount()- 1;
+            logP +=  Math.log(2)*internalNodeCount;
+        }
+
         return logP;
     }
 
@@ -384,36 +443,11 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         }
     }
 
-//    int crossingRhoTime(double from, double to){
-//
-//        for (int i=0; i< rhoSamplingChangeTimes.size()-1;i++){
-//            if (from < rhoSamplingChangeTimes.get(i) && rhoSamplingChangeTimes.get(i) < to) return i;
-//        }
-//        return -1;
-//    }
-
     double[] calculateSubtreeLikelihood(Node node, Boolean migration, Integer migIndex, double from, double to) {
 
         double[] init = new double[2*n];
         int nodestate = ((MultiTypeNode)node).getNodeType();
         int index = Utils.index(to, times, totalIntervals);
-
-//        int rhoIndexCrossed = crossingRhoTime(from,to);
-//
-//        if (rhoIndexCrossed>=0) {
-//
-//            double rhotime = rhoSamplingChangeTimes.get(rhoIndexCrossed);
-//
-//
-////            if (rhotime!=to) {
-//                return calculateSubtreeLikelihood(node, migration, migIndex, from, rhotime) ;
-////                init[n+nodestate]*= g[n+nodestate];
-////                return getG(from, init, to, node);
-////            }
-////            else {
-////                init[n+nodestate] = (1-rho[nodestate*totalIntervals + Utils.index(rhotime, times, totalIntervals)]);
-////            }
-//        }
 
         if (migration){ // migration event
 
@@ -444,7 +478,11 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
                 if (node.isLeaf()){ // sampling event
 
                     if (!isRhoTip[node.getNr()])
-                        init[n+nodestate] = psi[nodestate*totalIntervals+index];
+//                        init[n+nodestate] = psi[nodestate*totalIntervals+index];
+                        init[n + nodestate] = SAModel
+                                ? psi[nodestate * totalIntervals + index]* (r[nodestate * totalIntervals + index] + (1-r[nodestate * totalIntervals + index])*PG.getP(to, m_rho.get()!=null, rho)[nodestate]) // with SA: ψ_i(r + (1 − r)p_i(τ))
+                                : psi[nodestate * totalIntervals + index];
+
                     else
                         init[n+nodestate] = rho[nodestate*totalIntervals+index];
 
@@ -487,11 +525,13 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 
 
 
-    public void transformParameters(int S0){
+    public void transformParameters(){
 
         Double[] p = samplingProportion.get().getValues();
         Double[] ds = becomeUninfectiousRate.get().getValues();
         Double[] R = R0.get().getValues();
+        Double[] removalProbabilities = new Double[1];
+        if (SAModel) removalProbabilities = removalProbability.get().getValues();
 
         int state;
 
@@ -500,13 +540,33 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             state =  i/totalIntervals;
 
             birth[i] = R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state]
-                    * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] / S0;
+                    * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
 
-            psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
-                    * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
+//            psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
+//                    * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
+//
+//            death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i];
+//
+            if (!SAModel || removalAffectsSamplingProportion.get())
+                psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
+                        * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
 
-            death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i];
+            if (!SAModel)
+                death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i];
+
+            else {
+                r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+
+                if (!removalAffectsSamplingProportion.get())
+                    psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
+                            * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]
+                            / (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
+
+
+                death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i]*r[i];
+            }
         }
+
     }
 
 

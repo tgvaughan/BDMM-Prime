@@ -1,5 +1,6 @@
 package test.beast.evolution.speciation;
 
+import beast.core.parameter.RealParameter;
 import beast.evolution.tree.*;
 import junit.framework.TestCase;
 import org.junit.Test;
@@ -21,51 +22,152 @@ public class BirthDeathMigrationTest extends TestCase {
 
 
 
+    @Test
+     public void testSALikelihoodCalculationWithoutAncestors() throws Exception {
+
+        MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
+                tree.initByName(
+                        "adjustTipHeights", false,
+                        "newick", "((3[type=0]: 1.5, 4[type=0]: 0.5)[type=0]: 1 , (1[type=0]: 2, 2[type=0]: 1)[type=0]: 3)[type=0];",
+                        "typeLabel", "type");
 
 
-    @Test  //1-dim test from BDSKY with  rho
-    public void testRho1dim() throws Exception {
+         BirthDeathMigrationModel bdm =  new BirthDeathMigrationModel();
 
-        //        todo: fix this test!!!!
+         bdm.setInputValue("tree", tree);
 
-        String tree = "((3[state=0] : 1.5, 4[state=0] : 0.5)[state=0] : 1 , (1[state=0] : 2, 2[state=0] : 1)[state=0] : 3)[state=0];";
+         bdm.setInputValue("stateNumber", "1");
+         bdm.setInputValue("migrationMatrix", "0.");
+         bdm.setInputValue("frequencies", "1");
 
-//        String tree = "(((((t1[state=0]:0.4595008531,t25[state=0]:0.4595008531)[state=0]:0.3373053072,t23[state=0]:0.3567584538)[state=0]:0.007310819036,t16[state=0]:0.3489190732)[state=0]:0.331009529,((t18[state=0]:0.03315384045,t14[state=0]:0.03315384045)[state=0]:0.5063451374,(t10[state=0]:0.4211543131,t15[state=0]:0.4211543131)[state=0]:0.1183446648)[state=0]:0.5956275305)[state=0]:0.1158090878,((t19[state=0]:0.9429393194,((t6[state=0]:0.363527235,t11[state=0]:0.4417423167)[state=0]:0.01881829549,((((t3[state=0]:0.3071904376,(((t24[state=0]:0.01065209364,t13[state=0]:0.01065209364)[state=0]:0.06076485145,t8[state=0]:0.07141694509)[state=0]:0.123620245,(t22[state=0]:0.1616119808,t2[state=0]:0.1616119808)[state=0]:0.03342520927)[state=0]:0.1121532475)[state=0]:0.24520579,t9[state=0]:0.5523962276)[state=0]:0.3852615426,(((t20[state=0]:0.2935970782,(t17[state=0]:0.06569090089,t4[state=0]:0.06569090089)[state=0]:0.2279061773)[state=0]:0.08350780408,(t21[state=0]:0.05109047139,t5[state=0]:0.05109047139)[state=0]:0.3260144109)[state=0]:0.2298344132,t7[state=0]:0.6069392955)[state=0]:0.3307184747)[state=0]:0.01206284377,t26[state=0]:0.9497206139)[state=0]:0.05755333197)[state=0]:0.03290891884)[state=0]:0.07263755325,t12[state=0]:1.112820418)[state=0]:0.1381151782)[state=0];";
-        double logL = bdm_likelihood_MT(tolerance, maxEvals, "1", "0.", "1.",
-                tree, "6.", "0.6666666667", "4.5", "0.4444444444", "0. 0.05 0.01", "0. 1. 1.5", null, false);
+         bdm.setInputValue("R0", new RealParameter("1.5"));
+         bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+         bdm.setInputValue("samplingProportion", new RealParameter("0.3") );
+         bdm.setInputValue("removalProbability", new RealParameter("0.9") );
+         bdm.setInputValue("conditionOnSurvival", false);
 
-        System.out.println("Birth-death result: " +logL);
+         bdm.initAndValidate();
 
-//        bdssm.setInputValue("origin", new RealParameter("2."));
-//        bdssm.setInputValue("conditionOnSurvival", false);
-//
-//        bdssm.setInputValue("birthRate", new RealParameter("3."));
-//        bdssm.setInputValue("deathRate", new RealParameter("2.5"));
-//        bdssm.setInputValue("samplingRate", new RealParameter("2."));
-//        bdssm.setInputValue("rho", new RealParameter("0.0 0.05 0.01"));
-//        bdssm.setInputValue("rhoSamplingTimes","0. 1. 1.5");
-//        bdssm.setInputValue("reverseTimeArrays","false false false false");
-//        assertEquals(-124.96086690757612, logL, 1e-4);     // big tree (this result is from BEAST, not double checked in R)
-        assertEquals(-47.1675534174977, logL, 1e-4);     // little tree (this result is from BEAST, not double checked in R)
+         assertEquals(-16.281647428602657, bdm.calculateLogP(), 1e-4);   // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+
+     }
 
 
+    @Test
+    public void testRhoSasha() throws Exception {
 
-//        // now the same with reverse rhoSamplingTimes
-//        bdssm =  new BirthDeathSkylineModel();
-//        bdssm.setInputValue("tree", tree);
-//        bdssm.setInputValue("origin", new RealParameter("2."));
-//        bdssm.setInputValue("conditionOnSurvival", false);
-//
-//        bdssm.setInputValue("birthRate", new RealParameter("3."));
-//        bdssm.setInputValue("deathRate", new RealParameter("2.5"));
-//        bdssm.setInputValue("samplingRate", new RealParameter("2."));
-//        bdssm.setInputValue("rho", new RealParameter("0.0 0.05 0.01"));
-//        bdssm.setInputValue("rhoSamplingTimes","0. 0.5 1.");
-//        bdssm.setInputValue("reverseTimeArrays","false false false true");
-//        bdssm.initAndValidate();
-//        assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(tree), 1e-4);     // this result is from BEAST, not double checked in R
+        String tree = "(((((t1[type=0]:0.4595008531,t25[type=0]:0.4595008531)[type=0]:0.3373053072,t23[type=0]:0.3567584538)[type=0]:0.007310819036,t16[type=0]:0.3489190732)[type=0]:0.331009529,((t18[type=0]:0.03315384045,t14[type=0]:0.03315384045)[type=0]:0.5063451374,(t10[type=0]:0.4211543131,t15[type=0]:0.4211543131)[type=0]:0.1183446648)[type=0]:0.5956275305)[type=0]:0.1158090878,((t19[type=0]:0.9429393194,((t6[type=0]:0.363527235,t11[type=0]:0.4417423167)[type=0]:0.01881829549,((((t3[type=0]:0.3071904376,(((t24[type=0]:0.01065209364,t13[type=0]:0.01065209364)[type=0]:0.06076485145,t8[type=0]:0.07141694509)[type=0]:0.123620245,(t22[type=0]:0.1616119808,t2[type=0]:0.1616119808)[type=0]:0.03342520927)[type=0]:0.1121532475)[type=0]:0.24520579,t9[type=0]:0.5523962276)[type=0]:0.3852615426,(((t20[type=0]:0.2935970782,(t17[type=0]:0.06569090089,t4[type=0]:0.06569090089)[type=0]:0.2279061773)[type=0]:0.08350780408,(t21[type=0]:0.05109047139,t5[type=0]:0.05109047139)[type=0]:0.3260144109)[type=0]:0.2298344132,t7[type=0]:0.6069392955)[type=0]:0.3307184747)[type=0]:0.01206284377,t26[type=0]:0.9497206139)[type=0]:0.05755333197)[type=0]:0.03290891884)[type=0]:0.07263755325,t12[type=0]:1.112820418)[type=0]:0.1381151782)[type=0];";
+
+        MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
+                mtTree.initByName(
+                        "adjustTipHeights", false,
+                        "newick", tree,
+                        "typeLabel", "type");
+
+        BirthDeathMigrationModel bdssm =  new BirthDeathMigrationModel();
+
+        bdssm.setInputValue("frequencies", "1");
+        bdssm.setInputValue("migrationMatrix", "0.");
+        bdssm.setInputValue("stateNumber", 1);
+
+        bdssm.setInputValue("tree", mtTree);
+        bdssm.setInputValue("conditionOnSurvival", false);
+
+        bdssm.setInputValue("R0", new RealParameter(new Double[]{3./4.5}));
+        bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("4.5"));
+        bdssm.setInputValue("samplingProportion", new RealParameter(new Double[]{2./4.5}));
+        bdssm.setInputValue("rho", new RealParameter("0.0 0.05 0.01"));
+        bdssm.setInputValue("rhoSamplingTimes","0. 0.5 1.");
+        bdssm.setInputValue("reverseTimeArrays","false false false true");
+        bdssm.initAndValidate();
+        assertEquals(-122.2313926454848, bdssm.calculateTreeLogLikelihood(mtTree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
 
     }
+
+    @Test
+    public void test3intsWithRho1dim() throws Exception {
+
+
+        String treeString = "(((((t1[type=0]:0.4595008531,t25[type=0]:0.4595008531)[type=0]:0.3373053072,t23[type=0]:0.3567584538)[type=0]:0.007310819036,t16[type=0]:0.3489190732)[type=0]:0.331009529,((t18[type=0]:0.03315384045,t14[type=0]:0.03315384045)[type=0]:0.5063451374,(t10[type=0]:0.4211543131,t15[type=0]:0.4211543131)[type=0]:0.1183446648)[type=0]:0.5956275305)[type=0]:0.1158090878,((t19[type=0]:0.9429393194,((t6[type=0]:0.363527235,t11[type=0]:0.4417423167)[type=0]:0.01881829549,((((t3[type=0]:0.3071904376,(((t24[type=0]:0.01065209364,t13[type=0]:0.01065209364)[type=0]:0.06076485145,t8[type=0]:0.07141694509)[type=0]:0.123620245,(t22[type=0]:0.1616119808,t2[type=0]:0.1616119808)[type=0]:0.03342520927)[type=0]:0.1121532475)[type=0]:0.24520579,t9[type=0]:0.5523962276)[type=0]:0.3852615426,(((t20[type=0]:0.2935970782,(t17[type=0]:0.06569090089,t4[type=0]:0.06569090089)[type=0]:0.2279061773)[type=0]:0.08350780408,(t21[type=0]:0.05109047139,t5[type=0]:0.05109047139)[type=0]:0.3260144109)[type=0]:0.2298344132,t7[type=0]:0.6069392955)[type=0]:0.3307184747)[type=0]:0.01206284377,t26[type=0]:0.9497206139)[type=0]:0.05755333197)[type=0]:0.03290891884)[type=0]:0.07263755325,t12[type=0]:1.112820418)[type=0]:0.1381151782)[type=0];";
+
+        MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
+                tree.initByName(
+                        "adjustTipHeights", false,
+                        "newick", treeString,
+                        "typeLabel", "type");
+
+        for (int i = 1; i<4; i++){
+
+
+            switch (i){
+                case 1:{
+                    BirthDeathMigrationModel bdssm =  new BirthDeathMigrationModel();
+                    bdssm.setInputValue("frequencies", "1");
+                    bdssm.setInputValue("migrationMatrix", "0.");
+                    bdssm.setInputValue("stateNumber", 1);
+
+                    bdssm.setInputValue("tree", tree);
+                    bdssm.setInputValue("conditionOnSurvival", false);
+
+                    bdssm.setInputValue("R0", new RealParameter(new Double[]{3./4.5, 2./1.5, 4./1.5}));   // birthRate = "3. 2. 4."
+                    bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("4.5 1.5 1.5"));      // deathRate = "2.5 1. .5"
+                    bdssm.setInputValue("samplingProportion", new RealParameter(new Double[]{2./4.5, .5/1.5, 1./1.5}));                  // samplingRate = "2. 0.5 1."
+                    bdssm.setInputValue("rho", new RealParameter("0. 0. 0.01"));
+                    bdssm.setInputValue("birthRateChangeTimes", new RealParameter("0. 1. 1.1"));
+                    bdssm.setInputValue("deathRateChangeTimes", new RealParameter("0. 1. 1.1"));
+                    bdssm.setInputValue("samplingRateChangeTimes", new RealParameter("0. 1. 1.1"));
+                    bdssm.setInputValue("rhoSamplingTimes", new RealParameter("0. 1. 1.1"));
+
+                    bdssm.initAndValidate();
+
+                    assertEquals(-102.99471868811985, bdssm.calculateTreeLogLikelihood(tree), 1e-6);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+
+                }
+                case 2:{
+                    BirthDeathMigrationModel bdssm =  new BirthDeathMigrationModel();
+                    bdssm.setInputValue("frequencies", "1");
+                    bdssm.setInputValue("migrationMatrix", "0.");
+                    bdssm.setInputValue("stateNumber", 1);
+
+                    bdssm.setInputValue("tree", tree);
+//                    bdssm.setInputValue("origin", new RealParameter("2."));
+                    bdssm.setInputValue("conditionOnSurvival", false);
+
+                    bdssm.setInputValue("R0", new RealParameter(new Double[]{3./4.5, 2./1.5, 4./1.5}));   // birthRate = "3. 2. 4."
+                    bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("4.5 1.5 1.5"));      // deathRate = "2.5 1. .5"
+                    bdssm.setInputValue("samplingProportion", new RealParameter(new Double[]{2./4.5, .5/1.5, 1./1.5}));                  // samplingRate = "2. 0.5 1."
+                    bdssm.setInputValue("birthRateChangeTimes", new RealParameter("0. 1. 1.1"));
+                    bdssm.setInputValue("deathRateChangeTimes", new RealParameter("0. 1. 1.1"));
+                    bdssm.setInputValue("samplingRateChangeTimes", new RealParameter("0. 1. 1.1"));
+
+                    bdssm.setInputValue("rho", new RealParameter("0.05 0.01"));
+                    bdssm.setInputValue("rhoSamplingTimes","0. 1.");
+                    bdssm.initAndValidate();
+                    assertEquals(-104.52870355405462, bdssm.calculateTreeLogLikelihood(tree), 1e-6);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+                }
+
+                case 3:{
+                    BirthDeathMigrationModel bdssm =  new BirthDeathMigrationModel();
+                    bdssm.setInputValue("frequencies", "1");
+                    bdssm.setInputValue("migrationMatrix", "0.");
+                    bdssm.setInputValue("stateNumber", 1);
+
+                    bdssm.setInputValue("tree", tree);
+                    bdssm.setInputValue("conditionOnSurvival", false);
+
+                    bdssm.setInputValue("R0", new RealParameter(new Double[]{3./4.5, 2./1.5, 4./1.5, 4./2.5}));   // birthRate = "3. 2. 4. 4."
+                    bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("4.5 1.5 1.5 2.5"));      // deathRate = "2.5 1. .5 .5"
+                    bdssm.setInputValue("samplingProportion", new RealParameter(new Double[]{2./4.5, .5/1.5, 1./1.5, 2./2.5}));                  // samplingRate = "2. 0.5 1. 2."
+                    bdssm.setInputValue("rho", new RealParameter("0.05 0.01"));
+                    bdssm.setInputValue("rhoSamplingTimes","0. 1.");
+                    bdssm.setInputValue("intervalTimes", new RealParameter("0. 0.5 1. 1.1"));
+                    bdssm.initAndValidate();
+                    assertEquals(-100.16118787492215, bdssm.calculateTreeLogLikelihood(tree), 1e-6);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+                }
+            }
+        }
+    }
+
 
     @Test
     public void test1intRho() throws Exception{
@@ -131,7 +233,6 @@ public class BirthDeathMigrationTest extends TestCase {
 
         assertEquals(-19.0198, logL, 1e-5);
 
-
     }
 
 
@@ -150,8 +251,7 @@ public class BirthDeathMigrationTest extends TestCase {
         mtTree.initByName(
                 "adjustTipHeights", false,
                 "newick", newickStr,
-                "typeLabel", "state",
-                "nTypes", 2);
+                "typeLabel", "state");
 
 //        // Assemble migration model:
 //        RealParameter rateMatrix = new RealParameter();
@@ -189,8 +289,7 @@ public class BirthDeathMigrationTest extends TestCase {
         mtTree.initByName(
                 "adjustTipHeights", false,
                 "newick", tree,
-                "typeLabel", "state",
-                "nTypes", 2);
+                "typeLabel", "state");
 
 //         System.out.println( "gamma = " + gamma + ", beta = " + beta+ ", psi = " + psi);
 //         System.out.println( "m\tlogL");
@@ -250,8 +349,7 @@ public class BirthDeathMigrationTest extends TestCase {
         mtTree.initByName(
                 "adjustTipHeights", false,
                 "newick", tree,
-                "typeLabel", "state",
-                "nTypes", 2);
+                "typeLabel", "state");
 
         return bdm_likelihood_MT(tolerance, maxEvals, statenumber, migrationMatrix, frequencies,  mtTree,  origin, R0,  becomeUninfectiousRate,  samplingProportion,  rho, rhoSamplingTimes, intervalTimes, conditionOnSurvival);
 
@@ -1085,8 +1183,7 @@ public class BirthDeathMigrationTest extends TestCase {
 //            MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
 //            mtTree.initByName(
 //                    "newick", newickStr,
-//                    "typeLabel", "&state",
-//                    "nTypes", 2);
+//                    "typeLabel", "&state");
 //
 //
 //            bf = new BufferedReader(new FileReader(filenames[t].replace(".tree",".csv")));

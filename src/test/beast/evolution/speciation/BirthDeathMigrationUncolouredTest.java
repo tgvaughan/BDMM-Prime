@@ -482,7 +482,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 
     public void testLikelihoodCalculationInfAmongDemesSymmetric() throws Exception{
 
-        Boolean r0param = true;
+        Boolean r0param = false;
         Boolean infectionAmongDemes = true;
         conditionOnSurvival = true;
 
@@ -664,7 +664,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
     public void testLikelihoodCalculationInfAmongDemes() throws Exception{
 
         Boolean r0param = false;
-        Boolean infectionAmongDemes = false;
+        Boolean infectionAmongDemes = true;
         conditionOnSurvival = true;
 
         String newick = "((3:1.5,4:0.5):1,(1:2,2:1):3);";

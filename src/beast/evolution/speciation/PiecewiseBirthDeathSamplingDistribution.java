@@ -104,6 +104,9 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     public Input<Integer> stateNumber =
             new Input<>("stateNumber", "The number of states or locations", Input.Validate.REQUIRED);
 
+    public Input<Boolean> removalAffectsSamplingProportion =
+            new Input<>("removalAffectsSamplingProportion", "In R0 param, is samplingProportion = samplingRate/(r*samplingRate+deathRate)? Default=true. (Alternative: samplingProportion = samplingRate/(samplingRate+deathRate)) ", true);
+
     // these four arrays are totalIntervals in length
     protected Double[] birth;
     Double[] death;
