@@ -260,14 +260,19 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
         if (m_rho.get() != null && (m_rho.get().getDimension()==1 ||  rhoSamplingTimes.get() != null)) {
 
             Double[] rhos = m_rho.get().getValues();
-            rho = new Double[totalIntervals];
+            rho = new Double[n*totalIntervals];
+            int state;
 
             //            rho[totalIntervals-1]=rhos[rhos.length-1];
-            for (int i = 0; i < totalIntervals; i++) {
+            for (int i = 0; i < totalIntervals*n; i++) {
+
+                state =  i/totalIntervals;
+
+//                if (rhoChanges>0) throw new RuntimeException("not working yet - need to adjust p and g diff equations when rho-sampling can occur before present!"); //todo!
 
                 rho[i]= //rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhoSamplingChangeTimes.indexOf(times[i])] : 0.;
                         rhoChanges>0?
-                                rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhoSamplingChangeTimes.indexOf(times[i])] : 0.
+                                rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
                                 : rhos[0];
             }
         }
@@ -338,21 +343,38 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
                 System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
             }
 
-            if (Math.abs(T-t)<1e-14 ||  T < t) {
+            if (Math.abs(T-t)<1e-10 ||  T < t) {
                 return PG0;
             }
 
             double from = t;
             double to = t0;
+            double oneMinusRho;
 
-            int steps = Utils.index(to, times, totalIntervals) - Utils.index(from, times, totalIntervals) - 1;
-            int index = Utils.index(to, times, totalIntervals) - 1;
+            int indexFrom = Utils.index(from, times, times.length);
+            int index = Utils.index(to, times, times.length);
+
+            int steps = index - indexFrom;
+            if (Math.abs(from-times[indexFrom])<1e-10) steps--;
+            if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+                steps--;
+                index--;
+            }
+            index--;
 
             while (steps > 0){
 
                 from = times[index];// + 1e-14;
 
-                pg_integrator.integrate(PG, to, PG0, from, PG0); // solve G , store solution in G0
+                pg_integrator.integrate(PG, to, PG0, from, PG0); // solve PG , store solution in PG0
+
+                if (rhoChanges>0){
+                    for (int i=0; i<n; i++){
+                        oneMinusRho = (1-rho[i*totalIntervals + Utils.index(times[index], times, totalIntervals)]);
+                        PG0[i] *= oneMinusRho;
+                        PG0[i+n] *= oneMinusRho;
+                    }
+                }
 
                 to = times[index];
 
@@ -360,7 +382,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
                 index--;
             }
 
-            pg_integrator.integrate(PG, to, PG0, t, PG0); // solve G , store solution in G0
+            pg_integrator.integrate(PG, to, PG0, t, PG0); // solve PG , store solution in PG0
 
         }catch(Exception e){
 
@@ -479,7 +501,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
         if (!storeNodeTypes.get() || init){
 
             int nodestate =  tiptypes.get()!=null ?
-                    (int) tiptypes.get().getValue((node.getNr())) :
+                    (int) tiptypes.get().getValue((node.getID())) :
                     ( (node instanceof MultiTypeNode)?((MultiTypeNode) node).getNodeType() : -2);
 
             if (nodestate == -2) {
@@ -518,7 +540,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
                         init[n + i] = psi[i * totalIntervals + index];
                     }
                     else
-                        init[n+i] = rho[i*totalIntervals+index];
+                        init[n + i] = rho[i*totalIntervals+index];
                 }
             }
             else {
@@ -666,7 +688,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 
             if (!SAModel || removalAffectsSamplingProportion.get())
                 psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
-                    * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
+                        * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
 
             if (!SAModel)
                 death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i];
@@ -677,7 +699,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
                 if (!removalAffectsSamplingProportion.get())
                     psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
                             * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]
-                        / (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
+                            / (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
 
 
                 death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i]*r[i];

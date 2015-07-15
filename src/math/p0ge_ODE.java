@@ -135,8 +135,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
     }
 
-
-
     public double[] getP(double t, Boolean rhoSampling, Double[] rho){
 
         double[] y = new double[dimension];
@@ -147,7 +145,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
             for (int i = 0; i<dimension; i++)
                 y[i]-= rho[i*intervals + Utils.index(t, times, intervals)];    // initial condition: y_i[T]=1-rho_i
 
-        if (Math.abs(T-t)<1e-12 ||  T < t) {
+        if (Math.abs(T-t)<1e-10 ||  T < t) {
             return y;
         }
 
@@ -155,15 +153,31 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
             double from = t;
             double to = T;
+            double oneMinusRho;
 
-            int steps = Utils.index(to, times, times.length) - Utils.index(from, times, times.length) - 1 ;
-            int index = Utils.index(to, times, times.length) - 1;
+            int indexFrom = Utils.index(from, times, times.length);
+            int index = Utils.index(to, times, times.length);
+
+            int steps = index - indexFrom;
+            index--;
+            if (Math.abs(from-times[indexFrom])<1e-10) steps--;
+            if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+                steps--;
+                index--;
+            }
 
             while (steps > 0){
 
                 from = times[index];//  + 1e-14;
 
                 p_integrator.integrate(P, to, y, from, y); // solve P , store solution in y
+
+                if (rhoSampling){
+                     for (int i=0; i<dimension; i++){
+                         oneMinusRho = (1-rho[i*intervals + Utils.index(times[index], times, intervals)]);
+                         y[i] *= oneMinusRho;
+                     }
+                 }
 
                 to = times[index];
 
