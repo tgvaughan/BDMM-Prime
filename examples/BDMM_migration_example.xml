@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution.tree:beast.core.parameter:multitypetree.operators:multitypetree.util:beast.math.distributions" version="2.0">
 
+<!-- initial seed to get it started e.g. 1437659373994 -->
+
 	<map name="Beta">beast.math.distributions.Beta</map>
 	<map name="Exponential">beast.math.distributions.Exponential</map>
 	<map name="InverseGamma">beast.math.distributions.InverseGamma</map>
@@ -194,7 +196,7 @@
 		   <taxa idref="TaxonSet"/>
 	   </trait>    
        
-    <model spec='MigrationModel' id="migModel"  rateMatrixIsForward="true">
+    <model spec='MigrationModelForward' id="migModel"  rateMatrixIsForward="true">
         <rateMatrix idref="rateMatrix"/>
         <popSizes id="popSize" spec="RealParameter" value="1 1 1"/> 
     </model>
@@ -203,7 +205,7 @@
 <run chainLength="100000000" id="mcmc" spec="MCMC" storeEvery="1000" numInitializationAttempts="100">
 
      <init spec='beast.evolution.tree.StructuredCoalescentMultiTypeTree' id='tree' >
-		<migrationModel spec="MigrationModel" popSizes="1 1 1" rateMatrix=".1 .1 .1 .1 .1 .1" rateMatrixIsForward="true"/>    
+		<migrationModel spec="MigrationModelForward" popSizes="1 1 1" rateMatrix=".1 1 .1 1 .2 .2" rateMatrixIsForward="true"/>    
          <trait idref='typeTrait'/>
          <trait idref='dateTrait'/>
      </init>
@@ -212,7 +214,7 @@
         <stateNode idref="tree"/>
         <stateNode idref="rateMatrix"/>
         <parameter id="clockRate" name="stateNode" value="8.05e-3"/> <!-- 8.05e-3 is what Lemey et all estimated, personal communication-->
-        <parameter dimension="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0. 0.001 0. 0.001 0. 0.001"/>
+        <parameter dimension="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0. 0.01 0. 0.01 0. 0.01"/>
         <parameter dimension="3" id="becomeUninfectiousRate" lower="0.0" name="stateNode" value="80"/>
         <parameter dimension="3" id="R0" lower="0.0" name="stateNode" value="1.3"/>
    		<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->
