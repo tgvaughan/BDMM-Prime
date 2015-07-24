@@ -1,4 +1,4 @@
-You'll need the following https://github.com/CompEvol packages to run bdmm: 
+You'll need the following https://github.com/CompEvol packages (including their libraries) to run bdmm: 
 
 * beast2
 
