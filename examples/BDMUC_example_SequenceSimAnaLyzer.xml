@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel
+:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.core.parameter:beast.evolution.tree.coalescent:multitypetree.operators:multitypetree.util:master.beast:master.conditions:master.model:master.postprocessors:master.outputs:master" version="2.0">
+
+	<map name="Beta">beast.math.distributions.Beta</map>
+	<map name="Exponential">beast.math.distributions.Exponential</map>
+	<map name="InverseGamma">beast.math.distributions.InverseGamma</map>
+	<map name="LogNormal">beast.math.distributions.LogNormalDistributionModel</map>
+	<map name="Gamma">beast.math.distributions.Gamma</map>
+	<map name="Uniform">beast.math.distributions.Uniform</map>
+	<map name="prior">beast.math.distributions.Prior</map>
+	<map name="LaplaceDistribution">beast.math.distributions.LaplaceDistribution</map>
+	<map name="OneOnX">beast.math.distributions.OneOnX</map>
+	<map name="Normal">beast.math.distributions.Normal</map>
+
+   <alignment spec="beast.evolution.alignment.Alignment" id="input_alignment" dataType="nucleotide">
+		<sequence spec="Sequence" taxon="1" value="?" />
+		<sequence spec="Sequence" taxon="2" value="?" />
+		<sequence spec="Sequence" taxon="3" value="?" />
+		<sequence spec="Sequence" taxon="4" value="?" />
+		<sequence spec="Sequence" taxon="5" value="?" />
+		<sequence spec="Sequence" taxon="6" value="?" />
+		<sequence spec="Sequence" taxon="7" value="?" />
+		<sequence spec="Sequence" taxon="8" value="?" />
+		<sequence spec="Sequence" taxon="9" value="?" />
+		<sequence spec="Sequence" taxon="10" value="?" />
+		<sequence spec="Sequence" taxon="11" value="?" />
+		<sequence spec="Sequence" taxon="12" value="?" />
+		<sequence spec="Sequence" taxon="13" value="?" />
+		<sequence spec="Sequence" taxon="14" value="?" />
+		<sequence spec="Sequence" taxon="15" value="?" />
+		<sequence spec="Sequence" taxon="16" value="?" />
+		<sequence spec="Sequence" taxon="17" value="?" />
+		<sequence spec="Sequence" taxon="18" value="?" />
+		<sequence spec="Sequence" taxon="19" value="?" />
+		<sequence spec="Sequence" taxon="20" value="?" />
+		<sequence spec="Sequence" taxon="21" value="?" />
+		<sequence spec="Sequence" taxon="22" value="?" />
+		<sequence spec="Sequence" taxon="23" value="?" />
+		<sequence spec="Sequence" taxon="24" value="?" />
+		<sequence spec="Sequence" taxon="25" value="?" />
+		<sequence spec="Sequence" taxon="26" value="?" />
+		<sequence spec="Sequence" taxon="27" value="?" />
+		<sequence spec="Sequence" taxon="28" value="?" />
+		<sequence spec="Sequence" taxon="29" value="?" />
+		<sequence spec="Sequence" taxon="30" value="?" />
+		<sequence spec="Sequence" taxon="31" value="?" />
+		<sequence spec="Sequence" taxon="32" value="?" />
+		<sequence spec="Sequence" taxon="33" value="?" />
+		<sequence spec="Sequence" taxon="34" value="?" />
+		<sequence spec="Sequence" taxon="35" value="?" />
+		<sequence spec="Sequence" taxon="36" value="?" />
+		<sequence spec="Sequence" taxon="37" value="?" />
+		<sequence spec="Sequence" taxon="38" value="?" />
+		<sequence spec="Sequence" taxon="39" value="?" />
+		<sequence spec="Sequence" taxon="40" value="?" />
+		<sequence spec="Sequence" taxon="41" value="?" />
+		<sequence spec="Sequence" taxon="42" value="?" />
+		<sequence spec="Sequence" taxon="43" value="?" />
+		<sequence spec="Sequence" taxon="44" value="?" />
+		<sequence spec="Sequence" taxon="45" value="?" />
+		<sequence spec="Sequence" taxon="46" value="?" />
+		<sequence spec="Sequence" taxon="47" value="?" />
+		<sequence spec="Sequence" taxon="48" value="?" />
+		<sequence spec="Sequence" taxon="49" value="?" />
+		<sequence spec="Sequence" taxon="50" value="?" />
+		<sequence spec="Sequence" taxon="51" value="?" />
+		<sequence spec="Sequence" taxon="52" value="?" />
+		<sequence spec="Sequence" taxon="53" value="?" />
+		<sequence spec="Sequence" taxon="54" value="?" />
+		<sequence spec="Sequence" taxon="55" value="?" />
+		<sequence spec="Sequence" taxon="56" value="?" />
+		<sequence spec="Sequence" taxon="57" value="?" />
+		<sequence spec="Sequence" taxon="58" value="?" />
+		<sequence spec="Sequence" taxon="59" value="?" />
+		<sequence spec="Sequence" taxon="60" value="?" />
+		<sequence spec="Sequence" taxon="61" value="?" />
+		<sequence spec="Sequence" taxon="62" value="?" />
+		<sequence spec="Sequence" taxon="63" value="?" />
+		<sequence spec="Sequence" taxon="64" value="?" />
+		<sequence spec="Sequence" taxon="65" value="?" />
+		<sequence spec="Sequence" taxon="66" value="?" />
+		<sequence spec="Sequence" taxon="67" value="?" />
+		<sequence spec="Sequence" taxon="68" value="?" />
+		<sequence spec="Sequence" taxon="69" value="?" />
+		<sequence spec="Sequence" taxon="70" value="?" />
+		<sequence spec="Sequence" taxon="71" value="?" />
+		<sequence spec="Sequence" taxon="72" value="?" />
+		<sequence spec="Sequence" taxon="73" value="?" />
+		<sequence spec="Sequence" taxon="74" value="?" />
+		<sequence spec="Sequence" taxon="75" value="?" />
+		<sequence spec="Sequence" taxon="76" value="?" />
+		<sequence spec="Sequence" taxon="77" value="?" />
+		<sequence spec="Sequence" taxon="78" value="?" />
+		<sequence spec="Sequence" taxon="79" value="?" />
+		<sequence spec="Sequence" taxon="80" value="?" />
+		<sequence spec="Sequence" taxon="81" value="?" />
+		<sequence spec="Sequence" taxon="82" value="?" />
+		<sequence spec="Sequence" taxon="83" value="?" />
+		<sequence spec="Sequence" taxon="84" value="?" />
+		<sequence spec="Sequence" taxon="85" value="?" />
+		<sequence spec="Sequence" taxon="86" value="?" />
+		<sequence spec="Sequence" taxon="87" value="?" />
+		<sequence spec="Sequence" taxon="88" value="?" />
+		<sequence spec="Sequence" taxon="89" value="?" />
+		<sequence spec="Sequence" taxon="90" value="?" />
+		<sequence spec="Sequence" taxon="91" value="?" />
+		<sequence spec="Sequence" taxon="92" value="?" />
+		<sequence spec="Sequence" taxon="93" value="?" />
+		<sequence spec="Sequence" taxon="94" value="?" />
+		<sequence spec="Sequence" taxon="95" value="?" />
+		<sequence spec="Sequence" taxon="96" value="?" />
+		<sequence spec="Sequence" taxon="97" value="?" />
+		<sequence spec="Sequence" taxon="98" value="?" />
+		<sequence spec="Sequence" taxon="99" value="?" />
+		<sequence spec="Sequence" taxon="100" value="?" />
+   </alignment>
+
+		<tree spec='BeastTreeFromMaster' id="mastertree" 
+				 samplePopulationSizes="true"
+				 nSamples="1"
+				 reverseTime="false">
+
+				 <model spec='Model' id='model'>
+
+					<populationType spec='PopulationType' typeName='X' dim='2' id='X'/>
+					<populationType spec='PopulationType' typeName='S' dim='2' id='S'/>
+
+					<reactionGroup spec='ReactionGroup' reactionGroupName='Birth'>
+						<reaction spec='Reaction' rate="0.4">
+							X[0] -> 2X[0]
+						</reaction>
+						<reaction spec='Reaction' rate="0.33">
+							X[1] -> 2X[1]
+						</reaction>
+					</reactionGroup>
+
+					<reactionGroup spec='ReactionGroup' reactionGroupName='Death'>
+						<reaction spec='Reaction' rate="0.285">
+							X[0] -> 0
+						</reaction>
+						<reaction spec='Reaction' rate="0.17">
+							X[1] -> 0
+						</reaction>
+					</reactionGroup>
+
+					<reactionGroup spec='ReactionGroup' reactionGroupName='Sampling'>
+						<reaction spec='Reaction' rate="0.015">
+							X[0]:1 -> S[0]:1
+						</reaction>
+						<reaction spec='Reaction' rate="0.03">
+							X[1]:1 -> S[1]:1
+						</reaction>
+					</reactionGroup>
+
+					<reactionGroup spec='ReactionGroup' reactionGroupName="Migration">
+						<reaction spec='Reaction' rate="0.01">
+							X[0] -> X[1]
+						</reaction>
+						<reaction spec='Reaction' rate="0.03">
+							X[1] -> X[0]
+						</reaction>
+					</reactionGroup>
+				</model>
+
+				<initialState spec='InitState'>
+					<lineageSeed spec='Individual'>
+						<population spec='Population' type="@X" location="0"/>
+					</lineageSeed>
+				</initialState>
+
+				<!-- Abort simulation if number of infected individuals drops to zero -->
+				<lineageEndCondition spec='LineageEndCondition' nLineages="0" isRejection="true">
+						<population spec='Population' type='@X' location="0" />
+						<population spec='Population' type='@X' location="1" />
+				</lineageEndCondition>
+
+				<!-- Finish simulation when 100 samples have been generated. -->
+				<lineageEndCondition spec='LineageEndCondition' nLineages="100" isRejection="false">
+						<population spec='Population' type='@S' location="0" />
+						<population spec='Population' type='@S' location="1" />
+				</lineageEndCondition>
+
+				<!-- Keep only sampled lineages. -->
+				<inheritancePostProcessor spec='LineageFilter' populationName="S"/>
+		
+				<!-- Trim off post-sampling lineages. -->
+				<inheritancePostProcessor spec='LineageFilter' populationName="S"
+										  leavesOnly="true" discard="true"/>
+
+				<output spec='NewickOutput' fileName='BDMUC_treeSimAnaLyzer_sim.newick'/>
+				<output spec='NexusOutput' fileName='BDMUC_treeSimAnaLyzer_sim.nexus'/>
+				<!--output spec='JsonOutput' fileName='BDMUC_treeSimAnaLyzer_sim.json'/-->
+
+		</tree>
+		
+ 			
+	   <data spec='beast.app.seqgen.SimulatedAlignment' id='alignment'
+		data="@input_alignment"
+		sequencelength="2000"
+		outputFileName="BDMUC_SequenceSimAnaLyzer_alignment.txt"
+		tree="@mastertree">
+		   <sequence spec="Sequence" taxon="dummy" value="?" />
+		   <siteModel spec="beast.evolution.sitemodel.SiteModel" id="SiteModel">
+			 <parameter name="mutationRate" id="mutationRate" value="0.005"/>
+			 <substModel spec="JukesCantor"/>
+		   </siteModel>				 
+	   </data>
+
+
+   	 <distribution spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" id="treePrior" tree="@tree" 
+   	 typeLabel="type" stateNumber="2" conditionOnSurvival="true">
+		<migrationMatrix spec="RealParameter" id="rateMatrix" value="0.01" dimension="2" lower="0" upper="100"/>
+		<parameter name="frequencies" id="geo-frequencies" value=".5 .5" lower="0." upper="1." dimension="2"/>
+		<parameter name="R0" id="R0" lower="0" dimension="2" value="3"/> 
+		<parameter name="becomeUninfectiousRate" id="becomeUninfectiousRate" value=".1" lower="0" dimension="2" /> 
+		<parameter name="samplingProportion" id="samplingProportion" value="0.05 0.15" lower="0" dimension="2"  upper="1."/>	
+	 </distribution>	
+	 
+	<RPNcalculator spec="beast.math.statistic.RPNcalculator" id="birth" expression="R0 becomeUninfectiousRate *"> <!-- s/(d+s) -->
+		<parameter idref="becomeUninfectiousRate"/>
+		<parameter idref="R0"/>        
+	</RPNcalculator>
+	<RPNcalculator spec="beast.math.statistic.RPNcalculator" id="sampling" expression="becomeUninfectiousRate samplingProportion *"> 
+		<parameter idref="becomeUninfectiousRate"/>
+		<parameter idref="samplingProportion"/>        
+	</RPNcalculator>
+	<RPNcalculator spec="beast.math.statistic.RPNcalculator" id="death" expression="becomeUninfectiousRate 1 samplingProportion - *"> <!-- b*S0/(d+s) -->
+		<parameter idref="becomeUninfectiousRate"/>
+		<parameter idref="samplingProportion"/>        
+    </RPNcalculator>
+
+	<run chainLength="5000000" id="mcmc" spec="MCMC" storeEvery="10000" numInitializationAttempts="100">
+		
+		
+		<init spec="RandomTreeFromMaster" masterTree="@mastertree"  taxa="@input_alignment">
+			<tree spec="beast.evolution.tree.RandomTree" id="tree" taxa="@input_alignment">
+				<populationModel spec="ConstantPopulation">
+					<parameter name="popSize">5.0</parameter>
+				</populationModel>
+			</tree>				
+		</init>		
+			
+		<state id="state" storeEvery="10000">
+			<stateNode idref="R0"/>
+			<stateNode idref="becomeUninfectiousRate"/>
+			<stateNode idref="samplingProportion"/>
+			<stateNode idref="rateMatrix"/>
+			<stateNode idref="tree"/>
+			<stateNode idref="mutationRate"/>
+			<stateNode idref="geo-frequencies"/>
+ 		</state>
+	
+		<distribution id="posterior" spec="util.CompoundDistribution">
+			<distribution id="prior" spec="util.CompoundDistribution">
+				<distribution idref="treePrior"/>	
+				<prior id="R0Prior" name="distribution" x="@R0">
+					<LogNormal name="distr" M="0." S="1.25"/>
+				</prior>
+				<prior id="becomeUninfectiousRatePrior" name="distribution" x="@becomeUninfectiousRate">
+					<LogNormal name="distr" M="-1" S="1.25"/>
+				</prior>
+				<prior id="migPrior" name="distribution" x="@rateMatrix">
+					<LogNormal name="distr" M="-3" S="1.25"/>
+				</prior>
+			</distribution>	
+			<distribution spec='TreeLikelihood' id="treeLikelihood" useAmbiguities="true" siteModel="@SiteModel" 
+				data="@alignment" tree="@tree">
+			</distribution>
+		</distribution>
+
+		
+		<operator id="treeScaler" scaleFactor="0.75" spec="ScaleOperator" tree="@tree" weight="3.0"/>
+		<operator id="treeRootScaler" rootOnly="true" scaleFactor="0.75" spec="ScaleOperator" tree="@tree" weight="3.0"/>
+		<operator id="narrow" spec="Exchange" tree="@tree" weight="15.0"/>
+		<operator id="UniformOperator" spec="Uniform" tree="@tree" weight="30.0"/>
+		<operator id="SubtreeSlide" spec="SubtreeSlide" tree="@tree" weight="15.0"/>
+		<operator id="wide" isNarrow="false" spec="Exchange" tree="@tree" weight="3.0"/>
+		<operator id="WilsonBalding" spec="WilsonBalding" tree="@tree" weight="3.0"/>
+		<operator id="updowntree" spec="UpDownOperator" scaleFactor=".9" weight="3" up="@tree" down="@mutationRate"/>
+		<operator id='mutationOperator' spec='ScaleOperator' scaleFactor=".75" weight="1" parameter="@mutationRate"/>
+		<operator id='R0Operator' spec='ScaleOperator' scaleFactor=".85" weight="2" parameter="@R0"/>
+		<operator id='bsOperator' spec='ScaleOperator' scaleFactor=".9" weight="2" parameter="@becomeUninfectiousRate" scaleAll="false"/>
+		<operator id='rateMatrixOperator' spec='ScaleOperator' scaleFactor=".75" weight="2" parameter="@rateMatrix"/>
+		<operator id="updown1" spec="UpDownOperator" scaleFactor=".9" weight="2" up="@R0" down="@becomeUninfectiousRate"/>
+		<operator id="updown2" spec="UpDownOperator" scaleFactor=".9" weight="2" up="@rateMatrix" down="@becomeUninfectiousRate"/>
+	
+		<operator spec="DeltaExchangeOperator" parameter="@geo-frequencies" delta="0.2" weight=".1"/>
+	
+		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).log" id="log" logEvery="10000" mode="autodetect">
+			<distribution idref="posterior" name="log"/>
+			<log idref="treeLikelihood"/>
+			<log idref="treePrior"/>
+			<log idref="R0"/>
+			<log idref="becomeUninfectiousRate"/>
+			<log idref="samplingProportion"/>
+			<log idref="rateMatrix"/>
+	        <log id="TreeHeight" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree"/>
+			<log idref="mutationRate"/>
+			<log idref="geo-frequencies"/>
+			<log idref="birth"/>
+			<log idref="death"/>
+			<log idref="sampling"/>
+		</logger>
+	
+		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).trees" logEvery="10000" mode="autodetect" 
+			log="@tree"/>
+
+		<!--logger id="screenlog" logEvery="1000" mode="autodetect">
+			<distribution idref="posterior" name="log"/>
+			<log arg="@posterior" id="ESS.0" spec="util.ESS"/>
+			<log idref="treePrior"/>
+	        <log idref="TreeHeight"/>
+			<log idref="R0"/>
+			<log idref="becomeUninfectiousRate"/>
+			<log idref="rateMatrix"/>
+			<log idref="mutationRate"/>
+		</logger-->
+	</run>
+
+</beast>
