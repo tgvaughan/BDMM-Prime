@@ -96,7 +96,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
             if (!Boolean.valueOf(System.getProperty("beast.resume")) && orig < 0)
                 throw new RuntimeException("Error: origin("+T+") must be larger than tree height("+tree.getRoot().getHeight()+")!");
         }
-       
+
         ntaxa = tree.getLeafNodeCount();
 
         birthAmongDemes = (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null);
@@ -261,8 +261,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
                 state =  i/totalIntervals;
 
                 rho[i]= rhoChanges>0?
-                                rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
-                                : rhos[0];
+                        rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
+                        : rhos[0];
             }
         }
 
@@ -382,10 +382,10 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
         collectTimes(T);
         setRho();
 
-        if (updateRates(tree) < 0 ||  (times[totalIntervals-1] > T)) { 
+        if (updateRates(tree) < 0 ||  (times[totalIntervals-1] > T)) {
             logP =  Double.NEGATIVE_INFINITY;
             return logP;
-         }
+        }
 
         double[] noSampleExistsProp ;
 
@@ -438,6 +438,9 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
             }
 
         }catch(Exception e){
+
+            if (e instanceof RuntimeException){throw e;}
+
             logP =  Double.NEGATIVE_INFINITY;
             return logP;
         }
@@ -459,25 +462,32 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 
     private int getNodeState(Node node, Boolean init){
 
-        if (!storeNodeTypes.get() || init){
+        try {
 
-            int nodestate =  tiptypes.get()!=null ?
-                    (int) tiptypes.get().getValue((node.getID())) :
-                    ( (node instanceof MultiTypeNode)?((MultiTypeNode) node).getNodeType() : -2);
+            if (!storeNodeTypes.get() || init){
 
-            if (nodestate == -2) {
-                Object d = node.getMetaData(typeLabel.get());
+                int nodestate = tiptypes.get() != null ?
+                        (int) tiptypes.get().getValue((node.getID())) :
+                        ((node instanceof MultiTypeNode) ? ((MultiTypeNode) node).getNodeType() : -2);
 
-                if (d instanceof Integer) nodestate = (Integer)node.getMetaData(typeLabel.get());
-                else if
-                        (d instanceof Double) nodestate = (((Double)node.getMetaData(typeLabel.get())).intValue());
-                else if
-                        (d instanceof int[]) nodestate = (((int[])node.getMetaData(typeLabel.get()))[0]);
+                if (nodestate == -2) {
+                    Object d = node.getMetaData(typeLabel.get());
+
+                    if (d instanceof Integer) nodestate = (Integer) node.getMetaData(typeLabel.get());
+                    else if
+                            (d instanceof Double) nodestate = (((Double) node.getMetaData(typeLabel.get())).intValue());
+                    else if
+                            (d instanceof int[]) nodestate = (((int[]) node.getMetaData(typeLabel.get()))[0]);
+                }
+
+                return nodestate;
+
             }
+            else return nodeStates[node.getNr()];
 
-            return nodestate;
+        }catch(Exception e){
+            throw new RuntimeException("Something went wrong with the assignment of types to the nodes (node ID="+node.getID()+"). Please check your XML file!");
         }
-        else return nodeStates[node.getNr()];
     }
 
 
