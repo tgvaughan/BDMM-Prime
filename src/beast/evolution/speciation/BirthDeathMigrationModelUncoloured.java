@@ -21,7 +21,8 @@ import org.apache.commons.math3.ode.nonstiff.*;
  */
 
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel with discrete locations and migration events among demes. " +
-        "This should  be used when the migration process along the phylogeny is irrelevant. Otherwise the BirthDeathMigrationModel can be employed.")
+        "This should be used when the migration process along the phylogeny is irrelevant. Otherwise the BirthDeathMigrationModel can be employed." +
+        "This implementation also works with sampled ancestor trees.")
 public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSamplingDistribution {
 
 
@@ -123,7 +124,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
         for (Node node : tree.getExternalNodes())
             if (node.getHeight()==0.)
                 contempCount++;
-        if (checkRho.get() && contempCount>1 && rho==null) throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
+        if (checkRho.get() && contempCount>1 && rho==null)
+            throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
 
         M = migrationMatrix.get().getValues();
 
@@ -301,7 +303,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
                 System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
             }
 
-            if (Math.abs(T-t)<1e-10 ||  T < t) {
+            if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||  T < t) {
                 return PG0;
             }
 
@@ -355,8 +357,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 
     @Override
     public double calculateTreeLogLikelihood(TreeInterface tree) {
-
-        if (SAModel && treeInput.isDirty()) throw new RuntimeException("Error: SA Model only implemented for fixed trees!");
 
         Node root = tree.getRoot();
 
@@ -531,47 +531,67 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
             return getG(from, init, to, node);
         }
 
-        else if (node.getChildCount()==2){  // birth / infection event
+        else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
 
-            int childIndex = 0;
-            if (node.getChild(1).getNr() > node.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
+            if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
 
-            double[] g0 = calculateSubtreeLikelihood(node.getChild(childIndex),to, T - node.getChild(childIndex).getHeight());
+                int childIndex = 0;
 
-            childIndex = Math.abs(childIndex-1);
+                if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
-            double[] g1 = calculateSubtreeLikelihood(node.getChild(childIndex),to, T - node.getChild(childIndex).getHeight());
+                double[] g = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
 
-            if (print) System.out.println("Infection at time " + (T-to) );//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
+                int saNodeState = getNodeState(node.getChild(Math.abs(childIndex - 1)), false); // get state of direct ancestor
+
+                    init[saNodeState] = g[saNodeState];
+                    //initial condition for SA: ψ_i(1 − r_i) g :
+                    init[n + saNodeState] = psi[saNodeState * totalIntervals + index] * (1-r[saNodeState * totalIntervals + index]) * g[n + saNodeState];
+            }
+
+            else {   // birth / infection event
+
+                int childIndex = 0;
+                if (node.getChild(1).getNr() > node.getChild(0).getNr())
+                    childIndex = 1; // always start with the same child to avoid numerical differences
+
+                double[] g0 = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+
+                childIndex = Math.abs(childIndex - 1);
+
+                double[] g1 = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+
+                if (print)
+                    System.out.println("Infection at time " + (T - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
 
 
-            for (int childstate=0; childstate<n; childstate++) {
+                for (int childstate = 0; childstate < n; childstate++) {
 
-                if (print) {
-                    System.out.println("state " + childstate + "\t p0 = " + g0[childstate] + "\t p1 = " + g1[childstate]);
-                    System.out.println("\t\t g0 = " + g0[n+childstate] + "\t g1 = " + g1[n+childstate]);
-                }
+                    if (print) {
+                        System.out.println("state " + childstate + "\t p0 = " + g0[childstate] + "\t p1 = " + g1[childstate]);
+                        System.out.println("\t\t g0 = " + g0[n + childstate] + "\t g1 = " + g1[n + childstate]);
+                    }
 
-                init[childstate] = g0[childstate]; //Math.floor(((g0[childstate]+g1[childstate])/2.)/tolerance.get())*tolerance.get();  // p0 is the same for both sides of the tree, but there might be tiny numerical differences
-                init[n+childstate]= birth[childstate*totalIntervals+index] * g0[n+childstate] * g1[n+childstate];
+                    init[childstate] = g0[childstate]; //Math.floor(((g0[childstate]+g1[childstate])/2.)/tolerance.get())*tolerance.get();  // p0 is the same for both sides of the tree, but there might be tiny numerical differences
+                    init[n + childstate] = birth[childstate * totalIntervals + index] * g0[n + childstate] * g1[n + childstate];
 
-                if (birthAmongDemes){
-                    for (int j=0; j<n; j++) {
-                        if (childstate!=j){
+                    if (birthAmongDemes) {
+                        for (int j = 0; j < n; j++) {
+                            if (childstate != j) {
 
 //                            if (b_ij.length>(n*(n-1))){ // b_ij can change over time
 //                                throw new RuntimeException("ratechanges in b_ij not implemented!");
-                            init[n+childstate] += 0.5 * b_ij[totalIntervals*(childstate*(n-1)+(j<childstate?j:j-1)) + index] * (g0[n+childstate] * g1[n+j] + g0[n+j] * g1[n+childstate]);
+                                init[n + childstate] += 0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index] * (g0[n + childstate] * g1[n + j] + g0[n + j] * g1[n + childstate]);
 //                            } else { // b_ij cannot change over time
 //                                init[n+childstate] += 0.5 * b_ij[childstate*(n-1)+(j<childstate?j:j-1)] * (g0[n+childstate] * g1[n+j] + g0[n+j] * g1[n+childstate]);
 //                            }
+                            }
                         }
                     }
-                }
 
 
-                if (Double.isInfinite(init[childstate])){
-                    throw new RuntimeException("infinite likelihood");
+                    if (Double.isInfinite(init[childstate])) {
+                        throw new RuntimeException("infinite likelihood");
+                    }
                 }
             }
 //            init[0] = g0[0];
@@ -580,8 +600,9 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 //            init[3] = b[1]*g0[3]*g1[3] + .5*b_ij[1]*(g0[2]*g1[3] + g0[3]*g1[2]);
         }
 
-        else {
-            System.out.println("Single child-nodes found");
+        else {// found a single child node
+
+            throw new RuntimeException("Error: Single child-nodes found (although not using sampled ancestors)");
         }
 
         if (print){

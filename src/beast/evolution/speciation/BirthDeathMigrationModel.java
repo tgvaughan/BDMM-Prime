@@ -236,7 +236,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 
         try {
 
-            if (Math.abs(T-t)<1e-10 ||  T < t) {
+            if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||  T < t) {
                 return PG0;
             }
 
