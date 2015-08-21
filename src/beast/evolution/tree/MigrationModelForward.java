@@ -16,24 +16,14 @@
  */
 package beast.evolution.tree;
 
-import beast.core.CalculationNode;
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.Input.Validate;
-import beast.core.Loggable;
-import beast.core.parameter.BooleanParameter;
-import beast.core.parameter.RealParameter;
-import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
-import org.jblas.DoubleMatrix;
-import org.jblas.MatrixFunctions;
 
 /**
  * @author Tim Vaughan, edited by Denise Kuehnert for use in bdmm
  */
 @Description("Basic plugin describing a simple Markovian migration model.")
-public class MigrationModelForward extends MigrationModel {
+public class MigrationModelForward extends SCMigrationModel {
 
 
     public Input<Boolean> rateMatrixIsForwardInput = new Input<Boolean>(

@@ -68,7 +68,7 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
         typeTrait.initByName("value", types, "taxa", m_taxonset.get(), "traitname", "type");
         dateTrait.initByName("value", dates, "taxa", m_taxonset.get(), "traitname", "date-backward");
 
-        MigrationModel migModel = new MigrationModel();
+        SCMigrationModel migModel = new SCMigrationModel();
 
         Double[] temp = new Double[nTypes.get()];
         Arrays.fill(temp, muInput.get());
