@@ -439,7 +439,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 
         }catch(Exception e){
 
-            if (e instanceof RuntimeException){throw e;}
+            if (e instanceof ConstraintViolatedException){throw e;}
 
             logP =  Double.NEGATIVE_INFINITY;
             return logP;
@@ -486,7 +486,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
             else return nodeStates[node.getNr()];
 
         }catch(Exception e){
-            throw new RuntimeException("Something went wrong with the assignment of types to the nodes (node ID="+node.getID()+"). Please check your XML file!");
+            throw new ConstraintViolatedException("Something went wrong with the assignment of types to the nodes (node ID="+node.getID()+"). Please check your XML file!");
         }
     }
 
@@ -503,7 +503,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 
             if (nodestate==-1) { //unknown state
 
-                if (SAModel) throw new RuntimeException("SA model not implemented with unknown states!");
+                if (SAModel)
+                    throw new ConstraintViolatedException("SA model not implemented with unknown states!");
 
                 for (int i=0; i<n; i++) {
 
@@ -717,6 +718,16 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 
             }
         }
+    }
+
+    // used to indicate that the state assignment went wrong
+    protected class ConstraintViolatedException extends RuntimeException {
+        private static final long serialVersionUID = 1L;
+
+            public ConstraintViolatedException(String s) {
+                super(s);
+            }
+
     }
 
 }

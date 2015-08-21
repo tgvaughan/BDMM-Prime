@@ -4,8 +4,10 @@ import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
 import beast.core.parameter.RealParameter;
+import beast.util.Randomizer;
 import master.BeastTreeFromMaster;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -27,6 +29,8 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
             "Population size for tree proposal", Input.Validate.REQUIRED);
 
     public Input<Integer> nTypes = new Input<>("nTypes", "Number of types", Input.Validate.REQUIRED);
+
+    public Input<Boolean> random = new Input<>("random", "Built random tree with traits from BeastTreeFromMaster? If false, tree will copy BeastTreeFromMaster (default true)", true);
 
     StateNode tree;
 
@@ -73,10 +77,29 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
         migModel.setInputValue("popSizes", new RealParameter(temp));
         migModel.initAndValidate();
 
-        tree = new StructuredCoalescentMultiTypeTree();
+        if (random.get()) {
+            tree = new StructuredCoalescentMultiTypeTree();
 
-        tree.setInputValue("migrationModel",migModel);
-//        tree.setInputValue("nTypes",migModel.getNTypes());
+            tree.setInputValue("migrationModel", migModel);
+        }
+        else{
+            Node oldRoot = masterTree.getRoot();
+            MultiTypeNode newRoot = new MultiTypeNode();
+
+            newRoot.height = oldRoot.height;
+            newRoot.nTypeChanges = 0;
+            newRoot.changeTimes.addAll(new ArrayList<Double>());
+            newRoot.changeTypes.addAll(new ArrayList<Integer>());
+            newRoot.nodeType = 0;
+
+            newRoot.labelNr = oldRoot.labelNr;
+
+            newRoot.addChild(copyFromFlatNode(oldRoot.getLeft()));
+            newRoot.addChild(copyFromFlatNode(oldRoot.getRight()));
+
+            tree = new MultiTypeTree(newRoot);
+        }
+
         tree.setInputValue("trait",typeTrait);
         tree.setInputValue("trait",dateTrait);
         tree.initAndValidate();
@@ -90,6 +113,39 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
     @Override
     public void getInitialisedStateNodes(List<StateNode> stateNodeList) {
         stateNodeList.add(this);
+    }
+
+    MultiTypeNode copyFromFlatNode(Node node){
+
+        MultiTypeNode mNode  = new MultiTypeNode();
+
+        mNode.height = node.height;
+        mNode.parent = node.parent;
+
+        mNode.nTypeChanges = 0;
+        mNode.changeTimes.addAll(new ArrayList<Double>());
+        mNode.changeTypes.addAll(new ArrayList<Integer>());
+        mNode.nodeType = 0;
+
+        mNode.labelNr = node.labelNr;
+
+        if (node.isLeaf()){
+
+            int type = ((int[]) node.getMetaData("location"))[0];
+
+            if (type!=0) {
+
+                mNode.setNodeType(type);
+                mNode.addChange(0, (node.getHeight() + (node.getParent().getHeight() -node.getHeight()) * Randomizer.nextDouble()));
+            }
+
+        } else {
+
+            mNode.addChild(copyFromFlatNode(node.getLeft()));
+            mNode.addChild(copyFromFlatNode(node.getRight()));
+        }
+
+         return mNode;
     }
 
 }
