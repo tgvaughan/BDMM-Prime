@@ -5,3 +5,5 @@ You'll need the following https://github.com/CompEvol packages (including their 
 * MASTER
 
 * MultiTypeTree
+
+* sampled-ancestors
