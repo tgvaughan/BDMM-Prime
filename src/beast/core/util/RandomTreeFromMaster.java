@@ -59,7 +59,7 @@ public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
         for (Node beastNode : masterTree.getExternalNodes()){
 
             dates += beastNode.getID() + "=" + beastNode.getHeight() +",";
-            types += beastNode.getID() + "=" + ((int[])beastNode.getMetaData("location"))[0] +",";
+            types += beastNode.getID() + "=" + beastNode.getMetaData("location") +",";
 
         }
 
