@@ -129,10 +129,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         P = new p0_ODE(birth,null, death,psi,M, n, totalIntervals, times);
         PG = new p0ge_ODE(birth, null, death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), true);
 
-        pg_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+        pg_integrator = new ClassicalRungeKuttaIntegrator(treeInput.get().getRoot().getHeight()/1000.); //new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
         pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
-        PG.p_integrator = new  DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+        PG.p_integrator = new ClassicalRungeKuttaIntegrator(treeInput.get().getRoot().getHeight()/1000.); //new  DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
         PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
     }
 

@@ -39,7 +39,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
             new Input<>("originIsRootEdge", "The origin is only the length of the root edge", false);
 
     public Input<Integer> maxEvaluations =
-            new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", 20000);
+            new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", Integer.MAX_VALUE);
 
     public Input<Boolean> conditionOnSurvival =
             new Input<>("conditionOnSurvival", "condition on at least one survival? Default true.", true);
@@ -169,10 +169,10 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
         P = new p0_ODE(birth, (birthAmongDemes ? b_ij : null), death,psi,M, n, totalIntervals, times);
         PG = new p0ge_ODE(birth, (birthAmongDemes ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), false);
 
-        pg_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+        pg_integrator = new ClassicalRungeKuttaIntegrator(treeInput.get().getRoot().getHeight()/1000.); //DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
         pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
-        PG.p_integrator = new  DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+        PG.p_integrator = new ClassicalRungeKuttaIntegrator(treeInput.get().getRoot().getHeight()/1000.); //new  DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
         PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
     }
 
