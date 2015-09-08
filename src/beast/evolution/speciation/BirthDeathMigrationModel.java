@@ -47,6 +47,9 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
     public Input<Double> tolerance =
             new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
 
+    public Input<Boolean> useRKInput = new Input<>("useRK",
+            "Use Runge-Kutta integrator", false);
+
 
     MultiTypeTree coltree;
 
