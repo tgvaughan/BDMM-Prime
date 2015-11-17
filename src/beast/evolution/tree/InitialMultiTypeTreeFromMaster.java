@@ -58,7 +58,7 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
         for (Node beastNode : masterTree.getExternalNodes()){
 
             dates += beastNode.getID() + "=" + beastNode.getHeight() +",";
-            types += beastNode.getID() + "=" + ((int[])beastNode.getMetaData("location"))[0] +",";
+            types += beastNode.getID() + "=" + (int)beastNode.getMetaData("location") +",";
 
         }
 
@@ -131,7 +131,7 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
 
         if (node.isLeaf()){
 
-            int type = ((int[]) node.getMetaData("location"))[0];
+            int type = (int) node.getMetaData("location");
 
             if (type!=0) {
 
