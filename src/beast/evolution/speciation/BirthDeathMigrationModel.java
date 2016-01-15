@@ -47,6 +47,9 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
     public Input<Double> tolerance =
             new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
 
+    public Input<Boolean> useRKInput = new Input<>("useRK",
+            "Use Runge-Kutta integrator", false);
+
 
     MultiTypeTree coltree;
 
@@ -129,11 +132,16 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         P = new p0_ODE(birth,null, death,psi,M, n, totalIntervals, times);
         PG = new p0ge_ODE(birth, null, death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), true);
 
-        pg_integrator = new ClassicalRungeKuttaIntegrator(treeInput.get().getRoot().getHeight()/1000.); //new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
-        pg_integrator.setMaxEvaluations(maxEvaluations.get());
+        if (!useRKInput.get()) {
+            pg_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+            pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
-        PG.p_integrator = new ClassicalRungeKuttaIntegrator(treeInput.get().getRoot().getHeight()/1000.); //new  DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
-        PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
+            PG.p_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+            PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
+        } else {
+            pg_integrator = new ClassicalRungeKuttaIntegrator(T/1000);
+            PG.p_integrator = new ClassicalRungeKuttaIntegrator(T/1000);
+        }
     }
 
 

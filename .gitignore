@@ -1,0 +1,7 @@
+# IntelliJ cruft
+/out/
+/.idea
+/*.iml
+
+# Misc cruft
+/META-INF

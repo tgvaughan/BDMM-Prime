@@ -39,13 +39,16 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
             new Input<>("originIsRootEdge", "The origin is only the length of the root edge", false);
 
     public Input<Integer> maxEvaluations =
-            new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", Integer.MAX_VALUE);
+            new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", 20000);
 
     public Input<Boolean> conditionOnSurvival =
             new Input<>("conditionOnSurvival", "condition on at least one survival? Default true.", true);
 
     public Input<Double> tolerance =
             new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
+
+    public Input<Boolean> useRKInput =
+            new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps.", false);
 
     public Input<TraitSet> tiptypes = new Input<>("tiptypes", "trait information for initializing traits (like node types/locations) in the tree",  Input.Validate.REQUIRED);
     public Input<String> typeLabel = new Input<>("typeLabel", "type label in tree for initializing traits (like node types/locations) in the tree",  Input.Validate.XOR, tiptypes);
@@ -135,7 +138,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 
         double freqSum = 0;
         for (double f : freq) freqSum+= f;
-        if (freqSum!=1.) throw new RuntimeException("Error: frequencies must add up to 1.");
+        if (freqSum!=1.) throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
 
 //        // calculate equilibrium frequencies for 2 types:
 //        double LambMu = -b[0]-b[1]-(d[0]+s[0])+(d[1]+s[1]);
@@ -169,11 +172,18 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
         P = new p0_ODE(birth, (birthAmongDemes ? b_ij : null), death,psi,M, n, totalIntervals, times);
         PG = new p0ge_ODE(birth, (birthAmongDemes ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), false);
 
-        pg_integrator = new ClassicalRungeKuttaIntegrator(treeInput.get().getRoot().getHeight()/1000.); //DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
-        pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
-        PG.p_integrator = new ClassicalRungeKuttaIntegrator(treeInput.get().getRoot().getHeight()/1000.); //new  DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
-        PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
+        if (!useRKInput.get()) {
+            pg_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+            pg_integrator.setMaxEvaluations(maxEvaluations.get());
+
+            PG.p_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+            PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
+        } else {
+            pg_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
+            PG.p_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
+
+        }
     }
 
     protected Double updateRates(TreeInterface tree) {
