@@ -75,7 +75,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
     Boolean print = false;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         super.initAndValidate();
 
@@ -545,6 +545,9 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
         else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
 
             if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
+
+                if (r==null)
+                        throw new ConstraintViolatedException("Error: Sampled ancestor found, but removalprobability not specified!");
 
                 int childIndex = 0;
 

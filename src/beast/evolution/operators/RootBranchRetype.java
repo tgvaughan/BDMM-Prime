@@ -30,7 +30,7 @@ public class RootBranchRetype extends RandomRetypeOperator {
     MultiTypeRootBranch rootBranch;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         super.initAndValidate();
     }

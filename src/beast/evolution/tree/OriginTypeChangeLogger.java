@@ -28,7 +28,7 @@ public class OriginTypeChangeLogger extends CalculationNode implements Loggable,
     }
 
     @Override
-    public void init(PrintStream out) throws Exception {
+    public void init(PrintStream out) {
             out.print(multiTypeRootBranch.getID() + "\t");
     }
 

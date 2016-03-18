@@ -24,7 +24,7 @@ public class ChangeTimeScaler extends Operator {
     double alphaMin, alphaMax;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
         param = parameterInput.get();
         alphaMin = Math.min(scaleFactorInput.get(), 1.0 / scaleFactorInput.get());
         alphaMax = 1.0/alphaMin;

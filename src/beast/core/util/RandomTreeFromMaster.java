@@ -31,7 +31,7 @@ public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
     StateNode tree;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
 
         super.initAndValidate();
@@ -39,7 +39,7 @@ public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
         initStateNodes();
     }
 
-    public void initStateNodes() throws Exception{
+    public void initStateNodes() {
 
         BeastTreeFromMaster masterTree = masterTreeInput.get();
 
@@ -59,7 +59,7 @@ public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
         for (Node beastNode : masterTree.getExternalNodes()){
 
             dates += beastNode.getID() + "=" + beastNode.getHeight() +",";
-            types += beastNode.getID() + "=" + beastNode.getMetaData("location") +",";
+            types += beastNode.getID() + "=" + ((int[])beastNode.getMetaData("location"))[0] +",";
 
         }
 

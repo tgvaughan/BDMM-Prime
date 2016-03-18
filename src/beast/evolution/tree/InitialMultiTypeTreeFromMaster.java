@@ -35,14 +35,14 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
     StateNode tree;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         initStateNodes();
         super.initAndValidate();
     }
 
     @Override
-    public void initStateNodes() throws Exception {
+    public void initStateNodes() {
 
         typeLabel = typeLabelInput.get();
 //        nTypes = nTypesInput.get();
@@ -58,7 +58,7 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
         for (Node beastNode : masterTree.getExternalNodes()){
 
             dates += beastNode.getID() + "=" + beastNode.getHeight() +",";
-            types += beastNode.getID() + "=" + (int)beastNode.getMetaData("location") +",";
+            types += beastNode.getID() + "=" + ((int[])beastNode.getMetaData("location"))[0] +",";
 
         }
 

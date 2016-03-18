@@ -29,7 +29,7 @@ public class MultiTypeRootBranch extends StateNode {
     List<Double> stored_changeTimes = new ArrayList<Double>();
 
     @Override
-    public void initAndValidate() throws Exception {}
+    public void initAndValidate() {}
 
     /**
      * Retrieve the total number of changes on the branch above this node.
@@ -175,8 +175,8 @@ public class MultiTypeRootBranch extends StateNode {
     }
 
     @Override
-    public int scale(double fScale) throws Exception {
-        throw new Exception("MultiTypeRootBranch cannot be scaled.");
+    public int scale(double fScale) {
+        throw new RuntimeException("MultiTypeRootBranch cannot be scaled.");
     }
 
     @Override
@@ -223,7 +223,7 @@ public class MultiTypeRootBranch extends StateNode {
     }
 
     @Override
-    public void init(PrintStream out) throws Exception {
+    public void init(PrintStream out) {
         out.print(getID() + "\t");
     }
 

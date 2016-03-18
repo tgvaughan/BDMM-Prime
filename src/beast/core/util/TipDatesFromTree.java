@@ -20,7 +20,7 @@ public class TipDatesFromTree extends TraitSet{
     }
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         traitNameInput.setValue("date-backward", this);
 

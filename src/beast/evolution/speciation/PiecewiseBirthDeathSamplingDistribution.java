@@ -4,6 +4,7 @@ import beast.core.Input;
 import beast.core.State;
 import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.Tree;
 
 import java.util.*;
 
@@ -107,6 +108,11 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     public Input<Boolean> removalAffectsSamplingProportion =
             new Input<>("removalAffectsSamplingProportion", "In R0 param, is samplingProportion = samplingRate/(r*samplingRate+deathRate)? Default=true. (Alternative: samplingProportion = samplingRate/(samplingRate+deathRate)) ", true);
 
+    public Input<RealParameter> adjustTimesInput =
+            new Input<>("adjustTimes", "Origin of MASTER sims which has to be deducted from the change time arrays");
+   // <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
+
+
     // these four arrays are totalIntervals in length
     protected Double[] birth;
     Double[] death;
@@ -166,7 +172,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
 
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         if (removalProbability.get() != null) SAModel = true;
 
@@ -408,6 +414,20 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
                 if (end != maxTime) changeTimes.add(end);
             }
             end = maxTime;
+
+            if (adjustTimesInput.get()!=null){
+
+                double iTime;
+                double aTime = adjustTimesInput.get().getValue();
+
+                for (int i = 0 ; i < changeTimes.size(); i++){
+
+                    iTime = intervalTimes.getArrayValue(i+1);
+
+                    changeTimes.set(i, Math.abs(end-aTime+iTime) );
+                }
+            }
+
             changeTimes.add(end);
         }
     }

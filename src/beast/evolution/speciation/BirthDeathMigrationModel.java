@@ -71,7 +71,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
     Boolean print = false;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         super.initAndValidate();
 
