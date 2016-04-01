@@ -26,9 +26,6 @@ import org.apache.commons.math3.ode.nonstiff.*;
 public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSamplingDistribution {
 
 
-    public Input<RealParameter> migrationMatrix =
-            new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted",  Input.Validate.REQUIRED);
-
     public Input<RealParameter> frequencies =
             new Input<>("frequencies", "state frequencies",  Input.Validate.REQUIRED);
 
@@ -47,9 +44,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
     public Input<Double> tolerance =
             new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
 
-    public Input<Boolean> useRKInput =
-            new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps.", false);
-
     public Input<TraitSet> tiptypes = new Input<>("tiptypes", "trait information for initializing traits (like node types/locations) in the tree",  Input.Validate.REQUIRED);
     public Input<String> typeLabel = new Input<>("typeLabel", "type label in tree for initializing traits (like node types/locations) in the tree",  Input.Validate.XOR, tiptypes);
 
@@ -57,7 +51,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
     public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
     Double[] freq;
-    Double[] M;
     double T;
     double orig;
     int ntaxa;
@@ -129,10 +122,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
                 contempCount++;
         if (checkRho.get() && contempCount>1 && rho==null)
             throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
-
-        M = migrationMatrix.get().getValues();
-
-        if (n>1 && M.length != n*(n-1)) throw new RuntimeException("Migration matrix must have dimension stateNumber x (stateNumber-1) ("+n*(n-1)+")!");
 
         freq = frequencies.get().getValues();
 
@@ -212,6 +201,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
         death = new Double[n*totalIntervals];
         psi = new Double[n*totalIntervals];
         b_ij = new Double[totalIntervals*(n*(n-1))];
+        M = new Double[totalIntervals*(n*(n-1))];
         if (SAModel) r =  new Double[n * totalIntervals];
 
         if (transform) {
@@ -244,22 +234,38 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
 
             }
 
-            if (birthAmongDemes)    {
+            if (birthAmongDemes) {
 
-                for (int i = 0; i < n; i++){
-                    for (int j=0; j<n ; j++){
-                        for (int dt=0; dt<totalIntervals; dt++){
-                            if (i!=j){
-                                b_ij[(i*(n-1)+(j<i?j:j-1))*totalIntervals+dt]
-                                        = birthAmongDemesRates[(birthAmongDemesRates.length>(n*(n-1)))
-                                        ?  (b_ij_Changes+1)*(n-1)*i + index(times[dt], b_ijChangeTimes)
-                                        : (i*(n-1)+(j<i?j:j-1))];
+                for (int i = 0; i < n; i++) {
+                    for (int j = 0; j < n; j++) {
+                        for (int dt = 0; dt < totalIntervals; dt++) {
+                            if (i != j) {
+                                b_ij[(i * (n - 1) + (j < i ? j : j - 1)) * totalIntervals + dt]
+                                        = birthAmongDemesRates[(birthAmongDemesRates.length > (n * (n - 1)))
+                                        ? (b_ij_Changes + 1) * (n - 1) * i + index(times[dt], b_ijChangeTimes)
+                                        : (i * (n - 1) + (j < i ? j : j - 1))];
                             }
                         }
                     }
                 }
             }
         }
+
+        Double[] migRates = migrationMatrix.get().getValues();
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int dt = 0; dt < totalIntervals; dt++) {
+                    if (i != j) {
+                        M[(i * (n - 1) + (j < i ? j : j - 1)) * totalIntervals + dt]
+                                = migRates[(migRates.length > (n * (n - 1)))
+                                ? (migChanges + 1) * (n - 1) * i + index(times[dt], migChangeTimes)
+                                : (i * (n - 1) + (j < i ? j : j - 1))];
+                    }
+                }
+            }
+        }
+        //todo: remove duplicate (make it a new method)
 
 
         if (m_rho.get() != null && (m_rho.get().getDimension()==1 ||  rhoSamplingTimes.get() != null)) {
@@ -277,8 +283,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
                         : rhos[0];
             }
         }
-
-        M = migrationMatrix.get().getValues();
 
         freq = frequencies.get().getValues();
 

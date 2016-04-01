@@ -87,18 +87,19 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
             for (int j=0; j<dimension; j++){
 
+                l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
+
                 if (i!=j){
                     if (b_ij!=null){     // infection among demes
 
-                            l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
                             gDot[i] += b_ij[l]*g[i]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i];
                             gDot[i] -= b_ij[l]*g[i]*g[j]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i]*g[j];
                     }
 
                     // migration:
-                    gDot[i] += M[i*(dimension-1)+(j<i?j:j-1)]*g[i];
-                    gDot[i] -= M[i*(dimension-1)+(j<i?j:j-1)]*g[j];
+                    gDot[i] += M[l]*g[i]; //M[i*(dimension-1)+(j<i?j:j-1)]*g[i];
+                    gDot[i] -= M[l]*g[j]; //M[i*(dimension-1)+(j<i?j:j-1)]*g[j];
 
                 }
             }
@@ -111,11 +112,11 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
             for (int j=0; j<dimension; j++){
 
+                l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
+
                 if (i!=j){
 
                     if (b_ij!=null){     // infection among demes
-
-                            l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
                             gDot[dimension+i] += b_ij[l]*g[dimension+i];
                             if (!augmented)
@@ -123,8 +124,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
                     }
 
                     // migration:
-                    gDot[dimension+i] +=  M[i*(dimension-1)+(j<i?j:j-1)]*g[dimension+i];
-                    if (!augmented) gDot[dimension+i] -=  M[i*(dimension-1)+(j<i?j:j-1)]*g[dimension+j];
+                    gDot[dimension+i] +=  M[l]*g[dimension+i]; //M[i*(dimension-1)+(j<i?j:j-1)]*g[dimension+i];
+                    if (!augmented) gDot[dimension+i] -=  M[l]*g[dimension+j]; // M[i*(dimension-1)+(j<i?j:j-1)]*g[dimension+j];
                 }
             }
 

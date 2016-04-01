@@ -1,5 +1,6 @@
 package beast.evolution.speciation;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.State;
 import beast.core.parameter.BooleanParameter;
@@ -14,7 +15,14 @@ import java.util.*;
  * Date: 22.08.14
  * Time: 14:05
  */
+@Description("Piece-wise constant rates are assumed to be ordered by state and time. First k entries of an array give " +
+        "values belonging to type 1, for intervals 1 to k, second k intervals for type 2 etc.")
 public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTreeDistribution {
+
+
+    // the interval times for the migration rates
+    public Input<RealParameter> migChangeTimesInput =
+            new Input<>("migChangeTimes", "The times t_i specifying when migration rate changes occur", (RealParameter) null);
 
     // the interval times for the birth rate
     public Input<RealParameter> birthRateChangeTimesInput =
@@ -39,6 +47,9 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     public Input<RealParameter> intervalTimes =
             new Input<>("intervalTimes", "The time t_i for all parameters if they are the same", (RealParameter) null);
 
+    public Input<Boolean> migTimesRelativeInput =
+            new Input<>("migTimesRelative", "True if migration rate change times specified relative to tree height? Default false", false);
+
     public Input<Boolean> b_ijChangeTimesRelativeInput =
             new Input<>("birthRateTimesRelative", "True if birth rate change times specified relative to tree height? Default false", false);
 
@@ -55,7 +66,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
             new Input<Boolean>("removalProbabilityTimesRelative", "True if removal probability change times specified relative to tree height? Default false", false);
 
     public Input<BooleanParameter> reverseTimeArraysInput =
-            new Input<>("reverseTimeArrays", "True if the time arrays are given in backwards time (from the present back to root). Order: 1) birth 2) death 3) sampling 4) rho 5) r. Default false." +
+            new Input<>("reverseTimeArrays", "True if the time arrays are given in backwards time (from the present back to root). Order: 1) birth 2) death 3) sampling 4) rho 5) r 6) migration. Default false." +
                     "Careful, rate array must still be given in FORWARD time (root to tips).");
 
     // the times for rho sampling
@@ -82,6 +93,9 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     public Input<RealParameter> samplingProportion =
             new Input<>("samplingProportion", "The samplingProportion = samplingRate / becomeUninfectiousRate", Input.Validate.XOR, samplingRate);
 
+
+    public Input<RealParameter> migrationMatrix =
+            new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted",  Input.Validate.REQUIRED);
 
     public Input<RealParameter> birthRateAmongDemes =
              new Input<>("birthRateAmongDemes", "birth rate vector with rate at which transmissions occur among locations");
@@ -112,6 +126,9 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
             new Input<>("adjustTimes", "Origin of MASTER sims which has to be deducted from the change time arrays");
    // <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
 
+    public Input<Boolean> useRKInput =
+            new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default true", true);
+
 
     // these four arrays are totalIntervals in length
     protected Double[] birth;
@@ -123,6 +140,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     /**
      * The number of change points in the birth rate, b_ij, death rate, sampling rate, rho, r
      */
+    int migChanges;
     int birthChanges;
     int b_ij_Changes;
     int deathChanges;
@@ -146,6 +164,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     int totalIntervals;
     int n;  // number of states / locations
 
+    protected List<Double> migChangeTimes = new ArrayList<>();
     protected List<Double> birthRateChangeTimes = new ArrayList<>();
     protected List<Double> b_ijChangeTimes = new ArrayList<>();
     protected List<Double> deathRateChangeTimes = new ArrayList<>();
@@ -160,6 +179,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
 
     protected Boolean transform;
 
+    Boolean migTimesRelative = false;
     Boolean birthRateTimesRelative = false;
     Boolean b_ijTimesRelative = false;
     Boolean deathRateTimesRelative = false;
@@ -167,6 +187,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     Boolean rTimesRelative = false;
     Boolean[] reverseTimeArrays;
 
+    Double[] M;
     Double[] b_ij;
     Boolean birthAmongDemes = false;
 
@@ -189,16 +210,25 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
         totalIntervals = 0;
         n = stateNumber.get();
 
+        M = migrationMatrix.get().getValues();
+
+        if (n>1 && M.length != n*(n-1))
+            if (migChangeTimesInput.get()==null || M.length != n*(n-1) *migChangeTimesInput.get().getDimension())
+                throw new RuntimeException("Migration matrix dimension is incorrect!");
+
         birthRateTimesRelative = birthRateChangeTimesRelativeInput.get();
         b_ijTimesRelative = b_ijChangeTimesRelativeInput.get();
+        migTimesRelative = migTimesRelativeInput.get();
         deathRateTimesRelative = deathRateChangeTimesRelativeInput.get();
         samplingRateTimesRelative = samplingRateChangeTimesRelativeInput.get();
         if (SAModel) rTimesRelative = removalProbabilityChangeTimesRelativeInput.get();
 
-        if (reverseTimeArraysInput.get()!= null )
-            reverseTimeArrays = reverseTimeArraysInput.get().getValues();
-        else
-            reverseTimeArrays = new Boolean[]{false, false, false, false, false};
+        reverseTimeArrays = new Boolean[]{false, false, false, false, false, false};
+        if (reverseTimeArraysInput.get()!= null )  {
+            Boolean[] r = reverseTimeArraysInput.get().getValues();
+            for (int i=0; i<r.length; i++)
+                reverseTimeArrays[i] = r[i];
+        }
 
         rhoSamplingCount = 0;
         contempData = contemp.get();
@@ -230,7 +260,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
 
             if (R0AmongDemes.get()!=null) {
                 birthAmongDemes = true;
-                b_ij_Changes = R0AmongDemes.get().getDimension()/(n*(n-1)) - 1;
+                b_ij_Changes = R0AmongDemes.get().getDimension()/Math.max(1,(n*(n-1))) - 1;
             }
 
             if (birthChanges < 1) birthChanges = R0.get().getDimension()/n - 1;
@@ -244,6 +274,8 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
             deathChanges = deathRate.get().getDimension()/n - 1;
             samplingChanges = samplingRate.get().getDimension()/n - 1;
         }
+
+        migChanges = migrationMatrix.get().getDimension()/Math.max(1,(n*(n-1))) - 1;
 
         if (SAModel) rChanges = removalProbability.get().getDimension()/n -1;
 
@@ -323,11 +355,15 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
 
         timesSet.clear();
 
+        getChangeTimes(maxTime, migChangeTimes,
+                migChangeTimesInput.get() != null ? migChangeTimesInput.get() : intervalTimes.get(),
+                migChanges, migTimesRelative, reverseTimeArrays[5]);
+
         getChangeTimes(maxTime, birthRateChangeTimes,
                 birthRateChangeTimesInput.get() != null ? birthRateChangeTimesInput.get() : intervalTimes.get(),
                 birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
 
-        getChangeTimes(maxTime, b_ijChangeTimes,
+       getChangeTimes(maxTime, b_ijChangeTimes,
                 b_ijChangeTimesInput.get() != null ? b_ijChangeTimesInput.get() : intervalTimes.get(),
                 b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
 
@@ -347,12 +383,18 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
                 removalProbabilityChangeTimesInput.get() != null ? removalProbabilityChangeTimesInput.get() : intervalTimes.get(),
                 rChanges, rTimesRelative, reverseTimeArrays[4]);
 
+        for (Double time : migChangeTimes) {
+            timesSet.add(time);
+        }
+
         for (Double time : birthRateChangeTimes) {
             timesSet.add(time);
         }
+
         for (Double time : b_ijChangeTimes) {
              timesSet.add(time);
-         }
+        }
+
          for (Double time : deathRateChangeTimes) {
             timesSet.add(time);
         }

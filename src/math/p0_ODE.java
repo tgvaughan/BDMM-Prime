@@ -80,19 +80,19 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 
             for (int j=0; j<dimension; j++){
 
+                l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
+
                 if (i!=j){
 
                     if (b_ij!=null){     // infection among demes
-
-                        l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
                         yDot[i] += b_ij[l]*y[i]; // b_ij[i*(dimension-1)+(j<i?j:j-1)]*y[i];
                         yDot[i] -= b_ij[l]*y[i]*y[j]; // b_ij[i*(dimension-1)+(j<i?j:j-1)]*y[i]*y[j];
                     }
 
                     // migration:
-                    yDot[i] += M[i*(dimension-1)+(j<i?j:j-1)]*y[i];
-                    yDot[i] -= M[i*(dimension-1)+(j<i?j:j-1)]*y[j];
+                    yDot[i] += M[l]*y[i]; //M[i*(dimension-1)+(j<i?j:j-1)]*y[i];
+                    yDot[i] -= M[l]*y[j]; //M[i*(dimension-1)+(j<i?j:j-1)]*y[j];
                 }
             }
         }

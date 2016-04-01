@@ -23,9 +23,6 @@ import org.apache.commons.math3.ode.nonstiff.*;
         "This should only be used when the migration process along the phylogeny is important. Otherwise the computationally less intense BirthDeathMigrationModelUncoloured can be employed.")
 public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistribution {
 
-    public Input<RealParameter> migrationMatrix =
-            new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted",  Input.Validate.REQUIRED);
-
     public Input<RealParameter> frequencies =
             new Input<>("frequencies", "state frequencies",  Input.Validate.REQUIRED);
 
@@ -47,14 +44,9 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
     public Input<Double> tolerance =
             new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
 
-    public Input<Boolean> useRKInput = new Input<>("useRK",
-            "Use Runge-Kutta integrator", false);
-
-
     MultiTypeTree coltree;
 
     Double[] freq;
-    Double[] M;
     double T;
     double orig;
     MultiTypeRootBranch originBranch;
@@ -110,10 +102,6 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         else{
             throw new RuntimeException("Either specify birthRate, deathRate and samplingRate OR specify R0, becomeUninfectiousRate and samplingProportion!");
         }
-
-        M = migrationMatrix.get().getValues();
-
-        if (n>1 && M.length != n*(n-1)) throw new RuntimeException("Migration matrix must have dimension stateNumber x (stateNumber-1) ("+n*(n-1)+")!");
 
         freq = frequencies.get().getValues();
 
@@ -422,6 +410,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
     double[] calculateOriginLikelihood(Integer migIndex, double from, double to) {
 
         double[] init = new double[2*n];
+        int index = Utils.index(to, times, totalIntervals);
 
         int prevcol = originBranch.getChangeType(migIndex);
         int col =  (migIndex > 0)?  originBranch.getChangeType(migIndex-1):  ((MultiTypeNode) coltree.getRoot()).getNodeType();
@@ -435,7 +424,8 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             g = calculateOriginLikelihood(migIndex, to, T - originBranch.getChangeTime(migIndex));
 
             System.arraycopy(g, 0, init, 0, n);
-            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];
+//            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];                                                // without ratechange in M
+            init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
 
             return getG(from, init, to);
 
@@ -445,7 +435,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             g = calculateSubtreeLikelihood(coltree.getRoot(), false, null, to, orig);
 
             System.arraycopy(g, 0, init, 0, n);
-            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];
+//            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];                                                // without ratechange in M
+            init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
+
+
 
             return getG(from, init, to, coltree.getRoot());
         }
@@ -469,7 +462,8 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             double[] g = calculateSubtreeLikelihood(node, (migIndex >= 0), migIndex, to, T-time);
 
             System.arraycopy(g, 0, init, 0, n);
-            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];
+//            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];                                                  // without ratechange in M
+            init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
 
             return getG(from, init, to, node);
         }
