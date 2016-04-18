@@ -138,6 +138,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         birth = new Double[n*totalIntervals];
         death = new Double[n*totalIntervals];
         psi = new Double[n*totalIntervals];
+        M = new Double[totalIntervals*(n*(n-1))];
         if (SAModel) r =  new Double[n * totalIntervals];
 
         if (transform) {
@@ -169,6 +170,21 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             }
         }
 
+        Double[] migRates = migrationMatrix.get().getValues();
+
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                for (int dt = 0; dt < totalIntervals; dt++) {
+                    if (i != j) {
+                        M[(i * (n - 1) + (j < i ? j : j - 1)) * totalIntervals + dt]
+                                = migRates[(migRates.length > (n * (n - 1)))
+                                ? (migChanges + 1) * (n - 1) * i + index(times[dt], migChangeTimes)
+                                : (i * (n - 1) + (j < i ? j : j - 1))];
+                    }
+                }
+            }
+        }
+
 
         if (m_rho.get() != null && (m_rho.get().getDimension()==1 ||  rhoSamplingTimes.get() != null)) {
 
@@ -185,8 +201,6 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
                                 : rhos[0];
             }
         }
-
-        M = migrationMatrix.get().getValues();
 
         freq = frequencies.get().getValues();
 
