@@ -79,7 +79,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 
             if (originBranch==null)  throw new RuntimeException("Error: Origin specified but originBranch missing!");
 
-                updateOrigin(coltree.getRoot());
+            updateOrigin(coltree.getRoot());
 
             if (!Boolean.valueOf(System.getProperty("beast.resume")) && treeInput.get().getRoot().getHeight() >= origin.get().getValue())
                 throw new RuntimeException("Error: origin("+T+") must be larger than tree height("+coltree.getRoot().getHeight()+")!");
@@ -197,8 +197,8 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
                 state =  i/totalIntervals;
 
                 rho[i]= rhoChanges>0?
-                                rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
-                                : rhos[0];
+                        rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
+                        : rhos[0];
             }
         }
 
@@ -347,10 +347,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         collectTimes(T);
         setRho();
 
-        if (updateRates() < 0 ||  (times[totalIntervals-1] > T)) { 
+        if (updateRates() < 0 ||  (times[totalIntervals-1] > T)) {
             logP =  Double.NEGATIVE_INFINITY;
             return logP;
-         }
+        }
 
         double[] noSampleExistsProp =  new double[n];
 
@@ -563,20 +563,18 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 //
 //            death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i];
 //
-            if (!SAModel || removalAffectsSamplingProportion.get())
-                psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
-                        * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
+            if (!SAModel) {
+                psi[i] = p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state]
+                        * ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state];
 
-            if (!SAModel)
-                death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i];
-
+                death[i] = ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state] - psi[i];
+            }
             else {
                 r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
 
-                if (!removalAffectsSamplingProportion.get())
-                    psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
-                            * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]
-                            / (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
+                psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
+                        * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]
+                        / (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
 
 
                 death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i]*r[i];

@@ -695,18 +695,17 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathSampl
             birth[i] = R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state]
                     * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
 
-            if (!SAModel || removalAffectsSamplingProportion.get())
-                psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
-                        * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
+            if (!SAModel) {
+                psi[i] = p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state]
+                        * ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state];
 
-            if (!SAModel)
-                death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i];
+                death[i] = ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state] - psi[i];
+            }
 
             else {
                 r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
 
-                if (!removalAffectsSamplingProportion.get())
-                    psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
+                psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
                             * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]
                             / (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
 

@@ -119,9 +119,6 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     public Input<Integer> stateNumber =
             new Input<>("stateNumber", "The number of states or locations", Input.Validate.REQUIRED);
 
-    public Input<Boolean> removalAffectsSamplingProportion =
-            new Input<>("removalAffectsSamplingProportion", "In R0 param, is samplingProportion = samplingRate/(r*samplingRate+deathRate)? Default=true. (Alternative: samplingProportion = samplingRate/(samplingRate+deathRate)) ", true);
-
     public Input<RealParameter> adjustTimesInput =
             new Input<>("adjustTimes", "Origin of MASTER sims which has to be deducted from the change time arrays");
    // <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
