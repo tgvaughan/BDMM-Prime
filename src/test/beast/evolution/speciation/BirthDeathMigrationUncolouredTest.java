@@ -7,7 +7,7 @@ import beast.evolution.tree.TraitSet;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.alignment.Taxon;
 import beast.util.TreeParser;
-import beast.util.ZeroBranchSATreeParser;
+//import beast.util.ZeroBranchSATreeParser;
 import junit.framework.TestCase;
 import org.junit.Test;
 
@@ -207,46 +207,46 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
     }
 
 
-    @Test
-    public void testSALikelihoodCalculation1() throws Exception {
-
-        for (int i=0; i<2; i++) {
-
-            BirthDeathMigrationModelUncoloured model = new BirthDeathMigrationModelUncoloured();
-
-            ZeroBranchSATreeParser tree = (i==0)? new ZeroBranchSATreeParser("((1[&type=0]:1.0)2[&type=0]:1.0)3[&type=0]:0.0", true, false, 1)
-                                                : new ZeroBranchSATreeParser("((1:1.5,2:0.5):0.5)3:0.0", true, false, 1);
-
-            model.setInputValue("tree", tree);
-            model.setInputValue("origin", new RealParameter("10."));
-
-            model.setInputValue("birthRate", new RealParameter("2."));
-            model.setInputValue("deathRate", new RealParameter("0.99"));
-            model.setInputValue("samplingRate", new RealParameter("0.5"));
-
-            //        model.setInputValue("R0", new RealParameter(new Double[]{2./1.49}));
-            //        model.setInputValue("becomeUninfectiousRate", new RealParameter("1.49"));
-            //        model.setInputValue("samplingProportion", new RealParameter(new Double[]{0.5/1.49}) );
-
-            model.setInputValue("removalProbability", new RealParameter("0.9"));
-            model.setInputValue("conditionOnSurvival", false);
-
-            model.setInputValue("stateNumber", "1");
-            model.setInputValue("typeLabel", "type");
-            model.setInputValue("migrationMatrix", "0.");
-            model.setInputValue("frequencies", "1");
-
-            model.setInputValue("R0", new RealParameter("1.5"));
-            model.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
-            model.setInputValue("samplingProportion", new RealParameter("0.3"));
-
-            model.initAndValidate();
-
-            // these values ate calculated with Mathematica
-            if (i==0) assertEquals(-25.3707, model.calculateTreeLogLikelihood(tree), 1e-5); // likelihood conditioning only on parameters and origin time
-            else    assertEquals(-22.524157039646802, model.calculateTreeLogLikelihood(tree), 1e-5);
-        }
-    }
+//    @Test
+//    public void testSALikelihoodCalculation1() throws Exception {
+//
+//        for (int i=0; i<2; i++) {
+//
+//            BirthDeathMigrationModelUncoloured model = new BirthDeathMigrationModelUncoloured();
+//
+//            ZeroBranchSATreeParser tree = (i==0)? new ZeroBranchSATreeParser("((1[&type=0]:1.0)2[&type=0]:1.0)3[&type=0]:0.0", true, false, 1)
+//                                                : new ZeroBranchSATreeParser("((1:1.5,2:0.5):0.5)3:0.0", true, false, 1);
+//
+//            model.setInputValue("tree", tree);
+//            model.setInputValue("origin", new RealParameter("10."));
+//
+//            model.setInputValue("birthRate", new RealParameter("2."));
+//            model.setInputValue("deathRate", new RealParameter("0.99"));
+//            model.setInputValue("samplingRate", new RealParameter("0.5"));
+//
+//            //        model.setInputValue("R0", new RealParameter(new Double[]{2./1.49}));
+//            //        model.setInputValue("becomeUninfectiousRate", new RealParameter("1.49"));
+//            //        model.setInputValue("samplingProportion", new RealParameter(new Double[]{0.5/1.49}) );
+//
+//            model.setInputValue("removalProbability", new RealParameter("0.9"));
+//            model.setInputValue("conditionOnSurvival", false);
+//
+//            model.setInputValue("stateNumber", "1");
+//            model.setInputValue("typeLabel", "type");
+//            model.setInputValue("migrationMatrix", "0.");
+//            model.setInputValue("frequencies", "1");
+//
+//            model.setInputValue("R0", new RealParameter("1.5"));
+//            model.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+//            model.setInputValue("samplingProportion", new RealParameter("0.3"));
+//
+//            model.initAndValidate();
+//
+//            // these values ate calculated with Mathematica
+//            if (i==0) assertEquals(-25.3707, model.calculateTreeLogLikelihood(tree), 1e-5); // likelihood conditioning only on parameters and origin time
+//            else    assertEquals(-22.524157039646802, model.calculateTreeLogLikelihood(tree), 1e-5);
+//        }
+//    }
 
     @Test
     public void testSALikelihoodCalculationWithoutAncestors() throws Exception {
@@ -290,7 +290,52 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.initAndValidate();
 
         // likelihood conditioning on at least one sampled individual    - "true" result from BEAST one-deme SA model 09 June 2015 (DK)
-        assertEquals(-25.671303367076007, bdm.calculateLogP(), 1e-4);
+        assertEquals(-25.991511346557598, bdm.calculateLogP(), 1e-4);
+
+    }
+
+    @Test
+    public void testSALikelihoodCalculationWithoutAncestorsWithoutOrigin() throws Exception {
+
+
+        BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+
+        ArrayList<Taxon> taxa = new ArrayList<Taxon>();
+
+        for (int i=1; i<=4; i++){
+            taxa.add(new Taxon(""+i));
+        }
+
+        Tree tree = new TreeParser();
+        tree.setInputValue("taxonset", new TaxonSet(taxa));
+        tree.setInputValue("adjustTipHeights", "false");
+        tree.setInputValue("IsLabelledNewick", "true");
+        tree.setInputValue("newick", "((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);");
+        tree.initAndValidate();
+
+        TraitSet trait = new TraitSet();
+        trait.setInputValue("taxa", new TaxonSet(taxa));
+        trait.setInputValue("value", "1=0,2=0,3=0,4=0");
+        trait.setInputValue("traitname", "tiptypes");
+        trait.initAndValidate();
+
+        bdm.setInputValue("tree", tree);
+        bdm.setInputValue("tiptypes", trait);
+
+        bdm.setInputValue("stateNumber", "1");
+        bdm.setInputValue("migrationMatrix", "0.");
+        bdm.setInputValue("frequencies", "1");
+
+        bdm.setInputValue("R0", new RealParameter("1.5"));
+        bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+        bdm.setInputValue("samplingProportion", new RealParameter("0.3") );
+        bdm.setInputValue("removalProbability", new RealParameter("0.9") );
+        bdm.setInputValue("conditionOnSurvival", true);
+
+        bdm.initAndValidate();
+
+        // likelihood conditioning on at least one sampled individual    - "true" result from BEAST one-deme SA model 09 June 2015 (DK)
+        assertEquals(-15.99699690815937, bdm.calculateLogP(), 1e-4);
 
     }
 

@@ -44,11 +44,11 @@ public class BirthDeathMigrationTest extends TestCase {
          bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
          bdm.setInputValue("samplingProportion", new RealParameter("0.3") );
          bdm.setInputValue("removalProbability", new RealParameter("0.9") );
-         bdm.setInputValue("conditionOnSurvival", false);
+         bdm.setInputValue("conditionOnSurvival", true);
 
          bdm.initAndValidate();
 
-         assertEquals(-16.281647428602657, bdm.calculateLogP(), 1e-4);   // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+         assertEquals(-15.99699690815937, bdm.calculateLogP(), 1e-4);   // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
 
      }
 

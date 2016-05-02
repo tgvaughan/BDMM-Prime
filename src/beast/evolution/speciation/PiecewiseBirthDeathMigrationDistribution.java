@@ -5,7 +5,15 @@ import beast.core.Input;
 import beast.core.State;
 import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.RealParameter;
+import beast.core.util.Utils;
+import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
+import beast.evolution.tree.TreeInterface;
+import math.p0_ODE;
+import math.p0ge_ODE;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 
 import java.util.*;
 
@@ -17,8 +25,26 @@ import java.util.*;
  */
 @Description("Piece-wise constant rates are assumed to be ordered by state and time. First k entries of an array give " +
         "values belonging to type 1, for intervals 1 to k, second k intervals for type 2 etc.")
-public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTreeDistribution {
+public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
+
+    public Input<RealParameter> frequencies =
+            new Input<>("frequencies", "The frequencies for each type",  Input.Validate.REQUIRED);
+
+    public Input<RealParameter> origin =
+            new Input<>("origin", "The origin of infection x1");
+
+    public Input<Boolean> originIsRootEdge =
+            new Input<>("originIsRootEdge", "The origin is only the length of the root edge", false);
+
+    public Input<Integer> maxEvaluations =
+            new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", 20000);
+
+    public Input<Boolean> conditionOnSurvival =
+            new Input<>("conditionOnSurvival", "condition on at least one survival? Default true.", true);
+
+    public Input<Double> tolerance =
+            new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
 
     // the interval times for the migration rates
     public Input<RealParameter> migChangeTimesInput =
@@ -98,7 +124,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
             new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted",  Input.Validate.REQUIRED);
 
     public Input<RealParameter> birthRateAmongDemes =
-             new Input<>("birthRateAmongDemes", "birth rate vector with rate at which transmissions occur among locations");
+            new Input<>("birthRateAmongDemes", "birth rate vector with rate at which transmissions occur among locations");
 
     public Input<RealParameter> R0AmongDemes =
             new Input<>("R0AmongDemes", "The basic reproduction number determining transmissions occur among locations");
@@ -108,24 +134,29 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
             new Input<RealParameter>("removalProbability", "The probability of an individual to become noninfectious immediately after the sampling");
 
 
-    //coupling R0 changes: assume there are 2 types with R0 = [r1,r2], R0AmongDemes = [r12,r21] and coupledR0Changes=[c1a,c1b,c2a,c2b],
-    //                     i.e. there are dim(coupledR0Changes)/(#types) = 2 rate changes through time for the R0's
-    // this translates to   R0 = [r1,r1*c1a,r1*c1b,r2,r2*c2a,r2*c2b]
-    //    and               R0AmongDemes = [r12,r12*c2a,r12*c2b,r21,r21*c1a,r21*c1b]  // note that the scale of change is determined by the "receiving" deme here
-    public Input<RealParameter> coupledR0Changes =
-            new Input<>("coupledR0Changes", "The scale of change in R0 and R0AmongDemes per interval, when they are assumed to be equal for both");
-
-
     public Input<Integer> stateNumber =
             new Input<>("stateNumber", "The number of states or locations", Input.Validate.REQUIRED);
 
     public Input<RealParameter> adjustTimesInput =
             new Input<>("adjustTimes", "Origin of MASTER sims which has to be deducted from the change time arrays");
-   // <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
+    // <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
 
     public Input<Boolean> useRKInput =
             new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default true", true);
 
+    public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
+
+    double T;
+    double orig;
+    int ntaxa;
+
+    p0_ODE P;
+    p0ge_ODE PG;
+
+    FirstOrderIntegrator pg_integrator;
+    public int maxEvalsUsed;
+    public Double minstep;
+    public Double maxstep;
 
     // these four arrays are totalIntervals in length
     protected Double[] birth;
@@ -187,6 +218,8 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
     Double[] M;
     Double[] b_ij;
     Boolean birthAmongDemes = false;
+
+    Double[] freq;
 
 
     @Override
@@ -281,19 +314,76 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
             rhoChanges = m_rho.get().getDimension()/n - 1;
         }
 
-        if (coupledR0Changes.get()!=null){
+        freq = frequencies.get().getValues();
 
-            if (this instanceof BirthDeathMigrationModel)  throw new RuntimeException("Error: Coupled R0 changes are not implemented for multitype trees!");
+        double freqSum = 0;
+        for (double f : freq) freqSum+= f;
+        if (freqSum!=1.) throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
 
-            if ((birthChanges>0 && birthChanges!=n) ||  (b_ij_Changes>0 && b_ij_Changes!=n*(n-1))) throw new RuntimeException("if coupledR0Changes!=null R0 and R0AmongDemes must be of dimension 1");
-
-            birthChanges = coupledR0Changes.get().getDimension()/n;
-            b_ij_Changes = coupledR0Changes.get().getDimension()/n;
-        }
-//          collectTimes(T); //  these need to be called from implementing initAndValidate
-//          setRho();
+//        // calculate equilibrium frequencies for 2 types:
+//        double LambMu = -b[0]-b[1]-(d[0]+s[0])+(d[1]+s[1]);
+//        double c = Math.sqrt(Math.pow(LambMu,2) +4*b_ij[0]*b_ij[1]);
+//        freq[0] = (c+LambMu)/(c+LambMu+2*b_ij[0]) ;
+//        freq[1] = 1 - freq[0];
 
     }
+
+    public double[] getG(double t, double[] PG0, double t0,
+                         FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+
+        try {
+
+            if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||  T < t) {
+                return PG0;
+            }
+
+            double from = t;
+            double to = t0;
+            double oneMinusRho;
+
+            int indexFrom = Utils.index(from, times, times.length);
+            int index = Utils.index(to, times, times.length);
+
+            int steps = index - indexFrom;
+            if (Math.abs(from-times[indexFrom])<1e-10) steps--;
+            if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+                steps--;
+                index--;
+            }
+            index--;
+
+            while (steps > 0){
+
+                from = times[index];// + 1e-14;
+
+                pg_integrator.integrate(PG, to, PG0, from, PG0); // solve PG , store solution in PG0
+
+                if (rhoChanges>0){
+                    for (int i=0; i<n; i++){
+                        oneMinusRho = (1-rho[i*totalIntervals + Utils.index(times[index], times, totalIntervals)]);
+                        PG0[i] *= oneMinusRho;
+                        PG0[i+n] *= oneMinusRho;
+                    }
+                }
+
+                to = times[index];
+
+                steps--;
+                index--;
+            }
+
+            pg_integrator.integrate(PG, to, PG0, t, PG0); // solve PG , store solution in PG0
+
+        }catch(Exception e){
+
+            throw new RuntimeException("couldn't calculate g");
+        }
+
+        if (pg_integrator.getEvaluations() > maxEvalsUsed) maxEvalsUsed = pg_integrator.getEvaluations();
+
+        return PG0;
+    }
+
 
     void setRho(){
 
@@ -330,7 +420,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
                 Arrays.fill(rho, 0.);
                 for (int i = 0; i < totalIntervals; i++) {
                     for (int j=0;j<n;j++){
-                       rho[j*totalIntervals+i]= rhoSamplingChangeTimes.contains(times[i]) ? (rhos[constantRho? j : j*(1+rhoChanges)+rhoSamplingChangeTimes.indexOf(times[i])]) : 0.;
+                        rho[j*totalIntervals+i]= rhoSamplingChangeTimes.contains(times[i]) ? (rhos[constantRho? j : j*(1+rhoChanges)+rhoSamplingChangeTimes.indexOf(times[i])]) : 0.;
                     }
                 }
                 computeRhoTips();
@@ -360,7 +450,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
                 birthRateChangeTimesInput.get() != null ? birthRateChangeTimesInput.get() : intervalTimes.get(),
                 birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
 
-       getChangeTimes(maxTime, b_ijChangeTimes,
+        getChangeTimes(maxTime, b_ijChangeTimes,
                 b_ijChangeTimesInput.get() != null ? b_ijChangeTimesInput.get() : intervalTimes.get(),
                 b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
 
@@ -389,10 +479,10 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
         }
 
         for (Double time : b_ijChangeTimes) {
-             timesSet.add(time);
+            timesSet.add(time);
         }
 
-         for (Double time : deathRateChangeTimes) {
+        for (Double time : deathRateChangeTimes) {
             timesSet.add(time);
         }
 
@@ -440,7 +530,7 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
                 throw new RuntimeException("First time in interval times parameter should always be zero.");
             }
 
-            if (numChanges > 0 && coupledR0Changes.get()==null && intervalTimes.getDimension() != numChanges + 1) {
+            if (numChanges > 0 && intervalTimes.getDimension() != numChanges + 1) {
                 throw new RuntimeException("The time interval parameter should be numChanges + 1 long (" + (numChanges + 1) + ").");
             }
 
@@ -471,6 +561,73 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
         }
     }
 
+
+
+    void updateBirthDeathPsiParams(){
+
+        Double[] birthRates = birthRate.get().getValues();
+        Double[] deathRates = deathRate.get().getValues();
+        Double[] samplingRates = samplingRate.get().getValues();
+        Double[] removalProbabilities = new Double[1];
+
+        if (SAModel) {
+            removalProbabilities = removalProbability.get().getValues();
+            r =  new Double[n*totalIntervals];
+        }
+
+        int state;
+
+        for (int i = 0; i < n*totalIntervals; i++) {
+
+            state =  i/totalIntervals;
+
+            birth[i] = birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
+            death[i] = deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
+            psi[i] = samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
+            if (SAModel) r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+
+        }
+
+    }
+
+
+    void updateAmongParameter(Double[] param, Double[] paramFrom, int nrChanges, List<Double> changeTimes){
+
+         for (int i = 0; i < n; i++) {
+              for (int j = 0; j < n; j++) {
+                  for (int dt = 0; dt < totalIntervals; dt++) {
+                      if (i != j) {
+                          param[(i * (n - 1) + (j < i ? j : j - 1)) * totalIntervals + dt]
+                                  = paramFrom[(paramFrom.length > (n * (n - 1)))
+                                  ? (nrChanges + 1) * (n - 1) * i + index(times[dt], changeTimes)
+                                  : (i * (n - 1) + (j < i ? j : j - 1))];
+                      }
+                  }
+              }
+          }
+
+     }
+
+    void updateRho(){
+        if (m_rho.get() != null && (m_rho.get().getDimension()==1 ||  rhoSamplingTimes.get() != null)) {
+
+            Double[] rhos = m_rho.get().getValues();
+            rho = new Double[n*totalIntervals];
+            int state;
+
+            for (int i = 0; i < totalIntervals*n; i++) {
+
+                state =  i/totalIntervals;
+
+                rho[i]= rhoChanges>0?
+                        rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
+                        : rhos[0];
+            }
+        }
+    }
+
+
+
     /**
      * @param t the time in question
      * @return the index of the given time in the list of times, or if the time is not in the list, the index of the
@@ -488,21 +645,140 @@ public abstract class PiecewiseBirthDeathSamplingDistribution extends SpeciesTre
         return epoch;
     }
 
-    	// Interface requirements:
 
-	@Override
-	public List<String> getArguments() {
-		return null;
-	}
+    public void transformWithinParameters(){
 
-	@Override
-	public List<String> getConditions() {
-		return null;
-	}
+        Double[] p = samplingProportion.get().getValues();
+        Double[] ds = becomeUninfectiousRate.get().getValues();
+        Double[] R = R0.get().getValues();
+        Double[] removalProbabilities = new Double[1];
+        if (SAModel) removalProbabilities = removalProbability.get().getValues();
 
-	@Override
-	public void sample(State state, Random random) {
-	}
+        int state;
+
+        for (int i = 0; i < totalIntervals*n; i++){
+
+            state =  i/totalIntervals;
+
+            birth[i] = R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state]
+                    * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
+
+            if (!SAModel) {
+                psi[i] = p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state]
+                        * ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state];
+
+                death[i] = ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state] - psi[i];
+            }
+
+            else {
+                r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+
+                psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
+                        * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]
+                        / (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
+
+
+                death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i]*r[i];
+            }
+        }
+
+    }
+
+    public void transformAmongParameters(){
+
+        Double[] RaD = (birthAmongDemes) ? R0AmongDemes.get().getValues() : new Double[1];
+        Double[] ds = becomeUninfectiousRate.get().getValues();
+
+        if (birthAmongDemes)    {
+
+            for (int i = 0; i < n; i++){
+
+                for (int j=0; j<n ; j++){
+
+                    for (int dt=0; dt<totalIntervals; dt++){
+
+                        if (i!=j){
+                            b_ij[(i*(n-1)+(j<i?j:j-1))*totalIntervals+dt]
+                                    = RaD[(RaD.length>(n*(n-1)))
+                                    ?  (b_ij_Changes+1)*(n-1)*i + index(times[dt], b_ijChangeTimes)
+                                    : (i*(n-1)+(j<i?j:j-1))]
+                                    * ds[ds.length > n ? (deathChanges+1)*i+index(times[dt], deathRateChangeTimes) : i];
+                        }
+                    }
+                }
+
+            }
+        }
+    }
+
+    void checkOrigin(TreeInterface tree){
+
+        if (origin.get()==null){
+             T = tree.getRoot().getHeight();
+         }
+         else {
+
+            updateOrigin(tree.getRoot());
+
+             if (!Boolean.valueOf(System.getProperty("beast.resume")) && orig < 0)
+                 throw new RuntimeException("Error: origin("+T+") must be larger than tree height("+tree.getRoot().getHeight()+")!");
+         }
+
+    }
+
+    void updateOrigin(Node root){
+
+        T = origin.get().getValue();
+        orig = T - root.getHeight();
+
+        if (originIsRootEdge.get()) {
+
+            orig = origin.get().getValue();
+            T = orig + root.getHeight();
+        }
+
+    }
+
+    void setupIntegrators(){   // set up ODE's and integrators
+
+        if (minstep == null) minstep = tolerance.get();
+        if (maxstep == null) maxstep = 1000.;
+
+        Boolean augmented = this instanceof BirthDeathMigrationModel;
+
+        P = new p0_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
+        PG = new p0ge_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
+
+
+        if (!useRKInput.get()) {
+            pg_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+            pg_integrator.setMaxEvaluations(maxEvaluations.get());
+
+            PG.p_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+            PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
+        } else {
+            pg_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
+            PG.p_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
+
+        }
+    }
+
+
+    // Interface requirements:
+
+    @Override
+    public List<String> getArguments() {
+        return null;
+    }
+
+    @Override
+    public List<String> getConditions() {
+        return null;
+    }
+
+    @Override
+    public void sample(State state, Random random) {
+    }
 
     @Override
     public boolean requiresRecalculation(){

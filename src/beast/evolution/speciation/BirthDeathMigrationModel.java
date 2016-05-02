@@ -3,14 +3,7 @@ package beast.evolution.speciation;
 import beast.core.Description;
 import beast.core.util.Utils;
 import beast.evolution.tree.*;
-import beast.core.parameter.RealParameter;
 import beast.core.Input;
-
-import math.p0_ODE;
-import math.p0ge_ODE;
-
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.*;
 
 
 /**
@@ -21,44 +14,13 @@ import org.apache.commons.math3.ode.nonstiff.*;
 
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel with discrete locations and migration events among demes. " +
         "This should only be used when the migration process along the phylogeny is important. Otherwise the computationally less intense BirthDeathMigrationModelUncoloured can be employed.")
-public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistribution {
-
-    public Input<RealParameter> frequencies =
-            new Input<>("frequencies", "state frequencies",  Input.Validate.REQUIRED);
-
-    public Input<RealParameter> origin =
-            new Input<>("origin", "The origin of infection x1");
+public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistribution {
 
     public Input<MultiTypeRootBranch> originBranchInput =
             new Input<>("originBranch", "MultiTypeRootBranch for origin coloring");
 
-    public Input<Boolean> originIsRootEdge =
-            new Input<>("originIsRootEdge", "The origin is only the length of the root edge", false);
-
-    public Input<Integer> maxEvaluations =
-            new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", 20000);
-
-    public Input<Boolean> conditionOnSurvival =
-            new Input<>("conditionOnSurvival", "condition on at least one survival? Default true.", true);
-
-    public Input<Double> tolerance =
-            new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
-
     MultiTypeTree coltree;
-
-    Double[] freq;
-    double T;
-    double orig;
     MultiTypeRootBranch originBranch;
-    int ntaxa;
-
-    p0_ODE P;
-    p0ge_ODE PG;
-
-    FirstOrderIntegrator pg_integrator;
-    public int maxEvalsUsed;
-    public Double minstep;
-    public Double maxstep;
 
     Boolean print = false;
 
@@ -70,68 +32,31 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         coltree = (MultiTypeTree) treeInput.get();
 
         if (origin.get()==null){
+
             T = coltree.getRoot().getHeight();
         }
-
-        else{
+        else {
 
             originBranch = originBranchInput.get();
 
             if (originBranch==null)  throw new RuntimeException("Error: Origin specified but originBranch missing!");
 
-            updateOrigin(coltree.getRoot());
-
-            if (!Boolean.valueOf(System.getProperty("beast.resume")) && treeInput.get().getRoot().getHeight() >= origin.get().getValue())
-                throw new RuntimeException("Error: origin("+T+") must be larger than tree height("+coltree.getRoot().getHeight()+")!");
+            checkOrigin(coltree);
         }
 
         ntaxa = coltree.getLeafNodeCount();
 
-        if (birthRate.get() != null && deathRate.get() != null && samplingRate.get() != null){
-
-            transform = false;
-            death = deathRate.get().getValues();
-            psi = samplingRate.get().getValues();
-            birth = birthRate.get().getValues();
-        }
-        else if (R0.get() != null && becomeUninfectiousRate.get() != null && samplingProportion.get() != null){
-
-            transform = true;
-        }
-
-        else{
-            throw new RuntimeException("Either specify birthRate, deathRate and samplingRate OR specify R0, becomeUninfectiousRate and samplingProportion!");
-        }
-
-        freq = frequencies.get().getValues();
+        int contempCount = 0;
+        for (Node node : coltree.getExternalNodes())
+            if (node.getHeight()==0.)
+                contempCount++;
+        if (checkRho.get() && contempCount>1 && rho==null)
+            throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
 
         collectTimes(T);
         setRho();
 
-
     }
-
-
-    void setupIntegrators(){   // set up ODE's and integrators
-
-        if (minstep == null) minstep = tolerance.get();
-        if (maxstep == null) maxstep = 1000.;
-
-        P = new p0_ODE(birth,null, death,psi,M, n, totalIntervals, times);
-        PG = new p0ge_ODE(birth, null, death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), true);
-
-        if (!useRKInput.get()) {
-            pg_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
-            pg_integrator.setMaxEvaluations(maxEvaluations.get());
-
-            PG.p_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
-            PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
-        } else {
-            pg_integrator = new ClassicalRungeKuttaIntegrator(T/1000);
-            PG.p_integrator = new ClassicalRungeKuttaIntegrator(T/1000);
-        }
-    }
-
 
     double updateRates(){
 
@@ -141,66 +66,17 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         M = new Double[totalIntervals*(n*(n-1))];
         if (SAModel) r =  new Double[n * totalIntervals];
 
-        if (transform) {
+        if (transform)
             transformParameters();
-        }
-        else {
 
-            Double[] birthRates = birthRate.get().getValues();
-            Double[] deathRates = deathRate.get().getValues();
-            Double[] samplingRates = samplingRate.get().getValues();
-            Double[] removalProbabilities = new Double[1];
-
-            if (SAModel) {
-                removalProbabilities = removalProbability.get().getValues();
-                r =  new Double[n*totalIntervals];
-            }
-
-            int state;
-
-            for (int i = 0; i < n*totalIntervals; i++) {
-
-                state =  i/totalIntervals;
-
-                birth[i] = birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
-                death[i] = deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
-                psi[i] = samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
-                if (SAModel) r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
-
-            }
-        }
+        else
+            updateBirthDeathPsiParams();
 
         Double[] migRates = migrationMatrix.get().getValues();
 
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                for (int dt = 0; dt < totalIntervals; dt++) {
-                    if (i != j) {
-                        M[(i * (n - 1) + (j < i ? j : j - 1)) * totalIntervals + dt]
-                                = migRates[(migRates.length > (n * (n - 1)))
-                                ? (migChanges + 1) * (n - 1) * i + index(times[dt], migChangeTimes)
-                                : (i * (n - 1) + (j < i ? j : j - 1))];
-                    }
-                }
-            }
-        }
+        updateAmongParameter(M, migRates, migChanges, migChangeTimes);
 
-
-        if (m_rho.get() != null && (m_rho.get().getDimension()==1 ||  rhoSamplingTimes.get() != null)) {
-
-            Double[] rhos = m_rho.get().getValues();
-            rho = new Double[n*totalIntervals];
-            int state;
-
-            for (int i = 0; i < totalIntervals*n; i++) {
-
-                state =  i/totalIntervals;
-
-                rho[i]= rhoChanges>0?
-                        rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
-                        : rhos[0];
-            }
-        }
+        updateRho();
 
         freq = frequencies.get().getValues();
 
@@ -221,7 +97,6 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             for (Double time:rhoSamplingChangeTimes){
 
                 if (Math.abs(time-tipTime) < 1e-10 && rho[((MultiTypeNode)tip).getNodeType()*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
-
             }
         }
     }
@@ -232,84 +107,11 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 
             System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
         }
-//        else if (rhoSamplingChangeTimes.contains(t)){
-//
-//            int nodestate = ((MultiTypeNode)node).getNodeType();
-//            PG0[nodestate] *= (1-rho[nodestate*totalIntervals+ Utils.index(t,times,totalIntervals)]);
-//        }
 
-        return getG(t,  PG0,  t0);
+        return getG(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
     }
 
 
-    public double[] getG(double t, double[] PG0, double t0){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
-
-        try {
-
-            if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||  T < t) {
-                return PG0;
-            }
-
-            double from = t;
-            double to = t0;
-            double oneMinusRho;
-
-            int indexFrom = Utils.index(from, times, times.length);
-            int index = Utils.index(to, times, times.length);
-
-            int steps = index - indexFrom;
-            if (Math.abs(from-times[indexFrom])<1e-10) steps--;
-            if (index>0 && Math.abs(to-times[index-1])<1e-10) {
-                steps--;
-                index--;
-            }
-            index--;
-
-            while (steps > 0){
-
-                from = times[index];// + 1e-14;
-
-                pg_integrator.integrate(PG, to, PG0, from, PG0); // solve PG , store solution in PG0
-
-                if (rhoChanges>0){
-                    for (int i=0; i<n; i++){
-                        oneMinusRho = (1-rho[i*totalIntervals + Utils.index(times[index], times, totalIntervals)]);
-                        PG0[i] *= oneMinusRho;
-                        PG0[i+n] *= oneMinusRho;
-                    }
-                }
-
-                to = times[index];
-
-                steps--;
-                index--;
-            }
-
-            pg_integrator.integrate(PG, to, PG0, t, PG0); // solve PG , store solution in PG0
-
-        }catch(Exception e){
-
-            throw new RuntimeException("couldn't calculate g");
-        }
-
-        if (pg_integrator.getEvaluations() > maxEvalsUsed) maxEvalsUsed = pg_integrator.getEvaluations();
-
-        return PG0;
-    }
-
-
-    void updateOrigin(Node root){
-
-        T = origin.get().getValue();
-        orig = T - root.getHeight();
-
-        if (originIsRootEdge.get()) {
-
-            orig = origin.get().getValue();
-            T = orig + coltree.getRoot().getHeight();
-        }
-
-    }
 
     @Override
     public double calculateTreeLogLikelihood(TreeInterface tree) {
@@ -319,8 +121,6 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         coltree = (MultiTypeTree) tree;
 
         MultiTypeNode root = (MultiTypeNode) coltree.getRoot();
-//        int node_state =  ((MultiTypeNode) coltree.getRoot()).getNodeType(); //.getNodeColour(root);
-
 
         if (!coltree.isValid() || (origin.get()!=null && !originBranchIsValid(root))){
             logP =  Double.NEGATIVE_INFINITY;
@@ -330,13 +130,12 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         int node_state;
         if (origin.get()==null) {
             T = root.getHeight();
-            node_state =  ((MultiTypeNode) coltree.getRoot()).getNodeType(); //.getNodeColour(root);
+            node_state =  ((MultiTypeNode) coltree.getRoot()).getNodeType();
 
         }
         else{
             updateOrigin(root);
             node_state = (originBranch.getChangeCount()>0) ? originBranch.getChangeType(originBranch.getChangeCount()-1) : ((MultiTypeNode) coltree.getRoot()).getNodeType();
-            //originBranch.getFinalType();
 
             if (orig < 0){
                 logP =  Double.NEGATIVE_INFINITY;
@@ -438,10 +237,9 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             g = calculateOriginLikelihood(migIndex, to, T - originBranch.getChangeTime(migIndex));
 
             System.arraycopy(g, 0, init, 0, n);
-//            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];                                                // without ratechange in M
             init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
 
-            return getG(from, init, to);
+            return getG(from,  init,  to, pg_integrator, PG, T, maxEvalsUsed);
 
         }
         else {
@@ -449,10 +247,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
             g = calculateSubtreeLikelihood(coltree.getRoot(), false, null, to, orig);
 
             System.arraycopy(g, 0, init, 0, n);
-//            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];                                                // without ratechange in M
             init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
-
-
 
             return getG(from, init, to, coltree.getRoot());
         }
@@ -466,17 +261,16 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
 
         if (migration){ // migration event
 
-            int prevcol = ((MultiTypeNode) node).getChangeType(migIndex); //coltree.getChangeColour(node, migIndex);
-            int col =  (migIndex > 0)?  ((MultiTypeNode) node).getChangeType(migIndex-1):  ((MultiTypeNode) node).getNodeType(); //  (migIndex > 0)? coltree.getChangeColour(node, migIndex-1): coltree.getNodeColour(node);
+            int prevcol = ((MultiTypeNode) node).getChangeType(migIndex);
+            int col =  (migIndex > 0)?  ((MultiTypeNode) node).getChangeType(migIndex-1):  ((MultiTypeNode) node).getNodeType();
             double time ;
 
             migIndex--;
 
-            time = (migIndex >= 0)? ((MultiTypeNode) node).getChangeTime(migIndex) :node.getHeight();// (migIndex >= 0)?coltree.getChangeTime(node, migIndex):node.getHeight();
+            time = (migIndex >= 0)? ((MultiTypeNode) node).getChangeTime(migIndex) :node.getHeight();
             double[] g = calculateSubtreeLikelihood(node, (migIndex >= 0), migIndex, to, T-time);
 
             System.arraycopy(g, 0, init, 0, n);
-//            init[n+prevcol] = M[prevcol*(n-1)+(col<prevcol?col:col-1)] * g[n+col];                                                  // without ratechange in M
             init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
 
             return getG(from, init, to, node);
@@ -494,7 +288,6 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
                 if (node.isLeaf()){ // sampling event
 
                     if (!isRhoTip[node.getNr()])
-//                        init[n+nodestate] = psi[nodestate*totalIntervals+index];
                         init[n + nodestate] = SAModel
                                 ? psi[nodestate * totalIntervals + index]* (r[nodestate * totalIntervals + index] + (1-r[nodestate * totalIntervals + index])*PG.getP(to, m_rho.get()!=null, rho)[nodestate]) // with SA: ψ_i(r + (1 − r)p_i(τ))
                                 : psi[nodestate * totalIntervals + index];
@@ -523,7 +316,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
                     childIndex = Math.abs(childIndex-1);
 
                     double t1 = T - node.getChild(childIndex).getHeight();
-                    childChangeCount = ((MultiTypeNode)node.getChild(childIndex)).getChangeCount(); // changeCounts[node.getChild(1).getNr()];
+                    childChangeCount = ((MultiTypeNode)node.getChild(childIndex)).getChangeCount();
                     if (childChangeCount > 0)
                         t1 = T - ((MultiTypeNode)node.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
@@ -538,51 +331,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathSamplingDistrib
         return getG(from, init, to, node);
     }
 
+    public void transformParameters() {
 
-
-
-    public void transformParameters(){
-
-        Double[] p = samplingProportion.get().getValues();
-        Double[] ds = becomeUninfectiousRate.get().getValues();
-        Double[] R = R0.get().getValues();
-        Double[] removalProbabilities = new Double[1];
-        if (SAModel) removalProbabilities = removalProbability.get().getValues();
-
-        int state;
-
-        for (int i = 0; i < totalIntervals*n; i++){
-
-            state =  i/totalIntervals;
-
-            birth[i] = R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state]
-                    * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
-
-//            psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
-//                    * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] ;
-//
-//            death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i];
-//
-            if (!SAModel) {
-                psi[i] = p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state]
-                        * ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state];
-
-                death[i] = ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state] - psi[i];
-            }
-            else {
-                r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
-
-                psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
-                        * ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]
-                        / (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
-
-
-                death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i]*r[i];
-            }
-        }
-
+        transformWithinParameters();
     }
-
 
     public Boolean originBranchIsValid(MultiTypeNode root){
 
