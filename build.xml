@@ -195,10 +195,9 @@
 		<copy todir="${Add_on_dir}">
 			<fileset dir="${distBDMM}" includes="BDMM.src.jar" />
 		</copy>
-		<!--copy todir="${Add_on_dir}/templates">
-			<fileset file="templates/BDSKY_contemp.xml" />
-			<fileset file="templates/BDSKY_serial.xml" />
-		</copy-->
+		<copy todir="${Add_on_dir}/templates">
+			<fileset file="templates/BDMM.xml" />
+		</copy>
 
 		<jar jarfile="${distBDMM}/BDMM.addon.zip">
 			<fileset dir="${Add_on_dir}">
