@@ -1,9 +1,7 @@
-package math;
+package beast.math;
 
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.sampling.StepInterpolator;
-import org.apache.commons.math3.ode.sampling.StepHandler;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 import beast.core.util.Utils;
 

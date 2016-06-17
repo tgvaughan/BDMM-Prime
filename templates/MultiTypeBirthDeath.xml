@@ -195,7 +195,7 @@
 
             <plugin spec='beast.evolution.tree.StructuredCoalescentMultiTypeTree' id='Tree.t:$(n)' estimate='true'>
                 <migrationModel spec='beast.evolution.tree.SCMigrationModel' id="migModel.t:$(n)">
-                    <rateMatrix spec='parameter.RealParameter' value="1.0 1.0" id="rateMatrix.t:$(n)" estimate="false"/>
+                    <rateMatrix spec='parameter.RealParameter' value="1.0 1.0" estimate="false"/>
                     <popSizes spec='parameter.RealParameter' value="1.0 1.0" estimate="false"/>
                 </migrationModel>
                 <taxonset spec='beast.evolution.alignment.TaxonSet'>
@@ -220,12 +220,13 @@
 
             <!-- Tree prior -->
 
-            <plugin spec='beast.evolution.speciation.BirthDeathMigrationModel' id="birthDeathMigration.t:$(n)" stateNumber="2">
+            <plugin spec='beast.evolution.speciation.BirthDeathMigrationModel' id="birthDeathMigration.t:$(n)" 
+            	stateNumber="2" checkRho="false">
                 <tree idref="Tree.t:$(n)"/>
 				<parameter name="R0" id="R0.t:$(n)" value="2 2" lower="0." upper="Infinity"/>
 				<parameter name="becomeUninfectiousRate" id="becomeUninfectiousRate.t:$(n)" value="1 1" lower="0." upper="Infinity"/>
 				<parameter name="samplingProportion" id="samplingProportion.t:$(n)" value="0 0.01 0 0.01" lower="0." upper="1." dimension ="4"/> 
-				<migrationMatrix id="rateMatrix" spec='parameter.RealParameter' value="0.1 0.1" lower="0" upper="100"/>              
+				<migrationMatrix id="rateMatrix.t:$(n)" spec='parameter.RealParameter' value="0.1 0.1" lower="0" upper="100"/>              
 				<frequencies id="geo-frequencies.t:$(n)" spec='parameter.RealParameter' value="0.5 0.5" lower="0" upper="1"/>              
 				<parameter name="samplingRateChangeTimes" id="samplingRateChangeTimes.s:$(n)" value="0. 2.63"/> 
             	<reverseTimeArrays spec="beast.core.parameter.BooleanParameter" value="false false true false false false"/>        		                
@@ -249,17 +250,17 @@
                 <distr spec="beast.math.distributions.Uniform" lower='0' upper='1'/>
             </prior>
 
-	<distribution id="RPrior.t:$(n)" spec="beast.math.distributions.Prior" x="@R0.t:$(n)">
-		<distr spec='beast.math.distributions.LogNormalDistributionModel' M="0." S="1.25" offset="0.0" meanInRealSpace="false"/>
-	</distribution>
+			<distribution id="RPrior.t:$(n)" spec="beast.math.distributions.Prior" x="@R0.t:$(n)">
+				<distr spec='beast.math.distributions.LogNormalDistributionModel' M="0." S="1.25" offset="0.0" meanInRealSpace="false"/>
+			</distribution>
 
-	<distribution id="becomeUninfectiousRatePrior.t:$(n)" spec="beast.math.distributions.Prior" x="@becomeUninfectiousRate.t:$(n)">
-		<distr spec='beast.math.distributions.Uniform' lower="0" upper="1000" offset="0.0" />
-	</distribution>
+			<distribution id="becomeUninfectiousRatePrior.t:$(n)" spec="beast.math.distributions.Prior" x="@becomeUninfectiousRate.t:$(n)">
+				<distr spec='beast.math.distributions.Uniform' lower="0" upper="1000" offset="0.0" />
+			</distribution>
  
-   	<distribution spec='beast.math.distributions.ExcludablePrior' x="samplingProportionPrior.t:$(n)" xInclude="false true false true">
-		<distr spec="beast.math.distributions.Beta" alpha="1." beta="1." offset="0."/>
-	</distribution>
+			<distribution spec='multitypetree.distributions.ExcludablePrior' id="samplingProportionPrior.t:$(n)" x="@samplingProportion.t:$(n)" xInclude="false true false true">
+				<distr spec="beast.math.distributions.Beta" alpha="1." beta="1." offset="0."/>
+			</distribution>
 
             <prior id='rateMatrixPrior.t:$(n)' x='@rateMatrix.t:$(n)'>
 				<distr spec='beast.math.distributions.LogNormalDistributionModel' M="0." S="1.25" offset="0.0" meanInRealSpace="false"/>
@@ -349,6 +350,7 @@
             <connect srcID='becomeUninfectiousRate.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(becomeUninfectiousRate.t:$(n)) and becomeUninfectiousRate.t:$(n)/estimate=true'/>
             <connect srcID='samplingProportion.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(samplingProportion.t:$(n)) and samplingProportion.t:$(n)/estimate=true'/>
             <connect srcID='rateMatrix.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(rateMatrix.t:$(n)) and rateMatrix.t:$(n)/estimate=true'/>
+            <connect srcID='geo-frequencies.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(geo-frequencies.t:$(n)) and geo-frequencies.t:$(n)/estimate=true'/>
 
             <connect srcID='treeLikelihood.$(n)' targetID='likelihood' inputName='distribution' if="isInitializing"/>
             <connect srcID='birthDeathMigration.t:$(n)' targetID='prior' inputName='distribution' if="Tree.t:$(n)/estimate=true"/>
@@ -379,6 +381,7 @@
 			<connect srcID='becomeUninfectiousRateScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(becomeUninfectiousRate.t:$(n)) and becomeUninfectiousRate.t:$(n)/estimate=true'/>
 			<connect srcID='samplingScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(samplingProportion.t:$(n)) and samplingProportion.t:$(n)/estimate=true'/>
 			<connect srcID='rateMatrixScaler.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(rateMatrix.t:$(n)) and rateMatrix.t:$(n)/estimate=true'/>
+			<connect srcID='geo-frequenciesExchange.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(geo-frequencies.t:$(n)) and geo-frequencies.t:$(n)/estimate=true'/>
 
 			<connect srcID='updownBD.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(R0.t:$(n)) and R0.t:$(n)/estimate=true and inposterior(becomeUninfectiousRate.t:$(n)) and becomeUninfectiousRate.t:$(n)/estimate=true'/>
 			<connect srcID='updownBM.t:$(n)' targetID='mcmc' inputName='operator' if='inposterior(R0.t:$(n)) and R0.t:$(n)/estimate=true and inposterior(rateMatrix.t:$(n)) and rateMatrix.t:$(n)/estimate=true'/>
@@ -396,13 +399,15 @@
             <connect srcID='gammaShape.s:$(n)' targetID='tracelog' inputName='log' if='inlikelihood(gammaShape.s:$(n)) and gammaShape.s:$(n)/estimate=true'/>
             <connect srcID='clockRate.c:$(n)' targetID='tracelog' inputName='log' if='inlikelihood(clockRate.c:$(n)) and clockRate.c:$(n)/estimate=true'/>
 
-            <connect srcID='migModelLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(migModel.t:$(n))'/>
             <connect srcID='treeHeight.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
             <connect srcID='treeLength.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
             <connect srcID='changeCounts.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
             <connect srcID='totalChangecounts.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
             <connect srcID='nodeTypeCounts.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
             <connect srcID='rootTypeLogger.t:$(n)' targetID='tracelog' inputName='log' if='inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <plate var='p' range='R0,samplingProportion,becomeUninfectiousRate,rateMatrix,geo-frequencies'>
+                    <connect srcID='$(p).t:$(n)' targetID='tracelog' inputName='log' if='inposterior(birthDeathMigration.t:$(n)) and $(p).t:$(n)/estimate=true'/>
+            </plate>
 
         </partitiontemplate>
 

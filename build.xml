@@ -19,7 +19,7 @@
 	<property name="beast2classpath" location="${beast2path}/build" />
 	<property name="masterclasspath" location="../MASTER/build" />
 	<property name="mttclasspath" location="../MultiTypeTree/build" />
-	<property name="sampledancestorclasspath" location="..out/production/sampled-ancestors" />
+	<property name="sampledancestorclasspath" location="..out/production/sampled-ancestors"/>
 	<property name="Add_on_dir" value="${release_dir}/add-on" />
 
     <import file="${beast2path}/build.xml" />
@@ -196,7 +196,7 @@
 			<fileset dir="${distBDMM}" includes="BDMM.src.jar" />
 		</copy>
 		<copy todir="${Add_on_dir}/templates">
-			<fileset file="templates/BDMM.xml" />
+			<fileset file="templates/MultiTypeBirthDeath.xml" />
 		</copy>
 
 		<jar jarfile="${distBDMM}/BDMM.addon.zip">

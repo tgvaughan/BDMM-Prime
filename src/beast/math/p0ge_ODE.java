@@ -1,4 +1,4 @@
-package math;
+package beast.math;
 
 
 import org.apache.commons.math3.ode.FirstOrderIntegrator;

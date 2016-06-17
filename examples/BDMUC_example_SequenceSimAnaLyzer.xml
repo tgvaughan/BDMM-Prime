@@ -302,7 +302,7 @@
 			<log idref="sampling"/>
 		</logger>
 	
-		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).trees" logEvery="10000" mode="autodetect" 
+		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).trees" logEvery="1000" mode="autodetect" 
 			log="@tree"/>
 
 		<logger id="screenlog" logEvery="1000" mode="autodetect">
