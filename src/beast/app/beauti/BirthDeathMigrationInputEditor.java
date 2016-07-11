@@ -1,7 +1,5 @@
 package beast.app.beauti;
 
-// todo: use customConnector to make sure xml file is also updated
-
 import beast.app.draw.InputEditor;
 import beast.core.BEASTInterface;
 import beast.core.Input;
@@ -192,12 +190,6 @@ public class BirthDeathMigrationInputEditor extends InputEditor.Base {
         c.weightx = 1.0;
         c.anchor = GridBagConstraints.LINE_START;
         panel.add(samplingTimesTable, c);
-//        samplingTimesEstCheckBox.setSelected(bdmm.samplingRateChangeTimesInput.get().isEstimatedInput.get());
-//        c.gridx = 2;
-//        c.gridy = 4;
-//        c.anchor = GridBagConstraints.LINE_END;
-//        c.weightx = 1.0;
-//        panel.add(samplingTimesEstCheckBox, c);
 
         // Migration rate table
         // (Uses custom cell renderer to grey out diagonal elements.)
@@ -275,13 +267,11 @@ public class BirthDeathMigrationInputEditor extends InputEditor.Base {
                     sbfreqs.append(Double.toString(fr));
 
             }
-//            bdmm.frequencies.get().setDimension(dim);
             bdmm.frequencies.get().valuesInput.setValue(
                     sbfreqs.toString(),
                     bdmm.frequencies.get());
 
             bdmm.setInputValue("frequencies",sbfreqs.toString());
-//            bdmm.frequencies.get().setDimension(newDim);
 
             rateMatrixModel.setColumnCount(newDim);
             rateMatrixModel.setRowCount(newDim);
@@ -296,9 +286,6 @@ public class BirthDeathMigrationInputEditor extends InputEditor.Base {
                 if (samplingModel.getValueAt(0, i) == null) {
                     samplingModel.setValueAt(1.0, 0, i);
                 }
-//                if (samplingTimesModel.getValueAt(0, i) == null) {
-//                    samplingTimesModel.setValueAt(1.0, 0, i);
-//                }
                 for (int j=0; j<newDim; j++) {
                     if (i==j)
                         continue;
@@ -356,10 +343,6 @@ public class BirthDeathMigrationInputEditor extends InputEditor.Base {
             if (!dimChangeInProgress)
                 saveToBDMM();
         });
-
-//        samplingTimesEstCheckBox.addItemListener((ItemEvent e) -> {
-//            saveToBDMM();
-//        });
 
         rateMatrixModel.addTableModelListener((TableModelEvent e) -> {
             if (e.getType() != TableModelEvent.UPDATE)

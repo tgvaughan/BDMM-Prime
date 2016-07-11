@@ -317,7 +317,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
         double freqSum = 0;
         for (double f : freq) freqSum+= f;
-        if (freqSum!=1.) throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
+        if (freqSum!=1.)
+            throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
 
 //        // calculate equilibrium frequencies for 2 types:
 //        double LambMu = -b[0]-b[1]-(d[0]+s[0])+(d[1]+s[1]);
@@ -760,6 +761,43 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
             PG.p_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
 
         }
+    }
+
+
+    /**
+     * Obtain element of rate matrix for migration model for use in likelihood
+     * calculation.
+     *
+     * @param i
+     * @param j
+     * @return Rate matrix element.
+     */
+    public double getNbyNRate(int i, int j) {
+        if (i==j)
+            return 0;
+
+        int offset = getArrayOffset(i, j);
+        return migrationMatrix.get().getValue(offset);
+    }
+
+    /**
+     * Obtain offset into "rate matrix" and associated flag arrays.
+     *
+     * @param i
+     * @param j
+     * @return Offset (or -1 if i==j)
+     */
+    protected int getArrayOffset(int i, int j) {
+
+        if (i==j)
+            throw new RuntimeException("Programmer error: requested migration "
+                    + "rate array offset for diagonal element of "
+                    + "migration rate matrix.");
+
+
+                if (j>i)
+                    j -= 1;
+                return i*(n-1)+j;   // todo: check if this is correct!!!
     }
 
 

@@ -109,6 +109,7 @@
 							beast.evolution.speciation.BirthDeathMigrationModel.tree,
 							beast.evolution.speciation.BirthDeathMigrationModel.useTipDates,
 							beast.evolution.speciation.BirthDeathMigrationModel.maxEvaluations,
+							beast.evolution.speciation.BirthDeathMigrationModel.checkRho,
 							beast.evolution.speciation.BirthDeathMigrationModel.origin,
 							beast.evolution.speciation.BirthDeathMigrationModel.originBranch,
 							beast.evolution.speciation.BirthDeathMigrationModel.originIsRootEdge,
@@ -116,6 +117,7 @@
 							beast.evolution.speciation.BirthDeathMigrationModel.migChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModel.birthRateChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModel.birthRateAmongDemesChangeTimes,
+							beast.evolution.speciation.BirthDeathMigrationModel.samplingRateChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModel.deathRateChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModel.removalProbabilityChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModel.intervalTimes,
@@ -137,9 +139,15 @@
 							beast.evolution.speciation.BirthDeathMigrationModel.birthRateAmongDemes,
 							beast.evolution.speciation.BirthDeathMigrationModel.R0AmongDemes,
 							beast.evolution.speciation.BirthDeathMigrationModel.deathRate,
-							beast.evolution.speciation.BirthDeathMigrationModel.samplingRate
-							'
-                              >
+							beast.evolution.speciation.BirthDeathMigrationModel.samplingRate,
+							beast.evolution.speciation.BirthDeathMigrationModel.R0,
+							beast.evolution.speciation.BirthDeathMigrationModel.samplingProportion,
+							beast.evolution.speciation.BirthDeathMigrationModel.becomeUninfectiousRate,
+							beast.evolution.speciation.BirthDeathMigrationModel.migrationMatrix,
+							beast.evolution.speciation.BirthDeathMigrationModel.frequencies,
+							beast.evolution.speciation.BirthDeathMigrationModel.reverseTimeArrays,
+							beast.evolution.speciation.BirthDeathMigrationModel.stateNumber
+							'>
                                       
         <panel spec='BeautiPanelConfig' panelname="Partitions" tiptext="Data Partitions"
             path='distribution/distribution[id="likelihood"]/distribution/data'
@@ -225,7 +233,7 @@
                 <tree idref="Tree.t:$(n)"/>
 				<parameter name="R0" id="R0.t:$(n)" value="2 2" lower="0." upper="Infinity"/>
 				<parameter name="becomeUninfectiousRate" id="becomeUninfectiousRate.t:$(n)" value="1 1" lower="0." upper="Infinity"/>
-				<parameter name="samplingProportion" id="samplingProportion.t:$(n)" value="0 0.01 0 0.01" lower="0." upper="1." dimension ="4"/> 
+				<parameter name="samplingProportion" id="samplingProportion.t:$(n)" value="0 0.01 0 0.01" lower="0." upper="1."/> 
 				<migrationMatrix id="rateMatrix.t:$(n)" spec='parameter.RealParameter' value="0.1 0.1" lower="0" upper="100"/>              
 				<frequencies id="geo-frequencies.t:$(n)" spec='parameter.RealParameter' value="0.5 0.5" lower="0" upper="1"/>              
 				<parameter name="samplingRateChangeTimes" id="samplingRateChangeTimes.s:$(n)" value="0. 2.63"/> 
@@ -250,20 +258,31 @@
                 <distr spec="beast.math.distributions.Uniform" lower='0' upper='1'/>
             </prior>
 
-			<distribution id="RPrior.t:$(n)" spec="beast.math.distributions.Prior" x="@R0.t:$(n)">
-				<distr spec='beast.math.distributions.LogNormalDistributionModel' M="0." S="1.25" offset="0.0" meanInRealSpace="false"/>
-			</distribution>
-
 			<distribution id="becomeUninfectiousRatePrior.t:$(n)" spec="beast.math.distributions.Prior" x="@becomeUninfectiousRate.t:$(n)">
-				<distr spec='beast.math.distributions.Uniform' lower="0" upper="1000" offset="0.0" />
+				<distr spec='beast.math.distributions.LogNormalDistributionModel' offset="0.0" meanInRealSpace="false">
+					<parameter name="M" value="0." estimate="false"/> 
+					<parameter name="S" value="1." estimate="false"/> 
+				</distr>	
+			</distribution>
+			
+			<distribution id="RPrior.t:$(n)" spec="beast.math.distributions.Prior" x="@R0.t:$(n)">
+				<distr spec='beast.math.distributions.LogNormalDistributionModel' offset="0.0" meanInRealSpace="false">
+					<parameter name="M" value="0." estimate="false"/> 
+					<parameter name="S" value="1." estimate="false"/> 
+				</distr>	
 			</distribution>
  
 			<distribution spec='multitypetree.distributions.ExcludablePrior' id="samplingProportionPrior.t:$(n)" x="@samplingProportion.t:$(n)" xInclude="false true false true">
-				<distr spec="beast.math.distributions.Beta" alpha="1." beta="1." offset="0."/>
+				<distr spec="beast.math.distributions.Beta" offset="0.">
+					<parameter name="alpha" value="1." estimate="false"/> 
+					<parameter name="beta" value="1." estimate="false"/> 
+				</distr>	
 			</distribution>
 
             <prior id='rateMatrixPrior.t:$(n)' x='@rateMatrix.t:$(n)'>
-				<distr spec='beast.math.distributions.LogNormalDistributionModel' M="0." S="1.25" offset="0.0" meanInRealSpace="false"/>
+				<distr spec='beast.math.distributions.Exponential'>
+					<parameter name="mean" value="1." estimate="false"/> 
+				</distr>	
             </prior>
 
             <!-- Parameter operators -->

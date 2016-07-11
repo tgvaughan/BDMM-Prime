@@ -1,5 +1,6 @@
 package beast.core.util;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
@@ -15,6 +16,7 @@ import java.util.List;
  * Date: 06.06.14
  * Time: 16:34
  */
+@Description("Make a random tree with tip dates and states obtained from MASTER simulation")
 public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
 
     public Input<BeastTreeFromMaster> masterTreeInput = new Input<BeastTreeFromMaster>(
