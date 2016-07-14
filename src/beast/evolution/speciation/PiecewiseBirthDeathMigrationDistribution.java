@@ -14,7 +14,13 @@ import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Created with IntelliJ IDEA.
@@ -112,12 +118,16 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 
     public Input<RealParameter> R0 =
-            new Input<>("R0", "The basic reproduction number", Input.Validate.XOR, birthRate);
+            new Input<>("R0", "The basic reproduction number");//, Input.Validate.XOR, birthRate);
     public Input<RealParameter> becomeUninfectiousRate =
-            new Input<>("becomeUninfectiousRate", "Rate at which individuals become uninfectious (throuch recovery or sampling)", Input.Validate.XOR, deathRate);
+            new Input<>("becomeUninfectiousRate", "Rate at which individuals become uninfectious (through recovery or sampling)", Input.Validate.XOR, deathRate);
     public Input<RealParameter> samplingProportion =
             new Input<>("samplingProportion", "The samplingProportion = samplingRate / becomeUninfectiousRate", Input.Validate.XOR, samplingRate);
 
+    public Input<RealParameter> R0_base =
+            new Input<>("R0_base", "The basic reproduction number for the sensitive strain");
+    public Input<RealParameter> R0_ratio =
+            new Input<>("R0_ratio", "The basic reproduction number ratio, R0_res/R0_base");
 
     public Input<RealParameter> migrationMatrix =
             new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted",  Input.Validate.REQUIRED);
@@ -223,7 +233,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
     @Override
     public void initAndValidate() {
-
         if (removalProbability.get() != null) SAModel = true;
 
         birth = null;
@@ -262,8 +271,13 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
         rhoSamplingCount = 0;
         contempData = contemp.get();
 
-
-        if (birthRate.get() != null && deathRate.get() != null && samplingRate.get() != null) {
+        if (birthRate.get() == null && R0.get() == null && R0_base.get() == null && R0_ratio.get() == null) {
+            throw new RuntimeException("Either birthRate, R0, or R0_base and R0_ratio need to be specified!");
+        } else if ((birthRate.get() != null && R0.get() != null)
+                || (R0.get() != null && (R0_base.get() != null || R0_ratio.get() != null))
+                || (birthRate.get() != null && (R0_base.get() != null || R0_ratio.get() != null))) {
+            throw new RuntimeException("Only one of birthRate, or R0, or R0_base and R0_ratio need to be specified!");
+        } else if (birthRate.get() != null && deathRate.get() != null && samplingRate.get() != null) {
 
             transform = false;
             death = deathRate.get().getValues();
@@ -276,13 +290,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
                 birthAmongDemes = true;
                 b_ij=birthRateAmongDemes.get().getValues();
             }
-
-        } else if (R0.get() != null && becomeUninfectiousRate.get() != null && samplingProportion.get() != null) {
-
+        } else if ((R0.get() != null || (R0_base.get() != null && R0_ratio.get() != null)) && becomeUninfectiousRate.get() != null && samplingProportion.get() != null) {
             transform = true;
-
         } else {
-            throw new RuntimeException("Either specify birthRate, deathRate and samplingRate OR specify R0, becomeUninfectiousRate and samplingProportion!");
+            throw new RuntimeException("Either specify birthRate, deathRate and samplingRate OR specify R0 (or R0_base AND R0_ratio), becomeUninfectiousRate and samplingProportion!");
         }
 
         if (transform) {
@@ -292,7 +303,13 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
                 b_ij_Changes = R0AmongDemes.get().getDimension()/Math.max(1,(n*(n-1))) - 1;
             }
 
-            if (birthChanges < 1) birthChanges = R0.get().getDimension()/n - 1;
+            if (birthChanges < 1) {
+                if (R0.get()!=null) {
+                    birthChanges = R0.get().getDimension() / n - 1;
+                } else {
+                    birthChanges = R0_base.get().getDimension() - 1;
+                }
+            }
             samplingChanges = samplingProportion.get().getDimension()/n - 1;
             deathChanges = becomeUninfectiousRate.get().getDimension()/n - 1;
 
@@ -650,7 +667,23 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
         Double[] p = samplingProportion.get().getValues();
         Double[] ds = becomeUninfectiousRate.get().getValues();
-        Double[] R = R0.get().getValues();
+        Double[] R;
+        if (R0.get() != null) {
+            R = R0.get().getValues();
+        } else {
+            Double[] R_ratio = R0_ratio.get().getValues();
+            Double[] R_sens = R0_base.get().getValues();
+            int totalIntervals = R_sens.length;
+            int totalTypes = R_ratio.length + 1;
+            R = new Double[totalIntervals * totalTypes];
+            for (int i=0; i < totalIntervals; i++) {
+                R[i] = R_sens[i];
+                for (int j=1; j < totalTypes; j++) {
+                    R[i + totalIntervals * j] = R_sens[i] * R_ratio[j - 1];
+                }
+            }
+        }
+
         Double[] removalProbabilities = new Double[1];
         if (SAModel) removalProbabilities = removalProbability.get().getValues();
 
