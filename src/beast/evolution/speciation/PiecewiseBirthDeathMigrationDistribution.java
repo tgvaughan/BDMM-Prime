@@ -118,16 +118,20 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 
     public Input<RealParameter> R0 =
-            new Input<>("R0", "The basic reproduction number");//, Input.Validate.XOR, birthRate);
+            new Input<>("R0", "The basic reproduction number");
     public Input<RealParameter> becomeUninfectiousRate =
             new Input<>("becomeUninfectiousRate", "Rate at which individuals become uninfectious (through recovery or sampling)", Input.Validate.XOR, deathRate);
     public Input<RealParameter> samplingProportion =
             new Input<>("samplingProportion", "The samplingProportion = samplingRate / becomeUninfectiousRate", Input.Validate.XOR, samplingRate);
 
     public Input<RealParameter> R0_base =
-            new Input<>("R0_base", "The basic reproduction number for the sensitive strain");
+            new Input<>("R0_base",
+                        "The basic reproduction number for the base pathogen class, should have the same dimension as " +
+                        "the number of time intervals.");
     public Input<RealParameter> R0_ratio =
-            new Input<>("R0_ratio", "The basic reproduction number ratio, R0_res/R0_base");
+            new Input<>("R0_ratio",
+                        "The ratio of basic reproductive numbers of all other classes when compared to the base R0, " +
+                        "should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
 
     public Input<RealParameter> migrationMatrix =
             new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted",  Input.Validate.REQUIRED);
