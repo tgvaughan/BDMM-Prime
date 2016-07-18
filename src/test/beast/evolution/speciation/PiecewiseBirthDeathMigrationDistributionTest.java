@@ -186,4 +186,50 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
 
         assertEquals(likelihood, likelihood2, 1e-10);
     }
+
+    @Test
+    public void testRatios3demes() throws Exception {
+        String treeString = "((3[&state=0] : 1.5, 4[&state=1] : 0.5)[&state=1] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=1] : 3)[&state=2];";
+
+        MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
+        tree.initByName(
+                "adjustTipHeights", false,
+                "newick", treeString,
+                "typeLabel", "type");
+
+        BirthDeathMigrationModel bdmm = new BirthDeathMigrationModel();
+
+        bdmm.setInputValue("frequencies", "0.33 0.33 0.34");
+        bdmm.setInputValue("migrationMatrix", "0.2 0.5 0.2 0.2 0.2 0.3");
+        bdmm.setInputValue("stateNumber", 3);
+        bdmm.setInputValue("tree", tree);
+        bdmm.setInputValue("conditionOnSurvival", false);
+        bdmm.setInputValue("intervalTimes", "0.0 3.0");
+        bdmm.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.5 1.5 4.5 1.5");
+        bdmm.setInputValue("samplingProportion", "0.1 0.3333333333 0.4444444444");
+
+        bdmm.setInputValue("R0", "4.5 1.5 3.6 1.2 2.25 0.75");
+
+        bdmm.initAndValidate();
+        double likelihood = bdmm.calculateTreeLogLikelihood(tree);
+
+        BirthDeathMigrationModel bdmm2 = new BirthDeathMigrationModel();
+
+        bdmm2.setInputValue("frequencies", "0.33 0.33 0.34");
+        bdmm2.setInputValue("migrationMatrix", "0.2 0.5 0.2 0.2 0.2 0.3");
+        bdmm2.setInputValue("stateNumber", 3);
+        bdmm2.setInputValue("tree", tree);
+        bdmm2.setInputValue("conditionOnSurvival", false);
+        bdmm2.setInputValue("intervalTimes", "0.0 3.0");
+        bdmm2.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.5 1.5 4.5 1.5");
+        bdmm2.setInputValue("samplingProportion", "0.1 0.3333333333 0.4444444444");
+
+        bdmm2.setInputValue("R0_base", "4.5 1.5");  // deme 1
+        bdmm2.setInputValue("R0_ratio", "0.8 0.5"); // ratios for demes 2 and 3
+
+        bdmm2.initAndValidate();
+        double likelihood2 = bdmm2.calculateTreeLogLikelihood(tree);
+
+        assertEquals(likelihood, likelihood2, 1e-10);
+    }
 }
