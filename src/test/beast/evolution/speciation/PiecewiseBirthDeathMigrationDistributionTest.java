@@ -140,4 +140,50 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         bdmm17.setInputValue("samplingRate", "1");
         validateShouldFail(bdmm17, true);
     }
+
+    @Test
+    public void testRatios() throws Exception {
+        String treeString = "((3[&state=0] : 1.5, 4[&state=1] : 0.5)[&state=1] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=1] : 3)[&state=0];";
+
+        MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
+        tree.initByName(
+                "adjustTipHeights", false,
+                "newick", treeString,
+                "typeLabel", "type");
+
+        BirthDeathMigrationModel bdmm = new BirthDeathMigrationModel();
+
+        bdmm.setInputValue("frequencies", "0.5 0.5");
+        bdmm.setInputValue("migrationMatrix", "0.2 0.2");
+        bdmm.setInputValue("stateNumber", 2);
+        bdmm.setInputValue("tree", tree);
+        bdmm.setInputValue("conditionOnSurvival", false);
+        bdmm.setInputValue("intervalTimes", "0.0 3.0");
+        bdmm.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.5 1.5");
+        bdmm.setInputValue("samplingProportion", "0.4444444444 0.3333333333 0.4444444444 0.3333333333");
+
+        bdmm.setInputValue("R0", "4.5 1.5 3.6 1.2");
+
+        bdmm.initAndValidate();
+        double likelihood = bdmm.calculateTreeLogLikelihood(tree);
+
+        BirthDeathMigrationModel bdmm2 = new BirthDeathMigrationModel();
+
+        bdmm2.setInputValue("frequencies", "0.5 0.5");
+        bdmm2.setInputValue("migrationMatrix", "0.2 0.2");
+        bdmm2.setInputValue("stateNumber", 2);
+        bdmm2.setInputValue("tree", tree);
+        bdmm2.setInputValue("conditionOnSurvival", false);
+        bdmm2.setInputValue("intervalTimes", "0.0 3.0");
+        bdmm2.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.5 1.5");
+        bdmm2.setInputValue("samplingProportion", "0.4444444444 0.3333333333 0.4444444444 0.3333333333");
+
+        bdmm2.setInputValue("R0_base", "4.5 1.5");
+        bdmm2.setInputValue("R0_ratio", "0.8");
+
+        bdmm2.initAndValidate();
+        double likelihood2 = bdmm2.calculateTreeLogLikelihood(tree);
+
+        assertEquals(likelihood, likelihood2, 1e-10);
+    }
 }
