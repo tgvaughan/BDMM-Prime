@@ -135,12 +135,15 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
         Node root = tree.getRoot();
 
-        checkOrigin(tree);
+        if (origin.get()==null)
+            T = root.getHeight();
+        else
+            updateOrigin(root);
 
         collectTimes(T);
         setRho();
 
-        if (updateRates(tree) < 0 ||  (times[totalIntervals-1] > T)) {
+        if ((orig < 0) || updateRates(tree) < 0 ||  (times[totalIntervals-1] > T)) {
             logP =  Double.NEGATIVE_INFINITY;
             return logP;
         }
