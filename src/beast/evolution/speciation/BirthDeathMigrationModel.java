@@ -24,77 +24,77 @@ import beast.math.SmallNumberScaler;
 		"Two implementations are available. The first is the fast classic one; the second one prevents underflowing, using so-called 'SmallNumbers', with the cost of additional computational complexity")
 public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistribution {
 
-    public Input<MultiTypeRootBranch> originBranchInput =
-            new Input<>("originBranch", "MultiTypeRootBranch for origin coloring");
-			
+	public Input<MultiTypeRootBranch> originBranchInput =
+			new Input<>("originBranch", "MultiTypeRootBranch for origin coloring");
 
 
-    MultiTypeTree coltree;
-    MultiTypeRootBranch originBranch;
 
-    Boolean print = false;
+	MultiTypeTree coltree;
+	MultiTypeRootBranch originBranch;
 
-    @Override
-    public void initAndValidate() {
+	Boolean print = false;
 
-        super.initAndValidate();
+	@Override
+	public void initAndValidate() {
 
-        coltree = (MultiTypeTree) treeInput.get();
+		super.initAndValidate();
 
-        if (origin.get()==null){
+		coltree = (MultiTypeTree) treeInput.get();
 
-            T = coltree.getRoot().getHeight();
-        }
-        else {
+		if (origin.get()==null){
 
-            originBranch = originBranchInput.get();
+			T = coltree.getRoot().getHeight();
+		}
+		else {
 
-            if (originBranch==null)  throw new RuntimeException("Error: Origin specified but originBranch missing!");
+			originBranch = originBranchInput.get();
 
-            checkOrigin(coltree);
-        }
+			if (originBranch==null)  throw new RuntimeException("Error: Origin specified but originBranch missing!");
 
-        ntaxa = coltree.getLeafNodeCount();
+			checkOrigin(coltree);
+		}
 
-        int contempCount = 0;
-        for (Node node : coltree.getExternalNodes())
-            if (node.getHeight()==0.)
-                contempCount++;
-        if (checkRho.get() && contempCount>1 && rho==null)
-            throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
+		ntaxa = coltree.getLeafNodeCount();
 
-        collectTimes(T);
-        setRho();
+		int contempCount = 0;
+		for (Node node : coltree.getExternalNodes())
+			if (node.getHeight()==0.)
+				contempCount++;
+		if (checkRho.get() && contempCount>1 && rho==null)
+			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
 
-    }
+		collectTimes(T);
+		setRho();
+
+	}
 
 
 	double updateRates(){
 
-        birth = new Double[n*totalIntervals];
-        death = new Double[n*totalIntervals];
-        psi = new Double[n*totalIntervals];
-        M = new Double[totalIntervals*(n*(n-1))];
-        if (SAModel) r =  new Double[n * totalIntervals];
+		birth = new Double[n*totalIntervals];
+		death = new Double[n*totalIntervals];
+		psi = new Double[n*totalIntervals];
+		M = new Double[totalIntervals*(n*(n-1))];
+		if (SAModel) r =  new Double[n * totalIntervals];
 
-        if (transform)
-            transformParameters();
+		if (transform)
+			transformParameters();
 
-        else
-            updateBirthDeathPsiParams();
+		else
+			updateBirthDeathPsiParams();
 
-        Double[] migRates = migrationMatrix.get().getValues();
+		Double[] migRates = migrationMatrix.get().getValues();
 
-        updateAmongParameter(M, migRates, migChanges, migChangeTimes);
+		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
 
-        updateRho();
+		updateRho();
 
-        freq = frequencies.get().getValues();
+		freq = frequencies.get().getValues();
 
-        setupIntegrators();
+		setupIntegrators();
 
-        return 0.;
-    }
+		return 0.;
+	}
 
 	@Override
 	void computeRhoTips(){
@@ -124,12 +124,12 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	 */
 	public double[] getG(double t, double[] PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
-        if (node.isLeaf()) {
+		if (node.isLeaf()) {
 
-            System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
-        }
+			System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
+		}
 
-        return getG(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
+		return getG(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
 	}
 
 
@@ -300,36 +300,36 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	 */
 	double[] calculateOriginLikelihood(Integer migIndex, double from, double to) {
 
-        double[] init = new double[2*n];
-        int index = Utils.index(to, times, totalIntervals);
+		double[] init = new double[2*n];
+		int index = Utils.index(to, times, totalIntervals);
 
-        int prevcol = originBranch.getChangeType(migIndex);
-        int col =  (migIndex > 0)?  originBranch.getChangeType(migIndex-1):  ((MultiTypeNode) coltree.getRoot()).getNodeType();
+		int prevcol = originBranch.getChangeType(migIndex);
+		int col =  (migIndex > 0)?  originBranch.getChangeType(migIndex-1):  ((MultiTypeNode) coltree.getRoot()).getNodeType();
 
-        migIndex--;
+		migIndex--;
 
-        double[] g ;
+		double[] g ;
 
-        if (migIndex >= 0){
+		if (migIndex >= 0){
 
-            g = calculateOriginLikelihood(migIndex, to, T - originBranch.getChangeTime(migIndex));
+			g = calculateOriginLikelihood(migIndex, to, T - originBranch.getChangeTime(migIndex));
 
-            System.arraycopy(g, 0, init, 0, n);
-            init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
+			System.arraycopy(g, 0, init, 0, n);
+			init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
 
-            return getG(from,  init,  to, pg_integrator, PG, T, maxEvalsUsed);
+			return getG(from,  init,  to, pg_integrator, PG, T, maxEvalsUsed);
 
-        }
-        else {
+		}
+		else {
 
-            g = calculateSubtreeLikelihood(coltree.getRoot(), false, null, to, orig);
+			g = calculateSubtreeLikelihood(coltree.getRoot(), false, null, to, orig);
 
-            System.arraycopy(g, 0, init, 0, n);
-            init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
+			System.arraycopy(g, 0, init, 0, n);
+			init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
 
-            return getG(from, init, to, coltree.getRoot());
-        }
-    }
+			return getG(from, init, to, coltree.getRoot());
+		}
+	}
 
 	/**
 	 * Implementation of calculateOriginLikelihood with Small Number structure. Avoids underflowing of integration results.
@@ -344,7 +344,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 		SmallNumber[] init = new SmallNumber[2*n];
 		for (int i=0; i<2*n; i++) init[i] = new SmallNumber();
-		
+
 		int index = Utils.index(to, times, totalIntervals);
 
 		int prevcol = originBranch.getChangeType(migIndex);
@@ -388,81 +388,81 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	 */
 	double[] calculateSubtreeLikelihood(Node node, Boolean migration, Integer migIndex, double from, double to) {
 
- double[] init = new double[2*n];
-        int nodestate = ((MultiTypeNode)node).getNodeType();
-        int index = Utils.index(to, times, totalIntervals);
+		double[] init = new double[2*n];
+		int nodestate = ((MultiTypeNode)node).getNodeType();
+		int index = Utils.index(to, times, totalIntervals);
 
-        if (migration){ // migration event
+		if (migration){ // migration event
 
-            int prevcol = ((MultiTypeNode) node).getChangeType(migIndex);
-            int col =  (migIndex > 0)?  ((MultiTypeNode) node).getChangeType(migIndex-1):  ((MultiTypeNode) node).getNodeType();
-            double time ;
+			int prevcol = ((MultiTypeNode) node).getChangeType(migIndex);
+			int col =  (migIndex > 0)?  ((MultiTypeNode) node).getChangeType(migIndex-1):  ((MultiTypeNode) node).getNodeType();
+			double time ;
 
-            migIndex--;
+			migIndex--;
 
-            time = (migIndex >= 0)? ((MultiTypeNode) node).getChangeTime(migIndex) :node.getHeight();
-            double[] g = calculateSubtreeLikelihood(node, (migIndex >= 0), migIndex, to, T-time);
+			time = (migIndex >= 0)? ((MultiTypeNode) node).getChangeTime(migIndex) :node.getHeight();
+			double[] g = calculateSubtreeLikelihood(node, (migIndex >= 0), migIndex, to, T-time);
 
-            System.arraycopy(g, 0, init, 0, n);
-            init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
+			System.arraycopy(g, 0, init, 0, n);
+			init[n+prevcol] = M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index] * g[n + col];       // with ratechange in M
 
-            return getG(from, init, to, node);
-        }
+			return getG(from, init, to, node);
+		}
 
-        else {
+		else {
 
-            if (migIndex==null &&  ((MultiTypeNode)node).getChangeCount()>0){ // node has migration event(psi)
+			if (migIndex==null &&  ((MultiTypeNode)node).getChangeCount()>0){ // node has migration event(psi)
 
-                return calculateSubtreeLikelihood(node, true, ((MultiTypeNode)node).getChangeCount()-1, from, to) ;
-            }
+				return calculateSubtreeLikelihood(node, true, ((MultiTypeNode)node).getChangeCount()-1, from, to) ;
+			}
 
-            else{
+			else{
 
-                if (node.isLeaf()){ // sampling event
+				if (node.isLeaf()){ // sampling event
 
-                    if (!isRhoTip[node.getNr()])
-                        init[n + nodestate] = SAModel
-                                ? psi[nodestate * totalIntervals + index]* (r[nodestate * totalIntervals + index] + (1-r[nodestate * totalIntervals + index])*PG.getP(to, m_rho.get()!=null, rho)[nodestate]) // with SA: ψ_i(r + (1 − r)p_i(τ))
-                                : psi[nodestate * totalIntervals + index];
+					if (!isRhoTip[node.getNr()])
+						init[n + nodestate] = SAModel
+						? psi[nodestate * totalIntervals + index]* (r[nodestate * totalIntervals + index] + (1-r[nodestate * totalIntervals + index])*PG.getP(to, m_rho.get()!=null, rho)[nodestate]) // with SA: ψ_i(r + (1 − r)p_i(τ))
+								: psi[nodestate * totalIntervals + index];
 
-                    else
-                        init[n+nodestate] = rho[nodestate*totalIntervals+index];
+						else
+							init[n+nodestate] = rho[nodestate*totalIntervals+index];
 
 
-                    if (print) System.out.println("Sampling at time " + to);
+					if (print) System.out.println("Sampling at time " + to);
 
-                    return getG(from, init, to, node);
-                }
+					return getG(from, init, to, node);
+				}
 
-                else if (node.getChildCount()==2){  // birth / infection event
+				else if (node.getChildCount()==2){  // birth / infection event
 
-                    int childIndex = 0;
-                    if (node.getChild(1).getNr() > node.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
+					int childIndex = 0;
+					if (node.getChild(1).getNr() > node.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
 
-                    double t0 = T - node.getChild(childIndex).getHeight();
-                    int childChangeCount = ((MultiTypeNode)node.getChild(childIndex)).getChangeCount();
-                    if (childChangeCount > 0)
-                        t0 = T - ((MultiTypeNode)node.getChild(childIndex)).getChangeTime(childChangeCount-1);
+					double t0 = T - node.getChild(childIndex).getHeight();
+					int childChangeCount = ((MultiTypeNode)node.getChild(childIndex)).getChangeCount();
+					if (childChangeCount > 0)
+						t0 = T - ((MultiTypeNode)node.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
-                    double[] g0 = calculateSubtreeLikelihood(node.getChild(childIndex), false, null, to, t0);
+					double[] g0 = calculateSubtreeLikelihood(node.getChild(childIndex), false, null, to, t0);
 
-                    childIndex = Math.abs(childIndex-1);
+					childIndex = Math.abs(childIndex-1);
 
-                    double t1 = T - node.getChild(childIndex).getHeight();
-                    childChangeCount = ((MultiTypeNode)node.getChild(childIndex)).getChangeCount();
-                    if (childChangeCount > 0)
-                        t1 = T - ((MultiTypeNode)node.getChild(childIndex)).getChangeTime(childChangeCount-1);
+					double t1 = T - node.getChild(childIndex).getHeight();
+					childChangeCount = ((MultiTypeNode)node.getChild(childIndex)).getChangeCount();
+					if (childChangeCount > 0)
+						t1 = T - ((MultiTypeNode)node.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
-                    double[] g1 = calculateSubtreeLikelihood(node.getChild(childIndex), false, null, to, t1);
+					double[] g1 = calculateSubtreeLikelihood(node.getChild(childIndex), false, null, to, t1);
 
-                    System.arraycopy(g0, 0, init, 0, n);
-                    init[n+nodestate] =  birth[nodestate*totalIntervals+index] * g0[n+nodestate] * g1[n+nodestate];
-                }
-            }
-        }
+					System.arraycopy(g0, 0, init, 0, n);
+					init[n+nodestate] =  birth[nodestate*totalIntervals+index] * g0[n+nodestate] * g1[n+nodestate];
+				}
+			}
+		}
 
-        return getG(from, init, to, node);
-    }
+		return getG(from, init, to, node);
+	}
 
 	/**
 	 * Implementation of calculateSubtreeLikelihood with Small Number structure. Avoids underflowing of integration results.
@@ -484,14 +484,14 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 		if (migration){ // migration event
 
-            int prevcol = ((MultiTypeNode) node).getChangeType(migIndex);
-            int col =  (migIndex > 0)?  ((MultiTypeNode) node).getChangeType(migIndex-1):  ((MultiTypeNode) node).getNodeType();
-            double time ;
+			int prevcol = ((MultiTypeNode) node).getChangeType(migIndex);
+			int col =  (migIndex > 0)?  ((MultiTypeNode) node).getChangeType(migIndex-1):  ((MultiTypeNode) node).getNodeType();
+			double time ;
 
 			migIndex--;
 
-            time = (migIndex >= 0)? ((MultiTypeNode) node).getChangeTime(migIndex) :node.getHeight();
-            SmallNumber[] g = calculateSubtreeLikelihoodSmallNumber(node, (migIndex >= 0), migIndex, to, T-time);
+			time = (migIndex >= 0)? ((MultiTypeNode) node).getChangeTime(migIndex) :node.getHeight();
+			SmallNumber[] g = calculateSubtreeLikelihoodSmallNumber(node, (migIndex >= 0), migIndex, to, T-time);
 
 			System.arraycopy(g, 0, init, 0, n);
 			init[n+prevcol] = g[n+col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]); // with ratechange in M
@@ -563,30 +563,30 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 	public void transformParameters(){
 
-        transformWithinParameters();
-    }
+		transformWithinParameters();
+	}
 
 
 
-    public Boolean originBranchIsValid(MultiTypeNode root){
+	public Boolean originBranchIsValid(MultiTypeNode root){
 
-        int count = originBranch.getChangeCount();
+		int count = originBranch.getChangeCount();
 
-        if (count>0){
+		if (count>0){
 
-            if (originBranch.getChangeTime(0) < root.getHeight() || originBranch.getChangeTime(count-1) > origin.get().getValue() )
-                return false;
+			if (originBranch.getChangeTime(0) < root.getHeight() || originBranch.getChangeTime(count-1) > origin.get().getValue() )
+				return false;
 
-            if (originBranch.getChangeType(0) == root.getFinalType())
-                return false;
+			if (originBranch.getChangeType(0) == root.getFinalType())
+				return false;
 
-            for (int i=1; i<count; i++){
-                if (originBranch.getChangeType(i-1) == originBranch.getChangeType(i))
-                    return false;
-            }
-        }
-        return true;
-    }
+			for (int i=1; i<count; i++){
+				if (originBranch.getChangeType(i-1) == originBranch.getChangeType(i))
+					return false;
+			}
+		}
+		return true;
+	}
 
 
 }
