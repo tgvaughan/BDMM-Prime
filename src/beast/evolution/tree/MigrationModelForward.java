@@ -34,7 +34,7 @@ public class MigrationModelForward extends SCMigrationModel {
     public MigrationModelForward() { }
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         super.initAndValidate();
     }

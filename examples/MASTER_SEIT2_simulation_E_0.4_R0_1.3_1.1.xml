@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+    <beast beautitemplate='Standard' beautistatus=''
+    namespace="beast.core
+    :beast.evolution.tree.coalescent
+    :beast.core.util
+    :beast.evolution.nuc
+    :beast.evolution.operators
+    :beast.evolution.sitemodel
+    :beast.evolution.substitutionmodel
+    :beast.evolution.likelihood
+    :beast.evolution.tree
+    :beast.core.parameter
+    :multitypetree.operators
+    :multitypetree.util
+    :multitypetree.distributions
+    :beast.math.distributions
+    :master
+    :master.model
+    :master.conditions
+    :master.outputs
+    :master.beast
+    :master.postprocessors
+    :master.BeastTreeFromMaster" version="2.0">
+
+    <map name="LogNormal">beast.math.distributions.LogNormalDistributionModel</map>
+    <map name="Uniform">beast.math.distributions.Uniform</map>
+    <map name="Beta">beast.math.distributions.Beta</map>
+    <map name="prior">beast.math.distributions.Prior</map>
+    <map name="CompoundDistribution">beast.core.util.CompoundDistribution</map>
+
+    <!-- Use MASTER to generate an initial coalescent tree -->
+    <tree spec='BeastTreeFromMaster' reverseTime='false' id='tree' samplePopulationSizes='true' collapseSingletons='true' origin='@origin'>
+        <model spec='Model' id='model'>
+            <population spec='Population' id='S' populationName='S'/>
+            <populationType spec='PopulationType' id='E' typeName='E' dim='2'/>
+            <populationType spec='PopulationType' id='I' typeName='I' dim='2'/>
+            <populationType spec='PopulationType' id='T' typeName='T' dim='2'/>
+            <populationType spec='PopulationType' id='A' typeName='A' dim='2'/>
+            <populationType spec='PopulationType' id='As' typeName='As' dim='2'/>
+            <population spec='Population' id='D' populationName='D'/>
+
+            <reactionGroup spec='ReactionGroup' reactionGroupName='Infection'>
+                <reaction spec='Reaction' rate="0.002524717514124294">
+                    S:0 + I[0]:1 -> E[0]:1 + I[0]:1
+                </reaction>
+                <reaction spec='Reaction' rate="0.0021249999999999997">
+                    S:0 + I[1]:1 -> E[1]:1 + I[1]:1
+                </reaction>
+            </reactionGroup>
+
+            <reaction spec='Reaction' reactionName='Progression' rate='2.5'>
+                E[i]:1 -> I[i]:1
+            </reaction>
+
+            <reactionGroup spec='ReactionGroup' reactionGroupName='TreatmentSampling'>
+                <reaction spec='Reaction' rate='0.16666666666666669'>
+                    I[0]:1 -> T[0]:1 + A[0]:1
+                </reaction>
+                <reaction spec='Reaction' rate='0.5'>
+                    I[1]:1 -> T[1]:1 + A[1]:1
+                </reaction>
+            </reactionGroup>
+
+            <reactionGroup spec='ReactionGroup' reactionGroupName='Treatment'>
+                <reaction spec='Reaction' rate='1.5'>
+                    I[0]:1 -> T[0]:1
+                </reaction>
+                <reaction spec='Reaction' rate='1.1666666666666667'>
+                    I[1]:1 -> T[1]:1
+                </reaction>
+            </reactionGroup>
+
+            <reaction spec='Reaction' reactionName='SampleBranch' rate='1e+100'>
+                A[i]:1 -> As[i]:1
+            </reaction>
+
+            <reaction spec='Reaction' reactionName='Resistance' rate='0.04'>
+                T[0]:1 -> I[1]:1
+            </reaction>
+
+            <reaction spec='Reaction' reactionName='Relapse' rate='0.05'>
+                T[i]:1 -> I[i]:1
+            </reaction>
+
+            <reaction spec='Reaction' reactionName='Clearance' rate="0.5">
+                T[i]:1 -> S:0
+            </reaction>
+
+            <reaction spec='Reaction' reactionName='Death' rate="0.41666666666666674">
+                I[i]:1 -> D
+            </reaction>
+
+        </model>
+
+        <initialState spec='InitState'>
+            <populationSize spec='PopulationSize' population='@S' size='999'/>
+            <lineageSeed spec='Individual'>
+                <population spec='Population' type='@I' location='0'/>
+            </lineageSeed>
+        </initialState>
+
+        <!-- Simulation will be rejected when no lineages remain -->
+        <lineageEndCondition spec='LineageEndCondition' nLineages="0" isRejection="true">
+            <population spec='Population' type='@I' location="0" />
+            <population spec='Population' type='@I' location="1" />
+        </lineageEndCondition>
+
+        <!-- Simulation will terminate when 150 lineages are sampled -->
+        <lineageEndCondition spec='LineageEndCondition' nLineages="150" isRejection="false">
+            <population spec='Population' type='@As' location="0" />
+            <population spec='Population' type='@As' location="1" />
+        </lineageEndCondition>
+
+        <!-- Keep only sampled lineages. -->
+        <inheritancePostProcessor spec='LineageFilter' populationName="As" noClean="true"/>
+
+        <!-- Trim off post-sampling lineages. -->
+        <inheritancePostProcessor spec='LineageFilter' populationName="As" discard="true" leavesOnly="true" noClean="true"/>
+
+        <output spec='NexusOutput' fileName='tree_output.nexus' collapseSingleChildNodes="false"/>
+    </tree>
+
+
+    <run chainLength="1000000" id="mcmc" spec="MCMC" numInitializationAttempts="1000">
+        <state id="state" storeEvery="5000">
+            <parameter dimension="1" id="origin" lower="0.0" name="stateNode" upper="Infinity" value="0"/>
+            <parameter dimension="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0.08519855595667872 0.08519855595667872 0.08519855595667872 0.2528735632183908 0.2528735632183908 0.2528735632183908"/>
+            <parameter dimension="6" id="becomeUninfectiousRate" lower="0.0" name="stateNode" upper="Infinity" value="1.0"/>
+            <parameter dimension="3" id="R0_base" lower="0.0" name="stateNode" upper="Infinity" value="1.05"/>
+            <parameter dimension="1" id="R0_ratio" lower="0.0" name="stateNode" upper="Infinity" value="0.9"/>
+            <parameter dimension="6" name="stateNode" id="r" value="0"/>
+            <stateNode idref="rateMatrix"/>
+        </state>
+
+        <distribution id="posterior" spec="CompoundDistribution">
+            <distribution id="prior" spec="CompoundDistribution">
+                <distribution R0_base="@R0_base" R0_ratio="@R0_ratio"
+                    becomeUninfectiousRate="@becomeUninfectiousRate" id="BDMM"
+                    origin="@origin" samplingProportion="@samplingProportion"
+                    spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" tree="@tree"
+                    originIsRootEdge="true" typeLabel="location"
+                    removalProbability="@r" stateNumber="2" useRK="true">
+
+            <migrationMatrix id="rateMatrix" spec='RealParameter' value="0.04 0" dimension="2" lower="0" upper="100"/>
+
+                    <frequencies id="geo-frequencies" spec='RealParameter' value="1 0" lower="0" upper="1" dimension="2"/>
+                </distribution>
+                <prior id="R0SensPrior" name="distribution" x="@R0_base">
+                    <LogNormal M="0" S="0.5" name="distr"/>
+                </prior>
+                <prior id="R0RatioPrior" name="distribution" x="@R0_ratio">
+                    <Beta alpha="2" beta="2" name="distr"/>
+                </prior>
+                <prior id="becomeUninfectiousRatePrior" name="distribution" x="@becomeUninfectiousRate">
+                    <LogNormal M="0" S="0.5" name="distr"/>
+                </prior>
+            </distribution>
+        </distribution>
+
+        <operator id="R0SensScaler" parameter="@R0_base" scaleFactor="0.75" spec="ScaleOperator" weight="6"/>
+        <operator id="R0RatioScaler" parameter="@R0_ratio" scaleFactor="0.9" spec="ScaleOperator" weight="2"/>
+        <operator id="becomeUninfectiousRateScaler" parameter="@becomeUninfectiousRate" scaleFactor="0.75" spec="ScaleOperator" weight="2"/>
+        <operator id="updownBD" scaleFactor="0.9" spec="UpDownOperator" weight="2">
+            <parameter idref="R0_base" name="up"/>
+            <parameter idref="becomeUninfectiousRate" name="down"/>
+        </operator>
+
+        <logger fileName="tracelog.log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+            <log idref="posterior"/>
+            <log idref="prior"/>
+            <log idref="BDMM"/>
+            <parameter idref="origin" name="log"/>
+            <parameter idref="samplingProportion" name="log"/>
+            <parameter idref="becomeUninfectiousRate" name="log"/>
+            <parameter idref="R0_base" name="log"/>
+            <parameter idref="R0_ratio" name="log"/>
+            <parameter idref="geo-frequencies" name="log"/>
+            <parameter idref="rateMatrix" name="log"/>
+            <log idref="r"/>
+            <log id="SACount" spec="beast.evolution.tree.SampledAncestorLogger" tree="@tree"/>
+            <!--log expression="R0 becomeUninfectiousRate *" id="birth" spec="beast.math.statistic.RPNcalculator">
+                <parameter idref="becomeUninfectiousRate"/>
+                <parameter idref="R0"/>
+            </log-->
+            <!--log expression="becomeUninfectiousRate 1 samplingProportion - *" id="death" spec="beast.math.statistic.RPNcalculator">
+                <parameter idref="becomeUninfectiousRate"/>
+                <parameter idref="samplingProportion"/>
+            </log>
+            <log expression="becomeUninfectiousRate samplingProportion *" id="sampling" spec="beast.math.statistic.RPNcalculator">
+                <parameter idref="becomeUninfectiousRate"/>
+                <parameter idref="samplingProportion"/>
+            </log-->
+        </logger>
+        <logger id="screenlog" logEvery="1000">
+            <log idref="posterior"/>
+            <log arg="@posterior" id="ESS.0" spec="util.ESS"/>
+            <log idref="prior"/>
+            <log idref="SACount"/>
+        </logger>
+    </run>
+
+</beast>

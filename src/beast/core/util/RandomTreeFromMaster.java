@@ -1,5 +1,6 @@
 package beast.core.util;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
@@ -15,6 +16,7 @@ import java.util.List;
  * Date: 06.06.14
  * Time: 16:34
  */
+@Description("Make a random tree with tip dates and states obtained from MASTER simulation")
 public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
 
     public Input<BeastTreeFromMaster> masterTreeInput = new Input<BeastTreeFromMaster>(
@@ -31,7 +33,7 @@ public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
     StateNode tree;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
 
         super.initAndValidate();
@@ -39,7 +41,7 @@ public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
         initStateNodes();
     }
 
-    public void initStateNodes() throws Exception{
+    public void initStateNodes() {
 
         BeastTreeFromMaster masterTree = masterTreeInput.get();
 
@@ -59,7 +61,7 @@ public class RandomTreeFromMaster extends Tree implements StateNodeInitialiser {
         for (Node beastNode : masterTree.getExternalNodes()){
 
             dates += beastNode.getID() + "=" + beastNode.getHeight() +",";
-            types += beastNode.getID() + "=" + beastNode.getMetaData("location") +",";
+            types += beastNode.getID() + "=" + (beastNode.getMetaData("location")) +",";
 
         }
 

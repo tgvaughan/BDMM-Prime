@@ -1,5 +1,6 @@
 package beast.core.util;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
@@ -9,6 +10,7 @@ import beast.util.TreeParser;
 /**
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
+@Description("Traitset for tip dates obtained from input tree")
 public class TipDatesFromTree extends TraitSet{
 
     public Input<Tree> treeInput = new Input<>("tree", "Tree from which to " +
@@ -20,7 +22,7 @@ public class TipDatesFromTree extends TraitSet{
     }
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         traitNameInput.setValue("date-backward", this);
 

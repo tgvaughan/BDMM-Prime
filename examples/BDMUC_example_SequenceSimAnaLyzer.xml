@@ -302,10 +302,10 @@
 			<log idref="sampling"/>
 		</logger>
 	
-		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).trees" logEvery="10000" mode="autodetect" 
+		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).trees" logEvery="1000" mode="autodetect" 
 			log="@tree"/>
 
-		<!--logger id="screenlog" logEvery="1000" mode="autodetect">
+		<logger id="screenlog" logEvery="1000" mode="autodetect">
 			<distribution idref="posterior" name="log"/>
 			<log arg="@posterior" id="ESS.0" spec="util.ESS"/>
 			<log idref="treePrior"/>
@@ -314,7 +314,7 @@
 			<log idref="becomeUninfectiousRate"/>
 			<log idref="rateMatrix"/>
 			<log idref="mutationRate"/>
-		</logger-->
+		</logger>
 	</run>
 
 </beast>

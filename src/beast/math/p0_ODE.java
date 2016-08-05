@@ -1,4 +1,4 @@
-package math;
+package beast.math;
 
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
@@ -67,6 +67,10 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	public int getDimension() {
 		return this.dimension;
 	}
+	
+	public void setFactor(int factorP){
+	this.factor = factorP;
+}
 
 	public void computeDerivatives(double t, double[] y, double[] yDot) {
 
@@ -88,12 +92,13 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 			else yDot[i] = + (b[k]+d[k]+s[k])*y[i] - d[k]*scale - b[k]*y[i]*y[i]/scale ;
 
 			for (int j=0; j<dimension; j++){
+				
+				l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
 				if (i!=j){
 
 					if (b_ij!=null){     // infection among demes
 
-						l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
 						yDot[i] += b_ij[l]*y[i]; 
 						if (!smallNumber) yDot[i] -= b_ij[l]*y[i]*y[j];
@@ -101,29 +106,25 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 					}
 
 					// migration:
-					yDot[i] += M[i*(dimension-1)+(j<i?j:j-1)]*y[i];
-					yDot[i] -= M[i*(dimension-1)+(j<i?j:j-1)]*y[j];
+					yDot[i] += M[l]*y[i];;
+					yDot[i] -= M[l]*y[j];
 				}
 			}
 		}
 
 	}
 
-	public void setFactor(int factorP){
-		this.factor = factorP;
-	}
 
 	public static void main(String[] args) throws Exception{
 
-		/*
-        // 2d test
+// 2d test
         Double[] b = {1.03,1.06};
-        Double[] d = {150.,150.};
+        Double[] d = {1.,1.};
         Double[] s = {0.02,0.04};
         Double[] M = new Double[]{3.,4.};
 
         FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
-        FirstOrderDifferentialEquations ode = new p0_ODE(b,null,d,s,M, 2, 1, new Double[]{0.});
+        FirstOrderDifferentialEquations ode = new p0_ODE(b,null,d,s,M, 2, 1, new Double[]{0.}, 0 , false);
         double[] y0 = new double[]{1.,1.};
         double[] y = new double[2];
 
@@ -143,50 +144,22 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
         integrator.integrate(ode, 10, y0, 1, y);
 
         System.out.println("Solution: " +y[0]+" "+y[1]);
-		 */    
-		// 2d test modified
-		Double[] b = {100.,100.};
-		Double[] d = {0.,0.};
-		Double[] s = {0.,0.};
-		Double[] M = new Double[]{0.,0.};
-
-		FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
-		FirstOrderDifferentialEquations ode = new p0_ODE(b,null,d,s,M, 2, 1, new Double[]{0.}, 0, false);
-		double[] y0 = new double[]{0.8,1};
-		double[] y = new double[2];
-
-		//        StepHandler stepHandler = new StepHandler() {
-		//            public void init(double t0, double[] y0, double t) {
-		//            }
-		//
-		//            public void handleStep(StepInterpolator interpolator, boolean isLast) {
-		//                double   t = interpolator.getCurrentTime();
-		//                double[] y = interpolator.getInterpolatedState();
-		//                System.out.println(t + " " + y[0] + " " + y[1]);
-		//            }
-		//        };
-		//        integrator.addStepHandler(stepHandler);
-		//
-		//
-		integrator.integrate(ode, 100, y0, 1, y);
-
-		System.out.println("Solution: " +y[0]+" "+y[1]);
-		//
-		//
-		//        // 3d test
-		//        Double[] b = {1.03,1.06, 1.5};
-		//        Double[] d = {1.,1., 1.2};
-		//        Double[] s = {0.02,0.04, 0.1};
-		//        Double[] M = {3., 1.,4.,1.,2., 2.};
-		//
-		//        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
-		//        FirstOrderDifferentialEquations ode = new p0_ODE(b,d,s,M, 3);
-		//        double[] y0 = new double[]{1.,1.,1.};
-		//        double[] y = new double[3];
-		//
-		//        integrator.integrate(ode, 10, y0, 1, y);
-		//
-		//        System.out.println("Solution: " +y[0]+" "+y[1]+" "+y[2]);
+//
+//
+//        // 3d test
+//        Double[] b = {1.03,1.06, 1.5};
+//        Double[] d = {1.,1., 1.2};
+//        Double[] s = {0.02,0.04, 0.1};
+//        Double[] M = {3., 1.,4.,1.,2., 2.};
+//
+//        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
+//        FirstOrderDifferentialEquations ode = new p0_ODE(b,d,s,M, 3);
+//        double[] y0 = new double[]{1.,1.,1.};
+//        double[] y = new double[3];
+//
+//        integrator.integrate(ode, 10, y0, 1, y);
+//
+//        System.out.println("Solution: " +y[0]+" "+y[1]+" "+y[2]);
 	}
 
 }

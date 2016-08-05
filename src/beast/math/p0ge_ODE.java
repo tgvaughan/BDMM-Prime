@@ -1,4 +1,4 @@
-package math;
+package beast.math;
 
 
 import java.util.Arrays;
@@ -6,7 +6,6 @@ import java.util.Arrays;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 
 import beast.core.util.Utils;
@@ -104,11 +103,12 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 
 			for (int j=0; j<dimension; j++){
+				
+				l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
 				if (i!=j){
 					if (b_ij!=null){     // infection among demes
 
-						l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
 						gDot[i] += b_ij[l]*g[i]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i];
 						if (!smallNumber)
@@ -118,8 +118,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 					}
 
 					// migration:
-					gDot[i] += M[i*(dimension-1)+(j<i?j:j-1)]*g[i];
-					gDot[i] -= M[i*(dimension-1)+(j<i?j:j-1)]*g[j];
+					gDot[i] += M[l]*g[i];
+					gDot[i] -= M[l]*g[j];
 
 				}
 			}
@@ -136,12 +136,13 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 
 			for (int j=0; j<dimension; j++){
+				
+				l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
 				if (i!=j){
 
 					if (b_ij!=null){     // infection among demes
 
-						l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
 						gDot[dimension+i] += b_ij[l]*g[dimension+i];
 						if (!augmented) {
@@ -153,8 +154,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 					}
 
 					// migration:
-					gDot[dimension+i] +=  M[i*(dimension-1)+(j<i?j:j-1)]*g[dimension+i];
-					if (!augmented) gDot[dimension+i] -=  M[i*(dimension-1)+(j<i?j:j-1)]*g[dimension+j];
+					gDot[dimension+i] +=  M[l]*g[dimension+i];
+					if (!augmented) gDot[dimension+i] -=  M[l]*g[dimension+j];
 				}
 			}
 
@@ -208,6 +209,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 				from = times[index];//  + 1e-14;
 
+
 				p_integrator.integrate(P, to, y, from, y); // solve P , store solution in y
 
 				if (rhoSampling){
@@ -219,9 +221,11 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 				to = times[index];
 
+
 				steps--;
 				index--;
 			}
+
 
 			p_integrator.integrate(P, to, y, t, y); // solve P, store solution in y
 
@@ -243,9 +247,11 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	 */
 	public SmallNumber[] getPSmallNumber(double t, Boolean rhoSampling, Double[] rho){
 
+
 		double[] y = new double[dimension];
 
 		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
+
 
 		if (rhoSampling)
 			for (int i = 0; i<dimension; i++)
@@ -340,141 +346,86 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		this.P.smallNumber = SN;
 	}
 
-	public static void testCorrelations(){
+	public void testCorrelations(){
 
-		Double[] b;
-		Double[] d = {1.,1.};
-		Double[] s;
-		Double[] M;// = {3.,3.};
+        Double[] b;
+        Double[] d = {1.,1.};
+        Double[] s;
+        Double[] M;// = {3.,3.};
 
-		Double psi;
+        Double psi;
 
-		Double c1 = 0.01;
-		Double c2 = 0.1;
+        Double c1 = 0.01;
+        Double c2 = 0.1;
 
-		for (double i = 1.5; i<5; i+=0.25){
+        for (double i = 1.5; i<5; i+=0.25){
 
-			b = new Double[]{i, i};
+            b = new Double[]{i, i};
 
-			//            psi = 0.5 * ((i - d[0]) - Math.sqrt((d[0] - i) * (d[0] - i) - .04));  // assume b*s*m=constant
-
-
-			M = new Double[]{b[0]-d[0]-c2/b[0], b[0]-d[0]-c2/b[0]};     // assume b-d-s=M
-
-			psi = c2/c1 * M[0]; // assume b*m = c1 and b*s = c2
-			s = new Double[] {psi,psi};
-
-			//FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
-			FirstOrderIntegrator integrator = new ClassicalRungeKuttaIntegrator(.00001);
-			FirstOrderIntegrator integrator2 = new DormandPrince54Integrator(1.0e-6, 1., 1.0e-320, 1.0e-20);//new ClassicalRungeKuttaIntegrator(.01); //
-			FirstOrderIntegrator integrator3 = new ClassicalRungeKuttaIntegrator(.000001);
-			FirstOrderIntegrator integrator4 = new ClassicalRungeKuttaIntegrator(.01);
-
-			double T = 10.;
-			Boolean augmented = true;
-
-			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.}, 0, false);
-			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, false);
+//            psi = 0.5 * ((i - d[0]) - Math.sqrt((d[0] - i) * (d[0] - i) - .04));  // assume b*s*m=constant
 
 
-			double[] y0 = new double[]{1.,1.,1.,1.};
-			double[] y = new double[4];
-			//
-			integrator.integrate(pg_ode, T, y0, 0., y);
-			
+            M = new Double[]{b[0]-d[0]-c2/b[0], b[0]-d[0]-c2/b[0]};     // assume b-d-s=M
 
-			System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]);
-			
-			y0 = new double[]{1.,1.,1.,1.};
-			y = new double[4];
-			integrator2.integrate(pg_ode, T, y0, 0., y);
-			
-			System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]);
-			
-			y0 = new double[]{1.,1.,1.,1.};
-			y = new double[4];
-			integrator3.integrate(pg_ode, T, y0, 0., y);
-			
-			System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]);
-			
-			y0 = new double[]{1.,1.,1.,1.};
-			y = new double[4];
-			integrator4.integrate(pg_ode, T, y0, 0., y);
-			
-			System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]);
-		}
-	}
+            psi = c2/c1 * M[0]; // assume b*m = c1 and b*s = c2
+            s = new Double[] {psi,psi};
+
+            FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
+
+            double T = 10.;
+            Boolean augmented = true;
+
+            p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.}, 0, false);
+            p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, false);
+
+
+            double[] y0 = new double[]{1.,1.,1.,1.};
+            double[] y = new double[4];
+//
+            integrator.integrate(pg_ode, T, y0, 0., y);
+
+            System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
+            System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]);
+        }
+    }
 
 	public static void main(String args[]){
 
-		p0ge_ODE.testCorrelations();
+        Double[] birth = {2.,2.};
+        Double[] b;
+        Double[] d = {.5,.5};
+        Double[] s = {.5,.5};
+        Double[] M = {0.,0.};
+
+        System.out.println("b\tp\tg");
+
+//         for (double i = 0.; i<10.01; i+=0.01){
+
+        int i = 1;
+
+        b = new Double[]{i*birth[0], i*birth[1]};
+
+        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-6, 1.0e-6);//new ClassicalRungeKuttaIntegrator(.01); //
+
+        double T = 10.;
+        Boolean augmented = false;
+
+        p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.}, 0, false);
+        p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, false);
 
 
-		Double[] birth = {3.,3.};
-		Double[] b;
-		Double[] d = {0.,0.};
-		Double[] s = {.5,.5};
-		Double[] M = {0.,0.};
+        double[] p0 = new double[]{1.,1.};
+        double[] p = new double[2];
+        double[] y0 = new double[]{1.,1.,1.,1.};
+        double[] y = new double[4];
 
-		//         for (double i = 0.1; i<10.01; i+=1.){
-		int i = 1;
-		b = new Double[]{i*birth[0], i*birth[1]};
-		double T = 10.;
-		Boolean augmented = false;
+        integrator.integrate(pg_ode, T, y0, 0., y);
+        integrator.integrate(p_ode, T, p0, 0., p);
 
-		double[] p0 = new double[]{1.,1.};
-		SmallNumber[] p0sn = SmallNumber.getSmallNumbers(p0);
-		ScaledNumbers p0scaled = SmallNumberScaler.scale(p0sn, EquationType.EquationOnP);
-
-		p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.}, p0scaled.getScalingFactor()[0], true);
-		p0ge_ODE pg_ode2 = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T,
-				new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, true);
-		pg_ode2.p_integrator =  new ClassicalRungeKuttaIntegrator(.01);
-		SmallNumber[] res = pg_ode2.getPSmallNumber(0, false, null);
-		System.out.println(SmallNumber.toString(res));
-
-		/*
-		Double[] birth = {2.,2.};
-		Double[] b;
-		Double[] d = {.5,.5};
-		Double[] s = {.5,.5};
-		Double[] M = {0.,0.};
-
-		System.out.println("b\tp\tg");
-
-		//         for (double i = 0.; i<10.01; i+=0.01){
-
-		int i = 1;
-
-		b = new Double[]{i*birth[0], i*birth[1]};
-
-		FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-6, 1.0e-6);//new ClassicalRungeKuttaIntegrator(.01); //
-
-		double T = 10.;
-		Boolean augmented = false;
-
-		p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.}, 0, false);
-		p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, 0, false);
-
-
-		double[] p0 = new double[]{1.,1.};
-		double[] p = new double[2];
-		double[] y0 = new double[]{1.,1.,1.,1.};
-		double[] y = new double[4];
-
-		integrator.integrate(pg_ode, T, y0, 0., y);
-		integrator.integrate(p_ode, T, p0, 0., p);
-
-		//             System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
-		System.out.println(b[0] + "\t" + p[0]+"\t"+p[1]);
-		System.out.println(b[0] + "\t" + y[0]+"\t"+y[1]+"\t"+y[2]+"\t"+y[3]);
-		//         }
-		 * 
-		 */
-	}
+//             System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
+        System.out.println(b[0] + "\t" + p[0]+"\t"+p[1]);
+        System.out.println(b[0] + "\t" + y[0]+"\t"+y[1]+"\t"+y[2]+"\t"+y[3]);
+//         }
+    }
 }
 

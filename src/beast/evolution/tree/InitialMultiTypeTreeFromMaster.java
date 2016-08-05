@@ -1,5 +1,6 @@
 package beast.evolution.tree;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
@@ -16,6 +17,7 @@ import java.util.List;
  * Date: 11.06.14
  * Time: 14:35
  */
+@Description("Make a MultiTypeTree with tip dates and states obtained from MASTER simulation")
 public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements StateNodeInitialiser {
 
     public Input<BeastTreeFromMaster> masterTreeInput = new Input<BeastTreeFromMaster>(
@@ -28,21 +30,21 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
     public Input<Double> popSizeInput = new Input<Double>("popSize",
             "Population size for tree proposal", Input.Validate.REQUIRED);
 
-    public Input<Integer> nTypes = new Input<>("nTypes", "Number of types", Input.Validate.REQUIRED);
+    public Input<Integer> nTypes = new Input<>("nTypes", "The number of types", Input.Validate.REQUIRED);
 
     public Input<Boolean> random = new Input<>("random", "Built random tree with traits from BeastTreeFromMaster? If false, tree will copy BeastTreeFromMaster (default true)", true);
 
     StateNode tree;
 
     @Override
-    public void initAndValidate() throws Exception {
+    public void initAndValidate() {
 
         initStateNodes();
         super.initAndValidate();
     }
 
     @Override
-    public void initStateNodes() throws Exception {
+    public void initStateNodes() {
 
         typeLabel = typeLabelInput.get();
 //        nTypes = nTypesInput.get();
@@ -58,7 +60,7 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
         for (Node beastNode : masterTree.getExternalNodes()){
 
             dates += beastNode.getID() + "=" + beastNode.getHeight() +",";
-            types += beastNode.getID() + "=" + (int)beastNode.getMetaData("location") +",";
+            types += beastNode.getID() + "=" + ((int[])beastNode.getMetaData("location"))[0] +",";
 
         }
 
