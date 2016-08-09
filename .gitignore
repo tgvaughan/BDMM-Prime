@@ -3,5 +3,10 @@
 /.idea
 /*.iml
 
+# Eclipse
+.classpath
+.project
+
 # Misc cruft
 /META-INF
+/bin

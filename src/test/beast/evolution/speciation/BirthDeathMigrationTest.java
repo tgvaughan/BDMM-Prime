@@ -28,7 +28,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
                 tree.initByName(
                         "adjustTipHeights", false,
-                        "newick", "((3[&type=0]: 1.5, 4[&type=0]: 0.5)[&type=0]: 1 , (1[&type=0]: 2, 2[&type=0]: 1)[&type=0]: 3)[&type=0];",
+                        "value", "((3[&type=0]: 1.5, 4[&type=0]: 0.5)[&type=0]: 1 , (1[&type=0]: 2, 2[&type=0]: 1)[&type=0]: 3)[&type=0];",
                         "typeLabel", "type");
 
 
@@ -61,7 +61,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
                 mtTree.initByName(
                         "adjustTipHeights", false,
-                        "newick", tree,
+                        "value", tree,
                         "typeLabel", "type");
 
         BirthDeathMigrationModel bdssm =  new BirthDeathMigrationModel();
@@ -93,7 +93,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
                 tree.initByName(
                         "adjustTipHeights", false,
-                        "newick", treeString,
+                        "value", treeString,
                         "typeLabel", "type");
 
         for (int i = 1; i<4; i++){
@@ -250,7 +250,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
         mtTree.initByName(
                 "adjustTipHeights", false,
-                "newick", newickStr,
+                "value", newickStr,
                 "typeLabel", "state");
 
 //        // Assemble migration model:
@@ -288,7 +288,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
         mtTree.initByName(
                 "adjustTipHeights", false,
-                "newick", tree,
+                "value", tree,
                 "typeLabel", "state");
 
 //         System.out.println( "gamma = " + gamma + ", beta = " + beta+ ", psi = " + psi);
@@ -348,7 +348,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
         mtTree.initByName(
                 "adjustTipHeights", false,
-                "newick", tree,
+                "value", tree,
                 "typeLabel", "state");
 
         return bdm_likelihood_MT(tolerance, maxEvals, statenumber, migrationMatrix, frequencies,  mtTree,  origin, R0,  becomeUninfectiousRate,  samplingProportion,  rho, rhoSamplingTimes, intervalTimes, conditionOnSurvival);
@@ -409,7 +409,7 @@ public class BirthDeathMigrationTest extends TestCase {
 //        tree.setInputValue("singlechild", "true");
 //        tree.setInputValue("adjustTipHeights", "false");
 //        tree.setInputValue("IsLabelledNewick", "true");
-//        tree.setInputValue("newick", newick);
+//        tree.setInputValue("value", newick);
 //        tree.initAndValidate();
 //
 //        ColouredTree coltree = new ColouredTree();
