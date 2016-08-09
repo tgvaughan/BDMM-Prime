@@ -55,6 +55,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	public Input<Double> tolerance =
 			new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
+	
+	public Input<Double> absolutePrecision =
+			new Input<>("precision", "tolerance for numerical integration", 1e-100);
 
 	// the interval times for the migration rates
 	public Input<RealParameter> migChangeTimesInput =
@@ -160,7 +163,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	// <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
 
 	public Input<Boolean> useRKInput =
-			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default true", true);
+			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default false", true);
 
 	public Input<Boolean> useSmallNumbers = new Input<>("useSN",
 			"Use non-underflowing method (default: true)", true);
@@ -874,8 +877,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	void setupIntegrators(){   // set up ODE's and integrators
 
-		if (minstep == null) minstep = tolerance.get();
-		if (maxstep == null) maxstep = 1000.;
+		// In dvpt: trzing to figur out best min and maxstep
+		if (minstep == null) minstep = 1e-4;
+		if (maxstep == null) maxstep = 1.;
 
 		Boolean augmented = this instanceof BirthDeathMigrationModel;
 
@@ -884,10 +888,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 
 		if (!useRKInput.get()) {
-			pg_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+			pg_integrator = new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //
 			pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
-			PG.p_integrator = new DormandPrince853Integrator(minstep, maxstep, tolerance.get(), tolerance.get()); //
+			PG.p_integrator = new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //
 			PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
 		} else {
 			pg_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);

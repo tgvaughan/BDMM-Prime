@@ -346,7 +346,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		this.P.smallNumber = SN;
 	}
 
-	public void testCorrelations(){
+	public static void testCorrelations(){
 
 		Double[] b;
 		Double[] d = {1.,1.};
@@ -370,26 +370,65 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			psi = c2/c1 * M[0]; // assume b*m = c1 and b*s = c2
 			s = new Double[] {psi,psi};
 
-			FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
 
-			double T = 10.;
+			FirstOrderIntegrator integrator1 = new ClassicalRungeKuttaIntegrator(.01);
+			FirstOrderIntegrator integrator2 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-100, 1.0e-10);
+			FirstOrderIntegrator integrator3 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-10);
+			FirstOrderIntegrator integrator4 = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
+
+			// changed time to fit my needs
+			double T = 5.;
 			Boolean augmented = true;
 
 			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.}, 0, false);
 			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, false);
-
+			
+			System.out.println("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
 
 			double[] y0 = new double[]{1.,1.,1.,1.};
 			double[] y = new double[4];
 			//
-			integrator.integrate(pg_ode, T, y0, 0., y);
+			long start = System.nanoTime();
+			integrator1.integrate(pg_ode, T, y0, 0., y);
+			long end = System.nanoTime();
+			long microseconds = (end - start) / 1000;
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+"ms");
+			
+			y0 = new double[]{1.,1.,1.,1.};
+			y = new double[4];
+			
+			start = System.nanoTime();
+			integrator2.integrate(pg_ode, T, y0, 0., y);
+			end = System.nanoTime();
+			microseconds = (end - start) / 1000;
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+"ms");
+			
+			y0 = new double[]{1.,1.,1.,1.};
+			y = new double[4];
+			
+			start = System.nanoTime();
+			integrator3.integrate(pg_ode, T, y0, 0., y);
+			end = System.nanoTime();
+			microseconds = (end - start) / 1000;
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+"ms");
+			
 
-			System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]);
+			
+			y0 = new double[]{1.,1.,1.,1.};
+			y = new double[4];
+			
+			start = System.nanoTime();
+			integrator4.integrate(pg_ode, T, y0, 0., y);
+			end = System.nanoTime();
+			microseconds = (end - start) / 1000;
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+"ms");
+
 		}
 	}
 
 	public static void main(String args[]){
+		
+		testCorrelations();
 
 		Double[] birth = {2.,2.};
 		Double[] b;
