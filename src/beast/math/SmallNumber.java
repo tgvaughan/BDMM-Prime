@@ -11,6 +11,7 @@ public class SmallNumber {
 	private double root;
 	private int exponent;
 	public static final int numbersPrinted = 12;
+	public static final int threshold = -20;
 
 	// number of orders of magnitude between two Small Numbers needed to consider that the lower one is negligible compared to the higher one
 	public static final int approximationThreshold = 18;
@@ -226,14 +227,44 @@ public class SmallNumber {
 		return Math.log(this.root) + this.exponent*Math.log(10);
 	}
 
+
 	public static boolean isInfinite(SmallNumber a){
 		return (Double.isInfinite(a.root));
 	}
 
+	/**
+	 * Average exponent of an array of Small Numbers. Can be useful for testing properties of the likelihood input and results.
+	 * @param a
+	 * @return
+	 */
+	public static double averageExponent(SmallNumber[] nums){
+		double res = 0;
+		int n = nums.length;
+		
+		for (int i=0; i<n; i++) {
+			res = res + (nums[i].exponent*1.0)/n;
+		}
+		return res;
+	}
+	
+	/**
+	 * Compare the minimal exponent of an array of Small Numbers with an arbitrary threshold. 
+	 * @param nums
+	 * @return 1 if the minimal exponent went over the threshold (in absolute value), 0 if it did not
+	 */
+	public static int compareExponent(SmallNumber[] nums){
+		int min = nums[0].exponent;
+		for (int i=1; i<nums.length; i++) {
+			min = min>nums[i].exponent? nums[i].exponent: min;
+		}
+		int res = min < SmallNumber.threshold ? 1: 0;
+		return res;
+	}
+	
 	public static void main(String args[]) {
-
+/*
 		//Simple test 
-		/*
+		
 		double aOld = 0.00000000000000000000000000000000000000000000000000000000000000000000000000123645445640000;
 		SmallNumber a = new SmallNumber(aOld);
 		SmallNumber c = new SmallNumber(0);
@@ -250,8 +281,8 @@ public class SmallNumber {
 		for (int i=0; i<4; i++) emptyTable[i] = new SmallNumber();
 		System.out.println(SmallNumber.toString(emptyTable));
 		System.out.println(emptyDouble[2]);
-		 */
-
+		 
+*/
 		// Tests on basic operations
 		SmallNumber a = new SmallNumber(4564.3453);
 		SmallNumber b = new SmallNumber(89);
@@ -269,8 +300,10 @@ public class SmallNumber {
 
 		// Test sur scaledNumbers
 		SmallNumber[] eq = {new SmallNumber(0), new SmallNumber(0), new SmallNumber(1.5), new SmallNumber(0), new SmallNumber(1., 400), new SmallNumber(1., -200), new SmallNumber(1., -500)};
+		double m = SmallNumber.averageExponent(eq);
+		
 		ScaledNumbers scaeq = SmallNumberScaler.scale(eq, EquationType.EquationOnP);
-		System.out.println(SmallNumber.toString(eq));
+		System.out.println(SmallNumber.toString(eq) +  "with an average exponent of: " + m + "\t and minimal exponent compared to the set threshold of: " + SmallNumber.compareExponent(eq));
 		System.out.println(scaeq.getScalingFactor()[0]);
 		System.out.println("\n" + scaeq.getEquation()[0] + " " + scaeq.getEquation()[1] + " " + scaeq.getEquation()[2] + " " + scaeq.getEquation()[3] + " " + scaeq.getEquation()[4] + " " + scaeq.getEquation()[5] + " " + scaeq.getEquation()[6]);
 
@@ -282,6 +315,8 @@ public class SmallNumber {
 		//		System.out.println(ka.toString());
 		//		SmallNumber kb = new SmallNumber(0);
 		//		System.out.println(SmallNumber.isInfinite(kb));
+		 
+		
 
 
 	}

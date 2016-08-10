@@ -21,7 +21,7 @@ import java.util.Arrays;
  */
 public class BirthDeathMigrationUncolouredTest extends TestCase {
 
-
+	
     double runtime;
     int maxEvalsUsed = -1;
 

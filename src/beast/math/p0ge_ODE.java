@@ -372,9 +372,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 
 			FirstOrderIntegrator integrator1 = new ClassicalRungeKuttaIntegrator(.01);
-			FirstOrderIntegrator integrator2 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-100, 1.0e-10);
-			FirstOrderIntegrator integrator3 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-10);
-			FirstOrderIntegrator integrator4 = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
+			FirstOrderIntegrator integrator2 = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-50, 1.0e-5);
+			FirstOrderIntegrator integrator3 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-15);
+			FirstOrderIntegrator integrator4 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-20);//new ClassicalRungeKuttaIntegrator(.01); //
 
 			// changed time to fit my needs
 			double T = 5.;

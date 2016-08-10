@@ -170,6 +170,11 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
+	// for development purpose only
+	public static int numberOvers = 0;
+	public static int numberTotal = 0;
+	
+	
 	double T;
 	double orig;
 	int ntaxa;
@@ -472,6 +477,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				PG.setFactor(pgScaled.getScalingFactor()[0]); // store the right scaling factor for p equations (needed in the derivatives' calculations)
 				pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults); // solve PG , store solution temporarily integrationResults
 				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
+				PiecewiseBirthDeathMigrationDistribution.numberTotal ++;
+				//PiecewiseBirthDeathMigrationDistribution.numberOvers.
 				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor(), EquationType.EquationOnGe);
 
 				if (rhoChanges>0){
