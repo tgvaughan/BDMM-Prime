@@ -5,6 +5,7 @@ import beast.evolution.tree.*;
 import junit.framework.TestCase;
 import org.junit.Test;
 import beast.evolution.speciation.BirthDeathMigrationModel;
+import beast.evolution.speciation.PiecewiseBirthDeathMigrationDistribution;
 
 /**
 * @author dkuh004
@@ -34,6 +35,7 @@ public class BirthDeathMigrationTest extends TestCase {
 
          BirthDeathMigrationModel bdm =  new BirthDeathMigrationModel();
 
+
          bdm.setInputValue("tree", tree);
 
          bdm.setInputValue("stateNumber", "1");
@@ -47,6 +49,16 @@ public class BirthDeathMigrationTest extends TestCase {
          bdm.setInputValue("conditionOnSurvival", true);
 
          bdm.initAndValidate();
+         
+         // for dev only
+         PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
+         PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+         bdm.calculateLogP();
+
+         System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
+        		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
+        		 "\tRatio: " + PiecewiseBirthDeathMigrationDistribution.numberOvers*1.0/PiecewiseBirthDeathMigrationDistribution.numberTotal);
+         //end of dev section
 
          assertEquals(-15.99699690815937, bdm.calculateLogP(), 1e-4);   // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
 
@@ -80,6 +92,17 @@ public class BirthDeathMigrationTest extends TestCase {
         bdssm.setInputValue("rhoSamplingTimes","0. 0.5 1.");
         bdssm.setInputValue("reverseTimeArrays","false false false true");
         bdssm.initAndValidate();
+        
+        // for dev only
+        PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
+        PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+        bdssm.calculateLogP();
+
+        System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
+       		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
+       		 "\tRatio: " + PiecewiseBirthDeathMigrationDistribution.numberOvers*1.0/PiecewiseBirthDeathMigrationDistribution.numberTotal);
+        //end of dev section
+        
         assertEquals(-122.2313926454848, bdssm.calculateTreeLogLikelihood(mtTree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
 
     }
@@ -119,6 +142,16 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.setInputValue("rhoSamplingTimes", new RealParameter("0. 1. 1.1"));
 
                     bdssm.initAndValidate();
+                    
+                    // for dev only
+                    PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
+                    PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+                    bdssm.calculateLogP();
+
+                    System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
+                   		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
+                   		 "\tRatio: " + PiecewiseBirthDeathMigrationDistribution.numberOvers*1.0/PiecewiseBirthDeathMigrationDistribution.numberTotal);
+                    //end of dev section
 
                     assertEquals(-103.00541179401198, bdssm.calculateTreeLogLikelihood(tree), 1e-4);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
 
@@ -143,6 +176,17 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.setInputValue("rho", new RealParameter("0.05 0.01"));
                     bdssm.setInputValue("rhoSamplingTimes","0. 1.");
                     bdssm.initAndValidate();
+                    
+                    // for dev only
+                    PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
+                    PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+                    bdssm.calculateLogP();
+
+                    System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
+                   		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
+                   		 "\tRatio: " + PiecewiseBirthDeathMigrationDistribution.numberOvers*1.0/PiecewiseBirthDeathMigrationDistribution.numberTotal);
+                    //end of dev section
+                    
                     assertEquals(-104.53923115852264, bdssm.calculateTreeLogLikelihood(tree), 1e-4);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
                 }
 
@@ -162,6 +206,17 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.setInputValue("rhoSamplingTimes","0. 1.");
                     bdssm.setInputValue("intervalTimes", new RealParameter("0. 0.5 1. 1.1"));
                     bdssm.initAndValidate();
+                    
+                    // for dev only
+                    PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
+                    PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+                    bdssm.calculateLogP();
+
+                    System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
+                   		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
+                   		 "\tRatio: " + PiecewiseBirthDeathMigrationDistribution.numberOvers*1.0/PiecewiseBirthDeathMigrationDistribution.numberTotal);
+                    //end of dev section
+                    
                     assertEquals(-100.15682190617582, bdssm.calculateTreeLogLikelihood(tree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
                 }
             }
@@ -385,10 +440,23 @@ public class BirthDeathMigrationTest extends TestCase {
         bdm.setInputValue("tolerance", tolerance);
 
         bdm.initAndValidate();
+        
+        // for dev only
+        PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
+        PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+        // end of dev
 
         long startTime = System.currentTimeMillis();
         double logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
         runtime = System.currentTimeMillis() - startTime;
+        
+
+        // for dev only
+        System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
+       		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
+       		 "\tRatio: " + PiecewiseBirthDeathMigrationDistribution.numberOvers*1.0/PiecewiseBirthDeathMigrationDistribution.numberTotal);
+        //end of dev section
+        
         maxEvalsUsed = bdm.maxEvalsUsed;
         assertEquals(0., 0., 1e-2);
 

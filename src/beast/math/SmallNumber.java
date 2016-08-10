@@ -11,7 +11,7 @@ public class SmallNumber {
 	private double root;
 	private int exponent;
 	public static final int numbersPrinted = 12;
-	public static final int threshold = -20;
+	public static final int threshold = -10;
 
 	// number of orders of magnitude between two Small Numbers needed to consider that the lower one is negligible compared to the higher one
 	public static final int approximationThreshold = 18;

@@ -221,7 +221,7 @@ public class SmallNumberScaler {
 				unscaledNumbers[i].addExponent(-factors[0]);
 			}
 			
-			// !!! for development only, reunite both for loops when done !!!
+			// !!! for development only, reunite both 'for' loops when done !!!
 			for (int i = 0; i < dim; i++){
 				unscaledNumbers[i+dim] = new SmallNumber(numbers[i+dim]);
 				
