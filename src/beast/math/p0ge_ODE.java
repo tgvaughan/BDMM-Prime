@@ -1,11 +1,12 @@
 package beast.math;
 
 
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-
 import java.util.Arrays;
+
+import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 
 import beast.core.util.Utils;
 
@@ -14,270 +15,417 @@ import beast.core.util.Utils;
  * Date: Jul 11, 2013
  * Time: 5:56:21 PM
  */
+
+
 public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
-    p0_ODE P;
-    public FirstOrderIntegrator p_integrator;
+	p0_ODE P;
+	public FirstOrderIntegrator p_integrator;
 
-    Double[] b;
-    Double[] b_ij;
-    Double[] d;
-    Double[] s;
-//    Boolean birthChanges; // Does birth rate change over time, i.e. among intervals?
-//    Boolean deathChanges; // Does death rate change over time, i.e. among intervals?
-//    Boolean samplingChanges; // Does sampling rate change over time, i.e. between intervals?
+	Double[] b;
+	Double[] b_ij;
+	Double[] d;
+	Double[] s;
 
-    Boolean augmented;
+	Boolean augmented;
 
-    Double[] M;
-    double T;
+	Double[] M;
+	double T;
 
-    int dimension; /* ODE dimension = stateNumber */
-    int intervals;
-    Double[] times;
-    int index;
+	int dimension; /* ODE dimension = stateNumber */
+	int intervals;
+	Double[] times;
+	int index;
 
-    int maxEvals;
-    public int maxEvalsUsed;
+	int maxEvals;
+	public int maxEvalsUsed;
 
-    public p0ge_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented){
+	// implementation with a scale factor switched on or off depending on smallNumber
+	int factorP;
+	boolean smallNumber;
 
+	public p0ge_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented, boolean SN){
 
-        this.b = b;
-        this.b_ij = b_ij;
-        this.d = d;
-        this.s = s;
-        this.M = M;
-        this.dimension = dimension;
-        this.intervals = intervals;
-        this.maxEvals = maxEvals;
-        maxEvalsUsed = 0;
 
-//        birthChanges = (b.length == dimension*intervals);
-//        deathChanges = (d.length == dimension*intervals);
-//        samplingChanges = (s.length == dimension*intervals);
+		this.b = b;
+		this.b_ij = b_ij;
+		this.d = d;
+		this.s = s;
+		this.M = M;
+		this.dimension = dimension;
+		this.intervals = intervals;
+		this.maxEvals = maxEvals;
+		maxEvalsUsed = 0;
 
-        this.T = T;
-        this.times= times;
-        this.P = P;
+		this.T = T;
+		this.times= times;
+		this.P = P;
 
-        this.augmented = augmented;
+		this.augmented = augmented;
 
-    }
+		// factorP represents the order of magnitude by which initial conditions for the ode (on p equations) were increased (in order to prevent underflowing)
+		// only used if smallNumber = true
+		this.factorP = P.factor;
+		this.smallNumber = SN;
+	}
 
-    public int getDimension() {
-        return 2*this.dimension;
-    }
+	public int getDimension() {
+		return 2*this.dimension;
+	}
 
-    public void computeDerivatives(double t, double[] g, double[] gDot) {
+	public void computeDerivatives(double t, double[] g, double[] gDot) {
 
-        index = Utils.index(t, times, intervals);
+		double scaleP = 0;
 
-        int k, l;
+		// compute the actual scale factor from 'factorP'
+		if (smallNumber) scaleP = Math.pow(10, factorP);
 
-        for (int i=0; i<dimension; i++){
+		index = Utils.index(t, times, intervals);
 
-            /*  p0 equations (0 .. dim-1) */
+		int k, l;
 
-            k = i*intervals + index;
+		for (int i=0; i<dimension; i++){
 
-            gDot[i] = + (b[k]+d[k]+s[k]//)*g[i]
-                    - b[k] * g[i]) * g[i]
-                    - d[k] ;
+			/*  p0 equations (0 .. dim-1) */
 
-            for (int j=0; j<dimension; j++){
+			k = i*intervals + index;
 
-                l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
+			if (smallNumber) {
+				// scaling factor applied to master equations p0
+				gDot[i] = + (b[k]+d[k]+s[k])*g[i]
+						- (b[k] * g[i] * g[i])/scaleP
+						- d[k]*scaleP ;	
+			} else {
+				gDot[i] = + (b[k]+d[k]+s[k]//)*g[i]
+						- b[k] * g[i]) * g[i]
+								- d[k] ;
+			}
 
-                if (i!=j){
-                    if (b_ij!=null){     // infection among demes
 
+			for (int j=0; j<dimension; j++){
 
-                            gDot[i] += b_ij[l]*g[i]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i];
-                            gDot[i] -= b_ij[l]*g[i]*g[j]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i]*g[j];
-                    }
+				l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
-                    // migration:
-                    gDot[i] += M[l]*g[i]; //M[i*(dimension-1)+(j<i?j:j-1)]*g[i];
-                    gDot[i] -= M[l]*g[j]; //M[i*(dimension-1)+(j<i?j:j-1)]*g[j];
+				if (i!=j){
+					if (b_ij!=null){     // infection among demes
 
-                }
-            }
 
-            /*  ge equations: (dim .. 2*dim-1) */
+						gDot[i] += b_ij[l]*g[i]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i];
+						if (!smallNumber)
+							gDot[i] -= b_ij[l]*g[i]*g[j]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i]*g[j];
+						else
+							gDot[i] -= (b_ij[l]*g[i]*g[j])/scaleP;
+					}
 
+					// migration:
+					gDot[i] += M[l]*g[i];
+					gDot[i] -= M[l]*g[j];
 
-            gDot[dimension+i] = + (b[k]+d[k]+s[k] //)*g[dimension+i]
-                    - 2*b[k]*g[i])*g[dimension+i];
+				}
+			}
 
-            for (int j=0; j<dimension; j++){
+			/*  ge equations: (dim .. 2*dim-1) */
 
-                l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
+			if (smallNumber) {
+				gDot[dimension+i] = + (b[k]+d[k]+s[k]
+						- 2*b[k]*g[i]/scaleP)*g[dimension+i];
+			} else {
+				gDot[dimension+i] = + (b[k]+d[k]+s[k] //)*g[dimension+i]
+						- 2*b[k]*g[i])*g[dimension+i];
+			}
 
-                if (i!=j){
 
-                    if (b_ij!=null){     // infection among demes
+			for (int j=0; j<dimension; j++){
 
-                            gDot[dimension+i] += b_ij[l]*g[dimension+i];
-                            if (!augmented)
-                                gDot[dimension+i] -= b_ij[l]* ( g[i]*g[dimension+j] + g[j]*g[dimension+i]);
-                    }
+				l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
-                    // migration:
-                    gDot[dimension+i] +=  M[l]*g[dimension+i]; //M[i*(dimension-1)+(j<i?j:j-1)]*g[dimension+i];
-                    if (!augmented) gDot[dimension+i] -=  M[l]*g[dimension+j]; // M[i*(dimension-1)+(j<i?j:j-1)]*g[dimension+j];
-                }
-            }
+				if (i!=j){
 
-        }
+					if (b_ij!=null){     // infection among demes
 
-//        gDot[2] = -(-(b[0]+b_ij[0]+d[0]+s[0])*g[2] + 2*b[0]*g[0]*g[2] + b_ij[0]*g[0]*g[3] + b_ij[0]*g[1]*g[2]);
-//        gDot[3] = -(-(b[1]+b_ij[1]+d[1]+s[1])*g[3] + 2*b[1]*g[1]*g[3] + b_ij[1]*g[1]*g[2] + b_ij[1]*g[0]*g[3]);
 
-    }
+						gDot[dimension+i] += b_ij[l]*g[dimension+i];
+						if (!augmented) {
+							if (smallNumber)
+								gDot[dimension+i] -= b_ij[l]* ( (g[i]*g[dimension+j])/scaleP + (g[j]*g[dimension+i])/scaleP);
+							else
+								gDot[dimension+i] -= b_ij[l]* ( g[i]*g[dimension+j] + g[j]*g[dimension+i]);
+						}
+					}
 
-    public double[] getP(double t, Boolean rhoSampling, Double[] rho){
+					// migration:
+					gDot[dimension+i] +=  M[l]*g[dimension+i];
+					if (!augmented) gDot[dimension+i] -=  M[l]*g[dimension+j];
+				}
+			}
 
-        double[] y = new double[dimension];
+		}
 
-        Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
+		//        gDot[2] = -(-(b[0]+b_ij[0]+d[0]+s[0])*g[2] + 2*b[0]*g[0]*g[2] + b_ij[0]*g[0]*g[3] + b_ij[0]*g[1]*g[2]);
+		//        gDot[3] = -(-(b[1]+b_ij[1]+d[1]+s[1])*g[3] + 2*b[1]*g[1]*g[3] + b_ij[1]*g[1]*g[2] + b_ij[1]*g[0]*g[3]);
 
-        if (rhoSampling)
-            for (int i = 0; i<dimension; i++)
-                y[i]-= rho[i*intervals + Utils.index(t, times, intervals)];    // initial condition: y_i[T]=1-rho_i
+	}
 
-        if (Math.abs(T-t)<1e-10 ||  T < t) {
-            return y;
-        }
+	/**
+	 * Perform integration on differential equations p using a classical implementation (using double[] for the initial conditions and the output).
+	 * WARNING: getP and getPSmallNumber are very similar. A correction made in one of the two would likely be needed in the other also.
+	 * @param t
+	 * @param rhoSampling
+	 * @param rho
+	 * @return
+	 */
+	public double[] getP(double t, Boolean rhoSampling, Double[] rho){
 
-        try {
+		double[] y = new double[dimension];
 
-            double from = t;
-            double to = T;
-            double oneMinusRho;
+		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
 
-            int indexFrom = Utils.index(from, times, times.length);
-            int index = Utils.index(to, times, times.length);
+		if (rhoSampling)
+			for (int i = 0; i<dimension; i++)
+				y[i]-= rho[i*intervals + Utils.index(t, times, intervals)];    // initial condition: y_i[T]=1-rho_i
 
-            int steps = index - indexFrom;
-            index--;
-            if (Math.abs(from-times[indexFrom])<1e-10) steps--;
-            if (index>0 && Math.abs(to-times[index-1])<1e-10) {
-                steps--;
-                index--;
-            }
+		if (Math.abs(T-t)<1e-10 ||  T < t) {
+			return y;
+		}
 
-            while (steps > 0){
+		try {
 
-                from = times[index];//  + 1e-14;
+			double from = t;
+			double to = T;
+			double oneMinusRho;
 
-                p_integrator.integrate(P, to, y, from, y); // solve P , store solution in y
+			int indexFrom = Utils.index(from, times, times.length);
+			int index = Utils.index(to, times, times.length);
 
-                if (rhoSampling){
-                     for (int i=0; i<dimension; i++){
-                         oneMinusRho = (1-rho[i*intervals + Utils.index(times[index], times, intervals)]);
-                         y[i] *= oneMinusRho;
-                     }
-                 }
+			int steps = index - indexFrom;
+			index--;
+			if (Math.abs(from-times[indexFrom])<1e-10) steps--;
+			if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+				steps--;
+				index--;
+			}
 
-                to = times[index];
+			while (steps > 0){
 
-                steps--;
-                index--;
-            }
+				from = times[index];//  + 1e-14;
 
-            p_integrator.integrate(P, to, y, t, y); // solve P, store solution in y
 
-        }catch(Exception e){
+				p_integrator.integrate(P, to, y, from, y); // solve P , store solution in y
 
-            throw new RuntimeException("couldn't calculate p");
-        }
+				if (rhoSampling){
+					for (int i=0; i<dimension; i++){
+						oneMinusRho = (1-rho[i*intervals + Utils.index(times[index], times, intervals)]);
+						y[i] *= oneMinusRho;
+					}
+				}
 
-        return y;
-    }
+				to = times[index];
 
 
+				steps--;
+				index--;
+			}
 
-    public void testCorrelations(){
 
-        Double[] b;
-        Double[] d = {1.,1.};
-        Double[] s;
-        Double[] M;// = {3.,3.};
+			p_integrator.integrate(P, to, y, t, y); // solve P, store solution in y
 
-        Double psi;
+		}catch(Exception e){
 
-        Double c1 = 0.01;
-        Double c2 = 0.1;
+			throw new RuntimeException("couldn't calculate p");
+		}
 
-        for (double i = 1.5; i<5; i+=0.25){
+		return y;
+	}
 
-            b = new Double[]{i, i};
+	/**
+	 * Implementation of getP with Small Numbers, to avoid potential underflowing.
+	 * WARNING: getP and getPSmallNumber are very similar. A correction made in one of the two would likely be needed in the other also.
+	 * @param t
+	 * @param rhoSampling
+	 * @param rho
+	 * @return
+	 */
+	public SmallNumber[] getPSmallNumber(double t, Boolean rhoSampling, Double[] rho){
 
-//            psi = 0.5 * ((i - d[0]) - Math.sqrt((d[0] - i) * (d[0] - i) - .04));  // assume b*s*m=constant
 
+		double[] y = new double[dimension];
 
-            M = new Double[]{b[0]-d[0]-c2/b[0], b[0]-d[0]-c2/b[0]};     // assume b-d-s=M
+		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
 
-            psi = c2/c1 * M[0]; // assume b*m = c1 and b*s = c2
-            s = new Double[] {psi,psi};
 
-            FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
+		if (rhoSampling)
+			for (int i = 0; i<dimension; i++)
+				y[i]-= rho[i*intervals + Utils.index(t, times, intervals)];    // initial condition: y_i[T]=1-rho_i
 
-            double T = 10.;
-            Boolean augmented = true;
+		// create an array of Small Numbers which will encapsulate the result of getP, to avoid any risk of underflowing
+		SmallNumber[] ySmall = new SmallNumber[dimension];
 
-            p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.});
-            p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
+		for (int i=0; i<dimension; i++){
+			ySmall[i] = new SmallNumber(y[i]);
+		}
 
+		if (Math.abs(T-t)<1e-10 ||  T < t) {
+			return ySmall;
+		}
 
-            double[] y0 = new double[]{1.,1.,1.,1.};
-            double[] y = new double[4];
-//
-            integrator.integrate(pg_ode, T, y0, 0., y);
+		try {
+			ScaledNumbers yScaled = new ScaledNumbers();
 
-            System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
-            System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]);
-        }
-    }
+			// yScaled contains the set of initial conditions scaled to fit the requirements on the values 'double' can represent, with the factor by which the numbers were multiplied 
+			yScaled = SmallNumberScaler.scale(ySmall, EquationType.EquationOnP);
 
-    public static void main(String args[]){
+			double from = t;
+			double to = T;
+			double oneMinusRho;
 
-        Double[] birth = {2.,2.};
-        Double[] b;
-        Double[] d = {.5,.5};
-        Double[] s = {.5,.5};
-        Double[] M = {0.,0.};
+			int indexFrom = Utils.index(from, times, times.length);
+			int index = Utils.index(to, times, times.length);
 
-        System.out.println("b\tp\tg");
+			int steps = index - indexFrom;
+			index--;
+			if (Math.abs(from-times[indexFrom])<1e-10) steps--;
+			if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+				steps--;
+				index--;
+			}
 
-//         for (double i = 0.; i<10.01; i+=0.01){
+			// integrationResults is used temporarily to store the results of each integration step
+			double[] integrationResults = new double[dimension];
 
-        int i = 1;
+			while (steps > 0){
 
-        b = new Double[]{i*birth[0], i*birth[1]};
+				from = times[index];//  + 1e-14;
 
-        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-6, 1.0e-6);//new ClassicalRungeKuttaIntegrator(.01); //
+				P.setFactor(yScaled.getScalingFactor()[0]); // set the right scaling factor for P equations
+				p_integrator.integrate(P, to, yScaled.getEquation(), from, integrationResults); // solve P , store solution in integrationResults then in y, when unscaled
+				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
+				ySmall = SmallNumberScaler.unscale(integrationResults, yScaled.getScalingFactor(), EquationType.EquationOnP);
 
-        double T = 10.;
-        Boolean augmented = false;
 
-        p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.});
-        p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
 
+				if (rhoSampling){
+					for (int i=0; i<dimension; i++){
+						oneMinusRho = (1-rho[i*intervals + Utils.index(times[index], times, intervals)]);
+						ySmall[i] = ySmall[i].scalarMultiply(oneMinusRho);
+					}
+				}
 
-        double[] p0 = new double[]{1.,1.};
-        double[] p = new double[2];
-        double[] y0 = new double[]{1.,1.,1.,1.};
-        double[] y = new double[4];
+				to = times[index];
 
-        integrator.integrate(pg_ode, T, y0, 0., y);
-        integrator.integrate(p_ode, T, p0, 0., p);
+				steps--;
+				index--;
 
-//             System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
-        System.out.println(b[0] + "\t" + p[0]+"\t"+p[1]);
-        System.out.println(b[0] + "\t" + y[0]+"\t"+y[1]+"\t"+y[2]+"\t"+y[3]);
-//         }
-    }
+				// 'rescale' the results of the last integration to prepare for the next integration step 
+				yScaled = SmallNumberScaler.scale(ySmall, EquationType.EquationOnP);
+			}
+
+			P.setFactor(yScaled.getScalingFactor()[0]); // set the right scaling factor for P equations
+			p_integrator.integrate(P, to, yScaled.getEquation(), t, integrationResults); // solve P, store solution in y
+			ySmall = SmallNumberScaler.unscale(integrationResults, yScaled.getScalingFactor(), EquationType.EquationOnP);
+
+
+		}catch(Exception e){
+			// e.printStackTrace();
+			throw new RuntimeException("couldn't calculate p");
+		}
+
+		return ySmall;
+	}
+
+	public void setFactor(int factorP){
+		this.factorP = factorP;
+		this.P.setFactor(factorP);
+	}
+
+	public int getFactor(){
+		return this.factorP;
+	}
+
+	public void setSmallNumber(boolean SN){
+		this.smallNumber = SN;
+		this.P.smallNumber = SN;
+	}
+
+	public void testCorrelations(){
+
+		Double[] b;
+		Double[] d = {1.,1.};
+		Double[] s;
+		Double[] M;// = {3.,3.};
+
+		Double psi;
+
+		Double c1 = 0.01;
+		Double c2 = 0.1;
+
+		for (double i = 1.5; i<5; i+=0.25){
+
+			b = new Double[]{i, i};
+
+			//            psi = 0.5 * ((i - d[0]) - Math.sqrt((d[0] - i) * (d[0] - i) - .04));  // assume b*s*m=constant
+
+
+			M = new Double[]{b[0]-d[0]-c2/b[0], b[0]-d[0]-c2/b[0]};     // assume b-d-s=M
+
+			psi = c2/c1 * M[0]; // assume b*m = c1 and b*s = c2
+			s = new Double[] {psi,psi};
+
+			FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
+
+			double T = 10.;
+			Boolean augmented = true;
+
+			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.}, 0, false);
+			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, false);
+
+
+			double[] y0 = new double[]{1.,1.,1.,1.};
+			double[] y = new double[4];
+			//
+			integrator.integrate(pg_ode, T, y0, 0., y);
+
+			System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]);
+		}
+	}
+
+	public static void main(String args[]){
+
+		Double[] birth = {2.,2.};
+		Double[] b;
+		Double[] d = {.5,.5};
+		Double[] s = {.5,.5};
+		Double[] M = {0.,0.};
+
+		System.out.println("b\tp\tg");
+
+		//         for (double i = 0.; i<10.01; i+=0.01){
+
+		int i = 1;
+
+		b = new Double[]{i*birth[0], i*birth[1]};
+
+		FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-6, 1.0e-6);//new ClassicalRungeKuttaIntegrator(.01); //
+
+		double T = 10.;
+		Boolean augmented = false;
+
+		p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.}, 0, false);
+		p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, false);
+
+
+		double[] p0 = new double[]{1.,1.};
+		double[] p = new double[2];
+		double[] y0 = new double[]{1.,1.,1.,1.};
+		double[] y = new double[4];
+
+		integrator.integrate(pg_ode, T, y0, 0., y);
+		integrator.integrate(p_ode, T, p0, 0., p);
+
+		//             System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
+		System.out.println(b[0] + "\t" + p[0]+"\t"+p[1]);
+		System.out.println(b[0] + "\t" + y[0]+"\t"+y[1]+"\t"+y[2]+"\t"+y[3]);
+		//         }
+	}
 }
 

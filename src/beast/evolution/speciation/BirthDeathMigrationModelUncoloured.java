@@ -5,6 +5,11 @@ import beast.core.Input;
 import beast.core.Description;
 import beast.core.util.Utils;
 
+import beast.math.EquationType;
+import beast.math.ScaledNumbers;
+import beast.math.SmallNumber;
+import beast.math.SmallNumberScaler;
+
 
 /**
  * @author Denise Kuehnert
@@ -14,378 +19,591 @@ import beast.core.util.Utils;
  */
 
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel with discrete locations and migration events among demes. " +
-        "This should be used when the migration process along the phylogeny is irrelevant. Otherwise the BirthDeathMigrationModel can be employed." +
-        "This implementation also works with sampled ancestor trees.")
+		"This should be used when the migration process along the phylogeny is irrelevant. Otherwise the BirthDeathMigrationModel can be employed." +
+		"This implementation also works with sampled ancestor trees." +
+		"Two implementations are available. The first is the fast classic one; the second one prevents underflowing, using so-called 'SmallNumbers', with the cost of additional computational complexity")
 public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigrationDistribution {
 
 
-    public Input<TraitSet> tiptypes = new Input<>("tiptypes", "trait information for initializing traits (like node types/locations) in the tree",  Input.Validate.REQUIRED);
-    public Input<String> typeLabel = new Input<>("typeLabel", "type label in tree for initializing traits (like node types/locations) in the tree",  Input.Validate.XOR, tiptypes);
+	public Input<TraitSet> tiptypes = new Input<>("tiptypes", "trait information for initializing traits (like node types/locations) in the tree",  Input.Validate.REQUIRED);
+	public Input<String> typeLabel = new Input<>("typeLabel", "type label in tree for initializing traits (like node types/locations) in the tree",  Input.Validate.XOR, tiptypes);
 
-    public Input<Boolean> storeNodeTypes = new Input<>("storeNodeTypes", "store tip node types? this assumes that tip types cannot change (default false)", false);
+	public Input<Boolean> storeNodeTypes = new Input<>("storeNodeTypes", "store tip node types? this assumes that tip types cannot change (default false)", false);
 
-    private int[] nodeStates;
 
-    Boolean print = false;
+	private int[] nodeStates;
 
-    @Override
-    public void initAndValidate() {
+	Boolean print = false;
 
-        super.initAndValidate();
 
-        TreeInterface tree = treeInput.get();
+	@Override
+	public void initAndValidate() {
 
-        checkOrigin(tree);
+		super.initAndValidate();
 
-        ntaxa = tree.getLeafNodeCount();
+		TreeInterface tree = treeInput.get();
 
-        birthAmongDemes = (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null);
+		checkOrigin(tree);
 
-        if (storeNodeTypes.get()) {
+		ntaxa = tree.getLeafNodeCount();
 
-            nodeStates = new int[ntaxa];
+		birthAmongDemes = (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null);
 
-            for (Node node : tree.getExternalNodes()){
-                nodeStates[node.getNr()] = getNodeState(node, true);
-            }
-        }
+		if (storeNodeTypes.get()) {
 
-        int contempCount = 0;
-        for (Node node : tree.getExternalNodes())
-            if (node.getHeight()==0.)
-                contempCount++;
-        if (checkRho.get() && contempCount>1 && rho==null)
-            throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
+			nodeStates = new int[ntaxa];
 
-        collectTimes(T);
-        setRho();
-    }
+			for (Node node : tree.getExternalNodes()){
+				nodeStates[node.getNr()] = getNodeState(node, true);
+			}
+		}
 
+		int contempCount = 0;
+		for (Node node : tree.getExternalNodes())
+			if (node.getHeight()==0.)
+				contempCount++;
+		if (checkRho.get() && contempCount>1 && rho==null)
+			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
 
-    protected Double updateRates(TreeInterface tree) {
+		collectTimes(T);
+		setRho();
+	}
 
-        birth = new Double[n*totalIntervals];
-        death = new Double[n*totalIntervals];
-        psi = new Double[n*totalIntervals];
-        b_ij = new Double[totalIntervals*(n*(n-1))];
-        M = new Double[totalIntervals*(n*(n-1))];
-        if (SAModel) r =  new Double[n * totalIntervals];
 
-        if (transform) {
-            transformParameters();
-        }
-        else {
+	protected Double updateRates(TreeInterface tree) {
 
-            Double[] birthAmongDemesRates = new Double[1];
+		birth = new Double[n*totalIntervals];
+		death = new Double[n*totalIntervals];
+		psi = new Double[n*totalIntervals];
+		b_ij = new Double[totalIntervals*(n*(n-1))];
+		M = new Double[totalIntervals*(n*(n-1))];
+		if (SAModel) r =  new Double[n * totalIntervals];
 
-            if (birthAmongDemes) birthAmongDemesRates = birthRateAmongDemes.get().getValues();
+		if (transform) {
+			transformParameters();
+		}
+		else {
 
-            updateBirthDeathPsiParams();
+			Double[] birthAmongDemesRates = new Double[1];
 
-            if (birthAmongDemes) {
+			if (birthAmongDemes) birthAmongDemesRates = birthRateAmongDemes.get().getValues();
 
-                updateAmongParameter(b_ij, birthAmongDemesRates, b_ij_Changes, b_ijChangeTimes);
-             }
-        }
+			updateBirthDeathPsiParams();
 
-        Double[] migRates = migrationMatrix.get().getValues();
+			if (birthAmongDemes) {
 
-        updateAmongParameter(M, migRates, migChanges, migChangeTimes);
+				updateAmongParameter(b_ij, birthAmongDemesRates, b_ij_Changes, b_ijChangeTimes);
+			}
+		}
 
-        updateRho();
+		Double[] migRates = migrationMatrix.get().getValues();
 
-        freq = frequencies.get().getValues();
+		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
 
-        setupIntegrators();
+		updateRho();
 
-        return 0.;
-    }
+		freq = frequencies.get().getValues();
 
-    void computeRhoTips(){
+		setupIntegrators();
 
-        double tipTime;
+		return 0.;
+	}
 
-        for (Node tip : treeInput.get().getExternalNodes()) {
+	void computeRhoTips(){
 
-            tipTime = T-tip.getHeight();
-            isRhoTip[tip.getNr()] = false;
+		double tipTime;
 
-            for (Double time:rhoSamplingChangeTimes){
+		for (Node tip : treeInput.get().getExternalNodes()) {
 
-                if (Math.abs(time-tipTime) < 1e-10 && rho[getNodeState(tip,false)*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
+			tipTime = T-tip.getHeight();
+			isRhoTip[tip.getNr()] = false;
 
-            }
-        }
-    }
+			for (Double time:rhoSamplingChangeTimes){
 
-    public double[] getG(double t, double[] PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+				if (Math.abs(time-tipTime) < 1e-10 && rho[getNodeState(tip,false)*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
 
-        if (node.isLeaf()) {
+			}
+		}
+	}
 
-            System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
-        }
+	/**
+	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
+	 * @param t
+	 * @param PG0
+	 * @param t0
+	 * @param node
+	 * @return
+	 */
+	public double[] getG(double t, double[] PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
-        return getG(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
+		if (node.isLeaf()) {
 
-    }
+			System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
+		}
 
+		return getG(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
 
-    @Override
-    public double calculateTreeLogLikelihood(TreeInterface tree) {
+	}
 
-        Node root = tree.getRoot();
+	/**
+	 * Implementation of getG with Small Number structure. Avoids underflowing of integration results.
+	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
+	 * @param t
+	 * @param PG0
+	 * @param t0
+	 * @param node
+	 * @return
+	 */
+	public SmallNumber[] getGSmallNumber(double t, SmallNumber[] PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
-        if (origin.get()==null)
-            T = root.getHeight();
-        else
-            updateOrigin(root);
 
-        collectTimes(T);
-        setRho();
+		if (node.isLeaf()) {
+			System.arraycopy(PG.getPSmallNumber(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
+		}
 
-        if ((orig < 0) || updateRates(tree) < 0 ||  (times[totalIntervals-1] > T)) {
-            logP =  Double.NEGATIVE_INFINITY;
-            return logP;
-        }
+		return getGSmallNumber(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
 
-        double[] noSampleExistsProp ;
+	}
 
-        double Pr = 0;
-        double nosample = 0;
+	/**
+	 * WARNING: calculateTreeLogLikelihood allows use of both classic and non-underflowing methods. Some chunks of code are therefore present in two similar versions in this method.
+	 * When modifying one of the versions, one should check if the other version also need the corresponding changes.
+	 */
+	@Override
+	public double calculateTreeLogLikelihood(TreeInterface tree) {
 
-        try{  // start calculation
+		Node root = tree.getRoot();
 
-            if (conditionOnSurvival.get()) {
-                noSampleExistsProp = PG.getP(0,m_rho.get()!=null,rho);
-                if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
+		if (origin.get()==null)
+			T = root.getHeight();
+		else
+			updateOrigin(root);
 
 
-                for (int root_state=0; root_state<n; root_state++){
-                    nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
-                }
+		collectTimes(T);
+		setRho();
 
-                if (nosample<0 || nosample>1)
-                    return Double.NEGATIVE_INFINITY;
-            }
+		if ((orig < 0) || updateRates(tree) < 0 ||  (times[totalIntervals-1] > T)) {
+			logP =  Double.NEGATIVE_INFINITY;
+			return logP;
+		}
 
-            double[] p;
+		double[] noSampleExistsProp ;
 
-            if ( orig > 0 ) {
-                p = calculateSubtreeLikelihood(root,0,orig);
-            }
-            else {
+		SmallNumber PrSN = new SmallNumber(0);
+		double Pr = 0;
+		double nosample = 0;
 
-                int childIndex = 0;
-                if (root.getChild(1).getNr() > root.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
+		try{  // start calculation
 
-                p = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
 
-                childIndex = Math.abs(childIndex-1);
+			if (conditionOnSurvival.get()) {
+				// since noSampleExistsProp has to be a double, and there is hardly any risk of underflowing with getP, the SmallNumber implementation is not used for this step in any case
+				noSampleExistsProp = PG.getP(0,m_rho.get()!=null,rho);
 
-                double [] p1 = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
+				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 
-                for (int i =0; i<p.length; i++) p[i]*=p1[i];
-            }
 
-            if (print) System.out.print("final p per state = ");
+				for (int root_state=0; root_state<n; root_state++){
+					nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
+				}
 
-            for (int root_state=0; root_state<n; root_state++){
+				if (nosample<0 || nosample>1)
+					return Double.NEGATIVE_INFINITY;
+			}
 
-                if (p[n+root_state]>0 ) Pr += freq[root_state]* p[n+root_state];
+			// alternatively p or pSN will be used, depending if the user wants to use the classic implementation or the one with SmallNumbers
+			SmallNumber[] pSN = new SmallNumber[] {new SmallNumber(0)};
+			double [] p = new double[] {0};
 
-                if (print) System.out.print(p[root_state] + "\t" + p[root_state+n] + "\t");
-            }
+			if ( orig > 0 ) {
+				if (useSmallNumbers.get())
+					pSN = calculateSubtreeLikelihoodSmallNumber(root,0,orig);
+				else
+					p = calculateSubtreeLikelihood(root,0,orig);
+			}
+			else {
+				int childIndex = 0;
+				if (root.getChild(1).getNr() > root.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
 
-            if (conditionOnSurvival.get()){
-                Pr /= (1-nosample);
-            }
 
-        }catch(Exception e){
+				// depending on the method chosen by the user, SmallNumbers or doubles will be used to store the results between calculations step
+				if (useSmallNumbers.get()) {
+					pSN = calculateSubtreeLikelihoodSmallNumber(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
 
-            if (e instanceof ConstraintViolatedException){throw e;}
+					childIndex = Math.abs(childIndex-1);
 
-            logP =  Double.NEGATIVE_INFINITY;
-            return logP;
-        }
+					SmallNumber [] p1SN = calculateSubtreeLikelihoodSmallNumber(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
 
-        maxEvalsUsed = Math.max(maxEvalsUsed, PG.maxEvalsUsed);
+					for (int i =0; i<pSN.length; i++) pSN[i] = SmallNumber.multiply(pSN[i], p1SN[i]);
 
-        logP = Math.log(Pr);
-        if (print) System.out.println("\nlogP = " + logP);
+				} else { 
+					p = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
 
-        if (Double.isInfinite(logP)) logP = Double.NEGATIVE_INFINITY;
+					childIndex = Math.abs(childIndex-1);
 
-        if (SAModel && !(removalProbability.get().getDimension()==n && removalProbability.get().getValue()==1.)) {
-            int internalNodeCount = tree.getLeafNodeCount() - ((Tree)tree).getDirectAncestorNodeCount()- 1;
-            logP +=  Math.log(2)*internalNodeCount;
-        }
+					double [] p1 = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
 
-        return logP;
-    }
+					for (int i =0; i<p.length; i++) p[i]*=p1[i];
+				}
+			}
 
-    private int getNodeState(Node node, Boolean init){
+			if (print) System.out.print("final p per state = ");
 
-        try {
+			if (useSmallNumbers.get()) {
+				for (int root_state=0; root_state<n; root_state++){
 
-            if (!storeNodeTypes.get() || init){
+					if (pSN[n+root_state].getRoot()>0 ) 
+						PrSN = SmallNumber.add(PrSN, pSN[n+root_state].scalarMultiply(freq[root_state]));
 
-                int nodestate = tiptypes.get() != null ?
-                        (int) tiptypes.get().getValue((node.getID())) :
-                        ((node instanceof MultiTypeNode) ? ((MultiTypeNode) node).getNodeType() : -2);
+					if (print) System.out.print(pSN[root_state] + "\t" + pSN[root_state+n] + "\t");
+				}
 
-                if (nodestate == -2) {
-                    Object d = node.getMetaData(typeLabel.get());
+				if (conditionOnSurvival.get()){
+					PrSN = PrSN.scalarMultiply(1/(1-nosample));
+				}
 
-                    if (d instanceof Integer) nodestate = (Integer) node.getMetaData(typeLabel.get());
-                    else if
-                            (d instanceof Double) nodestate = (((Double) node.getMetaData(typeLabel.get())).intValue());
-                    else if
-                            (d instanceof int[]) nodestate = (((int[]) node.getMetaData(typeLabel.get()))[0]);
-                }
+			} else {
+				for (int root_state=0; root_state<n; root_state++){
 
-                return nodestate;
+					if (p[n+root_state]>0 ) Pr += freq[root_state]* p[n+root_state];
 
-            }
-            else return nodeStates[node.getNr()];
+					if (print) System.out.print(p[root_state] + "\t" + p[root_state+n] + "\t");
+				}
 
-        }catch(Exception e){
-            throw new ConstraintViolatedException("Something went wrong with the assignment of types to the nodes (node ID="+node.getID()+"). Please check your XML file!");
-        }
-    }
+				if (conditionOnSurvival.get()){
+					Pr /= (1-nosample);
+				}
+			}
 
 
-    double[] calculateSubtreeLikelihood(Node node, double from, double to) {
+		}catch(Exception e){
 
-        double[] init = new double[2*n];
+			if (e instanceof ConstraintViolatedException){throw e;}
 
-        int index = Utils.index(to,times, totalIntervals);
+			logP =  Double.NEGATIVE_INFINITY;
+			return logP;
+		}
 
-        if (node.isLeaf()){ // sampling event
+		maxEvalsUsed = Math.max(maxEvalsUsed, PG.maxEvalsUsed);
 
-            int nodestate = getNodeState(node, false);
+		if (useSmallNumbers.get()) logP = PrSN.log();
 
-            if (nodestate==-1) { //unknown state
+		else logP = Math.log(Pr);
 
-                if (SAModel)
-                    throw new ConstraintViolatedException("SA model not implemented with unknown states!");
+		if (print) System.out.println("\nlogP = " + logP);
 
-                for (int i=0; i<n; i++) {
+		if (Double.isInfinite(logP)) logP = Double.NEGATIVE_INFINITY;
 
-                    if (!isRhoTip[node.getNr()]) {
-                        init[n + i] = psi[i * totalIntervals + index];
-                    }
-                    else
-                        init[n + i] = rho[i*totalIntervals+index];
-                }
-            }
-            else {
+		if (SAModel && !(removalProbability.get().getDimension()==n && removalProbability.get().getValue()==1.)) {
+			int internalNodeCount = tree.getLeafNodeCount() - ((Tree)tree).getDirectAncestorNodeCount()- 1;
+			logP +=  Math.log(2)*internalNodeCount;
+		}
 
-                if (!isRhoTip[node.getNr()])
-                    init[n + nodestate] = SAModel
-                            ? psi[nodestate * totalIntervals + index]* (r[nodestate * totalIntervals + index] + (1-r[nodestate * totalIntervals + index])*PG.getP(to, m_rho.get()!=null, rho)[nodestate]) // with SA: ψ_i(r + (1 − r)p_i(τ))
-                            : psi[nodestate * totalIntervals + index];
+		return logP;
+	}
 
-                else
-                    init[n+nodestate] = rho[nodestate*totalIntervals+index];
 
-            }
-            if (print) System.out.println("Sampling at time " + (T-to));
+	private int getNodeState(Node node, Boolean init){
 
-            return getG(from, init, to, node);
-        }
+		try {
 
-        else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
+			if (!storeNodeTypes.get() || init){
 
-            if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
+				int nodestate = tiptypes.get() != null ?
+						(int) tiptypes.get().getValue((node.getID())) :
+							((node instanceof MultiTypeNode) ? ((MultiTypeNode) node).getNodeType() : -2);
 
-                if (r==null)
-                        throw new ConstraintViolatedException("Error: Sampled ancestor found, but removalprobability not specified!");
+						if (nodestate == -2) {
+							Object d = node.getMetaData(typeLabel.get());
 
-                int childIndex = 0;
+							if (d instanceof Integer) nodestate = (Integer) node.getMetaData(typeLabel.get());
+							else if
+							(d instanceof Double) nodestate = (((Double) node.getMetaData(typeLabel.get())).intValue());
+							else if
+							(d instanceof int[]) nodestate = (((int[]) node.getMetaData(typeLabel.get()))[0]);
+						}
 
-                if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
+						return nodestate;
 
-                double[] g = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+			}
+			else return nodeStates[node.getNr()];
 
-                int saNodeState = getNodeState(node.getChild(Math.abs(childIndex - 1)), false); // get state of direct ancestor
+		}catch(Exception e){
+			throw new ConstraintViolatedException("Something went wrong with the assignment of types to the nodes (node ID="+node.getID()+"). Please check your XML file!");
+		}
+	}
 
-                    init[saNodeState] = g[saNodeState];
-                    //initial condition for SA: ψ_i(1 − r_i) g :
-                    init[n + saNodeState] = psi[saNodeState * totalIntervals + index] * (1-r[saNodeState * totalIntervals + index]) * g[n + saNodeState];
-            }
 
-            else {   // birth / infection event
+	/**
+	 * WARNING: calculateSubTreeLikelihood and calculateSubTreeLikelihoodSmalNumber are very similar. A modification made in one of the two would likely be needed in the other one also
+	 * @param node
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	double[] calculateSubtreeLikelihood(Node node, double from, double to) {
 
-                int childIndex = 0;
-                if (node.getChild(1).getNr() > node.getChild(0).getNr())
-                    childIndex = 1; // always start with the same child to avoid numerical differences
 
-                double[] g0 = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+		double[] init = new double[2*n];
 
-                childIndex = Math.abs(childIndex - 1);
+		int index = Utils.index(to,times, totalIntervals);
 
-                double[] g1 = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+		if (node.isLeaf()){ // sampling event
 
-                if (print)
-                    System.out.println("Infection at time " + (T - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
+			int nodestate = getNodeState(node, false);
 
+			if (nodestate==-1) { //unknown state
 
-                for (int childstate = 0; childstate < n; childstate++) {
+				if (SAModel)
+					throw new ConstraintViolatedException("SA model not implemented with unknown states!");
 
-                    if (print) {
-                        System.out.println("state " + childstate + "\t p0 = " + g0[childstate] + "\t p1 = " + g1[childstate]);
-                        System.out.println("\t\t g0 = " + g0[n + childstate] + "\t g1 = " + g1[n + childstate]);
-                    }
+				for (int i=0; i<n; i++) {
 
-                    init[childstate] = g0[childstate]; //Math.floor(((g0[childstate]+g1[childstate])/2.)/tolerance.get())*tolerance.get();  // p0 is the same for both sides of the tree, but there might be tiny numerical differences
-                    init[n + childstate] = birth[childstate * totalIntervals + index] * g0[n + childstate] * g1[n + childstate];
+					if (!isRhoTip[node.getNr()]) {
+						init[n + i] = psi[i * totalIntervals + index];
+					}
+					else
+						init[n + i] = rho[i*totalIntervals+index];
+				}
+			}
+			else {
 
-                    if (birthAmongDemes) {
-                        for (int j = 0; j < n; j++) {
-                            if (childstate != j) {
+				if (!isRhoTip[node.getNr()])
+					init[n + nodestate] = SAModel
+					? psi[nodestate * totalIntervals + index]* (r[nodestate * totalIntervals + index] + (1-r[nodestate * totalIntervals + index])*PG.getP(to, m_rho.get()!=null, rho)[nodestate]) // with SA: ψ_i(r + (1 − r)p_i(τ))
+							: psi[nodestate * totalIntervals + index];
 
-                                init[n + childstate] += 0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index] * (g0[n + childstate] * g1[n + j] + g0[n + j] * g1[n + childstate]);
-                            }
-                        }
-                    }
+					else
+						init[n+nodestate] = rho[nodestate*totalIntervals+index];
 
-                    if (Double.isInfinite(init[childstate])) {
-                        throw new RuntimeException("infinite likelihood");
-                    }
-                }
-            }
-        }
+			}
+			if (print) System.out.println("Sampling at time " + (T-to));
 
-        else {// found a single child node
+			return getG(from, init, to, node);
+		}
 
-            throw new RuntimeException("Error: Single child-nodes found (although not using sampled ancestors)");
-        }
+		else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
 
-        if (print){
-            System.out.print("p after subtree merge = ");
-            for (int i=0;i<2*n;i++) System.out.print(init[i] + "\t");
-            System.out.println();
-        }
+			if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
 
-        return getG(from, init, to, node);
-    }
+				if (r==null)
+					throw new ConstraintViolatedException("Error: Sampled ancestor found, but removalprobability not specified!");
 
-    public void transformParameters(){
+				int childIndex = 0;
 
-        transformWithinParameters();
-        transformAmongParameters();
-    }
+				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
+				double[] g = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
 
-    // used to indicate that the state assignment went wrong
-    protected class ConstraintViolatedException extends RuntimeException {
-        private static final long serialVersionUID = 1L;
+				int saNodeState = getNodeState(node.getChild(Math.abs(childIndex - 1)), false); // get state of direct ancestor
 
-            public ConstraintViolatedException(String s) {
-                super(s);
-            }
+				init[saNodeState] = g[saNodeState];
+				//initial condition for SA: ψ_i(1 − r_i) g :
+				init[n + saNodeState] = psi[saNodeState * totalIntervals + index] * (1-r[saNodeState * totalIntervals + index]) * g[n + saNodeState];
+			}
 
-    }
+			else {   // birth / infection event
+
+				int childIndex = 0;
+				if (node.getChild(1).getNr() > node.getChild(0).getNr())
+					childIndex = 1; // always start with the same child to avoid numerical differences
+
+				double[] g0 = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+
+				childIndex = Math.abs(childIndex - 1);
+
+				double[] g1 = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+
+				if (print)
+					System.out.println("Infection at time " + (T - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
+
+
+				for (int childstate = 0; childstate < n; childstate++) {
+
+					if (print) {
+						System.out.println("state " + childstate + "\t p0 = " + g0[childstate] + "\t p1 = " + g1[childstate]);
+						System.out.println("\t\t g0 = " + g0[n + childstate] + "\t g1 = " + g1[n + childstate]);
+					}
+
+					init[childstate] = g0[childstate]; //Math.floor(((g0[childstate]+g1[childstate])/2.)/tolerance.get())*tolerance.get();  // p0 is the same for both sides of the tree, but there might be tiny numerical differences
+					init[n + childstate] = birth[childstate * totalIntervals + index] * g0[n + childstate] * g1[n + childstate];
+
+					if (birthAmongDemes) {
+						for (int j = 0; j < n; j++) {
+							if (childstate != j) {
+
+								init[n + childstate] += 0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index] * (g0[n + childstate] * g1[n + j] + g0[n + j] * g1[n + childstate]);
+							}
+						}
+					}
+
+					if (Double.isInfinite(init[childstate])) {
+						throw new RuntimeException("infinite likelihood");
+					}
+				}
+			}
+		}
+
+		else {// found a single child node
+
+			throw new RuntimeException("Error: Single child-nodes found (although not using sampled ancestors)");
+		}
+
+		if (print){
+			System.out.print("p after subtree merge = ");
+			for (int i=0;i<2*n;i++) System.out.print(init[i] + "\t");
+			System.out.println();
+		}
+
+		return getG(from, init, to, node);
+	}
+
+	/**
+	 * Implementation of calculateSubtreeLikelihood with Small Number structure. Avoids underflowing of integration results.
+	 * WARNING: calculateSubTreeLikelihood and calculateSubTreeLikelihoodSmalNumber are very similar. A modification made in one of the two would likely be needed in the other one also
+	 * @param node
+	 * @param from
+	 * @param to
+	 * @return
+	 */
+	SmallNumber[] calculateSubtreeLikelihoodSmallNumber(Node node, double from, double to) {
+
+		SmallNumber[] init = new SmallNumber[2*n];
+		for (int i=0; i<2*n; i++) init[i] = new SmallNumber();
+
+
+		int index = Utils.index(to,times, totalIntervals);
+
+		if (node.isLeaf()){ // sampling event
+
+			int nodestate = getNodeState(node, false);
+
+			if (nodestate==-1) { //unknown state
+
+				if (SAModel)
+					throw new ConstraintViolatedException("SA model not implemented with unknown states!");
+
+				for (int i=0; i<n; i++) {
+
+					if (!isRhoTip[node.getNr()]) {
+						init[n + i] = new SmallNumber(psi[i * totalIntervals + index]);
+					}
+					else
+						init[n + i] = new SmallNumber(rho[i*totalIntervals+index]);
+				}
+			}
+			else {
+
+				if (!isRhoTip[node.getNr()])
+					init[n + nodestate] = SAModel
+					? SmallNumber.add(new SmallNumber(r[nodestate * totalIntervals + index])
+							,PG.getPSmallNumber(to, m_rho.get()!=null, rho)[nodestate].scalarMultiply(1-r[nodestate * totalIntervals + index]))
+							.scalarMultiply(psi[nodestate * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
+							: new SmallNumber(psi[nodestate * totalIntervals + index]);
+
+							else
+								init[n+nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
+
+			}
+			if (print) System.out.println("Sampling at time " + (T-to));
+
+			return getGSmallNumber(from, init, to, node);
+		}
+
+
+		else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
+
+			if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
+
+				if (r==null)
+					throw new ConstraintViolatedException("Error: Sampled ancestor found, but removalprobability not specified!");
+
+				int childIndex = 0;
+
+				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
+
+				SmallNumber[] g = calculateSubtreeLikelihoodSmallNumber(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+
+				int saNodeState = getNodeState(node.getChild(Math.abs(childIndex - 1)), false); // get state of direct ancestor
+
+				init[saNodeState] = g[saNodeState];
+				init[n + saNodeState] = g[n + saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index] * (1-r[saNodeState * totalIntervals + index]));
+			}
+
+			else {   // birth / infection event
+
+				int childIndex = 0;
+				if (node.getChild(1).getNr() > node.getChild(0).getNr())
+					childIndex = 1; // always start with the same child to avoid numerical differences
+
+				SmallNumber[] g0 = calculateSubtreeLikelihoodSmallNumber(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+
+				childIndex = Math.abs(childIndex - 1);
+
+				SmallNumber[] g1 = calculateSubtreeLikelihoodSmallNumber(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+
+				if (print)
+					System.out.println("Infection at time " + (T - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
+
+
+				for (int childstate = 0; childstate < n; childstate++) {
+
+					if (print) {
+						System.out.println("state " + childstate + "\t p0 = " + g0[childstate] + "\t p1 = " + g1[childstate]);
+						System.out.println("\t\t g0 = " + g0[n + childstate] + "\t g1 = " + g1[n + childstate]);
+					}
+
+					init[childstate] = g0[childstate]; 
+					init[n + childstate] =  SmallNumber.multiply(g0[n + childstate], g1[n + childstate]).scalarMultiply(birth[childstate * totalIntervals + index]);
+
+					if (birthAmongDemes) {
+						for (int j = 0; j < n; j++) {
+							if (childstate != j) {
+								init[n + childstate] = SmallNumber.add(init[n + childstate], SmallNumber.add(SmallNumber.multiply(g0[n + childstate], g1[n + j]) , SmallNumber.multiply(g0[n + j], g1[n + childstate]))
+										.scalarMultiply(0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index]));
+							}
+						}
+					}
+
+					if (SmallNumber.isInfinite(init[childstate])) {
+						throw new RuntimeException("infinite likelihood");
+					}
+				}
+			}
+		}
+
+
+		else {// found a single child node
+
+			throw new RuntimeException("Error: Single child-nodes found (although not using sampled ancestors)");
+		}
+
+		if (print){
+			System.out.print("p after subtree merge = ");
+			for (int i=0;i<2*n;i++) System.out.print(init[i] + "\t");
+			System.out.println();
+		}
+
+		return getGSmallNumber(from, init, to, node);
+	}
+
+	public void transformParameters(){
+
+		transformWithinParameters();
+		transformAmongParameters();
+	}
+
+
+	// used to indicate that the state assignment went wrong
+	protected class ConstraintViolatedException extends RuntimeException {
+		private static final long serialVersionUID = 1L;
+
+		public ConstraintViolatedException(String s) {
+			super(s);
+		}
+
+	}
 
 }
 
