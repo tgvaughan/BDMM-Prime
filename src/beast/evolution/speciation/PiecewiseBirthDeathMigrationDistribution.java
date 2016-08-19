@@ -8,7 +8,6 @@ import beast.core.parameter.RealParameter;
 import beast.core.util.Utils;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
-import beast.evolution.speciation.BirthDeathMigrationModel;
 import beast.math.p0_ODE;
 import beast.math.p0ge_ODE;
 import beast.math.EquationType;
@@ -133,9 +132,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("R0_base",
 					"The basic reproduction number for the base pathogen class, should have the same dimension as " +
 					"the number of time intervals.");
-	public Input<RealParameter> R0_ratio =
-			new Input<>("R0_ratio",
-					"The ratio of basic reproductive numbers of all other classes when compared to the base R0, " +
+	public Input<RealParameter> lambda_ratio =
+			new Input<>("lambda_ratio",
+					"The ratio of basic infection rates of all other classes when compared to the base lambda, " +
 					"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
 
 	public Input<RealParameter> migrationMatrix =
@@ -283,12 +282,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		rhoSamplingCount = 0;
 		contempData = contemp.get();
 
-		if (birthRate.get() == null && R0.get() == null && R0_base.get() == null && R0_ratio.get() == null) {
+		if (birthRate.get() == null && R0.get() == null && R0_base.get() == null && lambda_ratio.get() == null) {
 			throw new RuntimeException("Either birthRate, R0, or R0_base and R0_ratio need to be specified!");
 		} else if ((birthRate.get() != null && R0.get() != null)
-				|| (R0.get() != null && (R0_base.get() != null || R0_ratio.get() != null))
-				|| (birthRate.get() != null && (R0_base.get() != null || R0_ratio.get() != null))) {
-			throw new RuntimeException("Only one of birthRate, or R0, or R0_base and R0_ratio need to be specified!");
+				|| (R0.get() != null && (R0_base.get() != null || lambda_ratio.get() != null))
+				|| (birthRate.get() != null && (R0_base.get() != null || lambda_ratio.get() != null))) {
+			throw new RuntimeException("Only one of birthRate, or R0, or R0_base and lambda_ratio need to be specified!");
 		} else if (birthRate.get() != null && deathRate.get() != null && samplingRate.get() != null) {
 
 			transform = false;
@@ -302,7 +301,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				birthAmongDemes = true;
 				b_ij=birthRateAmongDemes.get().getValues();
 			}
-		} else if ((R0.get() != null || (R0_base.get() != null && R0_ratio.get() != null)) && becomeUninfectiousRate.get() != null && samplingProportion.get() != null) {
+		} else if ((R0.get() != null || (R0_base.get() != null && lambda_ratio.get() != null)) && becomeUninfectiousRate.get() != null && samplingProportion.get() != null) {
 			transform = true;
 		} else {
 			throw new RuntimeException("Either specify birthRate, deathRate and samplingRate OR specify R0 (or R0_base AND R0_ratio), becomeUninfectiousRate and samplingProportion!");
@@ -364,7 +363,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	 * @param t
 	 * @param PG0
 	 * @param t0
-	 * @param node
 	 * @return
 	 */
 	public double[] getG(double t, double[] PG0, double t0,
@@ -430,7 +428,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	 * @param t
 	 * @param PG0
 	 * @param t0
-	 * @param node
 	 * @return
 	 */
 	public SmallNumber[] getGSmallNumber(double t, SmallNumber[] PG0, double t0,
@@ -771,15 +768,17 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if (R0.get() != null) {
 			R = R0.get().getValues();
 		} else {
-			Double[] R_ratio = R0_ratio.get().getValues();
+			Double[] l_ratio = lambda_ratio.get().getValues();
 			Double[] R_sens = R0_base.get().getValues();
+			Double[] bUR = becomeUninfectiousRate.get().getValues();
 			int totalIntervals = R_sens.length;
-			int totalTypes = R_ratio.length + 1;
+			int totalTypes = l_ratio.length + 1;
 			R = new Double[totalIntervals * totalTypes];
 			for (int i=0; i < totalIntervals; i++) {
 				R[i] = R_sens[i];
 				for (int j=1; j < totalTypes; j++) {
-					R[i + totalIntervals * j] = R_sens[i] * R_ratio[j - 1];
+					double lambda = R_sens[i] * bUR[i];
+					R[i + totalIntervals * j] = (lambda * l_ratio[j - 1]) / bUR[i + totalIntervals * j];
 				}
 			}
 		}
