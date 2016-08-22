@@ -17,7 +17,9 @@ import beast.math.SmallNumber;
 import beast.math.SmallNumberScaler;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.ode.nonstiff.HighamHall54Integrator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,16 +50,16 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("originIsRootEdge", "The origin is only the length of the root edge", false);
 
 	public Input<Integer> maxEvaluations =
-			new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", 20000);
+			new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", 1000000);
 
 	public Input<Boolean> conditionOnSurvival =
 			new Input<>("conditionOnSurvival", "condition on at least one survival? Default true.", true);
 
 	public Input<Double> tolerance =
-			new Input<>("tolerance", "tolerance for numerical integration", 1e-14);
+			new Input<>("tolerance", "tolerance for numerical integration", 1e-6);
 	
 	public Input<Double> absolutePrecision =
-			new Input<>("precision", "tolerance for numerical integration", 1e-100);
+			new Input<>("precision", "tolerance for numerical integration", 1e-50);
 
 	// the interval times for the migration rates
 	public Input<RealParameter> migChangeTimesInput =
@@ -163,7 +165,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	// <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
 
 	public Input<Boolean> useRKInput =
-			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default false", true);
+			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default false", false);
 
 	public Input<Boolean> useSmallNumbers = new Input<>("useSN",
 			"Use non-underflowing method (default: true)", true);
@@ -882,9 +884,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	void setupIntegrators(){   // set up ODE's and integrators
 
-		// In dvpt: trzing to figur out best min and maxstep
-		if (minstep == null) minstep = 1e-4;
-		if (maxstep == null) maxstep = 1.;
+		// In dvpt: trying to figure out best min and maxstep
+		if (minstep == null) minstep = T*1e-100;
+		if (maxstep == null) maxstep = T/10;
 
 		Boolean augmented = this instanceof BirthDeathMigrationModel;
 
@@ -893,7 +895,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 
 		if (!useRKInput.get()) {
-			pg_integrator = new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //
+			pg_integrator = new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()) // new HighamHall54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //
 			pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
 			PG.p_integrator = new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //

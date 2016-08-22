@@ -19,7 +19,9 @@ public class BirthDeathMigrationTest extends TestCase {
     int maxEvalsUsed = -1;
 
     int maxEvals = Integer.MAX_VALUE;
-    double tolerance = 1e-14;
+    
+    //changed the value here
+    double tolerance = 1e-9;
 
 
 
@@ -53,8 +55,12 @@ public class BirthDeathMigrationTest extends TestCase {
          // for dev only
          PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
          PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
-         bdm.calculateLogP();
-
+ 		long start = System.nanoTime();
+        bdm.calculateLogP();
+		long end = System.nanoTime();
+		long microseconds = (end - start) / 1000;
+		System.out.println(microseconds+" \u03BCs");
+		
          System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
         		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
         		 "\tRatio: " + PiecewiseBirthDeathMigrationDistribution.numberOvers*1.0/PiecewiseBirthDeathMigrationDistribution.numberTotal);
@@ -96,7 +102,12 @@ public class BirthDeathMigrationTest extends TestCase {
         // for dev only
         PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
         PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+		long start = System.nanoTime();
         bdssm.calculateLogP();
+		long end = System.nanoTime();
+		long microseconds = (end - start) / 1000;
+		System.out.println(microseconds+" \u03BCs");
+
 
         System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
        		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
@@ -146,7 +157,12 @@ public class BirthDeathMigrationTest extends TestCase {
                     // for dev only
                     PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
                     PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+  
+            		long start = System.nanoTime();
                     bdssm.calculateLogP();
+            		long end = System.nanoTime();
+            		long microseconds = (end - start) / 1000;
+            		System.out.println(microseconds+" \u03BCs");
 
                     System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
                    		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
@@ -180,7 +196,11 @@ public class BirthDeathMigrationTest extends TestCase {
                     // for dev only
                     PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
                     PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+            		long start = System.nanoTime();
                     bdssm.calculateLogP();
+            		long end = System.nanoTime();
+            		long microseconds = (end - start) / 1000;
+            		System.out.println(microseconds+" \u03BCs");
 
                     System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
                    		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
@@ -210,7 +230,11 @@ public class BirthDeathMigrationTest extends TestCase {
                     // for dev only
                     PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
                     PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
+            		long start = System.nanoTime();
                     bdssm.calculateLogP();
+            		long end = System.nanoTime();
+            		long microseconds = (end - start) / 1000;
+            		System.out.println(microseconds+" \u03BCs");
 
                     System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
                    		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
@@ -447,7 +471,12 @@ public class BirthDeathMigrationTest extends TestCase {
         // end of dev
 
         long startTime = System.currentTimeMillis();
+ 		long start = System.nanoTime();
         double logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
+		long end = System.nanoTime();
+		long microseconds = (end - start) / 1000;
+		System.out.println(microseconds+" \u03BCs");
+
         runtime = System.currentTimeMillis() - startTime;
         
 

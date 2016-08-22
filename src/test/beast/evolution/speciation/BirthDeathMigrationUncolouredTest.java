@@ -1027,7 +1027,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         System.out.println("Log-likelihood ("+(conditionOnSurvival?"":"not ")+"conditioned on survival) " + logL + "\t");
 
 
-        assertEquals(-661.9588648301033, logL, 1e-6); // result from BEAST, not checked in R
+        assertEquals(-661.9588648301033, logL, 1e-5); // result from BEAST, not checked in R
     }
 
     // migration example adapted from BDSKY

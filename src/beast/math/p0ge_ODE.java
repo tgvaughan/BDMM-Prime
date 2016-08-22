@@ -6,7 +6,9 @@ import java.util.Arrays;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
+import org.apache.commons.math3.ode.nonstiff.*;
 
 import beast.core.util.Utils;
 
@@ -357,8 +359,10 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		Double c1 = 0.01;
 		Double c2 = 0.1;
-
-		for (double i = 1.5; i<5; i+=0.25){
+		
+		
+		// changed the range of parameters
+		for (double i =1.1; i<2; i+=0.125){
 
 			b = new Double[]{i, i};
 
@@ -372,12 +376,16 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 
 			FirstOrderIntegrator integrator1 = new ClassicalRungeKuttaIntegrator(.01);
-			FirstOrderIntegrator integrator2 = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-50, 1.0e-5);
-			FirstOrderIntegrator integrator3 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-15);
-			FirstOrderIntegrator integrator4 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-20);//new ClassicalRungeKuttaIntegrator(.01); //
+			FirstOrderIntegrator integrator2 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-10);
+			FirstOrderIntegrator integrator3 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-7);
+			FirstOrderIntegrator integrator4 = new DormandPrince54Integrator(1.0e-10, 1., 1.0e-14, 1.0e-7);
+			FirstOrderIntegrator integrator5 = new HighamHall54Integrator(1.0e-10, 1., 1.0e-14, 1.0e-7);
+			FirstOrderIntegrator integrator6 = new HighamHall54Integrator(1.0e-20, 1., 1.0e-320, 1.0e-10);
+			//FirstOrderIntegrator integrator7 = new DormandPrince54Integrator(1.0e-20, 1., 1.0e-10, 1.0e-9);
+			//FirstOrderIntegrator integrator5 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-20);//new ClassicalRungeKuttaIntegrator(.01); //
 
 			// changed time to fit my needs
-			double T = 5.;
+			double T = 1;
 			Boolean augmented = true;
 
 			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.}, 0, false);
@@ -385,43 +393,61 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			
 			System.out.println("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
 
-			double[] y0 = new double[]{1.,1.,1.,1.};
+			double[] y0 = new double[]{1.1,1.1,4.,9.};
 			double[] y = new double[4];
 			//
 			long start = System.nanoTime();
 			integrator1.integrate(pg_ode, T, y0, 0., y);
 			long end = System.nanoTime();
 			long microseconds = (end - start) / 1000;
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+"ms");
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
 			
-			y0 = new double[]{1.,1.,1.,1.};
+			y0 = new double[]{1.1,1.1,4.,9.};
 			y = new double[4];
 			
 			start = System.nanoTime();
 			integrator2.integrate(pg_ode, T, y0, 0., y);
 			end = System.nanoTime();
 			microseconds = (end - start) / 1000;
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+"ms");
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
 			
-			y0 = new double[]{1.,1.,1.,1.};
+			y0 = new double[]{1.1,1.1,4.,9.};
 			y = new double[4];
 			
 			start = System.nanoTime();
 			integrator3.integrate(pg_ode, T, y0, 0., y);
 			end = System.nanoTime();
 			microseconds = (end - start) / 1000;
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+"ms");
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
 			
 
 			
-			y0 = new double[]{1.,1.,1.,1.};
+			y0 = new double[]{1.1,1.1,4.,9.};
 			y = new double[4];
 			
 			start = System.nanoTime();
 			integrator4.integrate(pg_ode, T, y0, 0., y);
 			end = System.nanoTime();
 			microseconds = (end - start) / 1000;
-			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+"ms");
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
+			
+			y0 = new double[]{1.1,1.1,4.,9.};
+			y = new double[4];
+			
+			start = System.nanoTime();
+			integrator5.integrate(pg_ode, T, y0, 0., y);
+			end = System.nanoTime();
+			microseconds = (end - start) / 1000;
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
+			
+			y0 = new double[]{1.1,1.1,4.,9.};
+			y = new double[4];
+			
+			start = System.nanoTime();
+			integrator6.integrate(pg_ode, T, y0, 0., y);
+			end = System.nanoTime();
+			microseconds = (end - start) / 1000;
+			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
 
 		}
 	}
