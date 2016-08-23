@@ -499,7 +499,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			}
 
 			PG.setFactor(pgScaled.getScalingFactor()[0]); // store the right scaling factor for p equations (needed in the derivatives' calculations)
-			pg_integrator.integrate(PG, to, pgScaled.getEquation(), t, integrationResults); // solve P, store solution in temporarily in integrationResults
+			integrationResults = safeIntegrate(pg_integrator, PG, to, pgScaled.getEquation(), from); // solve PG , store solution temporarily integrationResults
 			PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor(), EquationType.EquationOnGe); 
 
 		}catch(Exception e){
@@ -978,6 +978,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		double minRes = getMin(integrationResults);
 		
 		if(absolutePrecision.get()/Math.abs(minRes) > tolerance.get()) {
+			//TO DO remove print
+			System.out.println("WARNING: need for a break in integration range,\n"
+					+ "Min value: " + minRes + "\tPrecision: "+ absolutePrecision.get() + "\tRatio: " + absolutePrecision.get()/Math.abs(minRes)+ "\tTolerance: " + tolerance.get());
 			integrationResults = safeIntegrate(integrator, PG, to, equation, from + (to-from)/2);
 			integrationResults = safeIntegrate(integrator, PG, from + (to-from)/2, integrationResults, from);
 		}
