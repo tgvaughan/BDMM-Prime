@@ -477,7 +477,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				from = times[index];// + 1e-14;
 
 				PG.setFactor(pgScaled.getScalingFactor()[0]); // store the right scaling factor for p equations (needed in the derivatives' calculations)
-				pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults); // solve PG , store solution temporarily integrationResults
+				integrationResults = safeIntegrate(pg_integrator, PG, to, pgScaled.getEquation(), from); // solve PG , store solution temporarily integrationResults
 				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
 				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor(), EquationType.EquationOnGe);
 
@@ -964,6 +964,33 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	@Override
 	public boolean requiresRecalculation(){
 		return true;
+	}
+	
+	public double[] safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, double[] equation, double from){
+		
+		if(Math.abs(from-to)<1e-10) return equation;
+		
+		
+		double[] integrationResults = new double[equation.length];
+		integrator.integrate(PG, to, equation, from, integrationResults);
+		if (useRKInput.get()) return integrationResults;
+		
+		double minRes = getMin(integrationResults);
+		
+		if(absolutePrecision.get()/Math.abs(minRes) > tolerance.get()) {
+			integrationResults = safeIntegrate(integrator, PG, to, equation, from + (to-from)/2);
+			integrationResults = safeIntegrate(integrator, PG, from + (to-from)/2, integrationResults, from);
+		}
+
+		return integrationResults;
+	}
+	
+	public double getMin(double[] values) {
+		double min=Double.MAX_VALUE;
+	    for (double d : values) {
+	        if (d < min ) min=d;
+	    }
+	    return min;
 	}
 
 }
