@@ -53,6 +53,24 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		this.smallNumber = smallNumber;
 	}
 
+	public p0_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension , int intervals, Double[] times) {
+
+		this.b = b;
+		this.b_ij = b_ij;
+		this.d = d;
+		this.s = s;
+		this.M = M;
+		this.dimension = dimension;
+		this.intervals = intervals;
+
+		this.times = times;
+
+		this.factor = 0;
+		this.smallNumber = false;
+
+	}
+
+
 	public void updateRates(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, Double[] times){
 
 		this.b = b;
