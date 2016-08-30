@@ -772,15 +772,15 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		} else {
 			Double[] l_ratio = lambda_ratio.get().getValues();
 			Double[] R_sens = R0_base.get().getValues();
-			Double[] bUR = becomeUninfectiousRate.get().getValues();
+
 			int totalIntervals = R_sens.length;
 			int totalTypes = l_ratio.length + 1;
 			R = new Double[totalIntervals * totalTypes];
 			for (int i=0; i < totalIntervals; i++) {
 				R[i] = R_sens[i];
 				for (int j=1; j < totalTypes; j++) {
-					double lambda = R_sens[i] * bUR[i];
-					R[i + totalIntervals * j] = (lambda * l_ratio[j - 1]) / bUR[i + totalIntervals * j];
+					double lambda = R_sens[i] * ds[i];
+					R[i + totalIntervals * j] = (lambda * l_ratio[j - 1]) / ds[ds.length > totalTypes ? (deathChanges+1)*j+index(times[i%totalIntervals], deathRateChangeTimes) : j];
 				}
 			}
 		}
