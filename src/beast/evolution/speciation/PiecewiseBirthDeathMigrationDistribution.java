@@ -8,7 +8,6 @@ import beast.core.parameter.RealParameter;
 import beast.core.util.Utils;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
-import beast.evolution.speciation.BirthDeathMigrationModel;
 import beast.math.p0_ODE;
 import beast.math.p0ge_ODE;
 import beast.math.EquationType;
@@ -163,7 +162,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default true", true);
 
 	public Input<Boolean> useSmallNumbers = new Input<>("useSN",
-			"Use non-underflowing method (default: true)", true);
+			"Use non-underflowing method (default: true)", false);
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
@@ -246,6 +245,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	@Override
 	public void initAndValidate() {
 		if (removalProbability.get() != null) SAModel = true;
+
+		//todo: throw message when logP reaches Double limits and suggest do use SmallNumbers
 
 		birth = null;
 		b_ij = null;
@@ -875,7 +876,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	void setupIntegrators(){   // set up ODE's and integrators
 
 		if (minstep == null) minstep = tolerance.get();
-		if (maxstep == null) maxstep = 1000.;
+		if (maxstep == null) maxstep = 1.;
 
 		Boolean augmented = this instanceof BirthDeathMigrationModel;
 
