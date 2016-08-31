@@ -3,6 +3,7 @@ package beast.math;
 import org.apache.commons.lang3.*;
 
 import beast.core.Description;
+import beast.evolution.speciation.PiecewiseBirthDeathMigrationDistribution;
 
 @Description("SmallNumberScaler contains methods to perform scaling/unscaling on a set of Small Numbers.")
 public class SmallNumberScaler {
@@ -192,6 +193,7 @@ public class SmallNumberScaler {
 	public static SmallNumber[] unscale(double[] numbers, int[] factors, EquationType eqType){
 
 		SmallNumber[] unscaledNumbers = new SmallNumber[numbers.length];
+		
 
 		switch(eqType){
 
@@ -215,16 +217,15 @@ public class SmallNumberScaler {
 			for (int i = 0; i < dim; i++){
 				unscaledNumbers[i] = new SmallNumber(numbers[i]);
 				unscaledNumbers[i].addExponent(-factors[0]);
-			}
-			for (int i = 0; i < dim; i++){
+				
 				unscaledNumbers[i+dim] = new SmallNumber(numbers[i+dim]);
 				unscaledNumbers[i+dim].addExponent(-factors[1]);
 			}
+				
 			break;
 		}
 
 		return unscaledNumbers;
 	}
 }
-
 

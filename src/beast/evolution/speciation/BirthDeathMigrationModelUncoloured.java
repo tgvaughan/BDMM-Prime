@@ -299,7 +299,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			int internalNodeCount = tree.getLeafNodeCount() - ((Tree)tree).getDirectAncestorNodeCount()- 1;
 			logP +=  Math.log(2)*internalNodeCount;
 		}
-
 		return logP;
 	}
 
