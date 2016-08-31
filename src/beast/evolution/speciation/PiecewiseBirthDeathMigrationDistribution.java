@@ -165,17 +165,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	// <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
 
 	public Input<Boolean> useRKInput =
-			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default false", true);
+			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default false", false);
 
 	public Input<Boolean> useSmallNumbers = new Input<>("useSN",
 			"Use non-underflowing method (default: true)", true);
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
-
-	// for development purpose only
-	public static int numberOvers ;
-	public static int numberTotal ;
-	
 	
 	double T;
 	double orig;
@@ -900,7 +895,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	void setupIntegrators(){   // set up ODE's and integrators
 
-		// In dvpt: trying to figure out best min and maxstep
 		if (minstep == null) minstep = T*1e-100;
 		if (maxstep == null) maxstep = T/10;
 
@@ -917,8 +911,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			PG.p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); 
 			PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
 		} else {
-			pg_integrator = new ClassicalRungeKuttaIntegrator(T / 10000);
-			PG.p_integrator = new ClassicalRungeKuttaIntegrator(T / 10000);
+			pg_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
+			PG.p_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
 
 		}
 	}
@@ -986,6 +980,15 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		return true;
 	}
 	
+	/**
+	 * If integration interval is too long to provide precise results, cuts it in half and starts integration again.
+	 * @param integrator
+	 * @param PG
+	 * @param to
+	 * @param pgScaled
+	 * @param from
+	 * @return
+	 */
 	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
 		
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
@@ -1001,14 +1004,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			throw new RuntimeException("Absolute tolerance smaller than relative tolerance for the adaptive integrator. Change values for these inputs.");
 		
 		if(minRes<0 || absoluteTolerance.get()/minRes > relativeTolerance.get() || minRes == Double.MAX_VALUE ) {
-			//TO DO remove print
-//			System.out.println("\nWARNING: need for a break in integration range,\n"
-//					+ "Min value: " + minRes + "\tPrecision: "+ absolutePrecision.get() + "\tRatio: " + absolutePrecision.get()/Math.abs(minRes)+ "\tTolerance: " + tolerance.get()
-//					+ "\tInterval size: \tto: " + to + "\tfrom: " + from + "\nInitial values: ");
-//			for (double d: pgScaled.getEquation()){
-//				System.out.print("\t" + d + "\n");
-//			}
-
 			
 			PG.setFactor(pgScaled.getScalingFactor()[0]);
 			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);

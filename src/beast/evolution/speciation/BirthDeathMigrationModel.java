@@ -157,9 +157,6 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	 */
 	@Override
 	public double calculateTreeLogLikelihood(TreeInterface tree) {
-		// TO DO remove, for dev only
-      PiecewiseBirthDeathMigrationDistribution.numberOvers  = 0;
-      PiecewiseBirthDeathMigrationDistribution.numberTotal = 0;
 
 		if (SAModel && treeInput.isDirty()) throw new RuntimeException("Error: SA Model only implemented for fixed trees!");
 
@@ -290,11 +287,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			int internalNodeCount = tree.getLeafNodeCount() - ((Tree)tree).getDirectAncestorNodeCount()- 1;
 			logP +=  Math.log(2)*internalNodeCount;
 		}
-		// TO DO remove print
-//      System.out.println("Total: " + PiecewiseBirthDeathMigrationDistribution.numberTotal + 
-//		 "\tOver: " + PiecewiseBirthDeathMigrationDistribution.numberOvers + 
-//		 "\tRatio: " + PiecewiseBirthDeathMigrationDistribution.numberOvers*1.0/PiecewiseBirthDeathMigrationDistribution.numberTotal);
-//
+
 		return logP;
 	}
 

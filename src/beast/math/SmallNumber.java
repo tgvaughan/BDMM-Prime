@@ -118,7 +118,6 @@ public class SmallNumber {
 	 * @param exp
 	 */
 	public void addExponent(int exp){
-		// TO DO warn against misuses of this method (if infinity for instance)
 		this.exponent += exp;
 		this.update();
 	}
@@ -298,7 +297,7 @@ public class SmallNumber {
 		double dOld = aOld+bOld;
 		System.out.println("With classic double implementation: " + dOld);
 
-		// Test sur scaledNumbers
+		// Test on scaledNumbers
 		SmallNumber[] eq = {new SmallNumber(0), new SmallNumber(0), new SmallNumber(1.5), new SmallNumber(0), new SmallNumber(1., 400), new SmallNumber(1., -200), new SmallNumber(1., -500)};
 		double m = SmallNumber.averageExponent(eq);
 		

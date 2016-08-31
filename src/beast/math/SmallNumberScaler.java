@@ -191,8 +191,6 @@ public class SmallNumberScaler {
 	 * @return an array of SmallNumbers
 	 */
 	public static SmallNumber[] unscale(double[] numbers, int[] factors, EquationType eqType){
-		// for development purpose
-		PiecewiseBirthDeathMigrationDistribution.numberTotal ++;
 
 		SmallNumber[] unscaledNumbers = new SmallNumber[numbers.length];
 		
@@ -219,17 +217,11 @@ public class SmallNumberScaler {
 			for (int i = 0; i < dim; i++){
 				unscaledNumbers[i] = new SmallNumber(numbers[i]);
 				unscaledNumbers[i].addExponent(-factors[0]);
-			}
-			
-			// !!! for development only, reunite both 'for' loops when done !!!
-			for (int i = 0; i < dim; i++){
-				unscaledNumbers[i+dim] = new SmallNumber(numbers[i+dim]);
 				
-			}
-			PiecewiseBirthDeathMigrationDistribution.numberOvers += SmallNumber.compareExponent(unscaledNumbers);
-			for (int i = 0; i < dim; i++){		
+				unscaledNumbers[i+dim] = new SmallNumber(numbers[i+dim]);
 				unscaledNumbers[i+dim].addExponent(-factors[1]);
-			}		
+			}
+				
 			break;
 		}
 
