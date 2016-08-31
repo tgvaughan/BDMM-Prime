@@ -127,14 +127,14 @@
             <parameter dimension="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0.08519855595667872 0.08519855595667872 0.08519855595667872 0.2528735632183908 0.2528735632183908 0.2528735632183908"/>
             <parameter dimension="6" id="becomeUninfectiousRate" lower="0.0" name="stateNode" upper="Infinity" value="1.0"/>
             <parameter dimension="3" id="R0_base" lower="0.0" name="stateNode" upper="Infinity" value="1.05"/>
-            <parameter dimension="1" id="R0_ratio" lower="0.0" name="stateNode" upper="Infinity" value="0.9"/>
+            <parameter dimension="1" id="lambda_ratio" lower="0.0" name="stateNode" upper="Infinity" value="0.9"/>
             <parameter dimension="6" name="stateNode" id="r" value="0"/>
             <stateNode idref="rateMatrix"/>
         </state>
 
         <distribution id="posterior" spec="CompoundDistribution">
             <distribution id="prior" spec="CompoundDistribution">
-                <distribution R0_base="@R0_base" R0_ratio="@R0_ratio"
+                <distribution R0_base="@R0_base" lambda_ratio="@lambda_ratio"
                     becomeUninfectiousRate="@becomeUninfectiousRate" id="BDMM"
                     origin="@origin" samplingProportion="@samplingProportion"
                     spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" tree="@tree"
@@ -148,7 +148,7 @@
                 <prior id="R0SensPrior" name="distribution" x="@R0_base">
                     <LogNormal M="0" S="0.5" name="distr"/>
                 </prior>
-                <prior id="R0RatioPrior" name="distribution" x="@R0_ratio">
+                <prior id="LambdaRatioPrior" name="distribution" x="@lambda_ratio">
                     <Beta alpha="2" beta="2" name="distr"/>
                 </prior>
                 <prior id="becomeUninfectiousRatePrior" name="distribution" x="@becomeUninfectiousRate">
@@ -158,7 +158,7 @@
         </distribution>
 
         <operator id="R0SensScaler" parameter="@R0_base" scaleFactor="0.75" spec="ScaleOperator" weight="6"/>
-        <operator id="R0RatioScaler" parameter="@R0_ratio" scaleFactor="0.9" spec="ScaleOperator" weight="2"/>
+        <operator id="LambdaRatioScaler" parameter="@lambda_ratio" scaleFactor="0.9" spec="ScaleOperator" weight="2"/>
         <operator id="becomeUninfectiousRateScaler" parameter="@becomeUninfectiousRate" scaleFactor="0.75" spec="ScaleOperator" weight="2"/>
         <operator id="updownBD" scaleFactor="0.9" spec="UpDownOperator" weight="2">
             <parameter idref="R0_base" name="up"/>
@@ -173,7 +173,7 @@
             <parameter idref="samplingProportion" name="log"/>
             <parameter idref="becomeUninfectiousRate" name="log"/>
             <parameter idref="R0_base" name="log"/>
-            <parameter idref="R0_ratio" name="log"/>
+            <parameter idref="lambda_ratio" name="log"/>
             <parameter idref="geo-frequencies" name="log"/>
             <parameter idref="rateMatrix" name="log"/>
             <log idref="r"/>

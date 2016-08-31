@@ -89,7 +89,7 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
 
         BirthDeathMigrationModel bdmm10 = inputTestSetup();
         bdmm10.setInputValue("R0_base", "1");
-        bdmm10.setInputValue("R0_ratio", "0.8");
+        bdmm10.setInputValue("lambda_ratio", "0.8");
         bdmm10.setInputValue("becomeUninfectiousRate", "1.5");
         bdmm10.setInputValue("samplingProportion", "0.3");
         validateShouldFail(bdmm10, false);
@@ -101,20 +101,20 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         validateShouldFail(bdmm11, true);
 
         BirthDeathMigrationModel bdmm12 = inputTestSetup();
-        bdmm12.setInputValue("R0_ratio", "0.8");
+        bdmm12.setInputValue("lambda_ratio", "0.8");
         bdmm12.setInputValue("becomeUninfectiousRate", "1.5");
         bdmm12.setInputValue("samplingProportion", "0.3");
         validateShouldFail(bdmm12, true);
 
         BirthDeathMigrationModel bdmm13 = inputTestSetup();
         bdmm13.setInputValue("R0_base", "1");
-        bdmm13.setInputValue("R0_ratio", "0.8");
+        bdmm13.setInputValue("lambda_ratio", "0.8");
         validateShouldFail(bdmm13, true);
 
         BirthDeathMigrationModel bdmm14 = inputTestSetup();
         bdmm14.setInputValue("R0", "1");
         bdmm14.setInputValue("R0_base", "1");
-        bdmm14.setInputValue("R0_ratio", "0.8");
+        bdmm14.setInputValue("lambda_ratio", "0.8");
         bdmm14.setInputValue("becomeUninfectiousRate", "1.5");
         bdmm14.setInputValue("samplingProportion", "0.3");
         validateShouldFail(bdmm14, true);
@@ -128,14 +128,14 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
 
         BirthDeathMigrationModel bdmm16 = inputTestSetup();
         bdmm16.setInputValue("R0", "1");
-        bdmm16.setInputValue("R0_ratio", "0.8");
+        bdmm16.setInputValue("lambda_ratio", "0.8");
         bdmm16.setInputValue("becomeUninfectiousRate", "1.5");
         bdmm16.setInputValue("samplingProportion", "0.3");
         validateShouldFail(bdmm16, true);
 
         BirthDeathMigrationModel bdmm17 = inputTestSetup();
         bdmm17.setInputValue("R0_base", "1");
-        bdmm17.setInputValue("R0_ratio", "0.8");
+        bdmm17.setInputValue("lambda_ratio", "0.8");
         bdmm17.setInputValue("deathRate", "1");
         bdmm17.setInputValue("samplingRate", "1");
         validateShouldFail(bdmm17, true);
@@ -159,7 +159,7 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         bdmm.setInputValue("tree", tree);
         bdmm.setInputValue("conditionOnSurvival", false);
         bdmm.setInputValue("intervalTimes", "0.0 3.0");
-        bdmm.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.5 1.5");
+        bdmm.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.23 1.41");
         bdmm.setInputValue("samplingProportion", "0.4444444444 0.3333333333 0.4444444444 0.3333333333");
 
         bdmm.setInputValue("R0", "4.5 1.5 3.6 1.2");
@@ -175,11 +175,11 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         bdmm2.setInputValue("tree", tree);
         bdmm2.setInputValue("conditionOnSurvival", false);
         bdmm2.setInputValue("intervalTimes", "0.0 3.0");
-        bdmm2.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.5 1.5");
+        bdmm2.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.23 1.41");
         bdmm2.setInputValue("samplingProportion", "0.4444444444 0.3333333333 0.4444444444 0.3333333333");
 
         bdmm2.setInputValue("R0_base", "4.5 1.5");
-        bdmm2.setInputValue("R0_ratio", "0.8");
+        bdmm2.setInputValue("lambda_ratio", "0.752");
 
         bdmm2.initAndValidate();
         double likelihood2 = bdmm2.calculateTreeLogLikelihood(tree);
@@ -187,6 +187,7 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         assertEquals(likelihood, likelihood2, 1e-10);
     }
 
+    // This test mimicks the old test when R0 ratio was the same, so the bURs were adjusted
     @Test
     public void testRatios3demes() throws Exception {
         String treeString = "((3[&state=0] : 1.5, 4[&state=1] : 0.5)[&state=1] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=1] : 3)[&state=2];";
@@ -205,7 +206,7 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         bdmm.setInputValue("tree", tree);
         bdmm.setInputValue("conditionOnSurvival", false);
         bdmm.setInputValue("intervalTimes", "0.0 3.0");
-        bdmm.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.5 1.5 4.5 1.5");
+        bdmm.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.23 1.41 3.6 1.2");
         bdmm.setInputValue("samplingProportion", "0.1 0.3333333333 0.4444444444");
 
         bdmm.setInputValue("R0", "4.5 1.5 3.6 1.2 2.25 0.75");
@@ -221,11 +222,58 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         bdmm2.setInputValue("tree", tree);
         bdmm2.setInputValue("conditionOnSurvival", false);
         bdmm2.setInputValue("intervalTimes", "0.0 3.0");
-        bdmm2.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.5 1.5 4.5 1.5");
+        bdmm2.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.23 1.41 3.6 1.2");
         bdmm2.setInputValue("samplingProportion", "0.1 0.3333333333 0.4444444444");
 
         bdmm2.setInputValue("R0_base", "4.5 1.5");  // deme 1
-        bdmm2.setInputValue("R0_ratio", "0.8 0.5"); // ratios for demes 2 and 3
+        bdmm2.setInputValue("lambda_ratio", "0.752 0.4"); // ratios for demes 2 and 3
+
+        bdmm2.initAndValidate();
+        double likelihood2 = bdmm2.calculateTreeLogLikelihood(tree);
+
+        assertEquals(likelihood, likelihood2, 1e-10);
+    }
+
+    // This test changes the R0 ratios through intervals
+    @Test
+    public void testRatios3demesDifferentR0Ratios() throws Exception {
+        String treeString = "((3[&state=0] : 1.5, 4[&state=1] : 0.5)[&state=1] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=1] : 3)[&state=2];";
+
+        MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
+        tree.initByName(
+                "adjustTipHeights", false,
+                "newick", treeString,
+                "typeLabel", "type");
+
+        BirthDeathMigrationModel bdmm = new BirthDeathMigrationModel();
+
+        bdmm.setInputValue("frequencies", "0.33 0.33 0.34");
+        bdmm.setInputValue("migrationMatrix", "0.2 0.5 0.2 0.2 0.2 0.3");
+        bdmm.setInputValue("stateNumber", 3);
+        bdmm.setInputValue("tree", tree);
+        bdmm.setInputValue("conditionOnSurvival", false);
+        bdmm.setInputValue("intervalTimes", "0.0 3.0");
+        bdmm.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.23 1.3536 3.24 0.75");
+        bdmm.setInputValue("samplingProportion", "0.1 0.3333333333 0.4444444444");
+
+        bdmm.setInputValue("R0", "4.5 1.5 3.6 1.25 2.5 1.2");
+
+        bdmm.initAndValidate();
+        double likelihood = bdmm.calculateTreeLogLikelihood(tree);
+
+        BirthDeathMigrationModel bdmm2 = new BirthDeathMigrationModel();
+
+        bdmm2.setInputValue("frequencies", "0.33 0.33 0.34");
+        bdmm2.setInputValue("migrationMatrix", "0.2 0.5 0.2 0.2 0.2 0.3");
+        bdmm2.setInputValue("stateNumber", 3);
+        bdmm2.setInputValue("tree", tree);
+        bdmm2.setInputValue("conditionOnSurvival", false);
+        bdmm2.setInputValue("intervalTimes", "0.0 3.0");
+        bdmm2.setInputValue("becomeUninfectiousRate", "4.5 1.5 4.23 1.3536 3.24 0.75");
+        bdmm2.setInputValue("samplingProportion", "0.1 0.3333333333 0.4444444444");
+
+        bdmm2.setInputValue("R0_base", "4.5 1.5");  // deme 1
+        bdmm2.setInputValue("lambda_ratio", "0.752 0.4"); // ratios for demes 2 and 3
 
         bdmm2.initAndValidate();
         double likelihood2 = bdmm2.calculateTreeLogLikelihood(tree);
