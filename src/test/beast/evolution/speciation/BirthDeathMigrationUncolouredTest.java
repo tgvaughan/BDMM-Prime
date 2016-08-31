@@ -742,7 +742,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.setInputValue("maxEvaluations", maxEvals);
         bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
 
-        bdm.setInputValue("tolerance", tolerance);
+        bdm.setInputValue("relTolerance", tolerance);
 
         bdm.initAndValidate();
         
@@ -947,7 +947,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
 
         bdm.setInputValue("maxEvaluations", maxEvals);
-        bdm.setInputValue("tolerance", tolerance);
+        bdm.setInputValue("relTolerance", tolerance);
 
         bdm.initAndValidate();
         
@@ -1345,7 +1345,8 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 
         bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
 
-        bdm.setInputValue("tolerance", tolerance);
+        //TO DO uncomment
+        //bdm.setInputValue("tolerance", tolerance);
 
         if (SA) {
             Double[] r = new Double[Integer.parseInt(statenumber)];

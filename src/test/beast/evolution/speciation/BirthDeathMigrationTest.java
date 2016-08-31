@@ -461,7 +461,8 @@ public class BirthDeathMigrationTest extends TestCase {
 
         if (intervalTimes!=null)  bdm.setInputValue("intervalTimes", intervalTimes);
 
-        bdm.setInputValue("tolerance", tolerance);
+        //TO DO uncomment the following line
+        //bdm.setInputValue("tolerance", tolerance);
 
         bdm.initAndValidate();
         

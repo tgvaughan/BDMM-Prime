@@ -24,8 +24,22 @@ public class ScaledNumbers {
 	public double[] getEquation(){
 		return this.equation;
 	}
+	
+	public void setEquation(double[] newEquation){
+		this.equation = newEquation;
+	}
 
 	public int[] getScalingFactor(){
 		return this.factor;
+	}
+	
+	public void setScalingFactor(int[] newFactor){
+		this.factor = newFactor; 
+	}
+	
+	public void augmentFactor(int[] increase) {
+		for (int i=0; i<this.factor.length; i++) {
+			factor[i] += increase[i];
+		}
 	}
 }
