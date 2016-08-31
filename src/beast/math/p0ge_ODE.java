@@ -348,6 +348,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		this.P.smallNumber = SN;
 	}
 
+	/**
+	 * This method serves as a comparison for various integrators
+	 */
 	public static void testCorrelations(){
 
 		Double[] b;
@@ -361,7 +364,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		Double c2 = 0.1;
 		
 		
-		// changed the range of parameters
 		for (double i =1.1; i<2; i+=0.125){
 
 			b = new Double[]{i, i};
@@ -384,7 +386,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			//FirstOrderIntegrator integrator7 = new DormandPrince54Integrator(1.0e-20, 1., 1.0e-10, 1.0e-9);
 			//FirstOrderIntegrator integrator5 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-20);//new ClassicalRungeKuttaIntegrator(.01); //
 
-			// changed time to fit my needs
+			
 			double T = 1;
 			Boolean augmented = true;
 
@@ -454,7 +456,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	public static void main(String args[]){
 		
-		testCorrelations();
+		//testCorrelations();
 
 		Double[] birth = {2.,2.};
 		Double[] b;
