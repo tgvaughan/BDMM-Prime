@@ -2,6 +2,7 @@ package test.beast.evolution.speciation;
 
 import beast.core.parameter.RealParameter;
 import beast.evolution.speciation.BirthDeathMigrationModelUncoloured;
+import beast.evolution.speciation.PiecewiseBirthDeathMigrationDistribution;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.alignment.TaxonSet;
@@ -21,7 +22,7 @@ import java.util.Arrays;
  */
 public class BirthDeathMigrationUncolouredTest extends TestCase {
 
-
+	
     double runtime;
     int maxEvalsUsed = -1;
 
@@ -50,6 +51,8 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdssm.setInputValue("rhoSamplingTimes","0. 1. 1.5");
         bdssm.setInputValue("reverseTimeArrays","false false false false");
         bdssm.initAndValidate();
+        
+        
         assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(tree), 1e-2);     // this result is from BEAST, not double checked in R
 
 
@@ -71,6 +74,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdssm.setInputValue("rhoSamplingTimes","0. 0.5 1.");
         bdssm.setInputValue("reverseTimeArrays","false false false true");
         bdssm.initAndValidate();
+               
         assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(tree), 1e-2);     // this result is from BEAST, not double checked in R
 
     }
@@ -102,6 +106,8 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 
                     bdssm.setInputValue("rho", new RealParameter("1."));
                     bdssm.initAndValidate();
+                    
+                   
                             System.out.println("\na) Likelihood: " + bdssm.calculateTreeLogLikelihood(tree));
                     assertEquals(-21.42666177086957, bdssm.calculateTreeLogLikelihood(tree), 1e-7);
 
@@ -129,6 +135,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
                     bdssm.setInputValue("rhoSamplingTimes", new RealParameter("0. 1. 1.5"));
 
                     bdssm.initAndValidate();
+                                    
 
                     assertEquals(-87.59718586549747, bdssm.calculateTreeLogLikelihood(tree), 1e-1);
 
@@ -154,6 +161,8 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
                     bdssm.setInputValue("rho", new RealParameter("0.05 0.01"));
                     bdssm.setInputValue("rhoSamplingTimes","0. 1.");
                     bdssm.initAndValidate();
+                    
+                   
                     assertEquals(-87.96488, bdssm.calculateTreeLogLikelihood(tree), 1e-1);
                 }
 
@@ -175,6 +184,8 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
                     bdssm.setInputValue("rhoSamplingTimes","0. 1.");
                     bdssm.setInputValue("intervalTimes", new RealParameter("0. 0.5 1. 1.1"));
                     bdssm.initAndValidate();
+                    
+                    
                     assertEquals(-100.15682190617582, bdssm.calculateTreeLogLikelihood(tree), 1e-1);
                 }
             }
@@ -288,7 +299,8 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.setInputValue("conditionOnSurvival", true);
 
         bdm.initAndValidate();
-
+        
+      
         // likelihood conditioning on at least one sampled individual    - "true" result from BEAST one-deme SA model 09 June 2015 (DK)
         assertEquals(-25.991511346557598, bdm.calculateLogP(), 1e-4);
 
@@ -333,6 +345,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.setInputValue("conditionOnSurvival", true);
 
         bdm.initAndValidate();
+
 
         // likelihood conditioning on at least one sampled individual    - "true" result from BEAST one-deme SA model 09 June 2015 (DK)
         assertEquals(-15.99699690815937, bdm.calculateLogP(), 1e-4);
@@ -654,10 +667,10 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.setInputValue("maxEvaluations", maxEvals);
         bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
 
-        bdm.setInputValue("tolerance", tolerance);
+        bdm.setInputValue("relTolerance", tolerance);
 
         bdm.initAndValidate();
-
+        
         long startTime = System.currentTimeMillis();
         logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
         runtime = System.currentTimeMillis() - startTime;
@@ -849,9 +862,10 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
 
         bdm.setInputValue("maxEvaluations", maxEvals);
-        bdm.setInputValue("tolerance", tolerance);
+        bdm.setInputValue("relTolerance", tolerance);
 
         bdm.initAndValidate();
+        
 
         long startTime = System.currentTimeMillis();
         logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
@@ -919,7 +933,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         System.out.println("Log-likelihood ("+(conditionOnSurvival?"":"not ")+"conditioned on survival) " + logL + "\t");
 
 
-        assertEquals(-661.9588648301033, logL, 1e-6); // result from BEAST, not checked in R
+        assertEquals(-661.9588648301033, logL, 1e-5); // result from BEAST, not checked in R
     }
 
     // migration example adapted from BDSKY
@@ -1237,7 +1251,8 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 
         bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
 
-        bdm.setInputValue("tolerance", tolerance);
+        //TO DO uncomment
+        //bdm.setInputValue("tolerance", tolerance);
 
         if (SA) {
             Double[] r = new Double[Integer.parseInt(statenumber)];
@@ -1246,11 +1261,14 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         }
 
         bdm.initAndValidate();
+        
+
 
         long startTime = System.currentTimeMillis();
         double logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
         runtime = System.currentTimeMillis() - startTime;
         maxEvalsUsed = bdm.maxEvalsUsed;
+        
         assertEquals(0., 0., 1e-2);
 
         return logL;
@@ -1295,11 +1313,14 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.initAndValidate();
         bdm.setInputValue("conditionOnSurvival", false);
         double logP = bdm.calculateLogP();
+        
         assertEquals(-37.8056,logP, 1e-2);
         System.out.println("NOT conditioned on survival: " + logP);
 
         bdm.setInputValue("conditionOnSurvival", true);
         bdm.initAndValidate();
+        
+        
         logP = bdm.calculateLogP();
         assertEquals(-37.30123947394569, logP, 1e-2);
         System.out.println("conditioned on survival: " + logP);
@@ -1654,11 +1675,13 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.setInputValue("tolerance", tolerance);
 
         bdm.initAndValidate();
+        
 
         long startTime = System.currentTimeMillis();
         double logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
         runtime = System.currentTimeMillis() - startTime;
         maxEvalsUsed = bdm.maxEvalsUsed;
+        
         assertEquals(0., 0., 1e-2);
 
         return logL;

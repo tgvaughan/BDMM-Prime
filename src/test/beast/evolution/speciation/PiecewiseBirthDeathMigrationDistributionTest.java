@@ -15,7 +15,7 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
         tree.initByName(
                 "adjustTipHeights", false,
-                "newick", treeString,
+                "value", treeString,
                 "typeLabel", "type");
         BirthDeathMigrationModel bdssm =  new BirthDeathMigrationModel();
         bdssm.setInputValue("frequencies", "1");
@@ -148,7 +148,7 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
         tree.initByName(
                 "adjustTipHeights", false,
-                "newick", treeString,
+                "value", treeString,
                 "typeLabel", "type");
 
         BirthDeathMigrationModel bdmm = new BirthDeathMigrationModel();
@@ -195,7 +195,7 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
         tree.initByName(
                 "adjustTipHeights", false,
-                "newick", treeString,
+                "value", treeString,
                 "typeLabel", "type");
 
         BirthDeathMigrationModel bdmm = new BirthDeathMigrationModel();

@@ -5,6 +5,7 @@ import beast.evolution.tree.*;
 import junit.framework.TestCase;
 import org.junit.Test;
 import beast.evolution.speciation.BirthDeathMigrationModel;
+import beast.evolution.speciation.PiecewiseBirthDeathMigrationDistribution;
 
 /**
 * @author dkuh004
@@ -18,7 +19,8 @@ public class BirthDeathMigrationTest extends TestCase {
     int maxEvalsUsed = -1;
 
     int maxEvals = Integer.MAX_VALUE;
-    double tolerance = 1e-14;
+    
+    double tolerance = 1e-7;
 
 
 
@@ -28,11 +30,12 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
                 tree.initByName(
                         "adjustTipHeights", false,
-                        "newick", "((3[&type=0]: 1.5, 4[&type=0]: 0.5)[&type=0]: 1 , (1[&type=0]: 2, 2[&type=0]: 1)[&type=0]: 3)[&type=0];",
+                        "value", "((3[&type=0]: 1.5, 4[&type=0]: 0.5)[&type=0]: 1 , (1[&type=0]: 2, 2[&type=0]: 1)[&type=0]: 3)[&type=0];",
                         "typeLabel", "type");
 
 
          BirthDeathMigrationModel bdm =  new BirthDeathMigrationModel();
+
 
          bdm.setInputValue("tree", tree);
 
@@ -47,6 +50,7 @@ public class BirthDeathMigrationTest extends TestCase {
          bdm.setInputValue("conditionOnSurvival", true);
 
          bdm.initAndValidate();
+         
 
          assertEquals(-15.99699690815937, bdm.calculateLogP(), 1e-4);   // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
 
@@ -61,7 +65,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
                 mtTree.initByName(
                         "adjustTipHeights", false,
-                        "newick", tree,
+                        "value", tree,
                         "typeLabel", "type");
 
         BirthDeathMigrationModel bdssm =  new BirthDeathMigrationModel();
@@ -80,6 +84,8 @@ public class BirthDeathMigrationTest extends TestCase {
         bdssm.setInputValue("rhoSamplingTimes","0. 0.5 1.");
         bdssm.setInputValue("reverseTimeArrays","false false false true");
         bdssm.initAndValidate();
+        
+        
         assertEquals(-122.2313926454848, bdssm.calculateTreeLogLikelihood(mtTree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
 
     }
@@ -93,7 +99,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
                 tree.initByName(
                         "adjustTipHeights", false,
-                        "newick", treeString,
+                        "value", treeString,
                         "typeLabel", "type");
 
         for (int i = 1; i<4; i++){
@@ -119,8 +125,9 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.setInputValue("rhoSamplingTimes", new RealParameter("0. 1. 1.1"));
 
                     bdssm.initAndValidate();
+                    
 
-                    assertEquals(-103.00541179401198, bdssm.calculateTreeLogLikelihood(tree), 1e-4);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+                    assertEquals(-102.99471869225083, bdssm.calculateTreeLogLikelihood(tree), 1e-3);    // this result is from BEAST (BirthDeathMigrationModelUncoloured)
 
                 }
                 case 2:{
@@ -143,7 +150,9 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.setInputValue("rho", new RealParameter("0.05 0.01"));
                     bdssm.setInputValue("rhoSamplingTimes","0. 1.");
                     bdssm.initAndValidate();
-                    assertEquals(-104.53923115852264, bdssm.calculateTreeLogLikelihood(tree), 1e-4);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+
+                    
+                    assertEquals(-104.5287035591, bdssm.calculateTreeLogLikelihood(tree), 1e-3);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
                 }
 
                 case 3:{
@@ -162,7 +171,9 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.setInputValue("rhoSamplingTimes","0. 1.");
                     bdssm.setInputValue("intervalTimes", new RealParameter("0. 0.5 1. 1.1"));
                     bdssm.initAndValidate();
-                    assertEquals(-100.15682190617582, bdssm.calculateTreeLogLikelihood(tree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+                    
+                    
+                    assertEquals(-100.1611879, bdssm.calculateTreeLogLikelihood(tree), 1e-3);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
                 }
             }
         }
@@ -250,7 +261,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
         mtTree.initByName(
                 "adjustTipHeights", false,
-                "newick", newickStr,
+                "value", newickStr,
                 "typeLabel", "state");
 
 //        // Assemble migration model:
@@ -288,7 +299,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
         mtTree.initByName(
                 "adjustTipHeights", false,
-                "newick", tree,
+                "value", tree,
                 "typeLabel", "state");
 
 //         System.out.println( "gamma = " + gamma + ", beta = " + beta+ ", psi = " + psi);
@@ -331,7 +342,7 @@ public class BirthDeathMigrationTest extends TestCase {
             double logL = bdm_likelihood_MT(tolerance, maxEvals, "2", m+" "+m, "0.5 0.5",
                     tree, "363.084889", "1.25 1.25", "0.064 0.064", "0.03125 0.03125", null, null ,null, true);
 
-            assertEquals(-568.3392945596313,logL,1e-6);
+            assertEquals(-568.3392945596313,logL,1e-4);
 
             System.out.println("Birth-death result: " +logL);
 
@@ -348,7 +359,7 @@ public class BirthDeathMigrationTest extends TestCase {
         MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
         mtTree.initByName(
                 "adjustTipHeights", false,
-                "newick", tree,
+                "value", tree,
                 "typeLabel", "state");
 
         return bdm_likelihood_MT(tolerance, maxEvals, statenumber, migrationMatrix, frequencies,  mtTree,  origin, R0,  becomeUninfectiousRate,  samplingProportion,  rho, rhoSamplingTimes, intervalTimes, conditionOnSurvival);
@@ -382,13 +393,19 @@ public class BirthDeathMigrationTest extends TestCase {
 
         if (intervalTimes!=null)  bdm.setInputValue("intervalTimes", intervalTimes);
 
-        bdm.setInputValue("tolerance", tolerance);
+        bdm.setInputValue("relTolerance", tolerance);
 
         bdm.initAndValidate();
-
+        
         long startTime = System.currentTimeMillis();
+ 		long start = System.nanoTime();
         double logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
+		long end = System.nanoTime();
+		long microseconds = (end - start) / 1000;
+		System.out.println(microseconds+" \u03BCs");
+
         runtime = System.currentTimeMillis() - startTime;
+               
         maxEvalsUsed = bdm.maxEvalsUsed;
         assertEquals(0., 0., 1e-2);
 
@@ -409,7 +426,7 @@ public class BirthDeathMigrationTest extends TestCase {
 //        tree.setInputValue("singlechild", "true");
 //        tree.setInputValue("adjustTipHeights", "false");
 //        tree.setInputValue("IsLabelledNewick", "true");
-//        tree.setInputValue("newick", newick);
+//        tree.setInputValue("value", newick);
 //        tree.initAndValidate();
 //
 //        ColouredTree coltree = new ColouredTree();
