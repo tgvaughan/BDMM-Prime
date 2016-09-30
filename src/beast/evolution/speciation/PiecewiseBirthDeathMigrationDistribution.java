@@ -1,5 +1,6 @@
 package beast.evolution.speciation;
 
+import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.State;
@@ -34,6 +35,11 @@ import java.util.TreeSet;
  * Date: 22.08.14
  * Time: 14:05
  */
+@Citation("Kuehnert D, Stadler T, Vaughan TG, Drummond AJ. 2016. " +
+		"Phylodynamics with migration: \n\t" +
+		"A computational framework to quantify population structure from genomic data. \n\t" +
+		"Mol Biol Evol. 33(8):2102–2116.")
+
 @Description("Piece-wise constant rates are assumed to be ordered by state and time. First k entries of an array give " +
 		"values belonging to type 1, for intervals 1 to k, second k intervals for type 2 etc.")
 public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTreeDistribution {
