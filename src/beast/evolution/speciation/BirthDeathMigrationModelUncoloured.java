@@ -275,6 +275,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			}
 
 
+
 		}catch(Exception e){
 
 			if (e instanceof ConstraintViolatedException){throw e;}
@@ -526,7 +527,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 				int saNodeState = getNodeState(node.getChild(Math.abs(childIndex - 1)), false); // get state of direct ancestor
 
 				init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
-				init.conditionsOnG[saNodeState] = g.conditionsOnG[n + saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index] * (1-r[saNodeState * totalIntervals + index]));
+				init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index] * (1-r[saNodeState * totalIntervals + index]));
 			}
 
 			else {   // birth / infection event
