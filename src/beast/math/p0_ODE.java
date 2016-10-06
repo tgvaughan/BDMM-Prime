@@ -29,30 +29,6 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	int index;
 
 
-
-	// smallNumber switches on (if true) or off (if false) the implementation of likelihood calculations that prevents underflowing
-	boolean smallNumber;
-
-	// factor represents the order of magnitude by which initial conditions for the ode were increased (in order to prevent underflowing)
-	// only used if smallNumber = true
-	int factor;
-
-	public p0_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension , int intervals, Double[] times, int factor, boolean smallNumber){
-
-		this.b = b;
-		this.b_ij = b_ij;
-		this.d = d;
-		this.s = s;
-		this.M = M;
-		this.dimension = dimension;
-		this.intervals = intervals;
-
-		this.times = times;
-
-		this.factor = factor;
-		this.smallNumber = smallNumber;
-	}
-
 	public p0_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension , int intervals, Double[] times) {
 
 		this.b = b;
@@ -64,9 +40,6 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		this.intervals = intervals;
 
 		this.times = times;
-
-		this.factor = 0;
-		this.smallNumber = false;
 
 	}
 
@@ -86,28 +59,16 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		return this.dimension;
 	}
 
-	public void setFactor(int factorP){
-		this.factor = factorP;
-	}
-
 	public void computeDerivatives(double t, double[] y, double[] yDot) {
 
 		index = Utils.index(t, times, intervals); //finds the index of the time interval t lies in 
 		int k, l;
 
-		double scale = 0;
-
-		// compute the actual scale factor from 'factor'
-		if (smallNumber) scale = Math.pow(10, factor);
-
-		// if boolean smallNumber is false, use the classic method without scaling/unscaling
-
 		for (int i = 0; i<dimension; i++){
 
 			k = i*intervals + index;
 
-			if (!smallNumber) yDot[i] = + (b[k]+d[k]+s[k])*y[i] - d[k] - b[k]*y[i]*y[i] ;
-			else yDot[i] = + (b[k]+d[k]+s[k])*y[i] - d[k]*scale - b[k]*y[i]*y[i]/scale ;
+			yDot[i] = + (b[k]+d[k]+s[k])*y[i] - d[k] - b[k]*y[i]*y[i] ;
 
 			for (int j=0; j<dimension; j++){
 
@@ -119,8 +80,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 
 
 						yDot[i] += b_ij[l]*y[i]; 
-						if (!smallNumber) yDot[i] -= b_ij[l]*y[i]*y[j];
-						else yDot[i] -= b_ij[l]*y[i]*y[j]/scale;
+						yDot[i] -= b_ij[l]*y[i]*y[j];
 					}
 
 					// migration:
@@ -141,8 +101,8 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		Double[] s = {0.02,0.04};
 		Double[] M = new Double[]{3.,4.};
 
-		FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
-		FirstOrderDifferentialEquations ode = new p0_ODE(b,null,d,s,M, 2, 1, new Double[]{0.}, 0 , false);
+		FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-20, 1.0e-9);//new ClassicalRungeKuttaIntegrator(.01); //
+		FirstOrderDifferentialEquations ode = new p0_ODE(b,null,d,s,M, 2, 1, new Double[]{0.});
 		double[] y0 = new double[]{1.,1.};
 		double[] y = new double[2];
 

@@ -9,8 +9,8 @@ import beast.core.util.Utils;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
 import beast.math.p0_ODE;
+import beast.math.p0ge_InitialConditions;
 import beast.math.p0ge_ODE;
-import beast.math.EquationType;
 import beast.math.ScaledNumbers;
 import beast.math.SmallNumber;
 import beast.math.SmallNumberScaler;
@@ -429,14 +429,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 
 	/**
-	 * Implementation of getG with Small Number structure. Avoids underflowing of integration results.
+	 * Implementation of getG with Small Number structure for the ge equations. Avoids underflowing of integration results.
 	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
 	 * @param t
 	 * @param PG0
 	 * @param t0
 	 * @return
 	 */
-	public SmallNumber[] getGSmallNumber(double t, SmallNumber[] PG0, double t0,
+	public p0ge_InitialConditions getGSmallNumber(double t, p0ge_InitialConditions PG0, double t0,
 			FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		try {
@@ -463,31 +463,29 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			index--;
 
 			// pgScaled contains the set of initial conditions scaled made to fit the requirements on the values 'double' can represent. It also contains the factor by which the numbers were multiplied
-			ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0, EquationType.EquationOnGe);
+			ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0);
 			// integrationResults will temporarily store the results of each integration step as 'doubles', before converting them back to 'SmallNumbers'
 			double[] integrationResults = new double[2*n];
 
 			while (steps > 0){
 
 				from = times[index];// + 1e-14;
-
-				PG.setFactor(pgScaled.getScalingFactor()[0]); // store the right scaling factor for p equations (needed in the derivatives' calculations)
 				
 				if (useRKInput.get() || (to - from) < threshold) {
 					pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
-					PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor(), EquationType.EquationOnGe);
+					PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
 				} else {
 					pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
 					// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-					PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor(), EquationType.EquationOnGe);
+					PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
 				}
 
 
 				if (rhoChanges>0){
 					for (int i=0; i<n; i++){
 						oneMinusRho = (1-rho[i*totalIntervals + Utils.index(times[index], times, totalIntervals)]);
-						PG0[i] = PG0[i].scalarMultiply(oneMinusRho);
-						PG0[i+n] = PG0[i+n].scalarMultiply(oneMinusRho);
+						PG0.conditionsOnP[i] *= oneMinusRho;
+						PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
 					}
 				}
 
@@ -497,20 +495,19 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				index--;
 
 				// 'rescale' the results of the last integration to prepare for the next integration step
-				pgScaled = SmallNumberScaler.scale(PG0, EquationType.EquationOnGe);
+				pgScaled = SmallNumberScaler.scale(PG0);
 			}
 			
-			PG.setFactor(pgScaled.getScalingFactor()[0]); // store the right scaling factor for p equations (needed in the derivatives' calculations)
 			if (useRKInput.get() || (to - t) < threshold) {
 				pg_integrator.integrate(PG, to, pgScaled.getEquation(), t, integrationResults);
-				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor(), EquationType.EquationOnGe);
+				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
 			} else {
 				pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, t); // solve PG , store solution temporarily integrationResults
 				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor(), EquationType.EquationOnGe);
+				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
 			}
 		}catch(Exception e){
-
+			
 			throw new RuntimeException("couldn't calculate g");
 		}
 
@@ -901,8 +898,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		Boolean augmented = this instanceof BirthDeathMigrationModel;
 
-		P = new p0_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times, 0, useSmallNumbers.get());
-		PG = new p0ge_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented, useSmallNumbers.get());
+		P = new p0_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
+		PG = new p0ge_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
 
 
 		if (!useRKInput.get()) {
@@ -1002,20 +999,29 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		double minRes = getMinIntegrationOnGe(integrationResults);
 
 		if(absoluteTolerance.get() > relativeTolerance.get())
-			throw new RuntimeException("Absolute tolerance smaller than relative tolerance for the adaptive integrator. Change values for these inputs.");
+			throw new RuntimeException("Absolute tolerance higher than relative tolerance for the adaptive integrator. Change values for these inputs.");
 		
 		if(minRes<0 || absoluteTolerance.get()/minRes > relativeTolerance.get() || minRes == Double.MAX_VALUE ) {
 			
-			PG.setFactor(pgScaled.getScalingFactor()[0]);
 			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);
-			PG.setFactor(pgScaled.getScalingFactor()[0]);
 			pgScaled = safeIntegrate(integrator, PG, from + (to-from)/2, pgScaled, from);
+			
 		} else {
-			int[] a = pgScaled.getScalingFactor();
-			pgScaled = SmallNumberScaler.scale(SmallNumber.getSmallNumbers(integrationResults), EquationType.EquationOnGe);
+			
+			int a = pgScaled.getScalingFactor();
+			int n = integrationResults.length/2;
+			double[] pConditions = new double[n];
+			SmallNumber[] geConditions = new SmallNumber[n];
+			
+			for (int i = 0; i < n; i++) {
+				pConditions[i] = integrationResults[i];
+				geConditions[i] = new SmallNumber(integrationResults[i+n]);
+			}
+			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions));
 			pgScaled.augmentFactor(a);
+		
 		}
-
+		
 		return pgScaled;
 	}
 	
