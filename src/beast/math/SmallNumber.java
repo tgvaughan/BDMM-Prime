@@ -5,10 +5,10 @@ import java.text.DecimalFormat;
 import beast.core.Description;
 
 @Description("This class contains the tools needed to represent and do basic calculations with numbers in scientific representation."
-		+ " For instance, 0.0523 would be written as 5.23E-2 in scientific representation. In this implementation, the attribute 'root' would be 5.23 and 'exponent' would be -2.")
+		+ " For instance, 0.0523 would be written as 5.23E-2 in scientific representation. In this implementation, the attribute 'mantissa' would be 5.23 and 'exponent' would be -2.")
 public class SmallNumber {
 
-	private double root;
+	private double mantissa;
 	private int exponent;
 	public static final int numbersPrinted = 12;
 	public static final int threshold = -4;
@@ -20,7 +20,7 @@ public class SmallNumber {
 	final static int exponentMinValueDouble = -324;
 
 	public SmallNumber(){
-		this.root = 0;
+		this.mantissa = 0;
 		this.exponent = 0;
 	}
 
@@ -28,10 +28,10 @@ public class SmallNumber {
 		if (Double.isInfinite(r))
 			throw new RuntimeException("Unauthorized number (Infinity) used for conversion into SmallNumber");
 		if (r == 0) {
-			this.root = 0;
+			this.mantissa = 0;
 			this.exponent = 0;
 		} else {
-			this.root = r;
+			this.mantissa = r;
 			this.exponent = exp;
 		}
 		this.update();
@@ -45,13 +45,13 @@ public class SmallNumber {
 		if (Double.isInfinite(num))
 			throw new RuntimeException("Unauthorized number (Infinity) used for conversion into SmallNumber");
 		if (num == 0){
-			this.root = 0;
+			this.mantissa = 0;
 			this.exponent = 0;
 		} else {
 			double sign = Math.signum(num);
 			double log = Math.log10(Math.abs(num));
 			int exponent = (int)Math.floor(log);
-			this.root = sign * Math.pow(10, log - exponent);
+			this.mantissa = sign * Math.pow(10, log - exponent);
 			this.exponent = exponent;
 		}
 	}
@@ -60,17 +60,17 @@ public class SmallNumber {
 	 * Make sure a number is in scientific representation, if not make it so.
 	 */
 	public void update(){
-		if (Double.isInfinite(this.root))
+		if (Double.isInfinite(this.mantissa))
 			throw new RuntimeException("Unauthorized number (Infinity) used for conversion in SmallNumber");
-		if (this.root == 0) {
+		if (this.mantissa == 0) {
 			this.exponent = 0;
 
-			// if root is lower than 1 or higher than 10 in absolute value, the exponent and root are changed to fit the scientific representation format
-		} else if (Math.abs(this.root)<1 || Math.abs(this.root) >= 10){
-			double sign = Math.signum(this.root);
-			double log = Math.log10(Math.abs(this.root));
+			// if mantissa is lower than 1 or higher than 10 in absolute value, the exponent and mantissa are changed to fit the scientific representation format
+		} else if (Math.abs(this.mantissa)<1 || Math.abs(this.mantissa) >= 10){
+			double sign = Math.signum(this.mantissa);
+			double log = Math.log10(Math.abs(this.mantissa));
 			int exp = (int)Math.floor(log);
-			this.root = sign * Math.pow(10, log - exp);
+			this.mantissa = sign * Math.pow(10, log - exp);
 			this.exponent += exp;
 		}
 	}
@@ -79,8 +79,8 @@ public class SmallNumber {
 		return this.exponent;
 	}
 
-	public double getRoot(){
-		return this.root;
+	public double getMantissa(){
+		return this.mantissa;
 	}
 
 	/**
@@ -90,10 +90,10 @@ public class SmallNumber {
 	 * @return a new SmallNumber
 	 */
 	public static SmallNumber multiply(SmallNumber a, SmallNumber b){
-		if (a.root == 0 || b.root == 0){
+		if (a.mantissa == 0 || b.mantissa == 0){
 			return new SmallNumber(0);
 		}
-		SmallNumber result = new SmallNumber(a.root * b.root, a.exponent + b.exponent);
+		SmallNumber result = new SmallNumber(a.mantissa * b.mantissa, a.exponent + b.exponent);
 
 		// use update to make sure the result is in the correct representation
 		result.update();
@@ -108,7 +108,7 @@ public class SmallNumber {
 	public SmallNumber scalarMultiply(double lambda){
 		if (Double.isInfinite(lambda))
 			throw new RuntimeException("Unauthorized number (Infinity) used for multiplication with a SmallNumber");
-		SmallNumber res = new SmallNumber(this.root * lambda, this.exponent);
+		SmallNumber res = new SmallNumber(this.mantissa * lambda, this.exponent);
 		res.update();
 		return res;
 	}
@@ -127,7 +127,7 @@ public class SmallNumber {
 	 * @return a new SmallNumber
 	 */
 	public SmallNumber opposite(){
-		return new SmallNumber(-this.root, this.exponent);
+		return new SmallNumber(-this.mantissa, this.exponent);
 	}
 
 	/**
@@ -138,16 +138,16 @@ public class SmallNumber {
 	 */
 	public static SmallNumber add(SmallNumber a, SmallNumber b){
 
-		if (a.root == 0 || (b.exponent - a.exponent)> approximationThreshold) {
+		if (a.mantissa == 0 || ((b.exponent - a.exponent)> approximationThreshold && b.mantissa !=0)) {
 			return b;
-		} else if (b.root == 0 || (a.exponent - b.exponent) > approximationThreshold) {
+		} else if (b.mantissa == 0 || (a.exponent - b.exponent) > approximationThreshold) {
 			return a;
 		} else {
 			SmallNumber c = new SmallNumber(0);
 			if (a.exponent > b.exponent) {
-				c = new SmallNumber(a.root + b.root * Math.pow(10, b.exponent-a.exponent), a.exponent); 
+				c = new SmallNumber(a.mantissa + b.mantissa * Math.pow(10, b.exponent-a.exponent), a.exponent); 
 			} else {
-				c = new SmallNumber(b.root + a.root * Math.pow(10, a.exponent-b.exponent), b.exponent);
+				c = new SmallNumber(b.mantissa + a.mantissa * Math.pow(10, a.exponent-b.exponent), b.exponent);
 			}	
 			return c;
 		}
@@ -162,7 +162,7 @@ public class SmallNumber {
 		if(this.exponent < -308)
 			return 0;
 
-		return this.root*Math.pow(10,this.exponent);
+		return this.mantissa*Math.pow(10,this.exponent);
 	}
 
 
@@ -172,7 +172,7 @@ public class SmallNumber {
 			pattern += "#";
 		}
 		DecimalFormat dF  = new DecimalFormat(pattern);
-		return "" + dF.format(this.root) + "E" + this.exponent;
+		return "" + dF.format(this.mantissa) + "E" + this.exponent;
 	}
 
 	/**
@@ -221,14 +221,14 @@ public class SmallNumber {
 	 * @return the log of a Small Number
 	 */
 	public double log(){
-		if (this.root <= 0) 
+		if (this.mantissa <= 0) 
 			return Double.NEGATIVE_INFINITY;
-		return Math.log(this.root) + this.exponent*Math.log(10);
+		return Math.log(this.mantissa) + this.exponent*Math.log(10);
 	}
 
 
 	public static boolean isInfinite(SmallNumber a){
-		return (Double.isInfinite(a.root));
+		return (Double.isInfinite(a.mantissa));
 	}
 
 	/**
@@ -298,12 +298,13 @@ public class SmallNumber {
 		System.out.println("With classic double implementation: " + dOld);
 
 		// Test on scaledNumbers
+		double[] eqp = {0, 1, 0.5, 0.8, 0.9, 1.0, 0.6};
 		SmallNumber[] eq = {new SmallNumber(0), new SmallNumber(0), new SmallNumber(1.5), new SmallNumber(0), new SmallNumber(1., 400), new SmallNumber(1., -200), new SmallNumber(1., -500)};
 		double m = SmallNumber.averageExponent(eq);
 		
-		ScaledNumbers scaeq = SmallNumberScaler.scale(eq, EquationType.EquationOnP);
+		ScaledNumbers scaeq = SmallNumberScaler.scale(new p0ge_InitialConditions(eqp, eq));
 		System.out.println(SmallNumber.toString(eq) +  "with an average exponent of: " + m + "\t and minimal exponent compared to the set threshold of: " + SmallNumber.compareExponent(eq));
-		System.out.println(scaeq.getScalingFactor()[0]);
+		System.out.println(scaeq.getScalingFactor());
 		System.out.println("\n" + scaeq.getEquation()[0] + " " + scaeq.getEquation()[1] + " " + scaeq.getEquation()[2] + " " + scaeq.getEquation()[3] + " " + scaeq.getEquation()[4] + " " + scaeq.getEquation()[5] + " " + scaeq.getEquation()[6]);
 
 		//		double res = 0*Math.exp(Math.log(10)*(389));

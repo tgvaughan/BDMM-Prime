@@ -6,10 +6,8 @@ import beast.core.util.Utils;
 import beast.evolution.tree.*;
 import beast.core.Input;
 
-import beast.math.EquationType;
-import beast.math.ScaledNumbers;
 import beast.math.SmallNumber;
-import beast.math.SmallNumberScaler;
+import beast.math.p0ge_InitialConditions;
 
 
 
@@ -134,7 +132,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 
 	/**
-	 * Implementation of getG with Small Number structure. Avoids underflowing of integration results.
+	 * Implementation of getG with Small Number structure for ge equations. Avoids underflowing of integration results.
 	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
 	 * @param t
 	 * @param PG0
@@ -142,10 +140,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	 * @param node
 	 * @return
 	 */
-	public SmallNumber[] getGSmallNumber(double t, SmallNumber[] PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+	public p0ge_InitialConditions getGSmallNumber(double t, p0ge_InitialConditions PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		if (node.isLeaf())
-			System.arraycopy(PG.getPSmallNumber(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
+			System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
 
 		return getGSmallNumber(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
 	}
@@ -210,7 +208,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			}
 
 			// alternatively p or pSN will be used, depending if the user wants to use the classic implementation or the one with SmallNumbers
-			SmallNumber[] pSN = new SmallNumber[] {new SmallNumber(0)};
+			p0ge_InitialConditions pSN = new p0ge_InitialConditions();
 			double [] p = new double[] {0};
 
 			if (orig>0){
@@ -225,8 +223,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 					else
 						p = calculateSubtreeLikelihood(root, false, null, 0, orig);
 				}
-			}
-			else {
+			} else {
 				int childIndex = 0;
 				if (root.getChild(1).getNr() > root.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
 
@@ -235,7 +232,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 				if (childChangeCount > 0)
 					t0 = T - ((MultiTypeNode)root.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
-				// depending on the method chosen by the user, SmallNumbers or doubles will be used to store the results between calculations step
+				// SmallNumbers or doubles will be used to store the results between calculations step, depending on the method chosen by the user
 				if (useSmallNumbers.get())
 					pSN = calculateSubtreeLikelihoodSmallNumber(root.getChild(childIndex), false, null, 0., t0);
 				else
@@ -249,9 +246,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 					t0 = T - ((MultiTypeNode)root.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
 				if (useSmallNumbers.get()) {
-					SmallNumber[] p1SN = calculateSubtreeLikelihoodSmallNumber(root.getChild(childIndex), false, null, 0., t0);
-
-					for (int i=0; i<pSN.length; i++) pSN[i] = SmallNumber.multiply(pSN[i], p1SN[i]);
+					p0ge_InitialConditions p1SN = calculateSubtreeLikelihoodSmallNumber(root.getChild(childIndex), false, null, 0., t0);
+					
+					// Warning: stopped multiplying for p conditions: should not change anything but still, check that it works
+					for (int i=0; i<pSN.conditionsOnG.length; i++) pSN.conditionsOnG[i] = SmallNumber.multiply(pSN.conditionsOnG[i], p1SN.conditionsOnG[i]);
 
 				} else {
 					double[] p1 = calculateSubtreeLikelihood(root.getChild(childIndex), false, null, 0., t0);
@@ -261,13 +259,13 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			}
 			if (conditionOnSurvival.get()) {
 				if (useSmallNumbers.get())
-					pSN[n+node_state] = pSN[n+node_state].scalarMultiply(1/(1-noSampleExistsProp[node_state]));    // condition on survival
+					pSN.conditionsOnG[node_state] = pSN.conditionsOnG[node_state].scalarMultiply(1/(1-noSampleExistsProp[node_state]));    // condition on survival
 				else
 					p[n+node_state] /= (1-noSampleExistsProp[node_state]);
 			}
 
 			if (useSmallNumbers.get())
-				logP = Math.log(freq[node_state]) +  pSN[n+node_state].log();
+				logP = Math.log(freq[node_state]) +  pSN.conditionsOnG[node_state].log();
 			else
 				logP = Math.log(freq[node_state]) +  Math.log(p[n+node_state]);
 
@@ -339,28 +337,29 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	 * @param to
 	 * @return
 	 */
-	SmallNumber[] calculateOriginLikelihoodSmallNumber(Integer migIndex, double from, double to) {
+	p0ge_InitialConditions calculateOriginLikelihoodSmallNumber(Integer migIndex, double from, double to) {
 
+		double[] pconditions = new double[n];
+		SmallNumber[] gconditions = new SmallNumber[n];
+		for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
 
-		SmallNumber[] init = new SmallNumber[2*n];
-		for (int i=0; i<2*n; i++) init[i] = new SmallNumber();
+		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
 
 		int index = Utils.index(to, times, totalIntervals);
 
 		int prevcol = originBranch.getChangeType(migIndex);
 		int col =  (migIndex > 0)?  originBranch.getChangeType(migIndex-1):  ((MultiTypeNode) coltree.getRoot()).getNodeType();
 
-
 		migIndex--;
 
-		SmallNumber[] g ;
+		p0ge_InitialConditions g ;
 
 		if (migIndex >= 0){
 
 			g = calculateOriginLikelihoodSmallNumber(migIndex, to, T - originBranch.getChangeTime(migIndex));
 
-			System.arraycopy(g, 0, init, 0, n);
-			init[n+prevcol] = g[n+col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
+			System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
+			init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
 
 
 			return getGSmallNumber(from,  init,  to, pg_integrator, PG, T, maxEvalsUsed);
@@ -370,8 +369,8 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 			g = calculateSubtreeLikelihoodSmallNumber(coltree.getRoot(), false, null, to, orig);
 
-			System.arraycopy(g, 0, init, 0, n);
-			init[n+prevcol] = g[n+col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
+			System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
+			init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
 
 			return getGSmallNumber(from, init, to, coltree.getRoot());
 		}
@@ -422,7 +421,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 					if (!isRhoTip[node.getNr()])
 						init[n + nodestate] = SAModel
-						? psi[nodestate * totalIntervals + index]* (r[nodestate * totalIntervals + index] + (1-r[nodestate * totalIntervals + index])*PG.getP(to, m_rho.get()!=null, rho)[nodestate]) // with SA: ψ_i(r + (1 − r)p_i(τ))
+						? psi[nodestate * totalIntervals + index]* (r[nodestate * totalIntervals + index] + (1-r[nodestate * totalIntervals + index])*PG.getP(to, m_rho.get()!=null, rho)[nodestate]) // with SA: Ïˆ_i(r + (1 âˆ’ r)p_i(Ï„))
 								: psi[nodestate * totalIntervals + index];
 
 						else
@@ -474,10 +473,13 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	 * @param to
 	 * @return
 	 */
-	SmallNumber[] calculateSubtreeLikelihoodSmallNumber(Node node, Boolean migration, Integer migIndex, double from, double to) {
+	p0ge_InitialConditions calculateSubtreeLikelihoodSmallNumber(Node node, Boolean migration, Integer migIndex, double from, double to) {
 
-		SmallNumber[] init = new SmallNumber[2*n];
-		for (int i=0; i<2*n; i++) init[i] = new SmallNumber();
+		double[] pconditions = new double[n];
+		SmallNumber[] gconditions = new SmallNumber[n];
+		for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
+
+		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
 
 		int nodestate = ((MultiTypeNode)node).getNodeType();
 		int index = Utils.index(to, times, totalIntervals);
@@ -491,10 +493,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			migIndex--;
 
 			time = (migIndex >= 0)? ((MultiTypeNode) node).getChangeTime(migIndex) :node.getHeight();
-			SmallNumber[] g = calculateSubtreeLikelihoodSmallNumber(node, (migIndex >= 0), migIndex, to, T-time);
+			p0ge_InitialConditions g = calculateSubtreeLikelihoodSmallNumber(node, (migIndex >= 0), migIndex, to, T-time);
 
-			System.arraycopy(g, 0, init, 0, n);
-			init[n+prevcol] = g[n+col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]); // with ratechange in M
+			System.arraycopy(g.conditionsOnP, 0, init.conditionsOnP, 0, n);
+			init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]); // with ratechange in M
 
 			return getGSmallNumber(from, init, to, node);
 		}
@@ -508,21 +510,18 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 			else{
 
-
 				if (node.isLeaf()){ // sampling event
 
+					if (!isRhoTip[node.getNr()]){
+						init.conditionsOnG[nodestate] = SAModel
+						? new SmallNumber((r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index]))
+								*psi[nodestate * totalIntervals + index])
 
-					if (!isRhoTip[node.getNr()])
-						init[n + nodestate] = SAModel
-						? SmallNumber.add(new SmallNumber(r[nodestate * totalIntervals + index]),
-								PG.getPSmallNumber(to, m_rho.get()!=null, rho)[nodestate].scalarMultiply(1-r[nodestate * totalIntervals + index]))
-								.scalarMultiply(psi[nodestate * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
 								: new SmallNumber(psi[nodestate * totalIntervals + index]);
 
-
-								else
-									init[n+nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
-
+					} else {
+							init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
+					}
 
 					if (print) System.out.println("Sampling at time " + to);
 
@@ -540,7 +539,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 						t0 = T - ((MultiTypeNode)node.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
 
-					SmallNumber[] g0 = calculateSubtreeLikelihoodSmallNumber(node.getChild(childIndex), false, null, to, t0);
+					p0ge_InitialConditions g0 = calculateSubtreeLikelihoodSmallNumber(node.getChild(childIndex), false, null, to, t0);
 
 					childIndex = Math.abs(childIndex-1);
 
@@ -549,10 +548,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 					if (childChangeCount > 0)
 						t1 = T - ((MultiTypeNode)node.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
-					SmallNumber[] g1 = calculateSubtreeLikelihoodSmallNumber(node.getChild(childIndex), false, null, to, t1);
+					p0ge_InitialConditions g1 = calculateSubtreeLikelihoodSmallNumber(node.getChild(childIndex), false, null, to, t1);
 
-					System.arraycopy(g0, 0, init, 0, n);
-					init[n+nodestate] = SmallNumber.multiply(g0[n+nodestate], g1[n+nodestate]).scalarMultiply(birth[nodestate*totalIntervals+index]);
+					System.arraycopy(g0.conditionsOnP, 0, init.conditionsOnP, 0, n);
+					init.conditionsOnG[nodestate] = SmallNumber.multiply(g0.conditionsOnG[nodestate], g1.conditionsOnG[nodestate]).scalarMultiply(birth[nodestate*totalIntervals+index]);
 				}
 			}
 		}

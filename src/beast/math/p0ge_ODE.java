@@ -42,11 +42,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	int maxEvals;
 	public int maxEvalsUsed;
 
-	// implementation with a scale factor switched on or off depending on smallNumber
-	int factorP;
-	boolean smallNumber;
 
-	public p0ge_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented, boolean SN){
+	public p0ge_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented){
 
 
 		this.b = b;
@@ -65,10 +62,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		this.augmented = augmented;
 
-		// factorP represents the order of magnitude by which initial conditions for the ode (on p equations) were increased (in order to prevent underflowing)
-		// only used if smallNumber = true
-		this.factorP = P.factor;
-		this.smallNumber = SN;
 	}
 
 	public int getDimension() {
@@ -77,10 +70,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	public void computeDerivatives(double t, double[] g, double[] gDot) {
 
-		double scaleP = 0;
-
-		// compute the actual scale factor from 'factorP'
-		if (smallNumber) scaleP = Math.pow(10, factorP);
 
 		index = Utils.index(t, times, intervals);
 
@@ -92,17 +81,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			k = i*intervals + index;
 
-			if (smallNumber) {
-				// scaling factor applied to master equations p0
-				gDot[i] = + (b[k]+d[k]+s[k])*g[i]
-						- (b[k] * g[i] * g[i])/scaleP
-						- d[k]*scaleP ;	
-			} else {
-				gDot[i] = + (b[k]+d[k]+s[k]//)*g[i]
+				gDot[i] = + (b[k]+d[k]+s[k]
 						- b[k] * g[i]) * g[i]
 								- d[k] ;
-			}
-
 
 			for (int j=0; j<dimension; j++){
 
@@ -113,10 +94,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 
 						gDot[i] += b_ij[l]*g[i]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i];
-						if (!smallNumber)
+
 							gDot[i] -= b_ij[l]*g[i]*g[j]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i]*g[j];
-						else
-							gDot[i] -= (b_ij[l]*g[i]*g[j])/scaleP;
+
 					}
 
 					// migration:
@@ -128,13 +108,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			/*  ge equations: (dim .. 2*dim-1) */
 
-			if (smallNumber) {
+
 				gDot[dimension+i] = + (b[k]+d[k]+s[k]
-						- 2*b[k]*g[i]/scaleP)*g[dimension+i];
-			} else {
-				gDot[dimension+i] = + (b[k]+d[k]+s[k] //)*g[dimension+i]
 						- 2*b[k]*g[i])*g[dimension+i];
-			}
 
 
 			for (int j=0; j<dimension; j++){
@@ -148,10 +124,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 						gDot[dimension+i] += b_ij[l]*g[dimension+i];
 						if (!augmented) {
-							if (smallNumber)
-								gDot[dimension+i] -= b_ij[l]* ( (g[i]*g[dimension+j])/scaleP + (g[j]*g[dimension+i])/scaleP);
-							else
-								gDot[dimension+i] -= b_ij[l]* ( g[i]*g[dimension+j] + g[j]*g[dimension+i]);
+							gDot[dimension+i] -= b_ij[l]* ( g[i]*g[dimension+j] + g[j]*g[dimension+i]);
 						}
 					}
 
@@ -169,8 +142,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	}
 
 	/**
-	 * Perform integration on differential equations p using a classical implementation (using double[] for the initial conditions and the output).
-	 * WARNING: getP and getPSmallNumber are very similar. A correction made in one of the two would likely be needed in the other also.
+	 * Perform integration on differential equations p 
 	 * @param t
 	 * @param rhoSampling
 	 * @param rho
@@ -239,114 +211,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		return y;
 	}
 
-	/**
-	 * Implementation of getP with Small Numbers, to avoid potential underflowing.
-	 * WARNING: getP and getPSmallNumber are very similar. A correction made in one of the two would likely be needed in the other also.
-	 * @param t
-	 * @param rhoSampling
-	 * @param rho
-	 * @return
-	 */
-	public SmallNumber[] getPSmallNumber(double t, Boolean rhoSampling, Double[] rho){
 
-
-		double[] y = new double[dimension];
-
-		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
-
-
-		if (rhoSampling)
-			for (int i = 0; i<dimension; i++)
-				y[i]-= rho[i*intervals + Utils.index(t, times, intervals)];    // initial condition: y_i[T]=1-rho_i
-
-		// create an array of Small Numbers which will encapsulate the result of getP, to avoid any risk of underflowing
-		SmallNumber[] ySmall = new SmallNumber[dimension];
-
-		for (int i=0; i<dimension; i++){
-			ySmall[i] = new SmallNumber(y[i]);
-		}
-
-		if (Math.abs(T-t)<1e-10 ||  T < t) {
-			return ySmall;
-		}
-
-		try {
-			ScaledNumbers yScaled = new ScaledNumbers();
-
-			// yScaled contains the set of initial conditions scaled to fit the requirements on the values 'double' can represent, with the factor by which the numbers were multiplied 
-			yScaled = SmallNumberScaler.scale(ySmall, EquationType.EquationOnP);
-
-			double from = t;
-			double to = T;
-			double oneMinusRho;
-
-			int indexFrom = Utils.index(from, times, times.length);
-			int index = Utils.index(to, times, times.length);
-
-			int steps = index - indexFrom;
-			index--;
-			if (Math.abs(from-times[indexFrom])<1e-10) steps--;
-			if (index>0 && Math.abs(to-times[index-1])<1e-10) {
-				steps--;
-				index--;
-			}
-
-			// integrationResults is used temporarily to store the results of each integration step
-			double[] integrationResults = new double[dimension];
-
-			while (steps > 0){
-
-				from = times[index];//  + 1e-14;
-
-				P.setFactor(yScaled.getScalingFactor()[0]); // set the right scaling factor for P equations
-				p_integrator.integrate(P, to, yScaled.getEquation(), from, integrationResults); // solve P , store solution in integrationResults then in y, when unscaled
-				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-				ySmall = SmallNumberScaler.unscale(integrationResults, yScaled.getScalingFactor(), EquationType.EquationOnP);
-
-
-
-				if (rhoSampling){
-					for (int i=0; i<dimension; i++){
-						oneMinusRho = (1-rho[i*intervals + Utils.index(times[index], times, intervals)]);
-						ySmall[i] = ySmall[i].scalarMultiply(oneMinusRho);
-					}
-				}
-
-				to = times[index];
-
-				steps--;
-				index--;
-
-				// 'rescale' the results of the last integration to prepare for the next integration step 
-				yScaled = SmallNumberScaler.scale(ySmall, EquationType.EquationOnP);
-			}
-
-			P.setFactor(yScaled.getScalingFactor()[0]); // set the right scaling factor for P equations
-			p_integrator.integrate(P, to, yScaled.getEquation(), t, integrationResults); // solve P, store solution in y
-			ySmall = SmallNumberScaler.unscale(integrationResults, yScaled.getScalingFactor(), EquationType.EquationOnP);
-
-
-		}catch(Exception e){
-			// e.printStackTrace();
-			throw new RuntimeException("couldn't calculate p");
-		}
-
-		return ySmall;
-	}
-
-	public void setFactor(int factorP){
-		this.factorP = factorP;
-		this.P.setFactor(factorP);
-	}
-
-	public int getFactor(){
-		return this.factorP;
-	}
-
-	public void setSmallNumber(boolean SN){
-		this.smallNumber = SN;
-		this.P.smallNumber = SN;
-	}
 
 	/**
 	 * This method serves as a comparison for various integrators
@@ -390,8 +255,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			double T = 1;
 			Boolean augmented = true;
 
-			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.}, 0, false);
-			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, false);
+			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.});
+			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
 			
 			System.out.println("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
 
@@ -456,7 +321,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	public static void main(String args[]){
 		
-		//testCorrelations();
+		testCorrelations();
 
 		Double[] birth = {2.,2.};
 		Double[] b;
@@ -477,8 +342,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		double T = 10.;
 		Boolean augmented = false;
 
-		p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.}, 0, false);
-		p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented, false);
+		p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.});
+		p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
 
 
 		double[] p0 = new double[]{1.,1.};

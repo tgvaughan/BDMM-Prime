@@ -6,18 +6,18 @@ import beast.core.Description;
 public class ScaledNumbers {
 
 	// scale factor(s)
-	private int[] factor;
+	private int factor;
 
 	// set(s) of initial conditions on which the scale factor(s) was/were applied
 	private double[] equation;
 
-	public ScaledNumbers(int[] f, double[] e){
+	public ScaledNumbers(int f, double[] e){
 		this.factor = f;
 		this.equation = e;
 	}
 
 	public ScaledNumbers(){
-		this.factor = new int[0];
+		this.factor = 0;
 		this.equation = new double[0];
 	}
 
@@ -29,17 +29,15 @@ public class ScaledNumbers {
 		this.equation = newEquation;
 	}
 
-	public int[] getScalingFactor(){
+	public int getScalingFactor(){
 		return this.factor;
 	}
 	
-	public void setScalingFactor(int[] newFactor){
+	public void setScalingFactor(int newFactor){
 		this.factor = newFactor; 
 	}
 	
-	public void augmentFactor(int[] increase) {
-		for (int i=0; i<this.factor.length; i++) {
-			factor[i] += increase[i];
-		}
+	public void augmentFactor(int increase) {
+		factor += increase;
 	}
 }
