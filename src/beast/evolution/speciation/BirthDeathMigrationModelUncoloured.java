@@ -165,7 +165,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 	/**
 	 * WARNING: calculateTreeLogLikelihood allows use of both classic and non-underflowing methods. Some chunks of code are therefore present in two similar versions in this method.
-	 * When modifying one of the versions, one should check if the other version also need the corresponding changes.
+	 * When modifying one of the versions, one should check if the other version also needs the corresponding changes.
 	 */
 	@Override
 	public double calculateTreeLogLikelihood(TreeInterface tree) {
@@ -275,7 +275,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			}
 
 
-
+		
 		}catch(Exception e){
 
 			if (e instanceof ConstraintViolatedException){throw e;}
@@ -563,6 +563,13 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 										.scalarMultiply(0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index]));
 							}
 						}
+						// TO DO remove following comments
+//						for (int j = 0; j < n; j++) {
+//							if (childstate != j) {
+//
+//								init[n + childstate] += 0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index] * (g0[n + childstate] * g1[n + j] + g0[n + j] * g1[n + childstate]);
+//							}
+//						}
 					}
 
 					if (Double.isInfinite(init.conditionsOnP[childstate])) {
@@ -580,7 +587,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 		if (print){
 			System.out.print("p after subtree merge = ");
-			for (int i=0;i<2*n;i++) System.out.print(init.conditionsOnP[i] + "\t");
+			for (int i=0;i<n;i++) System.out.print(init.conditionsOnP[i] + "\t");
+			for (int i=0;i<n;i++) System.out.print(init.conditionsOnG[i] + "\t");
 			System.out.println();
 		}
 

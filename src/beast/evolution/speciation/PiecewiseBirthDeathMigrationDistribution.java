@@ -1001,7 +1001,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if(absoluteTolerance.get() > relativeTolerance.get())
 			throw new RuntimeException("Absolute tolerance higher than relative tolerance for the adaptive integrator. Change values for these inputs.");
 		
-		if(minRes<0 || absoluteTolerance.get()/minRes > relativeTolerance.get() || minRes == Double.MAX_VALUE ) {
+		
+		if(minRes != Double.MAX_VALUE && (minRes<0 || absoluteTolerance.get()/minRes > relativeTolerance.get())) {
 			
 			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);
 			pgScaled = safeIntegrate(integrator, PG, from + (to-from)/2, pgScaled, from);

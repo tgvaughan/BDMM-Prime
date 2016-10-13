@@ -138,7 +138,7 @@ public class SmallNumber {
 	 */
 	public static SmallNumber add(SmallNumber a, SmallNumber b){
 
-		if (a.mantissa == 0 || (b.exponent - a.exponent)> approximationThreshold) {
+		if (a.mantissa == 0 || ((b.exponent - a.exponent)> approximationThreshold && b.mantissa !=0)) {
 			return b;
 		} else if (b.mantissa == 0 || (a.exponent - b.exponent) > approximationThreshold) {
 			return a;
