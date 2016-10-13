@@ -173,7 +173,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default false", false);
 
 	public Input<Boolean> useSmallNumbers = new Input<>("useSN",
-			"Use non-underflowing method (default: true)", false);
+			"Use non-underflowing method (default: true)", true);
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 	
