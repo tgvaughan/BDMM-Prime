@@ -242,7 +242,7 @@ public class PiecewiseBirthDeathMigrationDistributionTest extends TestCase {
         MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
         tree.initByName(
                 "adjustTipHeights", false,
-                "newick", treeString,
+                "value", treeString,
                 "typeLabel", "type");
 
         BirthDeathMigrationModel bdmm = new BirthDeathMigrationModel();
