@@ -148,31 +148,27 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	 * @param rho
 	 * @return
 	 */
-	public double[] getP(double t, Boolean rhoSampling, Double[] rho){
+	public double[] getP(double t, double[]P0, double t0, Boolean rhoSampling, Double[] rho){
 
-		double[] y = new double[dimension];
-
-		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
-
-		if (rhoSampling)
-			for (int i = 0; i<dimension; i++)
-				y[i]-= rho[i*intervals + Utils.index(t, times, intervals)];    // initial condition: y_i[T]=1-rho_i
-
-		if (Math.abs(T-t)<1e-10 ||  T < t) {
-			return y;
+		if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||   T < t) {
+			return P0;
 		}
+		
+		double[] result = new double[P0.length];
+		
 
 		try {
-
+			
+			System.arraycopy(P0, 0, result, 0, P0.length);
 			double from = t;
-			double to = T;
+			double to = t0;
 			double oneMinusRho;
 
 			int indexFrom = Utils.index(from, times, times.length);
 			int index = Utils.index(to, times, times.length);
 
 			int steps = index - indexFrom;
-			index--;
+			index--; 
 			if (Math.abs(from-times[indexFrom])<1e-10) steps--;
 			if (index>0 && Math.abs(to-times[index-1])<1e-10) {
 				steps--;
@@ -184,12 +180,12 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 				from = times[index];//  + 1e-14;
 
 
-				p_integrator.integrate(P, to, y, from, y); // solve P , store solution in y
+				p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
 
 				if (rhoSampling){
 					for (int i=0; i<dimension; i++){
 						oneMinusRho = (1-rho[i*intervals + Utils.index(times[index], times, intervals)]);
-						y[i] *= oneMinusRho;
+						result[i] *= oneMinusRho;
 					}
 				}
 
@@ -201,16 +197,35 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			}
 
 
-			p_integrator.integrate(P, to, y, t, y); // solve P, store solution in y
+			p_integrator.integrate(P, to, result, t, result); // solve P, store solution in y
 
 		}catch(Exception e){
 
 			throw new RuntimeException("couldn't calculate p");
 		}
 
-		return y;
+		return result;
 	}
+	
+	
+	public double[] getP(double t, Boolean rhoSampling, Double[] rho){
 
+		double[] y = new double[dimension];
+
+		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
+		
+
+		if (rhoSampling)
+			for (int i = 0; i<dimension; i++)
+				y[i]-= rho[i*intervals + Utils.index(t, times, intervals)];    // initial condition: y_i[T]=1-rho_i
+
+		if (Math.abs(T-t)<1e-10 ||  T < t) {
+			return y;
+		}
+		
+		return getP(t, y, T, rhoSampling, rho);
+
+	}
 
 
 	/**
@@ -345,7 +360,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.});
 		p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
 
-
+		pg_ode.p_integrator = integrator;
 		double[] p0 = new double[]{1.,1.};
 		double[] p = new double[2];
 		double[] y0 = new double[]{1.,1.,1.,1.};
@@ -353,11 +368,20 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		integrator.integrate(pg_ode, T, y0, 0., y);
 		integrator.integrate(p_ode, T, p0, 0., p);
+		
+		double[] res2 = new double[] {4};
+		double[] res  = pg_ode.getP(8, false, new Double[]{0.});
+		System.out.println(b[0] + "\t" + res[0]+"\t"+res[1]);
+		res2 = pg_ode.getP(5, res, 8, false, new Double[]{0.});
+		System.out.println(b[0] + "\t" + res[0]+"\t"+res[1]);
+		res2 = pg_ode.getP(0, res, 5, false, new Double[]{0.});
+		System.out.println(b[0] + "\t" + res[0]+"\t"+res[1]);
 
 		//             System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
 		System.out.println(b[0] + "\t" + p[0]+"\t"+p[1]);
 		System.out.println(b[0] + "\t" + y[0]+"\t"+y[1]+"\t"+y[2]+"\t"+y[3]);
 		//         }
+		
 	}
 }
 
