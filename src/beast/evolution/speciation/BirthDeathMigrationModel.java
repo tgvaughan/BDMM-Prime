@@ -146,17 +146,17 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	public p0ge_InitialConditions getGSmallNumber(double t, p0ge_InitialConditions PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		if (node.isLeaf()){
-			// TO DO CLEAN UP
-			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
-			double h = T - node.getHeight();
-			double[] temp = PG.getP(t0, m_rho.get()!=null, rho);
-			double[] temp2 = pInitialConditions[node.getNr()];
+//			// TO DO CLEAN UP
+//			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
+//			double h = T - node.getHeight();
+//			double[] temp = PG.getP(t0, m_rho.get()!=null, rho);
+//			double[] temp2 = pInitialConditions[node.getNr()];
+//			
+//			if (h!=t0) {
+//				throw new RuntimeException("t0 est pas comme height");
+//			}
 			
-			if (h!=t0) {
-				throw new RuntimeException("t0 est pas comme height");
-			}
-			
-			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
+			System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
 		}
 
 		return getGSmallNumber(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
@@ -533,7 +533,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 					if (!isRhoTip[node.getNr()]){
 						init.conditionsOnG[nodestate] = SAModel
-								? new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
+								? new SmallNumber((r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index]))
 										*psi[nodestate * totalIntervals + index])
 
 										: new SmallNumber(psi[nodestate * totalIntervals + index]);
