@@ -1,7 +1,5 @@
 package beast.evolution.speciation;
 
-import java.util.Collections;
-
 import beast.core.Description;
 import beast.core.util.Utils;
 import beast.evolution.tree.*;
