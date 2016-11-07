@@ -7,6 +7,7 @@ import beast.core.util.Utils;
 
 import beast.math.SmallNumber;
 import beast.math.p0ge_InitialConditions;
+import beast.util.HeapSort;
 
 
 /**
@@ -135,7 +136,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 	public double[] getG(double t, double[] PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		if (node.isLeaf()) {
-
 			System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0, 0, n);
 		}
 
@@ -156,7 +156,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 
 		if (node.isLeaf()) {
-			System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
+			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
 		}
 
 		return getGSmallNumber(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
@@ -193,12 +193,16 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		double nosample = 0;
 
 		try{  // start calculation
-
+			
+			pInitialConditions = getAllInitialConditionsForP(tree);
 
 			if (conditionOnSurvival.get()) {
-				// since noSampleExistsProp has to be a double, and there is hardly any risk of underflowing with getP, the SmallNumber implementation is not used for this step in any case
-				noSampleExistsProp = PG.getP(0,m_rho.get()!=null,rho);
-
+				
+				if (orig > 0) // the root is at height 0
+					noSampleExistsProp = pInitialConditions[tree.getNodeCount()];
+				else // the root is higher than zero
+					noSampleExistsProp = pInitialConditions[root.getNr()];
+				
 				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 
 
@@ -219,8 +223,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 					pSN = calculateSubtreeLikelihoodSmallNumber(root,0,orig);
 				else
 					p = calculateSubtreeLikelihood(root,0,orig);
-			}
-			else {
+			} else {
 				int childIndex = 0;
 				if (root.getChild(1).getNr() > root.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
 
@@ -275,7 +278,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			}
 
 
-		
+
 		}catch(Exception e){
 
 			if (e instanceof ConstraintViolatedException){throw e;}
@@ -472,7 +475,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
 
 		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
-		
+
 		int index = Utils.index(to,times, totalIntervals);
 
 		if (node.isLeaf()){ // sampling event
@@ -495,13 +498,14 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			}
 			else {
 
-				if (!isRhoTip[node.getNr()])
+				if (!isRhoTip[node.getNr()]) 
 					init.conditionsOnG[nodestate] = SAModel
-					?	new SmallNumber((r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index]))
+							?
+					new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
 							*psi[nodestate * totalIntervals + index])
 							: new SmallNumber(psi[nodestate * totalIntervals + index]);
 
-					else
+			 else
 						init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
 
 			}
@@ -595,6 +599,66 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		transformAmongParameters();
 	}
 
+	/**
+	 * Find all initial conditions for all future integrations on p0 equations 
+	 * @param tree
+	 * @return an array of arrays storing the initial conditions values
+	 */
+	public double[][] getAllInitialConditionsForP(TreeInterface tree){
+        int nodeCount = tree.getNodeCount();
+        double[] nodeHeights = new double[nodeCount];
+        int[] indicesSortedByNodeHeight  =new int[nodeCount];
+        for (int i=0; i<nodeCount; i++){
+        	nodeHeights[i] = T - tree.getNode(i).getHeight();
+        	// System.out.println(nodeHeight[i]);
+        	indicesSortedByNodeHeight[i] = i;
+        }
+        
+        HeapSort.sort(nodeHeights, indicesSortedByNodeHeight);
+        //"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
+        
+        int allPlength = (nodeHeights[indicesSortedByNodeHeight[0]] == 0)? nodeCount: nodeCount + 1; // in case the origin is not at zero, an extra space is left for the value of integration till 0. 
+        double[][] allPInitials = new double[allPlength][n]; 
+        
+        double t = nodeHeights[indicesSortedByNodeHeight[nodeCount-1]];
+        
+        boolean rhoSampling =  (m_rho.get()!=null);
+        
+        allPInitials[indicesSortedByNodeHeight[nodeCount-1]] = PG.getP(t, rhoSampling, rho);
+        double t0 = t;
+        
+        if (nodeCount >1 ){
+            for (int i = nodeCount-2; i>-1; i--){
+            	t = nodeHeights[indicesSortedByNodeHeight[i]];
+            	
+            	//If the next higher node is actually at the same height, store previous results and skip iteration
+            	if (Math.abs(t-t0) < 1e-10) {
+            		t0 = t;
+            		allPInitials[indicesSortedByNodeHeight[i]] = allPInitials[indicesSortedByNodeHeight[i+1]];
+            		continue;
+            	} else {
+            		allPInitials[indicesSortedByNodeHeight[i]] = PG.getP(t, allPInitials[indicesSortedByNodeHeight[i+1]], t0, rhoSampling, rho);
+            		t0 = t;
+            	}
+                
+            }
+        }
+        
+        if (allPlength > nodeCount) {
+        	allPInitials[nodeCount] = PG.getP(0, allPInitials[indicesSortedByNodeHeight[0]], t0, rhoSampling, rho);
+        }
+
+//        String sortedIndices = new String();
+//        for (int d: indicesSortedByNodeHeight) {
+//        	sortedIndices += (d + "\t");
+//        }
+//        System.out.println("Node indices sorted: " + sortedIndices);
+//        for (int i = 0; i<nodeCount; i++) {
+//        	System.out.println("Value of node " + i + ":\t" + allPInitials[i][0]);
+//        }
+
+		return allPInitials;
+	}
 
 	// used to indicate that the state assignment went wrong
 	protected class ConstraintViolatedException extends RuntimeException {

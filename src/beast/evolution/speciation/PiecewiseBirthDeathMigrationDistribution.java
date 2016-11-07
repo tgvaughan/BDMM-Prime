@@ -12,6 +12,7 @@ import beast.evolution.tree.TreeInterface;
 import beast.math.p0_ODE;
 import beast.math.p0ge_InitialConditions;
 import beast.math.p0ge_ODE;
+import beast.util.HeapSort;
 import beast.math.ScaledNumbers;
 import beast.math.SmallNumber;
 import beast.math.SmallNumberScaler;
@@ -251,6 +252,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	Boolean birthAmongDemes = false;
 
 	Double[] freq;
+	
+	double[][] pInitialConditions;
+	double[] sortedNodes;
 
 
 	@Override
@@ -385,6 +389,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||  T < t) {
 				return PG0;
 			}
+			
+
 
 			double from = t;
 			double to = t0;
@@ -646,6 +652,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	/**
 	 * set change times
 	 */
+
 	public void getChangeTimes(double maxTime, List<Double> changeTimes, RealParameter intervalTimes, int numChanges, boolean relative, boolean reverse) {
 		changeTimes.clear();
 
@@ -1045,6 +1052,11 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	        if (values[i] < min && values[i]!=0 ) min=values[i];
 	    }
 	    return min;
+	}
+
+
+	public p0ge_ODE getPG() {
+		return PG;
 	}
 
 }
