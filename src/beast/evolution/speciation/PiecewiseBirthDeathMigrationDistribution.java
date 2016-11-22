@@ -177,7 +177,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			"Use non-underflowing method (default: true)", true);
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
-	
+
+	double globalThreshold = 1e-20;
+
 	double T;
 	double orig;
 	int ntaxa;
@@ -386,7 +388,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		try {
 
-			if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||  T < t) {
+			if (Math.abs(T-t)<globalThreshold || Math.abs(t0-t)<globalThreshold ||  T < t) {
 				return PG0;
 			}
 			
@@ -400,8 +402,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			int index = Utils.index(to, times, times.length);
 
 			int steps = index - indexFrom;
-			if (Math.abs(from-times[indexFrom])<1e-10) steps--;
-			if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+			if (Math.abs(from-times[indexFrom]) < globalThreshold ) steps--;
+			if (index>0 && Math.abs(to-times[index-1]) < globalThreshold ) {
 				steps--;
 				index--;
 			}
@@ -409,7 +411,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			while (steps > 0){
 
-				from = times[index];// + 1e-14;
+				from = times[index];
 
 				pg_integrator.integrate(PG, to, PG0, from, PG0); // solve PG , store solution in PG0
 
@@ -453,7 +455,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		try {
 
-			if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||  T < t) {
+			if (Math.abs(T-t) < globalThreshold || Math.abs(t0-t) < globalThreshold ||  T < t) {
 				return PG0;
 			}
 
@@ -467,8 +469,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			int index = Utils.index(to, times, times.length);
 
 			int steps = index - indexFrom;
-			if (Math.abs(from-times[indexFrom])<1e-10) steps--;
-			if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+			if (Math.abs(from-times[indexFrom]) < globalThreshold ) steps--;
+			if (index>0 && Math.abs(to-times[index-1]) < globalThreshold ) {
 				steps--;
 				index--;
 			}
@@ -481,7 +483,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			while (steps > 0){
 
-				from = times[index];// + 1e-14;
+				from = times[index];
 				
 				if (useRKInput.get() || (to - from) < threshold) {
 					pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
@@ -914,6 +916,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		P = new p0_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
 		PG = new p0ge_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
 
+		P.globalThreshold = globalThreshold;
+		PG.globalThreshold = globalThreshold;
 
 		if (!useRKInput.get() && useSmallNumbers.get()) {
 			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); //new HighamHall54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); // 
