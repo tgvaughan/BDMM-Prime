@@ -21,6 +21,8 @@ import beast.core.util.Utils;
 
 public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
+	public double globalThreshold;
+
 	p0_ODE P;
 	public FirstOrderIntegrator p_integrator;
 

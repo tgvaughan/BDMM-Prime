@@ -86,7 +86,7 @@ public class BirthDeathMigrationTest extends TestCase {
         bdssm.initAndValidate();
         
         
-        assertEquals(-122.2313926454848, bdssm.calculateTreeLogLikelihood(mtTree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+        assertEquals(-16.26504480586609, bdssm.calculateTreeLogLikelihood(mtTree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
 
     }
 
@@ -127,7 +127,7 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.initAndValidate();
                     
 
-                    assertEquals(-102.99471869225083, bdssm.calculateTreeLogLikelihood(tree), 1e-3);    // this result is from BEAST (BirthDeathMigrationModelUncoloured)
+                    assertEquals(-10.891322664609273, bdssm.calculateTreeLogLikelihood(tree), 1e-3);    // this result is from BEAST (BirthDeathMigrationModelUncoloured)
 
                 }
                 case 2:{
@@ -152,7 +152,7 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.initAndValidate();
 
                     
-                    assertEquals(-104.5287035591, bdssm.calculateTreeLogLikelihood(tree), 1e-3);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+                    assertEquals(-12.425307127180618, bdssm.calculateTreeLogLikelihood(tree), 1e-3);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
                 }
 
                 case 3:{
@@ -173,7 +173,7 @@ public class BirthDeathMigrationTest extends TestCase {
                     bdssm.initAndValidate();
                     
                     
-                    assertEquals(-100.1611879, bdssm.calculateTreeLogLikelihood(tree), 1e-3);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
+                    assertEquals(5.805176735683993, bdssm.calculateTreeLogLikelihood(tree), 1e-3);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R
                 }
             }
         }
@@ -196,7 +196,7 @@ public class BirthDeathMigrationTest extends TestCase {
 //        bdssm.setInputValue("rho", new RealParameter("1."));
         System.out.println("Birth-death result: " +logL);
 
-        assertEquals(-21.42666177086957, logL, 1e-5);
+        assertEquals(-35.289604404496245, logL, 1e-5);
 
     }
 

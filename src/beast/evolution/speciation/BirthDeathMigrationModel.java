@@ -39,6 +39,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 		super.initAndValidate();
 
+		if (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null)
+			throw new RuntimeException("Error: You've specified birthRateAmongDemes or R0AmongDemes, but transmission among demes is currently not possible in MultiTypeTrees. " +
+					"Please use BirthDeathMigrationModelUncoloured instead.");
+
 		coltree = (MultiTypeTree) treeInput.get();
 
 		if (origin.get()==null){
@@ -107,7 +111,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 			for (Double time:rhoSamplingChangeTimes){
 
-				if (Math.abs(time-tipTime) < 1e-10 && rho[((MultiTypeNode)tip).getNodeType()*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
+				if (Math.abs(time-tipTime) < 1e-20 && rho[((MultiTypeNode)tip).getNodeType()*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
 
 			}
 		}
