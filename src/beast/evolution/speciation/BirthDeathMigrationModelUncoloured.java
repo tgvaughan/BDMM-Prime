@@ -31,6 +31,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 
 	private int[] nodeStates;
+	
+	double[][] pInitialConditions;
 
 	Boolean print = false;
 

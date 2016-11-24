@@ -255,7 +255,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	Double[] freq;
 	
-	double[][] pInitialConditions;
 	double[] sortedNodes;
 
 
