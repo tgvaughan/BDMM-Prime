@@ -252,8 +252,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	Boolean birthAmongDemes = false;
 
 	Double[] freq;
-	
-	double[][] pInitialConditions;
+
 	double[] sortedNodes;
 
 
@@ -453,7 +452,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		try {
 
-			if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||  T < t) {
+			if (Math.abs(T-t)<1e-20 || Math.abs(t0-t)<1e-20 ||  T < t) {
 				return PG0;
 			}
 
@@ -467,8 +466,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			int index = Utils.index(to, times, times.length);
 
 			int steps = index - indexFrom;
-			if (Math.abs(from-times[indexFrom])<1e-10) steps--;
-			if (index>0 && Math.abs(to-times[index-1])<1e-10) {
+			if (Math.abs(from-times[indexFrom])<1e-20) steps--;
+			if (index>0 && Math.abs(to-times[index-1])<1e-20) {
 				steps--;
 				index--;
 			}
