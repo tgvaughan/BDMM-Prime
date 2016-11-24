@@ -36,7 +36,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 	Boolean print = false;
 	
-	double[][] pInitialConditions;
 
 
 	@Override

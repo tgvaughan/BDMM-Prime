@@ -168,20 +168,20 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 //				else
 //					System.out.println("No it is not above");
 //			}
-//			if(m_rho.get()!=null && !isRhoTip[node.getNr()]){
-//			//if (!isRhoTip[node.getNr()]){
-//				//System.out.println("Yes it happened\t" + node.getNr());
-//				double start = System.nanoTime();
-//				System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
-//				double timeElapsed = System.nanoTime() - start;
-//				//System.out.println("Time needed to recalculate: " + timeElapsed/1000000 + " milliseconds");
-//				
-//			} else {
+			if(m_rho.get()!=null && !isRhoTip[node.getNr()]){
+			//if (!isRhoTip[node.getNr()]){
+				//System.out.println("Yes it happened\t" + node.getNr());
+				double start = System.nanoTime();
+				System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
+				double timeElapsed = System.nanoTime() - start;
+				//System.out.println("Time needed to recalculate: " + timeElapsed/1000000 + " milliseconds");
+				
+			} else {
 				double start = System.nanoTime();
 				System.arraycopy(pInitialConditions.get(t0), 0, PG0.conditionsOnP, 0, n);
 				double timeElapsed = System.nanoTime() - start;
 				//System.out.println("Time needed to fetch result: " + timeElapsed/1000000 + " milliseconds");
-			//}
+			}
 
 
 			// TO DO remove this part
