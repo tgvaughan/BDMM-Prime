@@ -1010,7 +1010,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
 		
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
-		if(Math.abs(from-to)< (T * 1e-10)) return pgScaled;
+		if(Math.abs(from-to)< (T * globalPrecisionThreshold)) return pgScaled;
 		
 		// we test to see if the current interval size can produce a sufficiently-precise result
 		double[] integrationResults = new double[pgScaled.getEquation().length];
@@ -1034,10 +1034,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			double[] pConditions = new double[n];
 			SmallNumber[] geConditions = new SmallNumber[n];
 			
+			System.arraycopy(integrationResults, 0,  pConditions, 0, n);
+			
 			for (int i = 0; i < n; i++) {
-				pConditions[i] = integrationResults[i];
 				geConditions[i] = new SmallNumber(integrationResults[i+n]);
 			}
+			
 			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions));
 			pgScaled.augmentFactor(a);
 		

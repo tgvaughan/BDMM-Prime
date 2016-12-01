@@ -163,10 +163,7 @@ public class SmallNumberScaler {
 		
 		double[] pConditions = new double[dim];
 		
-		// TO DO faire un arraycopy
-		for(int i=0; i<dim; i++){
-			pConditions[i] = numbers[i];
-		}
+		System.arraycopy(numbers, 0, pConditions, 0, dim);
 
 		SmallNumber[] unscaledGe = new SmallNumber[dim];
 
