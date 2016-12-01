@@ -481,7 +481,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			index--;
 
 			// pgScaled contains the set of initial conditions scaled made to fit the requirements on the values 'double' can represent. It also contains the factor by which the numbers were multiplied
-			ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0);
+			ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0, this);
 			// integrationResults will temporarily store the results of each integration step as 'doubles', before converting them back to 'SmallNumbers'
 			double[] integrationResults = new double[2*n];
 
@@ -513,7 +513,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				index--;
 
 				// 'rescale' the results of the last integration to prepare for the next integration step
-				pgScaled = SmallNumberScaler.scale(PG0);
+				pgScaled = SmallNumberScaler.scale(PG0, this);
 			}
 			
 			if (useRKInput.get() || (to - t) < threshold) {
@@ -1040,7 +1040,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				geConditions[i] = new SmallNumber(integrationResults[i+n]);
 			}
 			
-			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions));
+			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions), this);
 			pgScaled.augmentFactor(a);
 		
 		}
