@@ -16,8 +16,6 @@ import beast.core.util.Utils;
 
 public class p0_ODE implements FirstOrderDifferentialEquations {
 
-	public double globalThreshold;
-
 	Double[] b;
 	Double[] b_ij;
 	Double[] d;
@@ -29,6 +27,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	int intervals;
 	Double[] times;
 	int index;
+
 
 
 	public p0_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension , int intervals, Double[] times) {

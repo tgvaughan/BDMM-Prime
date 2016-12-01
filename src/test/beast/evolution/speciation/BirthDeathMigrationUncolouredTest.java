@@ -52,7 +52,8 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdssm.setInputValue("reverseTimeArrays","false false false false");
         bdssm.initAndValidate();
         
-        
+        // TO DO: remove next line
+        double likeli = bdssm.calculateTreeLogLikelihood(tree);
         assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(tree), 1e-2);     // this result is from BEAST, not double checked in R
 
 

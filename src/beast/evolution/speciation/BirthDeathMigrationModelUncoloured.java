@@ -160,14 +160,14 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 		if (node.isLeaf()) {
 			// TO DO remove this part
-			if ((node.getHeight() - (T-t0))>1e-6) {
-				System.out.println("Yes it is different indeed: " + "t\t" + t + " t0\t" + t0 + " node heigth\t" + (T -  node.getHeight()));
-				if (node.getHeight() < t0)
-					System.out.println("Yes it is indeed above");
-				else
-					System.out.println("No it is not above");
-					
-			}
+//			if ((node.getHeight() - (T-t0))>1e-6) {
+//				System.out.println("Yes it is different indeed: " + "t\t" + t + " t0\t" + t0 + " node heigth\t" + (T -  node.getHeight()));
+//				if (node.getHeight() < t0)
+//					System.out.println("Yes it is indeed above");
+//				else
+//					System.out.println("No it is not above");
+//					
+//			}
 			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
 			// TO DO remove this comment
 			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
@@ -651,7 +651,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 				t = leafHeights[indicesSortedByLeafHeight[i]];
 
 				//If the next higher leaf is actually at the same height, store previous results and skip iteration
-				if (Math.abs(t-t0) < 1e-10) {
+				if (Math.abs(t-t0) < globalPrecisionThreshold) {
 					t0 = t;
 					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]];
 					continue;
