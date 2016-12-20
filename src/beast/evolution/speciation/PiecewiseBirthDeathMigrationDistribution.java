@@ -391,8 +391,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			if (Math.abs(T-t)<globalThreshold || Math.abs(t0-t)<globalThreshold ||  T < t) {
 				return PG0;
 			}
-			
-
 
 			double from = t;
 			double to = t0;
@@ -407,6 +405,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				steps--;
 				index--;
 			}
+
 			index--;
 
 			while (steps > 0){
@@ -417,9 +416,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 				if (rhoChanges>0){
 					for (int i=0; i<n; i++){
-						oneMinusRho = (1-rho[i*totalIntervals + Utils.index(times[index], times, totalIntervals)]);
+						oneMinusRho = (1-rho[i*totalIntervals + index]);
 						PG0[i] *= oneMinusRho;
 						PG0[i+n] *= oneMinusRho;
+						System.out.println("In getG, multiplying with oneMinusRho: " + oneMinusRho);
 					}
 				}
 
@@ -478,7 +478,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			// pgScaled contains the set of initial conditions scaled made to fit the requirements on the values 'double' can represent. It also contains the factor by which the numbers were multiplied
 			ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0);
-			// integrationResults will temporarily store the results of each integration step as 'doubles', before converting them back to 'SmallNumbers'
+			// integrationResults will temporarily store the results of	 each integration step as 'doubles', before converting them back to 'SmallNumbers'
 			double[] integrationResults = new double[2*n];
 
 			while (steps > 0){
@@ -497,9 +497,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 				if (rhoChanges>0){
 					for (int i=0; i<n; i++){
-						oneMinusRho = (1-rho[i*totalIntervals + Utils.index(times[index], times, totalIntervals)]);
+						oneMinusRho = (1-rho[i*totalIntervals + index]);
 						PG0.conditionsOnP[i] *= oneMinusRho;
 						PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
+						System.out.println("In getGSmallNumber, multiplying with oneMinusRho: " + oneMinusRho +", to = " +to);
 					}
 				}
 
@@ -542,7 +543,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			if (m_rho.get().getDimension() <= n && (rhoSamplingTimes.get()==null || rhoSamplingTimes.get().getDimension() < 2)) {
 				if (!contempData && ((samplingProportion.get() != null && samplingProportion.get().getDimension() <= n && samplingProportion.get().getValue() == 0.) || // todo:  instead of samplingProportion.get().getValue() == 0. need checked that samplingProportion[i]==0 for all i=0..n-1
 						(samplingRate.get() != null && samplingRate.get().getDimension() <= 2 && samplingRate.get().getValue() == 0.))) {                              // todo:  instead of samplingRate.get().getValue() == 0. need checked that samplingRate[i]==0 for all i=0..n-1
+
+					// check if data set is contemp!
+					for (Node node : treeInput.get().getExternalNodes()){
+					   if (node.getHeight()>0.) throw new RuntimeException("Error in analysis setup: Parameters set for entirely contemporaneously sampled data, but some nodeheights are > 0!");
+					}
+
 					contempData = true;
+					System.out.println("BDMM: setting contemp=true.");
 				}
 			}
 
@@ -916,7 +924,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		P = new p0_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
 		PG = new p0ge_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
 
-		P.globalThreshold = globalThreshold;
 		PG.globalThreshold = globalThreshold;
 
 		if (!useRKInput.get() && useSmallNumbers.get()) {
