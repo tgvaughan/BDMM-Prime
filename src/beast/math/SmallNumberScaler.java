@@ -177,6 +177,7 @@ public class SmallNumberScaler {
 		return new ScaledNumbers(scalingFactor, scaledEquation);
 	}
 
+	// TO DO DELETE THE NEXT METHOD
 	/**
 	 * JUST TO TEST, DELETE THIS METHOD
 	 * @param conditions
