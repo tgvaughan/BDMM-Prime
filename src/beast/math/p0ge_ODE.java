@@ -41,7 +41,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	int maxEvals;
 	public int maxEvalsUsed;
-	public static double globalPrecisionThreshold;
+	public static double globalThreshold;
 
 
 	public p0ge_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented){
@@ -82,9 +82,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			k = i*intervals + index;
 
-				gDot[i] = + (b[k]+d[k]+s[k]
-						- b[k] * g[i]) * g[i]
-								- d[k] ;
+			gDot[i] = + (b[k]+d[k]+s[k]
+					- b[k] * g[i]) * g[i]
+					- d[k] ;
 
 			for (int j=0; j<dimension; j++){
 
@@ -93,10 +93,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 				if (i!=j){
 					if (b_ij!=null){     // infection among demes
 
-
 						gDot[i] += b_ij[l]*g[i]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i];
 
-							gDot[i] -= b_ij[l]*g[i]*g[j]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i]*g[j];
+						gDot[i] -= b_ij[l]*g[i]*g[j]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i]*g[j];
 
 					}
 
@@ -110,8 +109,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			/*  ge equations: (dim .. 2*dim-1) */
 
 
-				gDot[dimension+i] = + (b[k]+d[k]+s[k]
-						- 2*b[k]*g[i])*g[dimension+i];
+			gDot[dimension+i] = + (b[k]+d[k]+s[k]
+					- 2*b[k]*g[i])*g[dimension+i];
 
 
 			for (int j=0; j<dimension; j++){
@@ -151,15 +150,15 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	 */
 	public double[] getP(double t, double[]P0, double t0, Boolean rhoSampling, Double[] rho){
 
-		if (Math.abs(T-t)< globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   T < t) {
+		if (Math.abs(T-t)< globalThreshold || Math.abs(t0-t)<globalThreshold ||   T < t) {
 			return P0;
 		}
-		
+
 		double[] result = new double[P0.length];
-		
-// TO DO add again the try/catch
-//		try {
-			
+
+
+		try {
+
 			System.arraycopy(P0, 0, result, 0, P0.length);
 			double from = t;
 			double to = t0;
@@ -168,62 +167,70 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			int indexFrom = Utils.index(from, times, times.length);
 			int index = Utils.index(to, times, times.length);
 
+			if (rhoSampling){
+				for (int i=0; i<dimension; i++){
+					oneMinusRho = (1-rho[i*intervals + index ]);
+					result[i] *= oneMinusRho;
+					System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
+				}
+			}
+
 			int steps = index - indexFrom;
-			index--; 
-			if (Math.abs(from-times[indexFrom])<globalPrecisionThreshold) steps--;
-			if (index>0 && Math.abs(to-times[index-1])<globalPrecisionThreshold) {
+
+			index--;
+			if (Math.abs(from-times[indexFrom])<globalThreshold) steps--;
+			if (index>0 && Math.abs(to-times[index-1])<globalThreshold) {
 				steps--;
 				index--;
 			}
 
 			while (steps > 0){
 
-				from = times[index];//  + 1e-14;
-
+				from = times[index];
 
 				p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
 
 				if (rhoSampling){
 					for (int i=0; i<dimension; i++){
-						oneMinusRho = (1-rho[i*intervals + Utils.index(times[index], times, intervals)]);
+						oneMinusRho = (1-rho[i*intervals + index]);
 						result[i] *= oneMinusRho;
+						System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
 					}
 				}
 
 				to = times[index];
 
-
 				steps--;
 				index--;
 			}
 
-
 			p_integrator.integrate(P, to, result, t, result); // solve P, store solution in y
 
-//		}catch(Exception e){
-//
-//			throw new RuntimeException("couldn't calculate p");
-//		}
+		}catch(Exception e){
+
+			throw new RuntimeException("couldn't calculate p");
+		}
 
 		return result;
 	}
-	
-	
+
+
 	public double[] getP(double t, Boolean rhoSampling, Double[] rho){
 
 		double[] y = new double[dimension];
 
 		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
-		
 
 		if (rhoSampling)
-			for (int i = 0; i<dimension; i++)
-				y[i]-= rho[i*intervals + Utils.index(t, times, intervals)];    // initial condition: y_i[T]=1-rho_i
+			for (int i = 0; i<dimension; i++) {
+				y[i] *= (1 - rho[i * intervals + Utils.index(t, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
+				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(t, times, intervals)]) + ", t = " + t + ", to = T");
+			}
 
-		if (Math.abs(T-t)<1e-10 ||  T < t) {
+		if (Math.abs(T-t)<globalThreshold ||  T < t) {
 			return y;
 		}
-		
+
 		return getP(t, y, T, rhoSampling, rho);
 
 	}
@@ -243,8 +250,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		Double c1 = 0.01;
 		Double c2 = 0.1;
-		
-		
+
+
 		for (double i =1.1; i<2; i+=0.125){
 
 			b = new Double[]{i, i};
@@ -267,13 +274,13 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			//FirstOrderIntegrator integrator7 = new DormandPrince54Integrator(1.0e-20, 1., 1.0e-10, 1.0e-9);
 			//FirstOrderIntegrator integrator5 = new DormandPrince853Integrator(1.0e-10, 1., 1.0e-320, 1.0e-20);//new ClassicalRungeKuttaIntegrator(.01); //
 
-			
+
 			double T = 1;
 			Boolean augmented = true;
 
 			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.});
 			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
-			
+
 			System.out.println("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
 
 			double[] y0 = new double[]{1.1,1.1,4.,9.};
@@ -284,48 +291,48 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			long end = System.nanoTime();
 			long microseconds = (end - start) / 1000;
 			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
-			
+
 			y0 = new double[]{1.1,1.1,4.,9.};
 			y = new double[4];
-			
+
 			start = System.nanoTime();
 			integrator2.integrate(pg_ode, T, y0, 0., y);
 			end = System.nanoTime();
 			microseconds = (end - start) / 1000;
 			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
-			
+
 			y0 = new double[]{1.1,1.1,4.,9.};
 			y = new double[4];
-			
+
 			start = System.nanoTime();
 			integrator3.integrate(pg_ode, T, y0, 0., y);
 			end = System.nanoTime();
 			microseconds = (end - start) / 1000;
 			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
-			
 
-			
+
+
 			y0 = new double[]{1.1,1.1,4.,9.};
 			y = new double[4];
-			
+
 			start = System.nanoTime();
 			integrator4.integrate(pg_ode, T, y0, 0., y);
 			end = System.nanoTime();
 			microseconds = (end - start) / 1000;
 			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
-			
+
 			y0 = new double[]{1.1,1.1,4.,9.};
 			y = new double[4];
-			
+
 			start = System.nanoTime();
 			integrator5.integrate(pg_ode, T, y0, 0., y);
 			end = System.nanoTime();
 			microseconds = (end - start) / 1000;
 			System.out.println(y[0]+"\t"+y[1]+"\t" +y[2]+"\t"+y[3]+"\t"+microseconds+" \u03BCs");
-			
+
 			y0 = new double[]{1.1,1.1,4.,9.};
 			y = new double[4];
-			
+
 			start = System.nanoTime();
 			integrator6.integrate(pg_ode, T, y0, 0., y);
 			end = System.nanoTime();
@@ -336,7 +343,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	}
 
 	public static void main(String args[]){
-		
+
 		testCorrelations();
 
 		Double[] birth = {2.,2.};
@@ -372,7 +379,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		integrator.integrate(pg_ode, T, y0, 0., y);
 		integrator.integrate(p_ode, T, p0, 0., p);
-		
+
 		double[] res2 = new double[] {4};
 		double[] res  = pg_ode.getP(8, false, new Double[]{0.});
 		System.out.println(b[0] + "\t" + res[0]+"\t"+res[1]);
@@ -405,6 +412,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		p0_ODE p_odeTest = new p0_ODE(b,null, d,s,M, 1, 3, interTimes);
 		integrator.integrate(p_odeTest, to, res, t, res);
 		
+
 	}
 }
 

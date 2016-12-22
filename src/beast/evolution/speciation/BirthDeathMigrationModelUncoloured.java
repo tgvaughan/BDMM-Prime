@@ -651,7 +651,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 				t = leafHeights[indicesSortedByLeafHeight[i]];
 
 				//If the next higher leaf is actually at the same height, store previous results and skip iteration
-				if (Math.abs(t-t0) < globalPrecisionThreshold) {
+				if (Math.abs(t-t0) < globalThreshold) {
 					t0 = t;
 					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]];
 					continue;

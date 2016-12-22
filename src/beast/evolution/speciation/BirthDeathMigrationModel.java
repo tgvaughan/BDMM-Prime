@@ -752,7 +752,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 				//If the next higher breakpoint is actually at the same height, skip iteration
 				// WARNING I JUST CHANGED THE THRESHOLD FROM -20 to -50
-				if (Math.abs(t-t0) < globalPrecisionThreshold) {
+				if (Math.abs(t-t0) < globalThreshold) {
 					t0 = t;
 					continue;
 				} else {
