@@ -151,6 +151,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	 */
 	public double[] getP(double t, double[]P0, double t0, Boolean rhoSampling, Double[] rho){
 
+		// TO DO add a "precision threshold" here
 		if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||   T < t) {
 			return P0;
 		}
@@ -224,7 +225,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		if (rhoSampling)
 			for (int i = 0; i<dimension; i++) {
 				y[i] *= (1 - rho[i * intervals + Utils.index(t, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
-				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(t, times, intervals)]) + ", t = " + t + ", to = T");
+				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(t, times, intervals)]) + ", t = " + t + ", to = " + T);
 			}
 
 		if (Math.abs(T-t)<globalThreshold ||  T < t) {

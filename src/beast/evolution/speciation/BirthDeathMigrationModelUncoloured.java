@@ -6,6 +6,7 @@ import beast.core.Description;
 import beast.core.util.Utils;
 
 import beast.math.SmallNumber;
+import beast.math.SmallNumber2;
 import beast.math.p0ge_InitialConditions;
 import beast.util.HeapSort;
 
@@ -156,7 +157,18 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 
 		if (node.isLeaf()) {
-			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
+			
+//			// TO DO CLEAN UP
+//			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
+//			double h = T - node.getHeight();
+//			double[] temp = PG.getP(t0, m_rho.get()!=null, rho);
+//			double[] temp2 = pInitialConditions[node.getNr()];
+//			
+//			if (h!=t0) {
+//				throw new RuntimeException("t0 est pas comme height");
+//			}
+			//System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
+			System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
 		}
 
 		return getGSmallNumber(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
@@ -194,15 +206,29 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 		try{  // start calculation
 			
-			pInitialConditions = getAllInitialConditionsForP(tree);
+			// TO DO remove the comments when it works
+			//pInitialConditions = getAllInitialConditionsForP(tree);
 
 			if (conditionOnSurvival.get()) {
 				
-				if (orig > 0) // the root is at height 0
-					noSampleExistsProp = pInitialConditions[tree.getNodeCount()];
-				else // the root is higher than zero
-					noSampleExistsProp = pInitialConditions[root.getNr()];
+				// TO DO add anew this pInitialConditions thing
+//				if (orig > 0) // the root is at height 0
+//					noSampleExistsProp = pInitialConditions[tree.getNodeCount()];
+//				else // the root is higher than zero
+//					noSampleExistsProp = pInitialConditions[root.getNr()];
+//				
+//				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
+//
+//
+//				for (int root_state=0; root_state<n; root_state++){
+//					nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
+//				}
+//
+//				if (nosample<0 || nosample>1)
+//					return Double.NEGATIVE_INFINITY;
 				
+				noSampleExistsProp = PG.getP(0,m_rho.get()!=null,rho);
+
 				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 
 
@@ -499,14 +525,23 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			else {
 
 				if (!isRhoTip[node.getNr()]) 
+					// TO DO REMOVE THE SECOND PART AND UNCOMMENT THIS PART WHEN pInitialConditions WORKS
+//					init.conditionsOnG[nodestate] = SAModel
+//							?
+//					new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
+//							*psi[nodestate * totalIntervals + index])
+//							: new SmallNumber(psi[nodestate * totalIntervals + index]);
+//
+//			 else
+//						init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
+
 					init.conditionsOnG[nodestate] = SAModel
-							?
-					new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
-							*psi[nodestate * totalIntervals + index])
+					? new SmallNumber(r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index])
+							*(psi[nodestate * totalIntervals + index])) // with SA: ψ_i(r + (1 − r)p_i(τ))
 							: new SmallNumber(psi[nodestate * totalIntervals + index]);
 
-			 else
-						init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
+							else
+								init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
 
 			}
 			if (print) System.out.println("Sampling at time " + (T-to));
