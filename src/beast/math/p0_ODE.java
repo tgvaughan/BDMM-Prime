@@ -29,7 +29,6 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	int index;
 
 
-
 	public p0_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension , int intervals, Double[] times) {
 
 		this.b = b;

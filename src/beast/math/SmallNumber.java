@@ -3,7 +3,6 @@ package beast.math;
 import java.text.DecimalFormat;
 
 import beast.core.Description;
-import beast.evolution.speciation.PiecewiseBirthDeathMigrationDistribution;
 
 @Description("This class contains the tools needed to represent and do basic calculations with numbers in scientific representation."
 		+ " For instance, 0.0523 would be written as 5.23E-2 in scientific representation. In this implementation, the attribute 'mantissa' would be 5.23 and 'exponent' would be -2.")
@@ -300,11 +299,10 @@ public class SmallNumber {
 
 		// Test on scaledNumbers
 		double[] eqp = {0, 1, 0.5, 0.8, 0.9, 1.0, 0.6};
-		SmallNumber[] eq = {new SmallNumber(0), new SmallNumber(0), new SmallNumber(1.5), new SmallNumber(0), new SmallNumber(1., 100), new SmallNumber(1., -200), new SmallNumber(1., -500)};
+		SmallNumber[] eq = {new SmallNumber(0), new SmallNumber(0), new SmallNumber(1.5), new SmallNumber(0), new SmallNumber(1., 400), new SmallNumber(1., -200), new SmallNumber(1., -500)};
 		double m = SmallNumber.averageExponent(eq);
-		//PiecewiseBirthDeathMigrationDistribution bdmm = new PiecewiseBirthDeathMigrationDistribution();
 		
-		ScaledNumbers scaeq = SmallNumberScaler.scale(new p0ge_InitialConditions(eqp, eq), true, 1e-7, 1e-320);
+		ScaledNumbers scaeq = SmallNumberScaler.scale(new p0ge_InitialConditions(eqp, eq));
 		System.out.println(SmallNumber.toString(eq) +  "with an average exponent of: " + m + "\t and minimal exponent compared to the set threshold of: " + SmallNumber.compareExponent(eq));
 		System.out.println(scaeq.getScalingFactor());
 		System.out.println("\n" + scaeq.getEquation()[0] + " " + scaeq.getEquation()[1] + " " + scaeq.getEquation()[2] + " " + scaeq.getEquation()[3] + " " + scaeq.getEquation()[4] + " " + scaeq.getEquation()[5] + " " + scaeq.getEquation()[6]);
