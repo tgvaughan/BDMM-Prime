@@ -85,7 +85,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			gDot[i] = + (b[k]+d[k]+s[k]
 					- b[k] * g[i]) * g[i]
-					- d[k] ;
+							- d[k] ;
 
 			for (int j=0; j<dimension; j++){
 
@@ -151,6 +151,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	 */
 	public double[] getP(double t, double[]P0, double t0, Boolean rhoSampling, Double[] rho){
 
+
+
 		// TO DO add a "precision threshold" here
 		if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||   T < t) {
 			return P0;
@@ -169,13 +171,14 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			int indexFrom = Utils.index(from, times, times.length);
 			int index = Utils.index(to, times, times.length);
 
-			if (rhoSampling){
-				for (int i=0; i<dimension; i++){
-					oneMinusRho = (1-rho[i*intervals + index ]);
-					result[i] *= oneMinusRho;
-					System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
-				}
-			}
+			// Old version from Denise (20 dec)
+			//			if (rhoSampling){
+			//				for (int i=0; i<dimension; i++){
+			//					oneMinusRho = (1-rho[i*intervals + index ]);
+			//					result[i] *= oneMinusRho;
+			//					System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
+			//				}
+			//			}
 
 			int steps = index - indexFrom;
 			index--;
@@ -191,13 +194,14 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 				p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
 
-				if (rhoSampling){
+				if (rhoSampling){ 
 					for (int i=0; i<dimension; i++){
 						oneMinusRho = (1-rho[i*intervals + index]);
 						result[i] *= oneMinusRho;
 						System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
 					}
 				}
+
 
 				to = times[index];
 
@@ -206,6 +210,15 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			}
 
 			p_integrator.integrate(P, to, result, t, result); // solve P, store solution in y
+
+			// new addition
+			if (rhoSampling){ 
+				for (int i=0; i<dimension; i++){
+					oneMinusRho = (1-rho[i*intervals + index]);
+					result[i] *= oneMinusRho;
+					System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
+				}
+			}
 
 		}catch(Exception e){
 
@@ -218,14 +231,23 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	public double[] getP(double t, Boolean rhoSampling, Double[] rho){
 
+
 		double[] y = new double[dimension];
 
 		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
 
+		// Old version from Denise (20 dec)
+		//		if (rhoSampling)
+		//			for (int i = 0; i<dimension; i++) {
+		//				y[i] *= (1 - rho[i * intervals + Utils.index(t, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
+		//				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(t, times, intervals)]) + ", t = " + t + ", to = " + T);
+		//			}
+
+		// new version: replaced t with T
 		if (rhoSampling)
 			for (int i = 0; i<dimension; i++) {
-				y[i] *= (1 - rho[i * intervals + Utils.index(t, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
-				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(t, times, intervals)]) + ", t = " + t + ", to = " + T);
+				y[i] *= (1 - rho[i * intervals + Utils.index(T, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
+				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(T, times, intervals)]) + ", t = " + t + ", to = " + T);
 			}
 
 		if (Math.abs(T-t)<globalThreshold ||  T < t) {
