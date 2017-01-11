@@ -28,6 +28,60 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 
     Boolean conditionOnSurvival = false;
 
+    // Initial version of this test from 20th December commit by Denise 
+//    @Test
+//    public void testmultiRho2tipsNoDeath() throws Exception {
+//
+//        Tree tree = new TreeParser("(3[&type=0]: 4, 4[&type=0]: 4) ;", false);
+//
+//        BirthDeathMigrationModelUncoloured bdm = new BirthDeathMigrationModelUncoloured();
+//
+//        bdm.setInputValue("tree", tree);
+//        bdm.setInputValue("typeLabel", "type");
+//        bdm.setInputValue("origin", "5.");
+//
+//        bdm.setInputValue("stateNumber", "1");
+//        bdm.setInputValue("migrationMatrix", "0.");
+//        bdm.setInputValue("frequencies", "1");
+//
+//        bdm.setInputValue("birthRate", new RealParameter("2.25"));
+//        bdm.setInputValue("deathRate", new RealParameter("0."));
+//        bdm.setInputValue("samplingRate", new RealParameter("0."));
+//        bdm.setInputValue("rhoSamplingTimes", new RealParameter("0. 2.5"));
+//        bdm.setInputValue("reverseTimeArrays", "false false false true");
+//
+//        bdm.setInputValue("rho", new RealParameter("0.2 1."));
+//
+////        bdm.setInputValue("conditionOnSurvival", false);
+////        bdm.initAndValidate();
+////        assertEquals(-19.88535688641209, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
+////
+////        bdm.setInputValue("rho", new RealParameter("0.2 0.6"));
+////        bdm.initAndValidate();
+////        assertEquals(-18.865767180278915, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
+//
+//        tree = new TreeParser("(3[&type=0]: 1.5, 4[&type=0]: 4) ;",false);
+//        bdm.setInputValue("tree", tree);
+//
+//
+//        //        bdm.setInputValue("rho", new RealParameter("0.2 1."));
+//        //        bdm.initAndValidate();
+//        //        assertEquals(-15.646651247531981, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
+//
+//        //        bdm.setInputValue("conditionOnSurvival", false);
+//        //        bdm.setInputValue("rho", new RealParameter("0.2 0.6"));
+//        //        bdm.initAndValidate();
+//        //        assertEquals(-15.133091119955177, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
+//
+//        bdm.setInputValue("conditionOnSurvival", false);
+//        bdm.setInputValue("deathRate", "1.5");
+//        bdm.setInputValue("rho", new RealParameter("0.2 0.6"));
+//        bdm.initAndValidate();
+//        assertEquals(-8.637410990319223, bdm.calculateLogP(), 1e-4);   // this result is from BEAST (BDSKY), not double checked in R
+//
+//    }
+    
+    // Version of this test from Denise's email of the 20th December
     @Test
     public void testmultiRho2tipsNoDeath() throws Exception {
 
@@ -44,36 +98,18 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
         bdm.setInputValue("frequencies", "1");
 
         bdm.setInputValue("birthRate", new RealParameter("2.25"));
-        bdm.setInputValue("deathRate", new RealParameter("0."));
+        bdm.setInputValue("deathRate", "1.5");
+
         bdm.setInputValue("samplingRate", new RealParameter("0."));
+
         bdm.setInputValue("rhoSamplingTimes", new RealParameter("0. 2.5"));
         bdm.setInputValue("reverseTimeArrays", "false false false true");
 
-        bdm.setInputValue("rho", new RealParameter("0.2 1."));
-
-//        bdm.setInputValue("conditionOnSurvival", false);
-//        bdm.initAndValidate();
-//        assertEquals(-19.88535688641209, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
-//
-//        bdm.setInputValue("rho", new RealParameter("0.2 0.6"));
-//        bdm.initAndValidate();
-//        assertEquals(-18.865767180278915, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
 
         tree = new TreeParser("(3[&type=0]: 1.5, 4[&type=0]: 4) ;",false);
         bdm.setInputValue("tree", tree);
 
-
-        //        bdm.setInputValue("rho", new RealParameter("0.2 1."));
-        //        bdm.initAndValidate();
-        //        assertEquals(-15.646651247531981, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
-
-        //        bdm.setInputValue("conditionOnSurvival", false);
-        //        bdm.setInputValue("rho", new RealParameter("0.2 0.6"));
-        //        bdm.initAndValidate();
-        //        assertEquals(-15.133091119955177, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
-
         bdm.setInputValue("conditionOnSurvival", false);
-        bdm.setInputValue("deathRate", "1.5");
         bdm.setInputValue("rho", new RealParameter("0.2 0.6"));
         bdm.initAndValidate();
         assertEquals(-8.637410990319223, bdm.calculateLogP(), 1e-4);   // this result is from BEAST (BDSKY), not double checked in R
