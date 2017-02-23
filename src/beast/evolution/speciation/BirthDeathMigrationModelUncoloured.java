@@ -62,8 +62,11 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		for (Node node : tree.getExternalNodes())
 			if (node.getHeight()==0.)
 				contempCount++;
-		if (checkRho.get() && contempCount>1 && rho==null)
-			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
+
+		// TO DO CHANGE BACK ; UNCOMMENT THIS
+
+		//		if (checkRho.get() && contempCount>1 && rho==null)
+		//			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
 
 		collectTimes(T);
 		setRho();
@@ -120,7 +123,26 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			for (Double time:rhoSamplingChangeTimes){
 
+				// TO DO: DEAL WITH THE IMPLICIT THRESHOLD HERE, THAT SHOULD WORK WITH THE OTHERS (and probably same thing in coloured)
 				if (Math.abs(time-tipTime) < 1e-10 && rho[getNodeState(tip,false)*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
+
+			}
+		}
+	}
+	
+	void computeRhoInternalNodes(){
+		double nodeTime;
+		int tipCount = treeInput.get().getLeafNodeCount();
+
+		for (Node internalNode : treeInput.get().getInternalNodes()) {
+
+			nodeTime = T-internalNode.getHeight();
+			isRhoInternalNode[internalNode.getNr()-tipCount] = false;
+
+			for (Double time:rhoSamplingChangeTimes){
+
+				// TO DO: DEAL WITH THE IMPLICIT THRESHOLD HERE, THAT SHOULD WORK WITH THE OTHERS (and probably same thing in coloured)
+				if (Math.abs(time-nodeTime) < 1e-10 && rho[getNodeState(internalNode,false)*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoInternalNode[internalNode.getNr()-tipCount] = true;
 
 			}
 		}
@@ -157,16 +179,16 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 
 		if (node.isLeaf()) {
-			
-//			// TO DO CLEAN UP
-//			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
-//			double h = T - node.getHeight();
-//			double[] temp = PG.getP(t0, m_rho.get()!=null, rho);
-//			double[] temp2 = pInitialConditions[node.getNr()];
-//			
-//			if (h!=t0) {
-//				throw new RuntimeException("t0 est pas comme height");
-//			}
+
+			//			// TO DO CLEAN UP
+			//			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
+			//			double h = T - node.getHeight();
+			//			double[] temp = PG.getP(t0, m_rho.get()!=null, rho);
+			//			double[] temp2 = pInitialConditions[node.getNr()];
+			//			
+			//			if (h!=t0) {
+			//				throw new RuntimeException("t0 est pas comme height");
+			//			}
 			//System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
 			System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
 		}
@@ -205,28 +227,28 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		double nosample = 0;
 
 		try{  // start calculation
-			
+
 			// TO DO remove the comments when it works
 			//pInitialConditions = getAllInitialConditionsForP(tree);
 
 			if (conditionOnSurvival.get()) {
-				
+
 				// TO DO add anew this pInitialConditions thing
-//				if (orig > 0) // the root is at height 0
-//					noSampleExistsProp = pInitialConditions[tree.getNodeCount()];
-//				else // the root is higher than zero
-//					noSampleExistsProp = pInitialConditions[root.getNr()];
-//				
-//				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
-//
-//
-//				for (int root_state=0; root_state<n; root_state++){
-//					nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
-//				}
-//
-//				if (nosample<0 || nosample>1)
-//					return Double.NEGATIVE_INFINITY;
-				
+				//				if (orig > 0) // the root is at height 0
+				//					noSampleExistsProp = pInitialConditions[tree.getNodeCount()];
+				//				else // the root is higher than zero
+				//					noSampleExistsProp = pInitialConditions[root.getNr()];
+				//				
+				//				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
+				//
+				//
+				//				for (int root_state=0; root_state<n; root_state++){
+				//					nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
+				//				}
+				//
+				//				if (nosample<0 || nosample>1)
+				//					return Double.NEGATIVE_INFINITY;
+
 				noSampleExistsProp = PG.getP(0,m_rho.get()!=null,rho);
 
 				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
@@ -526,22 +548,34 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 				if (!isRhoTip[node.getNr()]) 
 					// TO DO REMOVE THE SECOND PART AND UNCOMMENT THIS PART WHEN pInitialConditions WORKS
-//					init.conditionsOnG[nodestate] = SAModel
-//							?
-//					new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
-//							*psi[nodestate * totalIntervals + index])
-//							: new SmallNumber(psi[nodestate * totalIntervals + index]);
-//
-//			 else
-//						init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
+					//					init.conditionsOnG[nodestate] = SAModel
+					//							?
+					//					new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
+					//							*psi[nodestate * totalIntervals + index])
+					//							: new SmallNumber(psi[nodestate * totalIntervals + index]);
+					//
+					//			 else
+					//						init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
 
 					init.conditionsOnG[nodestate] = SAModel
-					? new SmallNumber(r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index])
-							*(psi[nodestate * totalIntervals + index])) // with SA: ψ_i(r + (1 − r)p_i(τ))
+					? new SmallNumber((r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index]))
+							*psi[nodestate * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
 							: new SmallNumber(psi[nodestate * totalIntervals + index]);
 
-							else
-								init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
+					else {
+						// TO DO remove unnecessary comments
+						// modif made by Jeremie
+						// TO DO change Threshold of 1e-10 when threshold in computeRhoTips is changed
+						if((node.getHeight())< 1e-10) 
+							init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
+						else
+							init.conditionsOnG[nodestate] = SAModel? 
+									new SmallNumber((r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index]))
+											*rho[nodestate*totalIntervals+index]):
+												new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ))
+
+					}
+
 
 			}
 			if (print) System.out.println("Sampling at time " + (T-to));
@@ -592,6 +626,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 						System.out.println("\t\t g0 = " + g0.conditionsOnG[childstate] + "\t g1 = " + g1.conditionsOnG[childstate]);
 					}
 
+
 					init.conditionsOnP[childstate] = g0.conditionsOnP[childstate]; 
 					init.conditionsOnG[childstate] = SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[childstate]).scalarMultiply(birth[childstate * totalIntervals + index]);
 
@@ -604,6 +639,16 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 						}
 
 					}
+
+					// TO DO actually test this works with a tree with rho sampling at a branching event
+					if (m_rho.get()!=null && isRhoInternalNode[node.getNr()-treeInput.get().getLeafNodeCount()]) {
+						
+						init.conditionsOnG[childstate]= init.conditionsOnG[childstate].scalarMultiply(1 - rho[childstate*totalIntervals+index]);
+						// TO DO REMOVE PRINT
+							System.out.println("state " + childstate + "\t 1-rho[childstate] " + (1 - rho[childstate*totalIntervals+index]));
+							
+					}
+					
 
 					if (Double.isInfinite(init.conditionsOnP[childstate])) {
 						throw new RuntimeException("infinite likelihood");
@@ -640,57 +685,57 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 	 * @return an array of arrays storing the initial conditions values
 	 */
 	public double[][] getAllInitialConditionsForP(TreeInterface tree){
-        int nodeCount = tree.getNodeCount();
-        double[] nodeHeights = new double[nodeCount];
-        int[] indicesSortedByNodeHeight  =new int[nodeCount];
-        for (int i=0; i<nodeCount; i++){
-        	nodeHeights[i] = T - tree.getNode(i).getHeight();
-        	// System.out.println(nodeHeight[i]);
-        	indicesSortedByNodeHeight[i] = i;
-        }
-        
-        HeapSort.sort(nodeHeights, indicesSortedByNodeHeight);
-        //"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
-        
-        int allPlength = (nodeHeights[indicesSortedByNodeHeight[0]] == 0)? nodeCount: nodeCount + 1; // in case the origin is not at zero, an extra space is left for the value of integration till 0. 
-        double[][] allPInitials = new double[allPlength][n]; 
-        
-        double t = nodeHeights[indicesSortedByNodeHeight[nodeCount-1]];
-        
-        boolean rhoSampling =  (m_rho.get()!=null);
-        
-        allPInitials[indicesSortedByNodeHeight[nodeCount-1]] = PG.getP(t, rhoSampling, rho);
-        double t0 = t;
-        
-        if (nodeCount >1 ){
-            for (int i = nodeCount-2; i>-1; i--){
-            	t = nodeHeights[indicesSortedByNodeHeight[i]];
-            	
-            	//If the next higher node is actually at the same height, store previous results and skip iteration
-            	if (Math.abs(t-t0) < 1e-10) {
-            		t0 = t;
-            		allPInitials[indicesSortedByNodeHeight[i]] = allPInitials[indicesSortedByNodeHeight[i+1]];
-            		continue;
-            	} else {
-            		allPInitials[indicesSortedByNodeHeight[i]] = PG.getP(t, allPInitials[indicesSortedByNodeHeight[i+1]], t0, rhoSampling, rho);
-            		t0 = t;
-            	}
-                
-            }
-        }
-        
-        if (allPlength > nodeCount) {
-        	allPInitials[nodeCount] = PG.getP(0, allPInitials[indicesSortedByNodeHeight[0]], t0, rhoSampling, rho);
-        }
+		int nodeCount = tree.getNodeCount();
+		double[] nodeHeights = new double[nodeCount];
+		int[] indicesSortedByNodeHeight  =new int[nodeCount];
+		for (int i=0; i<nodeCount; i++){
+			nodeHeights[i] = T - tree.getNode(i).getHeight();
+			// System.out.println(nodeHeight[i]);
+			indicesSortedByNodeHeight[i] = i;
+		}
 
-//        String sortedIndices = new String();
-//        for (int d: indicesSortedByNodeHeight) {
-//        	sortedIndices += (d + "\t");
-//        }
-//        System.out.println("Node indices sorted: " + sortedIndices);
-//        for (int i = 0; i<nodeCount; i++) {
-//        	System.out.println("Value of node " + i + ":\t" + allPInitials[i][0]);
-//        }
+		HeapSort.sort(nodeHeights, indicesSortedByNodeHeight);
+		//"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
+
+		int allPlength = (nodeHeights[indicesSortedByNodeHeight[0]] == 0)? nodeCount: nodeCount + 1; // in case the origin is not at zero, an extra space is left for the value of integration till 0. 
+		double[][] allPInitials = new double[allPlength][n]; 
+
+		double t = nodeHeights[indicesSortedByNodeHeight[nodeCount-1]];
+
+		boolean rhoSampling =  (m_rho.get()!=null);
+
+		allPInitials[indicesSortedByNodeHeight[nodeCount-1]] = PG.getP(t, rhoSampling, rho);
+		double t0 = t;
+
+		if (nodeCount >1 ){
+			for (int i = nodeCount-2; i>-1; i--){
+				t = nodeHeights[indicesSortedByNodeHeight[i]];
+
+				//If the next higher node is actually at the same height, store previous results and skip iteration
+				if (Math.abs(t-t0) < 1e-10) {
+					t0 = t;
+					allPInitials[indicesSortedByNodeHeight[i]] = allPInitials[indicesSortedByNodeHeight[i+1]];
+					continue;
+				} else {
+					allPInitials[indicesSortedByNodeHeight[i]] = PG.getP(t, allPInitials[indicesSortedByNodeHeight[i+1]], t0, rhoSampling, rho);
+					t0 = t;
+				}
+
+			}
+		}
+
+		if (allPlength > nodeCount) {
+			allPInitials[nodeCount] = PG.getP(0, allPInitials[indicesSortedByNodeHeight[0]], t0, rhoSampling, rho);
+		}
+
+		//        String sortedIndices = new String();
+		//        for (int d: indicesSortedByNodeHeight) {
+		//        	sortedIndices += (d + "\t");
+		//        }
+		//        System.out.println("Node indices sorted: " + sortedIndices);
+		//        for (int i = 0; i<nodeCount; i++) {
+		//        	System.out.println("Value of node " + i + ":\t" + allPInitials[i][0]);
+		//        }
 
 		return allPInitials;
 	}

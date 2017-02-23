@@ -181,6 +181,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			//			}
 
 			int steps = index - indexFrom;
+
 			index--;
 			if (Math.abs(from-times[indexFrom])<globalThreshold) steps--;
 			if (index>0 && Math.abs(to-times[index-1])<globalThreshold) {
@@ -191,14 +192,20 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			while (steps > 0){
 
 				from = times[index];
+				
+				// new addition
+				// TO DO: decide if I should put the if (rhosampling) part in there also
+				if (Math.abs(from-to)>globalThreshold){
+					p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
+				}
 
-				p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
 
 				if (rhoSampling){ 
 					for (int i=0; i<dimension; i++){
 						oneMinusRho = (1-rho[i*intervals + index]);
 						result[i] *= oneMinusRho;
-						System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
+						// modif
+						System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", from = " + from);
 					}
 				}
 
@@ -212,13 +219,18 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			p_integrator.integrate(P, to, result, t, result); // solve P, store solution in y
 
 			// new addition
-			if (rhoSampling){ 
-				for (int i=0; i<dimension; i++){
-					oneMinusRho = (1-rho[i*intervals + index]);
-					result[i] *= oneMinusRho;
-					System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
+			// check that both times are really overlapping
+			// but really not sure that this is enough, i have to build appropriate tests
+			if(Math.abs(t-times[indexFrom])<globalThreshold) {
+				if (rhoSampling){ 
+					for (int i=0; i<dimension; i++){
+						oneMinusRho = (1-rho[i*intervals + indexFrom]);
+						result[i] *= oneMinusRho;
+						System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
+					}
 				}
 			}
+
 
 		}catch(Exception e){
 
@@ -244,6 +256,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		//			}
 
 		// new version: replaced t with T
+		
+		// TO DO remove next line
+		int idx = Utils.index(T, times, intervals);
 		if (rhoSampling)
 			for (int i = 0; i<dimension; i++) {
 				y[i] *= (1 - rho[i * intervals + Utils.index(T, times, intervals)]);    // initial condition: y_i[T]=1-rho_i

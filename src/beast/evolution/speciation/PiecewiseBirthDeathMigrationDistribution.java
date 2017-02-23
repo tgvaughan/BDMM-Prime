@@ -178,7 +178,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
-	double globalThreshold = 1e-20;
+	// TO DO find a good value for that
+	double globalThreshold = 1e-10;
 
 	double T;
 	double orig;
@@ -219,6 +220,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	int rhoSamplingCount;
 	Boolean constantRho;
 	Boolean[] isRhoTip;
+	Boolean[] isRhoInternalNode;
 
 	/**
 	 * Total interval count
@@ -262,8 +264,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	@Override
 	public void initAndValidate() {
 		if (removalProbability.get() != null) SAModel = true;
-
-		//todo: throw message when logP reaches Double limits and suggest do use SmallNumbers
 
 		birth = null;
 		b_ij = null;
@@ -535,6 +535,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		isRhoTip = new Boolean[ treeInput.get().getLeafNodeCount()];
 		Arrays.fill(isRhoTip,false);
+		
+		isRhoInternalNode = new Boolean[ treeInput.get().getInternalNodeCount()];
+		Arrays.fill(isRhoInternalNode,false);
 
 		if (m_rho.get() != null) {
 
@@ -578,6 +581,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				}
 				computeRhoTips();
 			}
+			
+			computeRhoInternalNodes();
 
 		} else {
 			rho = new Double[n*totalIntervals];
@@ -587,6 +592,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 	
 	abstract void computeRhoTips();
+	
+	abstract void computeRhoInternalNodes();
 
 	/**
 	 * Collect all the times of parameter value changes and rho-sampling events
