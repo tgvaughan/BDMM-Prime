@@ -7,12 +7,13 @@ import beast.core.Description;
 public class SmallNumberScaler {
 
 	/**
+	 * TODO: change the comments here
 	 * The maximal value a double can take is 1.80E308, the minimal value is 4.9E-324.
 	 * With a safety margin, two doubles can be dealt with by Java when there is 630 orders of magnitude between them.
 	 */
-	final static int exponentMaxValueDouble = 308;
-	final static int exponentMinValueDouble = -324;
-	final static int safeGapMinMaxDouble = 630;
+	final static int exponentMaxValueDouble = 1023;
+	final static int exponentMinValueDouble = -1022;
+	final static int safeGapMinMaxDouble = 2040;
 
 	/**
 	 * Determine the appropriate scale factor(s) and perform the multiplication by said scale factor.
@@ -84,7 +85,7 @@ public class SmallNumberScaler {
 				// scaledEquation[] is of type double[]
 				for (int i=0; i<n;i++){
 					if(geConditions[i].getMantissa()!=0) {
-						scaledEquation[i+n] = geConditions[i].getMantissa()*Math.exp(Math.log(10)*(geConditions[i].getExponent() + scalingFactor));
+						scaledEquation[i+n] = geConditions[i].getMantissa()*Math.pow(2, (geConditions[i].getExponent() + scalingFactor));
 					} else {
 						scaledEquation[i+n]=0;
 					}
@@ -137,7 +138,7 @@ public class SmallNumberScaler {
 				// scaledEquation[] is of type double[]
 				for (int i=0; i<n;i++){
 					if(eqcopy[i].getMantissa()!=0) {
-						scaledEquation[i+n] = eqcopy[i].getMantissa()*Math.exp(Math.log(10)*(eqcopy[i].getExponent() + scalingFactor));
+						scaledEquation[i+n] = eqcopy[i].getMantissa()*Math.pow(2, (eqcopy[i].getExponent() + scalingFactor));
 					} else {
 						scaledEquation[i+n]=0;
 					}
@@ -163,10 +164,7 @@ public class SmallNumberScaler {
 		
 		double[] pConditions = new double[dim];
 		
-		// TO DO faire un arraycopy
-		for(int i=0; i<dim; i++){
-			pConditions[i] = numbers[i];
-		}
+		System.arraycopy(numbers, 0, pConditions, 0, dim);
 
 		SmallNumber[] unscaledGe = new SmallNumber[dim];
 

@@ -6,7 +6,6 @@ import beast.core.Description;
 import beast.core.util.Utils;
 
 import beast.math.SmallNumber;
-import beast.math.SmallNumber2;
 import beast.math.p0ge_InitialConditions;
 import beast.util.HeapSort;
 
