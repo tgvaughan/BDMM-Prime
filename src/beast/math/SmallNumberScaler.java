@@ -53,7 +53,7 @@ public class SmallNumberScaler {
 			}
 			int maxExponent = geConditions[idx].getExponent();
 			int minExponent = geConditions[idx].getExponent();
-			
+
 			// look for the highest and lowest orders of magnitude for values in 'equation'
 			if (n > idx){
 				for (int i=idx; i< n; i++) {
@@ -83,9 +83,19 @@ public class SmallNumberScaler {
 				// finally, store in scaledEquation the corresponding numbers, increased by scalingFactor orders of magnitude.
 				// scaledEquation[] is of type double[]
 				for (int i=0; i<n;i++){
-					if(geConditions[i].getMantissa()!=0) {
-						// scaledEquation[i+n] = geConditions[i].getMantissa()*Math.pow(2, (geConditions[i].getExponent() + scalingFactor)); TO DO REMOVE LINE
-						scaledEquation[i+n] = SmallNumber.powTwo(geConditions[i].getMantissa(), geConditions[i].getExponent() + scalingFactor);
+					double a = geConditions[i].getMantissa();
+					int b = geConditions[i].getExponent() + scalingFactor;
+					if(a!=0) {
+						if(b>180 || b<0)
+							scaledEquation[i+n] = a*Math.pow(2, b);
+						else {
+							while(b>30) { //the number 30 comes from the max number of bits that can be left-shifted on an int and still be equivalent to a 2 to the power of n operation
+								a = a*(1<<30);
+								b-=30;
+							}
+							a = a*(1<<b); // the remaining part of the original power of 2 with which the mantissa must be multiplied
+							scaledEquation[i+n] = a;
+						}
 					} else {
 						scaledEquation[i+n]=0;
 					}
@@ -137,44 +147,55 @@ public class SmallNumberScaler {
 				// finally, store in scaledEquation the corresponding numbers, increased by scalingFactor orders of magnitude.
 				// scaledEquation[] is of type double[]
 				for (int i=0; i<n;i++){
-					if(eqcopy[i].getMantissa()!=0) {
-						//scaledEquation[i+n] = eqcopy[i].getMantissa()*Math.pow(2, (eqcopy[i].getExponent() + scalingFactor)); TO DO REMOVE LINE
-						scaledEquation[i+n] = SmallNumber.powTwo(eqcopy[i].getMantissa(), eqcopy[i].getExponent() + scalingFactor);
-					} else {
-						scaledEquation[i+n]=0;
+						double a = eqcopy[i].getMantissa();
+						int b = eqcopy[i].getExponent() + scalingFactor;
+						if(a!=0) {
+							//scaledEquation[i+n] = eqcopy[i].getMantissa()*Math.pow(2, (eqcopy[i].getExponent() + scalingFactor)); TO DO REMOVE LINE
+							if(b>180 || b<0)
+								scaledEquation[i+n] = a*Math.pow(2,b);
+							else {
+								while(b>30) { //the number 30 comes from the max number of bits that can be left-shifted on an int and still be equivalent to a 2 to the power of n operation
+									a = a*(1<<30);
+									b-=30;
+								}
+								a = a*(1<<b); // the remaining part of the original power of 2 with which the mantissa must be multiplied
+								scaledEquation[i+n] = a;
+							}
+						} else {
+							scaledEquation[i+n]=0;
+						}
 					}
 				}
 			}
+
+			return new ScaledNumbers(scalingFactor, scaledEquation);
 		}
 
-		return new ScaledNumbers(scalingFactor, scaledEquation);
-	}
+		/**
+		 * Retrieve values of accurate magnitude from the 'scaled' ones.
+		 * @param numbers
+		 * @param factor
+		 * @return an instance of p0ge_InitialConditions containing an array of SmallNumbers (ge equations) and an array of doubles (p equations)
+		 */
+		public static p0ge_InitialConditions unscale(double[] numbers, int factor){
 
-	/**
-	 * Retrieve values of accurate magnitude from the 'scaled' ones.
-	 * @param numbers
-	 * @param factor
-	 * @return an instance of p0ge_InitialConditions containing an array of SmallNumbers (ge equations) and an array of doubles (p equations)
-	 */
-	public static p0ge_InitialConditions unscale(double[] numbers, int factor){
-		
-		if (numbers.length % 2 == 1 )
-			throw new RuntimeException("input should be of even length");
-		
-		int dim = numbers.length/2;
-		
-		double[] pConditions = new double[dim];
-		
-		System.arraycopy(numbers, 0, pConditions, 0, dim);
+			if (numbers.length % 2 == 1 )
+				throw new RuntimeException("input should be of even length");
 
-		SmallNumber[] unscaledGe = new SmallNumber[dim];
+			int dim = numbers.length/2;
 
-		for (int i = 0; i < dim; i++){
-			unscaledGe[i] = new SmallNumber(numbers[i+dim]);
-			unscaledGe[i].addExponent(-factor);
+			double[] pConditions = new double[dim];
+
+			System.arraycopy(numbers, 0, pConditions, 0, dim);
+
+			SmallNumber[] unscaledGe = new SmallNumber[dim];
+
+			for (int i = 0; i < dim; i++){
+				unscaledGe[i] = new SmallNumber(numbers[i+dim]);
+				unscaledGe[i].addExponent(-factor);
+			}
+
+			return new p0ge_InitialConditions(pConditions, unscaledGe);
 		}
-		
-		return new p0ge_InitialConditions(pConditions, unscaledGe);
 	}
-}
 
