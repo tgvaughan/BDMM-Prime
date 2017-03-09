@@ -55,7 +55,9 @@ public class SmallNumber {
 				this.mantissa = num;
 				this.exponent = 0;
 			} else {
-				this.mantissa = num * Math.pow(2, -numExponent);
+				//TO DO REMOVE COMMENTED LINE
+				//this.mantissa = num * Math.pow(2, -numExponent);
+				this.mantissa = SmallNumber.powTwo(num, -numExponent);
 				this.exponent = numExponent;
 
 			}
@@ -77,11 +79,13 @@ public class SmallNumber {
 			int tempExp = Math.getExponent(this.mantissa);
 
 			if(tempExp <-200){
-				this.mantissa *= Math.pow(2, -tempExp);
+				//this.mantissa *= Math.pow(2, -tempExp); TO DO REMOVE LINE
+				this.mantissa = SmallNumber.powTwo(this.mantissa, -tempExp);
 				this.exponent += tempExp;
 			} else {
-				if (tempExp > 500) { // Arbitrary threshold set at 100, the idea here is to make sure overflow is avoided
-					this.mantissa *= Math.pow(2, -tempExp);
+				if (tempExp > 100) { // Arbitrary threshold set at 100, the idea here is to make sure overflow is avoided
+					//this.mantissa *= Math.pow(2, -tempExp); TO DO REMOVE LINE
+					this.mantissa = SmallNumber.powTwo(this.mantissa, -tempExp);
 					this.exponent += tempExp;
 				}
 			}
@@ -158,9 +162,12 @@ public class SmallNumber {
 		} else {
 			SmallNumber c = new SmallNumber(0);
 			if (a.exponent > b.exponent) {
-				c = new SmallNumber(a.mantissa + b.mantissa * Math.pow(2, b.exponent-a.exponent), a.exponent); 
+				//c = new SmallNumber(a.mantissa + b.mantissa * Math.pow(2, b.exponent-a.exponent), a.exponent); TO DO REMOVE LINE
+				c = new SmallNumber(a.mantissa + SmallNumber.powTwo(b.mantissa, b.exponent-a.exponent), a.exponent);
 			} else {
-				c = new SmallNumber(b.mantissa + a.mantissa * Math.pow(2, a.exponent-b.exponent), b.exponent);
+				//TO DO REMOVE LINE
+				//c = new SmallNumber(b.mantissa + a.mantissa * Math.pow(2, a.exponent-b.exponent), b.exponent);
+				c = new SmallNumber(b.mantissa + SmallNumber.powTwo(a.mantissa, a.exponent-b.exponent), b.exponent);
 			}	
 			return c;
 		}
@@ -175,7 +182,9 @@ public class SmallNumber {
 		if(this.exponent < exponentMinValueDouble)
 			return 0;
 
-		return this.mantissa*Math.pow(2,this.exponent);
+		//TO DO REMOVE LINE
+		//return this.mantissa*Math.pow(2,this.exponent);
+		return SmallNumber.powTwo(this.mantissa, this.exponent);
 	}
 
 
@@ -295,6 +304,24 @@ public class SmallNumber {
 		}
 		int res = min < SmallNumber.threshold ? 1: 0;
 		return res;
+	}
+	
+	/**
+	 * 
+	 * @param y
+	 * @param n
+	 * @return
+	 */
+	public static double powTwo(double y, int n){
+		if(n>180 || n<0)
+			return y*Math.exp(n*Math.log(2));
+		
+		while(n>30) {
+			y = y*(1<<30);
+			n-=30;
+		}
+		y = y*(1<<n);
+		return y;
 	}
 
 	public static void main(String args[]) {

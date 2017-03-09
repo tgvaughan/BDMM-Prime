@@ -2,7 +2,6 @@ package beast.math;
 
 import beast.core.Description;
 
-
 @Description("SmallNumberScaler contains methods to perform scaling/unscaling on a set of Small Numbers.")
 public class SmallNumberScaler {
 
@@ -54,7 +53,7 @@ public class SmallNumberScaler {
 			}
 			int maxExponent = geConditions[idx].getExponent();
 			int minExponent = geConditions[idx].getExponent();
-
+			
 			// look for the highest and lowest orders of magnitude for values in 'equation'
 			if (n > idx){
 				for (int i=idx; i< n; i++) {
@@ -85,7 +84,8 @@ public class SmallNumberScaler {
 				// scaledEquation[] is of type double[]
 				for (int i=0; i<n;i++){
 					if(geConditions[i].getMantissa()!=0) {
-						scaledEquation[i+n] = geConditions[i].getMantissa()*Math.pow(2, (geConditions[i].getExponent() + scalingFactor));
+						// scaledEquation[i+n] = geConditions[i].getMantissa()*Math.pow(2, (geConditions[i].getExponent() + scalingFactor)); TO DO REMOVE LINE
+						scaledEquation[i+n] = SmallNumber.powTwo(geConditions[i].getMantissa(), geConditions[i].getExponent() + scalingFactor);
 					} else {
 						scaledEquation[i+n]=0;
 					}
@@ -138,7 +138,8 @@ public class SmallNumberScaler {
 				// scaledEquation[] is of type double[]
 				for (int i=0; i<n;i++){
 					if(eqcopy[i].getMantissa()!=0) {
-						scaledEquation[i+n] = eqcopy[i].getMantissa()*Math.pow(2, (eqcopy[i].getExponent() + scalingFactor));
+						//scaledEquation[i+n] = eqcopy[i].getMantissa()*Math.pow(2, (eqcopy[i].getExponent() + scalingFactor)); TO DO REMOVE LINE
+						scaledEquation[i+n] = SmallNumber.powTwo(eqcopy[i].getMantissa(), eqcopy[i].getExponent() + scalingFactor);
 					} else {
 						scaledEquation[i+n]=0;
 					}
