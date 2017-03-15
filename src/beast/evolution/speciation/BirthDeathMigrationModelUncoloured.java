@@ -128,6 +128,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		}
 	}
 
+	//TO DO REMOVE IF USELESS
+	/*
 	void computeRhoInternalNodes(){
 		double nodeTime;
 		int tipCount = treeInput.get().getLeafNodeCount();
@@ -145,6 +147,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			}
 		}
 	}
+	*/
 
 	/**
 	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
@@ -691,50 +694,46 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 	 * @return an array of arrays storing the initial conditions values
 	 */
 	public double[][] getAllInitialConditionsForP(TreeInterface tree){
-
-		int nodeCount = tree.getNodeCount();
-		double[] nodeHeights = new double[nodeCount];
-		int[] indicesSortedByNodeHeight  =new int[nodeCount];
-
-		for (int i=0; i<nodeCount; i++){
-			nodeHeights[i] = T - tree.getNode(i).getHeight();
+		int leafCount = tree.getLeafNodeCount();
+		double[] leafHeights = new double[leafCount];
+		int[] indicesSortedByLeafHeight  =new int[leafCount];
+		for (int i=0; i<leafCount; i++){
+			leafHeights[i] = T - tree.getNode(i).getHeight();
 			// System.out.println(nodeHeight[i]);
-			indicesSortedByNodeHeight[i] = i;
+			indicesSortedByLeafHeight[i] = i;
 		}
 
-		HeapSort.sort(nodeHeights, indicesSortedByNodeHeight);
+		HeapSort.sort(leafHeights, indicesSortedByLeafHeight);
 		//"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
 
-		int allPlength = (nodeHeights[indicesSortedByNodeHeight[0]] == 0)? nodeCount: nodeCount + 1; // in case the origin is not at zero, an extra space is left for the value of integration till 0. 
-		double[][] allPInitials = new double[allPlength][n]; 
+		double[][] pInitialCondsAtLeaves = new double[leafCount + 1][n]; 
 
-		double t = nodeHeights[indicesSortedByNodeHeight[nodeCount-1]];
+		double t = leafHeights[indicesSortedByLeafHeight[leafCount-1]];
 
 		boolean rhoSampling =  (m_rho.get()!=null);
 
-		allPInitials[indicesSortedByNodeHeight[nodeCount-1]] = PG.getP(t, rhoSampling, rho);
+		pInitialCondsAtLeaves[indicesSortedByLeafHeight[leafCount-1]] = PG.getP(t, rhoSampling, rho);
 		double t0 = t;
 
-		if (nodeCount >1 ){
-			for (int i = nodeCount-2; i>-1; i--){
-				t = nodeHeights[indicesSortedByNodeHeight[i]];
+		if (leafCount >1 ){
+			for (int i = leafCount-2; i>-1; i--){
+				t = leafHeights[indicesSortedByLeafHeight[i]];
 
-				//If the next higher node is actually at the same height, store previous results and skip iteration
+				//If the next higher leaf is actually at the same height, store previous results and skip iteration
 				if (Math.abs(t-t0) < globalPrecisionThreshold) {
 					t0 = t;
-					allPInitials[indicesSortedByNodeHeight[i]] = allPInitials[indicesSortedByNodeHeight[i+1]];
+					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]];
 					continue;
 				} else {
-					allPInitials[indicesSortedByNodeHeight[i]] = PG.getP(t, allPInitials[indicesSortedByNodeHeight[i+1]], t0, rhoSampling, rho);
+					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = PG.getP(t, pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]], t0, rhoSampling, rho);
 					t0 = t;
 				}
 
 			}
 		}
 
-		if (allPlength > nodeCount) {
-			allPInitials[nodeCount] = PG.getP(0, allPInitials[indicesSortedByNodeHeight[0]], t0, rhoSampling, rho);
-		}
+
+		pInitialCondsAtLeaves[leafCount] = PG.getP(0, pInitialCondsAtLeaves[indicesSortedByLeafHeight[0]], t0, rhoSampling, rho);
 
 		//        String sortedIndices = new String();
 		//        for (int d: indicesSortedByNodeHeight) {
@@ -745,7 +744,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		//        	System.out.println("Value of node " + i + ":\t" + allPInitials[i][0]);
 		//        }
 
-		return allPInitials;
+		return pInitialCondsAtLeaves;
 	}
 
 	// used to indicate that the state assignment went wrong
