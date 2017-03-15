@@ -178,8 +178,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
-	// TO DO find a good value for that
-	double globalThreshold = 1e-10;
+//  TO DO CHECKER QUE C'EST PAS POSSIBLE DE REMETTRE 1e-20
+	public final static double globalPrecisionThreshold = 1e-10;
 
 	double T;
 	double orig;
@@ -388,7 +388,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		try {
 
-			if (Math.abs(T-t)<globalThreshold || Math.abs(t0-t)<globalThreshold ||  T < t) {
+			if (Math.abs(T-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||  T < t) {
 				return PG0;
 			}
 
@@ -400,8 +400,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			int index = Utils.index(to, times, times.length);
 
 			int steps = index - indexFrom;
-			if (Math.abs(from-times[indexFrom]) < globalThreshold ) steps--;
-			if (index>0 && Math.abs(to-times[index-1]) < globalThreshold ) {
+			if (Math.abs(from-times[indexFrom]) < globalPrecisionThreshold ) steps--;
+			if (index>0 && Math.abs(to-times[index-1]) < globalPrecisionThreshold ) {
 				steps--;
 				index--;
 			}
@@ -455,7 +455,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		try {
 
-			if (Math.abs(T-t) < globalThreshold || Math.abs(t0-t) < globalThreshold ||  T < t) {
+			if (Math.abs(T-t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  T < t) {
 				return PG0;
 			}
 
@@ -469,8 +469,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			int index = Utils.index(to, times, times.length);
 
 			int steps = index - indexFrom;
-			if (Math.abs(from-times[indexFrom]) < globalThreshold ) steps--;
-			if (index>0 && Math.abs(to-times[index-1]) < globalThreshold ) {
+			if (Math.abs(from-times[indexFrom]) < globalPrecisionThreshold ) steps--;
+			if (index>0 && Math.abs(to-times[index-1]) < globalPrecisionThreshold ) {
 				steps--;
 				index--;
 			}
@@ -500,7 +500,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 						oneMinusRho = (1-rho[i*totalIntervals + index]);
 						PG0.conditionsOnP[i] *= oneMinusRho;
 						PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
+						/*
 						System.out.println("In getGSmallNumber, multiplying with oneMinusRho: " + oneMinusRho +", to = " +to);
+						 */
 					}
 				}
 
@@ -931,7 +933,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		P = new p0_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
 		PG = new p0ge_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
 
-		PG.globalThreshold = globalThreshold;
+		p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 
 		if (!useRKInput.get() && useSmallNumbers.get()) {
 			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); //new HighamHall54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); // 

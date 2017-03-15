@@ -2,7 +2,6 @@ package beast.math;
 
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 
 import beast.core.util.Utils;
@@ -28,7 +27,6 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	Double[] times;
 	int index;
 
-
 	public p0_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension , int intervals, Double[] times) {
 
 		this.b = b;
@@ -42,7 +40,6 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		this.times = times;
 
 	}
-
 
 	public void updateRates(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, Double[] times){
 
@@ -78,7 +75,6 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 
 					if (b_ij!=null){     // infection among demes
 
-
 						yDot[i] += b_ij[l]*y[i]; 
 						yDot[i] -= b_ij[l]*y[i]*y[j];
 					}
@@ -91,7 +87,6 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		}
 
 	}
-
 
 	public static void main(String[] args) throws Exception{
 

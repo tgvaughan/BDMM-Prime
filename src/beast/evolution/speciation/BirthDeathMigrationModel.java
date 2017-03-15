@@ -231,7 +231,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 		try{  // start calculation
 
-			//pInitialConditions = getAllInitialConditionsForP(tree);
+//			pInitialConditions = getAllInitialConditionsForP(tree);
 
 			if (conditionOnSurvival.get()) {
 
@@ -665,66 +665,64 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	}
 
 	// TO DO remove if not useful in the end
-	//	public void getAllInitialConditions(TreeInterface tree){
-	//		int nodeCount = tree.getNodeCount();
-	//        double[] nodeHeights = new double[nodeCount];
-	//        int[] indicesSortedByNodeHeight  =new int[nodeCount];
-	//        for (int i=0; i<nodeCount; i++){
-	//        	nodeHeights[i] = T - tree.getNode(i).getHeight();
-	//        	// System.out.println(nodeHeight[i]);
-	//        	indicesSortedByNodeHeight[i] = i;
-	//        }
-	//        
-	//
-	////        double[] tempMigChangeTimes = Collections.sort(migChangeTimes);
-	////        migChangeTimes
-	//        
-	//        HeapSort.sort(nodeHeights, indicesSortedByNodeHeight);
-	//        //"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
-	//        
-	//        int nodePlength = (nodeHeights[indicesSortedByNodeHeight[0]] == 0)? nodeCount: nodeCount + 1; // in case the origin is not at zero, an extra space is left for the value of integration till 0. 
-	//        double[][] nodePInitials = new double[nodePlength][n]; 
-	//        
-	//        double t = nodeHeights[indicesSortedByNodeHeight[nodeCount-1]];
-	//        
-	//        boolean rhoSampling =  (m_rho.get()!=null);
-	//        
-	//        nodePInitials[indicesSortedByNodeHeight[nodeCount-1]] = PG.getP(t, rhoSampling, rho);
-	//        double t0 = t;
-	//        
-	//        if (nodeCount >1 ){
-	//            for (int i = nodeCount-2; i>-1; i--){
-	//            	t = nodeHeights[indicesSortedByNodeHeight[i]];
-	//            	
-	//            	//If the next higher node is actually at the same height, store previous results and skip iteration
-	//            	if (Math.abs(t-t0) < 1e-10) {
-	//            		t0 = t;
-	//            		nodePInitials[indicesSortedByNodeHeight[i]] = nodePInitials[indicesSortedByNodeHeight[i+1]];
-	//            		continue;
-	//            	} else {
-	//            		nodePInitials[indicesSortedByNodeHeight[i]] = PG.getP(t, nodePInitials[indicesSortedByNodeHeight[i+1]], t0, rhoSampling, rho);
-	//            		t0 = t;
-	//            	}
-	//                
-	//            }
-	//        }
-	//        
-	//        if (nodePlength > nodeCount) {
-	//        	nodePInitials[nodeCount] = PG.getP(0, nodePInitials[indicesSortedByNodeHeight[0]], t0, rhoSampling, rho);
-	//        }
-	//        
-	//        pInitialConditions = nodePInitials;
-	//        
-	//        
-	//
-	////        String sortedIndices = new String();
-	////        for (int d: indicesSortedByNodeHeight) {
-	////        	sortedIndices += (d + "\t");
-	////        }
-	////        System.out.println("Node indices sorted: " + sortedIndices);
-	////        for (int i = 0; i<nodeCount; i++) {
-	////        	System.out.println("Value of node " + i + ":\t" + nodePInitials[i][0]);
-	////        }
-	//
-	//	}
+		public void getAllInitialConditions(TreeInterface tree){
+			int nodeCount = tree.getNodeCount();
+	        double[] nodeHeights = new double[nodeCount];
+	        int[] indicesSortedByNodeHeight  =new int[nodeCount];
+	        for (int i=0; i<nodeCount; i++){
+	        	nodeHeights[i] = T - tree.getNode(i).getHeight();
+	        	// System.out.println(nodeHeight[i]);
+	        	indicesSortedByNodeHeight[i] = i;
+	        }
+	        
+	
+	//        double[] tempMigChangeTimes = Collections.sort(migChangeTimes);
+	//        migChangeTimes
+	        
+	        HeapSort.sort(nodeHeights, indicesSortedByNodeHeight);
+	        //"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
+	        
+	        int nodePlength = (nodeHeights[indicesSortedByNodeHeight[0]] == 0)? nodeCount: nodeCount + 1; // in case the origin is not at zero, an extra space is left for the value of integration till 0. 
+	        double[][] nodePInitials = new double[nodePlength][n]; 
+	        
+	        double t = nodeHeights[indicesSortedByNodeHeight[nodeCount-1]];
+	        
+	        boolean rhoSampling =  (m_rho.get()!=null);
+	        
+	        nodePInitials[indicesSortedByNodeHeight[nodeCount-1]] = PG.getP(t, rhoSampling, rho);
+	        double t0 = t;
+	        
+	        if (nodeCount >1 ){
+	            for (int i = nodeCount-2; i>-1; i--){
+	            	t = nodeHeights[indicesSortedByNodeHeight[i]];
+	            	
+	            	//If the next higher node is actually at the same height, store previous results and skip iteration
+	            	if (Math.abs(t-t0) < 1e-10) {
+	            		t0 = t;
+	            		nodePInitials[indicesSortedByNodeHeight[i]] = nodePInitials[indicesSortedByNodeHeight[i+1]];
+	            		continue;
+	            	} else {
+	            		nodePInitials[indicesSortedByNodeHeight[i]] = PG.getP(t, nodePInitials[indicesSortedByNodeHeight[i+1]], t0, rhoSampling, rho);
+	            		t0 = t;
+	            	}
+	                
+	            }
+	        }
+	        
+	        if (nodePlength > nodeCount) {
+	        	nodePInitials[nodeCount] = PG.getP(0, nodePInitials[indicesSortedByNodeHeight[0]], t0, rhoSampling, rho);
+	        }
+	        
+	        pInitialConditions = nodePInitials;
+	      	
+	        String sortedIndices = new String();
+	        for (int d: indicesSortedByNodeHeight) {
+	        	sortedIndices += (d + "\t");
+	        }
+	        System.out.println("Node indices sorted: " + sortedIndices);
+	        for (int i = 0; i<nodeCount; i++) {
+	        	System.out.println("Value of node " + i + ":\t" + nodePInitials[i][0]);
+	        }
+	
+		}
 }
