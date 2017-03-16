@@ -121,7 +121,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			for (Double time:rhoSamplingChangeTimes){
 
-				// TO DO: make a warning that rho sampling precision is with 1e-10. Maybe do a relative threshold?
+				// TO DO: make a warning that rho sampling precision is with 1e-10. Maybe do a threshold to the type of dating associated with the data?
 				if (Math.abs(time-tipTime) <  globalPrecisionThreshold && rho[getNodeState(tip,false)*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
 
 			}
@@ -234,10 +234,12 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			if (conditionOnSurvival.get()) {
 
-				if (orig > 0) // the root is at height 0
-					noSampleExistsProp = pInitialConditions[tree.getNodeCount()];
-				else // the root is higher than zero
-					noSampleExistsProp = pInitialConditions[root.getNr()];
+				noSampleExistsProp = pInitialConditions[pInitialConditions.length-1];
+				//TO DO REMOVE IF IT ALL WORKS
+//				if (orig > 0) // the root is at height 0
+//					noSampleExistsProp = pInitialConditions[tree.getNodeCount()];
+//				else // the root is higher than zero
+//					noSampleExistsProp = pInitialConditions[root.getNr()];
 
 				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 

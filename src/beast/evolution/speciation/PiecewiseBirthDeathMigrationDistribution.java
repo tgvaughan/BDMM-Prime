@@ -584,7 +584,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				computeRhoTips();
 			}
 			
-			computeRhoInternalNodes();
 
 		} else {
 			rho = new Double[n*totalIntervals];
@@ -595,7 +594,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	
 	abstract void computeRhoTips();
 	
-	abstract void computeRhoInternalNodes();
 
 	/**
 	 * Collect all the times of parameter value changes and rho-sampling events
