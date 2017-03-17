@@ -63,7 +63,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	public Input<Double> relativeTolerance =
 			new Input<>("relTolerance", "relative tolerance for numerical integration", 1e-7);
-	
+
 	public Input<Double> absoluteTolerance =
 			new Input<>("absTolerance", "absolute tolerance for numerical integration", 1e-100);
 
@@ -179,7 +179,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
-//  TO DO CHECKER QUE C'EST PAS POSSIBLE DE REMETTRE 1e-20
+	//  TO DO CHECKER QUE C'EST PAS POSSIBLE DE REMETTRE 1e-20
 	public final static double globalPrecisionThreshold = 1e-10;
 
 	double T;
@@ -257,7 +257,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	Boolean birthAmongDemes = false;
 
 	Double[] freq;
-	
+
 	double[][] pInitialConditions;
 	double[] sortedNodes;
 
@@ -463,7 +463,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			double from = t;
 			double to = t0;
 			double oneMinusRho;
-			
+
 			double threshold  = T/10;
 
 			int indexFrom = Utils.index(from, times, times.length);
@@ -485,7 +485,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			while (steps > 0){
 
 				from = times[index];
-				
+
 				if (useRKInput.get() || (to - from) < threshold) {
 					pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
 					PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
@@ -515,7 +515,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				// 'rescale' the results of the last integration to prepare for the next integration step
 				pgScaled = SmallNumberScaler.scale(PG0);
 			}
-			
+
 			if (useRKInput.get() || (to - t) < threshold) {
 				pg_integrator.integrate(PG, to, pgScaled.getEquation(), t, integrationResults);
 				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
@@ -525,7 +525,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
 			}
 		}catch(Exception e){
-			
+
 			throw new RuntimeException("couldn't calculate g");
 		}
 
@@ -533,12 +533,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		return PG0;
 	}
-	
+
 	void setRho(){
 
 		isRhoTip = new Boolean[ treeInput.get().getLeafNodeCount()];
 		Arrays.fill(isRhoTip,false);
-		
+
 		isRhoInternalNode = new Boolean[ treeInput.get().getInternalNodeCount()];
 		Arrays.fill(isRhoInternalNode,false);
 
@@ -552,7 +552,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 					// check if data set is contemp!
 					for (Node node : treeInput.get().getExternalNodes()){
-					   if (node.getHeight()>0.) throw new RuntimeException("Error in analysis setup: Parameters set for entirely contemporaneously sampled data, but some nodeheights are > 0!");
+						if (node.getHeight()>0.) throw new RuntimeException("Error in analysis setup: Parameters set for entirely contemporaneously sampled data, but some nodeheights are > 0!");
 					}
 
 					contempData = true;
@@ -584,7 +584,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				}
 				computeRhoTips();
 			}
-			
+
 
 		} else {
 			rho = new Double[n*totalIntervals];
@@ -592,9 +592,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		}
 
 	}
-	
+
 	abstract void computeRhoTips();
-	
+
 
 	/**
 	 * Collect all the times of parameter value changes and rho-sampling events
@@ -666,7 +666,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		totalIntervals = times.length;
 
 	}
-	
+
 	/**
 	 * set change times
 	 */
@@ -722,7 +722,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			changeTimes.add(end);
 		}
 	}
-	
+
 
 	void updateBirthDeathPsiParams(){
 
@@ -750,7 +750,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		}
 
 	}
-	
+
 
 	void updateAmongParameter(Double[] param, Double[] paramFrom, int nrChanges, List<Double> changeTimes){
 
@@ -768,7 +768,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		}
 
 	}
-	
+
 
 	void updateRho(){
 		if (m_rho.get() != null && (m_rho.get().getDimension()==1 ||  rhoSamplingTimes.get() != null)) {
@@ -787,7 +787,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			}
 		}
 	}
-	
+
 
 	/**
 	 * @param t the time in question
@@ -805,7 +805,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		return epoch;
 	}
-	
+
 
 	public void transformWithinParameters(){
 
@@ -862,7 +862,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		}
 
 	}
-	
+
 
 	public void transformAmongParameters(){
 
@@ -890,7 +890,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			}
 		}
 	}
-	
+
 
 	void checkOrigin(TreeInterface tree){
 
@@ -906,7 +906,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		}
 
 	}
-	
+
 
 	void updateOrigin(Node root){
 
@@ -920,7 +920,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		}
 
 	}
-	
+
 
 	void setupIntegrators(){   // set up ODE's and integrators
 
@@ -946,7 +946,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		}
 	}
-	
+
 
 
 	/**
@@ -964,7 +964,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		int offset = getArrayOffset(i, j);
 		return migrationMatrix.get().getValue(offset);
 	}
-	
+
 
 	/**
 	 * Obtain offset into "rate matrix" and associated flag arrays.
@@ -985,7 +985,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			j -= 1;
 		return i*(n-1)+j;   // todo: check if this is correct!!!
 	}
-	
+
 
 
 	// Interface requirements:
@@ -994,7 +994,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public List<String> getArguments() {
 		return null;
 	}
-	
+
 
 	@Override
 	public List<String> getConditions() {
@@ -1009,7 +1009,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public boolean requiresRecalculation(){
 		return true;
 	}
-	
+
 	/**
 	 * If integration interval is too long to provide precise results, cuts it in half and starts integration again.
 	 * @param integrator
@@ -1020,10 +1020,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	 * @return
 	 */
 	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
-		
+
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
 		if(Math.abs(from-to)< (T * 1e-10)) return pgScaled;
-		
+
 		// we test to see if the current interval size can produce a sufficiently-precise result
 		double[] integrationResults = new double[pgScaled.getEquation().length];
 		integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
@@ -1032,32 +1032,32 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		if(absoluteTolerance.get() > relativeTolerance.get())
 			throw new RuntimeException("Absolute tolerance higher than relative tolerance for the adaptive integrator. Change values for these inputs.");
-		
-		
+
+
 		if(minRes != Double.MAX_VALUE && (minRes<0 || absoluteTolerance.get()/minRes > relativeTolerance.get())) {
-			
+
 			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);
 			pgScaled = safeIntegrate(integrator, PG, from + (to-from)/2, pgScaled, from);
-			
+
 		} else {
-			
+
 			int a = pgScaled.getScalingFactor();
 			int n = integrationResults.length/2;
 			double[] pConditions = new double[n];
 			SmallNumber[] geConditions = new SmallNumber[n];
-			
+
 			for (int i = 0; i < n; i++) {
 				pConditions[i] = integrationResults[i];
 				geConditions[i] = new SmallNumber(integrationResults[i+n]);
 			}
 			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions));
 			pgScaled.augmentFactor(a);
-		
+
 		}
-		
+
 		return pgScaled;
 	}
-	
+
 	/**
 	 * Find the lowest non-zero value among the integration results, only on the ge part.
 	 * @param values
@@ -1067,15 +1067,65 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		double min=Double.MAX_VALUE;
 		if (values.length < 2)
 			throw new RuntimeException("Invalid inital-conditions array size");
-	    for (int i = (values.length -1); i> (values.length/2 - 1) ; i-- ) {
-	        if (values[i] < min && values[i]!=0 ) min=values[i];
-	    }
-	    return min;
+		for (int i = (values.length -1); i> (values.length/2 - 1) ; i-- ) {
+			if (values[i] < min && values[i]!=0 ) min=values[i];
+		}
+		return min;
 	}
 
 
 	public p0ge_ODE getPG() {
 		return PG;
+	}
+
+	/*
+	 * Find all initial conditions for all future integrations on p0 equations 
+	 * @param tree
+	 * @return an array of arrays storing the initial conditions values
+	 */
+	public double[][] getAllInitialConditionsForP(TreeInterface tree){
+		int leafCount = tree.getLeafNodeCount();
+		double[] leafHeights = new double[leafCount];
+		int[] indicesSortedByLeafHeight  =new int[leafCount];
+		for (int i=0; i<leafCount; i++){
+			leafHeights[i] = T - tree.getNode(i).getHeight();
+			// System.out.println(nodeHeight[i]);
+			indicesSortedByLeafHeight[i] = i;
+		}
+
+		HeapSort.sort(leafHeights, indicesSortedByLeafHeight);
+		//"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
+
+		double[][] pInitialCondsAtLeaves = new double[leafCount + 1][n]; 
+
+		double t = leafHeights[indicesSortedByLeafHeight[leafCount-1]];
+
+		boolean rhoSampling =  (m_rho.get()!=null);
+
+		pInitialCondsAtLeaves[indicesSortedByLeafHeight[leafCount-1]] = PG.getP(t, rhoSampling, rho);
+		double t0 = t;
+
+		if (leafCount >1 ){
+			for (int i = leafCount-2; i>-1; i--){
+				t = leafHeights[indicesSortedByLeafHeight[i]];
+
+				//If the next higher leaf is actually at the same height, store previous results and skip iteration
+				if (Math.abs(t-t0) < globalPrecisionThreshold) {
+					t0 = t;
+					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]];
+					continue;
+				} else {
+					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = PG.getP(t, pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]], t0, rhoSampling, rho);
+					t0 = t;
+				}
+
+			}
+		}
+
+
+		pInitialCondsAtLeaves[leafCount] = PG.getP(0, pInitialCondsAtLeaves[indicesSortedByLeafHeight[0]], t0, rhoSampling, rho);
+
+		return pInitialCondsAtLeaves;
 	}
 
 }
