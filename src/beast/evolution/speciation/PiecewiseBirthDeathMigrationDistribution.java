@@ -170,6 +170,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("adjustTimes", "Origin of MASTER sims which has to be deducted from the change time arrays");
 	// <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
 
+	//TO DO remove one of the inputs
 	public Input<Boolean> useRKInput =
 			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default false", false);
 
