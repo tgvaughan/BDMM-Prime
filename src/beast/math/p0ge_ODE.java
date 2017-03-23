@@ -41,7 +41,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	int maxEvals;
 	public int maxEvalsUsed;
-	public static double globalThreshold;
+	public static double globalPrecisionThreshold;
 
 
 	public p0ge_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented){
