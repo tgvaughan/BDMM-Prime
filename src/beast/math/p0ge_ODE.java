@@ -84,8 +84,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			gDot[i] = + (b[k]+d[k]+s[k]
 					- b[k] * g[i]) * g[i]
-					- d[k] ;
-
+							- d[k] ;
 
 			for (int j=0; j<dimension; j++){
 
@@ -157,7 +156,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	
 		double[] result = new double[P0.length];
 
-
 		try {
 
 			System.arraycopy(P0, 0, result, 0, P0.length);
@@ -168,21 +166,11 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			int indexFrom = Utils.index(from, times, times.length);
 			int index = Utils.index(to, times, times.length);
 
-			if (rhoSampling){
-				for (int i=0; i<dimension; i++){
-					oneMinusRho = (1-rho[i*intervals + index ]);
-					result[i] *= oneMinusRho;
-					System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
-				}
-			}
-
 			int steps = index - indexFrom;
 
 			index--;
-
 			if (Math.abs(from-times[indexFrom])<globalPrecisionThreshold) steps--;
 			if (index>0 && Math.abs(to-times[index-1])<globalPrecisionThreshold) {
-
 				steps--;
 				index--;
 			}
@@ -190,7 +178,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			while (steps > 0){
 
 				from = times[index];
-
 				
 				// TO DO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed 
 				if (Math.abs(from-to)>globalPrecisionThreshold){
@@ -205,7 +192,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 							System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", from = " + from);
 							*/
 						}
-
 					}
 				}
 
@@ -216,7 +202,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			}
 
 			p_integrator.integrate(P, to, result, t, result); // solve P, store solution in y
-
 
 			// TO DO
 			// check that both times are really overlapping
@@ -232,6 +217,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 				}
 			}
 
+
 		}catch(Exception e){
 
 			throw new RuntimeException("couldn't calculate p");
@@ -244,7 +230,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	public double[] getP(double t, Boolean rhoSampling, Double[] rho){
 
 		double[] y = new double[dimension];
-
 
 		if (!rhoSampling)
 			Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
@@ -260,7 +245,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		}
 
 		if (Math.abs(T-t)<globalPrecisionThreshold ||  T < t) {
-
 			return y;
 		}
 
@@ -422,7 +406,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		System.out.println(b[0] + "\t" + p[0]+"\t"+p[1]);
 		System.out.println(b[0] + "\t" + y[0]+"\t"+y[1]+"\t"+y[2]+"\t"+y[3]);
 		//         }
-
 
 	}
 }

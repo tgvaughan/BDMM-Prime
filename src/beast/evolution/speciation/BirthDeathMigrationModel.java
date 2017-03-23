@@ -679,5 +679,5 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		}
 		return true;
 	}
-	
+
 }

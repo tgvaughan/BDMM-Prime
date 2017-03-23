@@ -211,7 +211,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 
 
 
-
 	@Test
 	public void testSingleRho() throws Exception {
 
@@ -766,7 +765,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		int nrTaxa = 200;
 		int[] states = new int[]{1, 2, 1, 2, 1, 2, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 2, 2, 1, 2, 1, 2, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 1, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 2, 2, 1, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 1, 2, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 2, 2, 2, 1, 1, 2, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 1, 2, 2};
 
-
 		String orig = ".1";
 
 		String locations = "" ;
@@ -962,7 +960,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		//        bdm.setInputValue("tiptypes", trait);
 		bdm.setInputValue("typeLabel", "type");
 
-
 		bdm.setInputValue("origin", Double.toString(Double.parseDouble(orig)+tree.getRoot().getHeight()));
 		bdm.setInputValue("stateNumber", stateNumber);
 		bdm.setInputValue("migrationMatrix", "0 0");
@@ -1136,7 +1133,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		String R0 = Double.toString(4./3.) + " " + Double.toString(5.) ;
 		String becomeUninfectiousRate = "1.5 1.25";
 		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./2.);
-
 
 
 		int maxEvals = Integer.MAX_VALUE;
@@ -1523,12 +1519,10 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		bdm.setInputValue("tiptypes", trait);
 
 
-
 		bdm.setInputValue("origin", new RealParameter("6.")); // = treeheight + 1
 		bdm.setInputValue("stateNumber", "1");
 		bdm.setInputValue("migrationMatrix", "0");
 		bdm.setInputValue("frequencies", "1");
-
 
 		//        bdm.setInputValue("intervalNumber", 3);
 		bdm.setInputValue("intervalTimes", new RealParameter("0. 3. 4.5"));

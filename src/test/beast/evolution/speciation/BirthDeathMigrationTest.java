@@ -19,9 +19,7 @@ public class BirthDeathMigrationTest extends TestCase {
 	double runtime;
 	int maxEvalsUsed = -1;
 
-
 	int maxEvals = Integer.MAX_VALUE;
-
 
 	double tolerance = 1e-7;
 
@@ -61,7 +59,6 @@ public class BirthDeathMigrationTest extends TestCase {
 		//        bdm.initAndValidate();
 		//        assertEquals(-18.865767180278915, bdm.calculateLogP(), 1e-4);   // this result is from BEAST, not double checked in R
 
-
 		tree.initByName(
 				"adjustTipHeights", false,
 				"value", "(3[&type=0]: 1.5, 4[&type=0]: 4) ;",
@@ -88,7 +85,6 @@ public class BirthDeathMigrationTest extends TestCase {
 	@Test
 	public void testmultiRho2tips() throws Exception {
 
-
 		MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
 		tree.initByName(
 				"adjustTipHeights", false,
@@ -99,11 +95,9 @@ public class BirthDeathMigrationTest extends TestCase {
 
 		bdm.setInputValue("tree", tree);
 
-
 		bdm.setInputValue("stateNumber", "1");
 		bdm.setInputValue("migrationMatrix", "0.");
 		bdm.setInputValue("frequencies", "1");
-
 
 		bdm.setInputValue("birthRate", new RealParameter("2.25"));
 		bdm.setInputValue("deathRate", new RealParameter("1.5"));
@@ -191,10 +185,8 @@ public class BirthDeathMigrationTest extends TestCase {
 
 	}
 
-
 	@Test
 	public void testmultiRho() throws Exception {
-
 
 		MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
 		tree.initByName(
@@ -210,7 +202,6 @@ public class BirthDeathMigrationTest extends TestCase {
 		bdm.setInputValue("migrationMatrix", "0.");
 		bdm.setInputValue("frequencies", "1");
 
-
 		bdm.setInputValue("origin", "10");
 		bdm.setInputValue("originBranch", new MultiTypeRootBranch());
 		bdm.setInputValue("R0", new RealParameter("1.5"));
@@ -222,7 +213,6 @@ public class BirthDeathMigrationTest extends TestCase {
 		bdm.setInputValue("conditionOnSurvival", true);
 		// TO DO remove comment: removed that
 		//bdm.setInputValue("useSN", false);
-
 
 		//        bdm.initAndValidate();
 		//        assertEquals(Double.NEGATIVE_INFINITY, bdm.calculateLogP(), 1e-4);
@@ -260,10 +250,8 @@ public class BirthDeathMigrationTest extends TestCase {
 
 	}
 
-
 	@Test
 	public void testSALikelihoodCalculationWithoutAncestors() throws Exception {
-
 
 		MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
 		tree.initByName(
@@ -275,13 +263,11 @@ public class BirthDeathMigrationTest extends TestCase {
 		BirthDeathMigrationModel bdm =  new BirthDeathMigrationModel();
 
 
-
 		bdm.setInputValue("tree", tree);
 
 		bdm.setInputValue("stateNumber", "1");
 		bdm.setInputValue("migrationMatrix", "0.");
 		bdm.setInputValue("frequencies", "1");
-
 
 		bdm.setInputValue("R0", new RealParameter("1.5"));
 		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
@@ -587,7 +573,6 @@ public class BirthDeathMigrationTest extends TestCase {
 		}
 
 	}
-
 
 	public double bdm_likelihood_MT(double tolerance, int maxEvals, String statenumber, String migrationMatrix,
 			String frequencies, String tree, String origin,
