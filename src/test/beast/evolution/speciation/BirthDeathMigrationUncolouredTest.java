@@ -479,6 +479,43 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 	//            else    assertEquals(-22.524157039646802, model.calculateTreeLogLikelihood(tree), 1e-5);
 	//        }
 	//    }
+	
+	/**
+	 * Simple unit test on sampled-ancestors lik. calculation.
+	 * 2 leaves, 1 SA. 1 type, no rho-sampling
+	 * Reference value from BDSKY (23/03/2017)
+	 * @throws Exception
+	 */
+	@Test
+	public void testSALikelihoodMini() throws Exception {
+		
+		Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
+
+		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+
+		bdm.setInputValue("tree", tree);
+		bdm.setInputValue("typeLabel", "type");
+
+		bdm.setInputValue("stateNumber", "1");
+		bdm.setInputValue("migrationMatrix", "0.");
+		bdm.setInputValue("frequencies", "1");
+
+		bdm.setInputValue("R0", new RealParameter("1.5"));
+		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+		bdm.setInputValue("samplingProportion", new RealParameter("0.2") );
+		bdm.setInputValue("removalProbability", new RealParameter("0.9") );
+
+		bdm.setInputValue("conditionOnSurvival", true);
+		bdm.setInputValue("origin", "6.");
+
+		bdm.initAndValidate();
+
+
+		double logL = bdm.calculateLogP();
+
+		assertEquals(-18.854438107814335, bdm.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017 JS)
+
+	}
 
 	@Test
 	public void testSALikelihoodCalculationWithoutAncestors() throws Exception {

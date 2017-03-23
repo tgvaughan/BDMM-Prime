@@ -181,16 +181,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 		if (node.isLeaf()) {
 
-			//			// TO DO CLEAN UP
-			//			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
-			//			double h = T - node.getHeight();
-			//			double[] temp = PG.getP(t0, m_rho.get()!=null, rho);
-			//			double[] temp2 = pInitialConditions[node.getNr()];
-			//			
-			//			if (h!=t0) {
-			//				throw new RuntimeException("t0 est pas comme height");
-			//			}
 			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
+			//TO DO clean up
 			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
 		}
 
