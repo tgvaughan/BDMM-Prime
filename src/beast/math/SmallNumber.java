@@ -14,10 +14,10 @@ public class SmallNumber {
 	public static final int threshold = -4;
 
 	// number of orders of magnitude between two Small Numbers needed to consider that the lower one is negligible compared to the higher one
-	public static final int approximationThreshold = 18;
+	public static final int approximationThreshold = 53;
 
-	final static int exponentMaxValueDouble = 308;
-	final static int exponentMinValueDouble = -324;
+	final static int exponentMaxValueDouble = 1023;
+	final static int exponentMinValueDouble = -1022;
 
 	public SmallNumber(){
 		this.mantissa = 0;
@@ -38,7 +38,7 @@ public class SmallNumber {
 	}
 
 	/**
-	 * creates a SmallNumber (number in scientific representation) from a double
+	 * creates a SmallNumber from a double
 	 * @param num
 	 */
 	public SmallNumber(double num){
@@ -48,15 +48,35 @@ public class SmallNumber {
 			this.mantissa = 0;
 			this.exponent = 0;
 		} else {
-			double sign = Math.signum(num);
-			double log = Math.log10(Math.abs(num));
-			int exponent = (int)Math.floor(log);
-			this.mantissa = sign * Math.pow(10, log - exponent);
-			this.exponent = exponent;
-		}
+			int numExponent = Math.getExponent(num);
+
+
+			if(numExponent > 0) {
+				this.mantissa = num;
+				this.exponent = 0;
+			} else {
+				this.exponent = numExponent;
+				//TO DO REMOVE COMMENTED LINE
+				//this.mantissa = num * Math.pow(2, -numExponent);
+				if(-numExponent>180 || -numExponent<0)
+					this.mantissa = num *Math.pow(2, -numExponent);
+				else {
+					while(-numExponent>30) {
+						num = num*(1<<30);
+						numExponent+=30;
+					}
+					num = num*(1<<(-numExponent));
+					this.mantissa = num;
+				}
+				
+				this.exponent = numExponent;
+
+			}
+		}		
 	}
 
 	/**
+	 * TODO UPDATE THE COMMENTS ON THE WHOLE CLASS
 	 * Make sure a number is in scientific representation, if not make it so.
 	 */
 	public void update(){
@@ -65,13 +85,15 @@ public class SmallNumber {
 		if (this.mantissa == 0) {
 			this.exponent = 0;
 
-			// if mantissa is lower than 1 or higher than 10 in absolute value, the exponent and mantissa are changed to fit the scientific representation format
-		} else if (Math.abs(this.mantissa)<1 || Math.abs(this.mantissa) >= 10){
-			double sign = Math.signum(this.mantissa);
-			double log = Math.log10(Math.abs(this.mantissa));
-			int exp = (int)Math.floor(log);
-			this.mantissa = sign * Math.pow(10, log - exp);
-			this.exponent += exp;
+			// if the exponent is too low now, apply 
+		} else {
+			int tempExp = Math.getExponent(this.mantissa);
+
+			if(Math.abs(tempExp) > 200){ //arbitrary threshold set at 200 to avoid underflow and overflow
+				//this.mantissa *= Math.pow(2, -tempExp); TO DO REMOVE LINE	
+				this.mantissa  *= Math.pow(2, -tempExp);
+				this.exponent += tempExp;
+			}
 		}
 	}
 
@@ -145,9 +167,9 @@ public class SmallNumber {
 		} else {
 			SmallNumber c = new SmallNumber(0);
 			if (a.exponent > b.exponent) {
-				c = new SmallNumber(a.mantissa + b.mantissa * Math.pow(10, b.exponent-a.exponent), a.exponent); 
+				c = new SmallNumber(a.mantissa + b.mantissa * Math.pow(2, b.exponent-a.exponent), a.exponent);
 			} else {
-				c = new SmallNumber(b.mantissa + a.mantissa * Math.pow(10, a.exponent-b.exponent), b.exponent);
+				c = new SmallNumber(b.mantissa + a.mantissa * Math.pow(2, a.exponent-b.exponent), b.exponent);
 			}	
 			return c;
 		}
@@ -159,20 +181,44 @@ public class SmallNumber {
 	 * @return a double
 	 */
 	public double revert(){
-		if(this.exponent < -308)
+		if(this.exponent < exponentMinValueDouble)
 			return 0;
 
-		return this.mantissa*Math.pow(10,this.exponent);
+		return this.mantissa*Math.pow(2, this.exponent);
 	}
 
 
+	public static SmallNumber convertToScientificRepresentation(SmallNumber a){
+
+		if (a.mantissa == 0) {
+			return a;
+		}
+		SmallNumber a10 = new SmallNumber(0);
+		// Transformation de a * 2^(b) en alpha * c * 10^(beta+z) ou a = c * 10^z et 2^b = alpha * 10^beta
+		double exponentBase10  = a.exponent * Math.log(2)/Math.log(10);
+
+		int beta = (int) Math.floor(exponentBase10);
+		double alpha = Math.pow(10, exponentBase10 - beta);
+
+		double sign = Math.signum(a.mantissa);
+		double log = Math.log10(Math.abs(a.mantissa));
+		int z = (int)Math.floor(log);
+		double c = sign * Math.pow(10, log - z);
+
+		a10.mantissa = alpha * c;
+		a10.exponent = beta+z;
+		return a10;
+	}
+
 	public String toString(){
+
+		SmallNumber num10 = SmallNumber.convertToScientificRepresentation(this);
 		String pattern = "0.";
 		for (int i=1; i<numbersPrinted; i++) {
 			pattern += "#";
 		}
 		DecimalFormat dF  = new DecimalFormat(pattern);
-		return "" + dF.format(this.mantissa) + "E" + this.exponent;
+		return "" + dF.format(num10.mantissa) + "E" + num10.exponent;
 	}
 
 	/**
@@ -223,7 +269,7 @@ public class SmallNumber {
 	public double log(){
 		if (this.mantissa <= 0) 
 			return Double.NEGATIVE_INFINITY;
-		return Math.log(this.mantissa) + this.exponent*Math.log(10);
+		return Math.log(this.mantissa) + this.exponent*Math.log(2);
 	}
 
 
@@ -239,13 +285,13 @@ public class SmallNumber {
 	public static double averageExponent(SmallNumber[] nums){
 		double res = 0;
 		int n = nums.length;
-		
+
 		for (int i=0; i<n; i++) {
 			res = res + (nums[i].exponent*1.0)/n;
 		}
 		return res;
 	}
-	
+
 	/**
 	 * Compare the minimal exponent of an array of Small Numbers with an arbitrary threshold. 
 	 * @param nums
@@ -259,64 +305,75 @@ public class SmallNumber {
 		int res = min < SmallNumber.threshold ? 1: 0;
 		return res;
 	}
-	
+
 	public static void main(String args[]) {
-/*
+
 		//Simple test 
-		
-		double aOld = 0.00000000000000000000000000000000000000000000000000000000000000000000000000123645445640000;
-		SmallNumber a = new SmallNumber(aOld);
-		SmallNumber c = new SmallNumber(0);
-		System.out.println("The value of c is " + c.toString());
-		SmallNumber b = SmallNumber.multiply(SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)),SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)));
-		double bOld = aOld*aOld*aOld*aOld*aOld*aOld*aOld*aOld;
-		System.out.println("The value of b is " + b.toString());
-		System.out.println("The value of b using double would have been " + bOld);
 
-		SmallNumber s = new SmallNumber();
-		System.out.println(s.toString());
-		SmallNumber[] emptyTable = new SmallNumber[4];
-		double emptyDouble[] = new double[4];
-		for (int i=0; i<4; i++) emptyTable[i] = new SmallNumber();
-		System.out.println(SmallNumber.toString(emptyTable));
-		System.out.println(emptyDouble[2]);
-		 
-*/
+//		double aOld = 0.00000000000000000000000000000000000000000000000000000000000000000000000000123645445640000;
+//		SmallNumber a = new SmallNumber(aOld);
+//		SmallNumber f = new SmallNumber(Math.pow(Math.E, -50));
+//		System.out.println("The value of log f is " + f.log());
+//		SmallNumber c = new SmallNumber(0);
+//		double abis = a.getMantissa()*Math.pow(2, a.getExponent());
+//		System.out.println("The value of a is " + a.toString() + "\t vs 1,2364544564E-75");
+//		System.out.println("The value of c is " + c.toString());
+//		SmallNumber b = SmallNumber.multiply(SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)),SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)));
+//		double bOld = aOld*aOld*aOld*aOld*aOld*aOld*aOld*aOld;
+//		System.out.println("The value of b is " + b.toString());
+//		System.out.println("The value of b using double would have been " + bOld);
+
+
+		//		SmallNumber s = new SmallNumber();
+		//		System.out.println(s.toString());
+		//		SmallNumber[] emptyTable = new SmallNumber[4];
+		//		double emptyDouble[] = new double[4];
+		//		for (int i=0; i<4; i++) emptyTable[i] = new SmallNumber();
+		//		System.out.println(SmallNumber.toString(emptyTable));
+		//		System.out.println(emptyDouble[2]);
+
+
 		// Tests on basic operations
-		SmallNumber a = new SmallNumber(4564.3453);
-		SmallNumber b = new SmallNumber(89);
-		SmallNumber c = SmallNumber.multiply(a, b);
-		double lambda = 0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005;
-		c = c.scalarMultiply(lambda);
-		SmallNumber d = SmallNumber.add(a, b);
-		System.out.println("With SmallNumber implementation: " + d.toString());
-
-		double aOld = 4564.3453;
-		double bOld = 89;
-		double cOld = aOld*bOld*lambda;
-		double dOld = aOld+bOld;
-		System.out.println("With classic double implementation: " + dOld);
+				double aOld = 0.45643453;
+				double bOld = 8900.;
+				//				double bOld = 0;
+				SmallNumber a = new SmallNumber(aOld);
+				SmallNumber b = new SmallNumber(bOld);
+				SmallNumber c = SmallNumber.multiply(a, b);
+				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld);
+				double lambda = 0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005;
+				c = c.scalarMultiply(lambda);
+				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld*lambda);
+				SmallNumber d = SmallNumber.add(a, b);
+				System.out.println("With SmallNumber implementation: " + d.toString() + " vs "+ (aOld+bOld));
+		
+		//		double aOld = 4564.3453;
+		//		double bOld = 89;
+		//		double cOld = aOld*bOld*lambda;
+		//		double dOld = aOld+bOld;
+		//		System.out.println("With classic double implementation: " + dOld);
 
 		// Test on scaledNumbers
 		double[] eqp = {0, 1, 0.5, 0.8, 0.9, 1.0, 0.6};
 		SmallNumber[] eq = {new SmallNumber(0), new SmallNumber(0), new SmallNumber(1.5), new SmallNumber(0), new SmallNumber(1., 400), new SmallNumber(1., -200), new SmallNumber(1., -500)};
 		double m = SmallNumber.averageExponent(eq);
-		
+
 		ScaledNumbers scaeq = SmallNumberScaler.scale(new p0ge_InitialConditions(eqp, eq));
 		System.out.println(SmallNumber.toString(eq) +  "with an average exponent of: " + m + "\t and minimal exponent compared to the set threshold of: " + SmallNumber.compareExponent(eq));
 		System.out.println(scaeq.getScalingFactor());
 		System.out.println("\n" + scaeq.getEquation()[0] + " " + scaeq.getEquation()[1] + " " + scaeq.getEquation()[2] + " " + scaeq.getEquation()[3] + " " + scaeq.getEquation()[4] + " " + scaeq.getEquation()[5] + " " + scaeq.getEquation()[6]);
 
+
 		//		double res = 0*Math.exp(Math.log(10)*(389));
 		//		System.out.println(Math.exp(2*389));
-
+		//
 		//		SmallNumber ka = new SmallNumber(Double.POSITIVE_INFINITY);
 		//		System.out.println(SmallNumber.isInfinite(ka));
 		//		System.out.println(ka.toString());
 		//		SmallNumber kb = new SmallNumber(0);
 		//		System.out.println(SmallNumber.isInfinite(kb));
-		 
-		
+
+
 
 
 	}

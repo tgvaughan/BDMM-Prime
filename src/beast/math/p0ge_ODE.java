@@ -21,8 +21,6 @@ import beast.core.util.Utils;
 
 public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
-	public double globalThreshold;
-
 	p0_ODE P;
 	public FirstOrderIntegrator p_integrator;
 
@@ -43,6 +41,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	int maxEvals;
 	public int maxEvalsUsed;
+	public static double globalPrecisionThreshold;
 
 
 	public p0ge_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented){
@@ -85,7 +84,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			gDot[i] = + (b[k]+d[k]+s[k]
 					- b[k] * g[i]) * g[i]
-					- d[k] ;
+							- d[k] ;
 
 			for (int j=0; j<dimension; j++){
 
@@ -151,12 +150,11 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	 */
 	public double[] getP(double t, double[]P0, double t0, Boolean rhoSampling, Double[] rho){
 
-		if (Math.abs(T-t)<1e-10 || Math.abs(t0-t)<1e-10 ||   T < t) {
+
+		if (Math.abs(T-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   T < t) 
 			return P0;
-		}
-
+	
 		double[] result = new double[P0.length];
-
 
 		try {
 
@@ -168,18 +166,11 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			int indexFrom = Utils.index(from, times, times.length);
 			int index = Utils.index(to, times, times.length);
 
-			if (rhoSampling){
-				for (int i=0; i<dimension; i++){
-					oneMinusRho = (1-rho[i*intervals + index ]);
-					result[i] *= oneMinusRho;
-					System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
-				}
-			}
-
 			int steps = index - indexFrom;
+
 			index--;
-			if (Math.abs(from-times[indexFrom])<globalThreshold) steps--;
-			if (index>0 && Math.abs(to-times[index-1])<globalThreshold) {
+			if (Math.abs(from-times[indexFrom])<globalPrecisionThreshold) steps--;
+			if (index>0 && Math.abs(to-times[index-1])<globalPrecisionThreshold) {
 				steps--;
 				index--;
 			}
@@ -187,14 +178,20 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			while (steps > 0){
 
 				from = times[index];
-
-				p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
-
-				if (rhoSampling){
-					for (int i=0; i<dimension; i++){
-						oneMinusRho = (1-rho[i*intervals + index]);
-						result[i] *= oneMinusRho;
-						System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", to = " + to);
+				
+				// TO DO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed 
+				if (Math.abs(from-to)>globalPrecisionThreshold){
+					p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
+					
+					if (rhoSampling){ 
+						for (int i=0; i<dimension; i++){
+							oneMinusRho = (1-rho[i*intervals + index]);
+							result[i] *= oneMinusRho;
+							
+							/*
+							System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", from = " + from);
+							*/
+						}
 					}
 				}
 
@@ -205,6 +202,21 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			}
 
 			p_integrator.integrate(P, to, result, t, result); // solve P, store solution in y
+
+			// TO DO
+			// check that both times are really overlapping
+			// but really not sure that this is enough, i have to build appropriate tests
+			if(Math.abs(t-times[indexFrom])<globalPrecisionThreshold) {
+				if (rhoSampling){ 
+					for (int i=0; i<dimension; i++){
+						oneMinusRho = (1-rho[i*intervals + indexFrom]);
+						result[i] *= oneMinusRho;
+						System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
+						
+					}
+				}
+			}
+
 
 		}catch(Exception e){
 
@@ -219,15 +231,20 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		double[] y = new double[dimension];
 
-		Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
-
-		if (rhoSampling)
+		if (!rhoSampling)
+			Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
+		
+		else{
 			for (int i = 0; i<dimension; i++) {
-				y[i] *= (1 - rho[i * intervals + Utils.index(t, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
-				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(t, times, intervals)]) + ", t = " + t + ", to = T");
+				y[i] = (1 - rho[i * intervals + Utils.index(T, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
+				
+				/*
+				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(T, times, intervals)]) + ", t = " + t + ", to = " + T);
+				*/
 			}
+		}
 
-		if (Math.abs(T-t)<globalThreshold ||  T < t) {
+		if (Math.abs(T-t)<globalPrecisionThreshold ||  T < t) {
 			return y;
 		}
 
