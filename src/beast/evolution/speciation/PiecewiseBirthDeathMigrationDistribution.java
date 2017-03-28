@@ -15,6 +15,7 @@ import beast.math.SmallNumberScaler;
 import beast.math.p0_ODE;
 import beast.math.p0ge_InitialConditions;
 import beast.math.p0ge_ODE;
+import beast.util.HeapSort;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
