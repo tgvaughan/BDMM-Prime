@@ -1,5 +1,6 @@
 package beast.evolution.speciation;
 
+import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
@@ -14,6 +15,8 @@ import java.util.Arrays;
 /**
  * Created by Denise Kühnert on 06.03.17.
  */
+
+@Description("UNTESTED! Birth-Death-Migration-model that allows distribution over parameters shared by clusters")
 public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrationModelUncoloured {
 
     final public Input<ParametricDistribution> rateDistInput = new Input<>("distr", "the distribution governing the rates among branches. Must have mean of 1. The clock.rate parameter can be used to change the mean rate.", Input.Validate.REQUIRED);
