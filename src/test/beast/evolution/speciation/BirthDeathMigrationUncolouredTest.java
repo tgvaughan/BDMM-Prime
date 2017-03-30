@@ -482,7 +482,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 	
 	/**
 	 * Simple unit test on sampled-ancestors lik. calculation.
-	 * 2 leaves, 1 SA. 1 type, no rho-sampling
+	 * 2 leaves, 1 SA. 1 type, no rho-sampling, no rate-change
 	 * Reference value from BDSKY (23/03/2017)
 	 * @throws Exception
 	 */
