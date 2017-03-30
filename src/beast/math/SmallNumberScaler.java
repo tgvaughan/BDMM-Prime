@@ -2,6 +2,11 @@ package beast.math;
 
 import beast.core.Description;
 
+/**
+ * Created by Jeremie Scire (jscire) on 24.06.16.
+ */
+
+
 @Description("SmallNumberScaler contains methods to perform scaling/unscaling on a set of Small Numbers.")
 public class SmallNumberScaler {
 

@@ -2,6 +2,10 @@ package beast.math;
 
 import beast.core.Description;
 
+/**
+ * Created by Jeremie Scire (jscire)
+ */
+
 @Description("This type contains both sets of initial conditions for both equation types: p and ge")
 public class p0ge_InitialConditions {
 	
