@@ -498,11 +498,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 				if (rhoChanges>0){
 					for (int i=0; i<n; i++){
-						// TO DO, tester la prochaine ligne j'ai aucune idee si ca marche pour le moment
-						oneMinusRho = SAModel? 
-								(1-rho[i*totalIntervals + index])*(1-r[i * totalIntervals + index]) 
-								:(1-rho[i*totalIntervals + index]) ;
-						//oneMinusRho = (1-rho[i*totalIntervals + index]) ; TO DO remove if above works
+						oneMinusRho = 1-rho[i*totalIntervals + index];
 						PG0.conditionsOnP[i] *= oneMinusRho;
 						PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
 						/*
