@@ -250,7 +250,7 @@
             <prior id="becomeUninfectiousRatePriorS" name="distribution" x="@becomeUninfectiousRate">
                 <Normal name="distr" mean="90" sigma="10."/>
             </prior>
-           <distribution spec="ExcludablePrior" xInclude="false true false true false true" id="samplingProportionPriorS" name="distribution" x="@samplingProportion">
+           <distribution spec="multitypetree.distributions.ExcludablePrior" xInclude="false true false true false true" id="samplingProportionPriorS" name="distribution" x="@samplingProportion">
                 <Beta id="Beta.0" name="distr" alpha="1." beta="9999."/>
             </distribution>
         </distribution>
@@ -323,7 +323,7 @@
   
 	<operator id="geo-frequenciesExchange" spec="DeltaExchangeOperator" parameter="@geo-frequencies" delta="0.1" weight=".1"/>
 
-    <logger fileName="BDMM_migration_example_$(seed).log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+    <logger fileName="$(filebase)_$(seed).log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
         <log idref="ESS.0"/>
         <log idref="posterior"/>
         <log idref="prior"/>
@@ -361,9 +361,9 @@
         <log idref="rateMatrix"/>
     </logger>
     
-	<logger fileName="BDMM_migration_example_$(seed).col.trees" id="coltreelog" log="@tree" logEvery="1000" mode="tree"/>
+	<logger fileName="$(filebase)_$(seed).col.trees" id="coltreelog" log="@tree" logEvery="1000" mode="tree"/>
   
-    <logger fileName="BDMM_migration_example_$(seed).trees" id="treelog" logEvery="1000" mode="tree">
+    <logger fileName="$(filebase)_$(seed).trees" id="treelog" logEvery="1000" mode="tree">
         <log branchratemodel="@StrictClock" id="TreeWithMetaDataLogger.t:Bahl" spec="beast.evolution.tree.TreeWithMetaDataLogger" tree="@tree"/>
     </logger>
 

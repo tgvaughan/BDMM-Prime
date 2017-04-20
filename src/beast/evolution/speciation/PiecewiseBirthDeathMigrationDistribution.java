@@ -9,18 +9,16 @@ import beast.core.parameter.RealParameter;
 import beast.core.util.Utils;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
+import beast.math.ScaledNumbers;
+import beast.math.SmallNumber;
+import beast.math.SmallNumberScaler;
 import beast.math.p0_ODE;
 import beast.math.p0ge_InitialConditions;
 import beast.math.p0ge_ODE;
 import beast.util.HeapSort;
-import beast.math.ScaledNumbers;
-import beast.math.SmallNumber;
-import beast.math.SmallNumberScaler;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.ode.nonstiff.HighamHall54Integrator;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -824,7 +822,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			for (int i=0; i < totalIntervals; i++) {
 				R[i] = R_sens[i];
 				for (int j=1; j < totalTypes; j++) {
-					double lambda = R_sens[i] * ds[i];
+					double lambda = R_sens[i] * ds[ds.length > totalTypes ? index(times[i%totalIntervals], deathRateChangeTimes) : 0];
 					R[i + totalIntervals * j] = (lambda * l_ratio[j - 1]) / ds[ds.length > totalTypes ? (deathChanges+1)*j+index(times[i%totalIntervals], deathRateChangeTimes) : j];
 				}
 			}

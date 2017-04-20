@@ -4,6 +4,10 @@ import java.text.DecimalFormat;
 
 import beast.core.Description;
 
+/**
+ * Created by Jeremie Scire (jscire) on 24.06.16.
+ */
+
 @Description("This class contains the tools needed to represent and do basic calculations with numbers in scientific representation."
 		+ " For instance, 0.0523 would be written as 5.23E-2 in scientific representation. In this implementation, the attribute 'mantissa' would be 5.23 and 'exponent' would be -2.")
 public class SmallNumber {

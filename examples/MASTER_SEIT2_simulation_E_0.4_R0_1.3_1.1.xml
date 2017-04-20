@@ -165,7 +165,7 @@
             <parameter idref="becomeUninfectiousRate" name="down"/>
         </operator>
 
-        <logger fileName="tracelog.log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <logger fileName="$(filebase)_$(seed).log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>
             <log idref="prior"/>
             <log idref="BDMM"/>
