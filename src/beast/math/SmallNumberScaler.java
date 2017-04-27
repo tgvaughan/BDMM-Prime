@@ -87,24 +87,9 @@ public class SmallNumberScaler {
 
 				// finally, store in scaledEquation the corresponding numbers, increased by scalingFactor orders of magnitude.
 				// scaledEquation[] is of type double[]
-				for (int i=0; i<n;i++){
-					double a = geConditions[i].getMantissa();
-					int b = geConditions[i].getExponent() + scalingFactor;
-					if(a!=0) {
-						if(b>180 || b<0)
-							scaledEquation[i+n] = a*Math.pow(2, b);
-						else {
-							while(b>30) { //the number 30 comes from the max number of bits that can be left-shifted on an int and still be equivalent to a 2 to the power of n operation
-								a = a*(1<<30);
-								b-=30;
-							}
-							a = a*(1<<b); // the remaining part of the original power of 2 with which the mantissa must be multiplied
-							scaledEquation[i+n] = a;
-						}
-					} else {
-						scaledEquation[i+n]=0;
-					}
-				}
+				for (int i=0; i<n;i++)
+					scaledEquation[i+n] = multiplyByPowerOfTwo(geConditions[i].getMantissa(), geConditions[i].getExponent() + scalingFactor);
+				
 
 
 				// else, then it is impossible to fit all values from the array in the window allowed for 'double' type.
@@ -151,56 +136,63 @@ public class SmallNumberScaler {
 
 				// finally, store in scaledEquation the corresponding numbers, increased by scalingFactor orders of magnitude.
 				// scaledEquation[] is of type double[]
-				for (int i=0; i<n;i++){
-						double a = eqcopy[i].getMantissa();
-						int b = eqcopy[i].getExponent() + scalingFactor;
-						if(a!=0) {
-							//scaledEquation[i+n] = eqcopy[i].getMantissa()*Math.pow(2, (eqcopy[i].getExponent() + scalingFactor)); TO DO REMOVE LINE
-							if(b>180 || b<0)
-								scaledEquation[i+n] = a*Math.pow(2,b);
-							else {
-								while(b>30) { //the number 30 comes from the max number of bits that can be left-shifted on an int and still be equivalent to a 2 to the power of n operation
-									a = a*(1<<30);
-									b-=30;
-								}
-								a = a*(1<<b); // the remaining part of the original power of 2 with which the mantissa must be multiplied
-								scaledEquation[i+n] = a;
-							}
-						} else {
-							scaledEquation[i+n]=0;
-						}
-					}
-				}
+				for (int i=0; i<n;i++)
+					scaledEquation[i+n] = multiplyByPowerOfTwo(eqcopy[i].getMantissa(), eqcopy[i].getExponent() + scalingFactor);
+				
 			}
-
-			return new ScaledNumbers(scalingFactor, scaledEquation);
 		}
 
-		/**
-		 * Retrieve values of accurate magnitude from the 'scaled' ones.
-		 * @param numbers
-		 * @param factor
-		 * @return an instance of p0ge_InitialConditions containing an array of SmallNumbers (ge equations) and an array of doubles (p equations)
-		 */
-		public static p0ge_InitialConditions unscale(double[] numbers, int factor){
-
-			if (numbers.length % 2 == 1 )
-				throw new RuntimeException("input should be of even length");
-
-			int dim = numbers.length/2;
-
-			double[] pConditions = new double[dim];
-
-			System.arraycopy(numbers, 0, pConditions, 0, dim);
-
-			SmallNumber[] unscaledGe = new SmallNumber[dim];
-
-			for (int i = 0; i < dim; i++){
-				unscaledGe[i] = new SmallNumber(numbers[i+dim]);
-				unscaledGe[i].addExponent(-factor);
-			}
-
-			return new p0ge_InitialConditions(pConditions, unscaledGe);
-		}
+		return new ScaledNumbers(scalingFactor, scaledEquation);
 	}
+
+	/**
+	 * Retrieve values of accurate magnitude from the 'scaled' ones.
+	 * @param numbers
+	 * @param factor
+	 * @return an instance of p0ge_InitialConditions containing an array of SmallNumbers (ge equations) and an array of doubles (p equations)
+	 */
+	public static p0ge_InitialConditions unscale(double[] numbers, int factor){
+
+		if (numbers.length % 2 == 1 )
+			throw new RuntimeException("input should be of even length");
+
+		int dim = numbers.length/2;
+
+		double[] pConditions = new double[dim];
+
+		System.arraycopy(numbers, 0, pConditions, 0, dim);
+
+		SmallNumber[] unscaledGe = new SmallNumber[dim];
+
+		for (int i = 0; i < dim; i++){
+			unscaledGe[i] = new SmallNumber(numbers[i+dim]);
+			unscaledGe[i].addExponent(-factor);
+		}
+
+		return new p0ge_InitialConditions(pConditions, unscaledGe);
+	}
+
+	/**
+	 * Helper method that multiplies a double x by 2^n
+	 * When n is 'small', especially when less than 30, this method is significantly faster than x*Math.pow(2, n)
+	 * @param x
+	 * @param n
+	 * @return x * 2^n
+	 */
+	public static double multiplyByPowerOfTwo(double x, int n){
+		if(x !=0) {
+			if(n>180 || n<0) // the threshold of 180 was chosen empirically to maximize the method's speed
+				return x*Math.pow(2, n);
+			else {
+				while(n>30) { //the number 30 comes from the max number of bits that can be left-shifted on an int and still be equivalent to a 2 to the power of n operation
+					x = x*(1<<30);
+					n-=30;
+				}
+				return x*(1<<n); // the remaining part of the original power of 2 with which the mantissa must be multiplied
+			}
+		}
+		return 0;
+	}
+
+}
 
