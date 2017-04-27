@@ -172,7 +172,6 @@ public class SmallNumberScaler {
 		return new p0ge_InitialConditions(pConditions, unscaledGe);
 	}
 
-	
 	/**
 	 * Helper method that multiplies a double x by 2^n
 	 * When n is 'small', especially when less than 30, this method is significantly faster than x*Math.pow(2, n)
@@ -180,7 +179,7 @@ public class SmallNumberScaler {
 	 * @param n
 	 * @return x * 2^n
 	 */
-	private static double multiplyByPowerOfTwo(double x, int n){
+	public static double multiplyByPowerOfTwo(double x, int n){
 		if(x !=0) {
 			if(n>180 || n<0) // the threshold of 180 was chosen empirically to maximize the method's speed
 				return x*Math.pow(2, n);
@@ -194,5 +193,6 @@ public class SmallNumberScaler {
 		}
 		return 0;
 	}
+
 }
 
