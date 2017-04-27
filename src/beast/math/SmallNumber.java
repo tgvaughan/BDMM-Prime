@@ -359,7 +359,7 @@ public class SmallNumber {
 
 		// Test on scaledNumbers
 		double[] eqp = {0, 1, 0.5, 0.8, 0.9, 1.0, 0.6};
-		SmallNumber[] eq = {new SmallNumber(0), new SmallNumber(0), new SmallNumber(1.5), new SmallNumber(0), new SmallNumber(1., 400), new SmallNumber(1., -200), new SmallNumber(1., -500)};
+		SmallNumber[] eq = {new SmallNumber(0), new SmallNumber(0), new SmallNumber(1.5), new SmallNumber(0), new SmallNumber(1., 400), new SmallNumber(1., -200), new SmallNumber(1., -1000)};
 		double m = SmallNumber.averageExponent(eq);
 
 		ScaledNumbers scaeq = SmallNumberScaler.scale(new p0ge_InitialConditions(eqp, eq));
