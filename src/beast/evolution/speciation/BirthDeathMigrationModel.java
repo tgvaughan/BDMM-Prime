@@ -168,6 +168,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 	 */
 	public p0ge_InitialConditions getGSmallNumber(double t, p0ge_InitialConditions PG0, double t0, Node node, boolean isMigrationEvent){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
+		//TO DO recheck if !isMigrationEvent can't be removed
 		if (node.isLeaf() && !isMigrationEvent){
 			//			// TO DO CLEAN UP
 						//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
@@ -569,23 +570,13 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 //										: new SmallNumber(psi[nodestate * totalIntervals + index]);
 
 					} else {
-						// TO DO change Threshold of 1e-10 when threshold in computeRhoTips is changed
-						if((node.getHeight())< 1e-10) 
-							init.conditionsOnG[nodestate] = new SmallNumber(rho[nodestate*totalIntervals+index]);
-						else
-							
-							init.conditionsOnG[nodestate] = SAModel? 
-							new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
-									*rho[nodestate*totalIntervals+index]):
-										new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ))
 
-							
-							//TO DO REMOVE IF ABOVE WORK
-//							init.conditionsOnG[nodestate] = SAModel? 
-//									new SmallNumber((r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index]))
-//											*rho[nodestate*totalIntervals+index]):
-//												new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ))
-
+						//TO DO make the modif in the manuscript (for the "/(1-rho)" thing)
+						init.conditionsOnG[nodestate] = SAModel? 
+								new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]/(1-rho[nodestate*totalIntervals+index])*(1-r[nodestate * totalIntervals + index]))
+										*rho[nodestate*totalIntervals+index])  :
+								new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ+δ)) //the +δ is translated by dividing p_i with 1-ρ_i (otherwise there's one too many "*ρ_i" )
+						
 					}
 
 					if (print) System.out.println("Sampling at time " + to);
@@ -595,8 +586,6 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 				else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
 
-					// TO DO make test to check that the sampled ancestor thing here works
-					//NO IDEA if this part is actually reached by the code, check that
 					if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
 
 						if (r==null)
@@ -607,9 +596,31 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 						if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
 						p0ge_InitialConditions g = calculateSubtreeLikelihoodSmallNumber(node.getChild(childIndex), false, null, to, T - node.getChild(childIndex).getHeight());
+						
+						int saNodeState = ((MultiTypeNode) node.getChild(childIndex ^ 1)).getNodeType(); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
+						
+						if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
-						init.conditionsOnP[nodestate] = g.conditionsOnP[nodestate];
-						init.conditionsOnG[nodestate] = g.conditionsOnG[nodestate].scalarMultiply(psi[nodestate * totalIntervals + index] * (1-r[nodestate * totalIntervals + index]));
+							init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
+							init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index]
+									* (1-r[saNodeState * totalIntervals + index]));
+
+//							System.out.println("SA but not rho sampled");
+
+						} else {
+							// TO DO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
+							init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState]*(1-rho[saNodeState*totalIntervals+index]) ;
+							init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index] 
+									* (1-r[saNodeState * totalIntervals + index]));
+							
+							//TO DO working on below, probably doesn't work
+//							init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
+//							init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]/(1-rho[saNodeState*totalIntervals+index])
+//									* (1-r[saNodeState * totalIntervals + index]));
+							
+//							System.out.println("SA and rho sampled and rho is: " + rho[saNodeState*totalIntervals+index] );
+						}
+					
 					}
 
 					else {   // birth / infection event

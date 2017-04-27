@@ -553,8 +553,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		bdm.initAndValidate();
 
 
-		double a = bdm.calculateLogP();
-		
+//		double a = bdm.calculateLogP();	
 //		System.out.println(a);
 		
 		assertEquals(-22.348462265673483, bdm.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017 JS)

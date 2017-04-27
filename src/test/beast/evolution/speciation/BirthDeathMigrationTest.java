@@ -6,6 +6,7 @@ import beast.util.TreeParser;
 import junit.framework.TestCase;
 import org.junit.Test;
 import beast.evolution.speciation.BirthDeathMigrationModel;
+import beast.evolution.speciation.BirthDeathMigrationModelUncoloured;
 import beast.evolution.speciation.PiecewiseBirthDeathMigrationDistribution;
 
 /**
@@ -282,6 +283,94 @@ public class BirthDeathMigrationTest extends TestCase {
 
 	}
 
+	/**
+	 * Simple unit test on sampled-ancestors lik. calculation.
+	 * 2 leaves, 1 SA. 1 type, no rho-sampling, no rate-change
+	 * Reference value from BDSKY (23/03/2017)
+	 * @throws Exception
+	 */
+	@Test
+	public void testSALikelihoodMini() throws Exception{
+		MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
+		tree.initByName(
+				"adjustTipHeights", false,
+				"value", "((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
+				"typeLabel", "type");
+
+
+		BirthDeathMigrationModel bdm =  new BirthDeathMigrationModel();
+
+
+		bdm.setInputValue("tree", tree);
+
+		bdm.setInputValue("stateNumber", "1");
+		bdm.setInputValue("migrationMatrix", "0.");
+		bdm.setInputValue("frequencies", "1");
+		bdm.setInputValue("origin", "6.");
+		bdm.setInputValue("originBranch", new MultiTypeRootBranch());
+		
+		bdm.setInputValue("R0", new RealParameter("1.5"));
+		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+		bdm.setInputValue("samplingProportion", new RealParameter("0.2") );
+		bdm.setInputValue("removalProbability", new RealParameter("0.9") );
+		bdm.setInputValue("conditionOnSurvival", true);
+
+		bdm.initAndValidate();
+
+		assertEquals(-18.854438107814335, bdm.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017 JS)
+
+//		double logL = bdm.calculateLogP();	
+//		System.out.println("Birth-death result: " +logL + " versus reference value: " + -18.854438107814335);
+	}
+	
+	/**
+	 * Unit test on sampled-ancestors lik. calculation with multi-rho sampling.
+	 * 2 leaves, 1 SA. 1 type, no rate-change
+	 * Reference value from BDSKY (06/04/2017)
+	 * @throws Exception
+	 */
+	@Test
+	public void testSALikelihoodMultiRho() throws Exception {
+		
+		MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
+		tree.initByName(
+				"adjustTipHeights", false,
+				"value", "((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
+				"typeLabel", "type");
+
+
+		BirthDeathMigrationModel bdm =  new BirthDeathMigrationModel();
+
+		bdm.setInputValue("tree", tree);
+
+		bdm.setInputValue("stateNumber", "1");
+		bdm.setInputValue("migrationMatrix", "0.");
+		bdm.setInputValue("frequencies", "1");
+
+		bdm.setInputValue("R0", new RealParameter("1.5"));
+		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+		bdm.setInputValue("samplingProportion", new RealParameter("0.2") );
+		bdm.setInputValue("removalProbability", new RealParameter("0.9") );
+
+		bdm.setInputValue("conditionOnSurvival", true);
+		bdm.setInputValue("origin", "6.");
+		bdm.setInputValue("originBranch", new MultiTypeRootBranch());
+		
+		bdm.setInputValue("rho", new RealParameter("0.3 0.05"));
+		bdm.setInputValue("rhoSamplingTimes", new RealParameter("0 1.5") );
+
+		bdm.setInputValue("reverseTimeArrays", "false false false true");
+
+		bdm.initAndValidate();
+
+
+//		double a = bdm.calculateLogP();	
+//		System.out.println(a);
+		
+		assertEquals(-22.348462265673483, bdm.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017 JS)
+
+	}
+	
 	@Test
 	public void testRhoSasha() throws Exception {
 
