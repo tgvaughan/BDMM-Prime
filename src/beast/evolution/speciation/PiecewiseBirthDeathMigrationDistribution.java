@@ -28,6 +28,10 @@ import java.util.Random;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
+//currently cleaning
+//removing the overflowing way (done)
+//refactor to rename methods appropriately (done)
+
 /**
  * Created with IntelliJ IDEA.
  * User: Denise
@@ -168,12 +172,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("adjustTimes", "Origin of MASTER sims which has to be deducted from the change time arrays");
 	// <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
 
-	//TO DO remove one of the inputs
 	public Input<Boolean> useRKInput =
-			new Input<>("useRK", "Use fixed step size Runge-Kutta with 1000 steps. Default false", false);
-
-	public Input<Boolean> useSmallNumbers = new Input<>("useSN",
-			"Use non-underflowing method (default: true)", true);
+			new Input<>("useRK", "Use fixed step size Runge-Kutta integrator with 1000 steps. Default false", false);
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
@@ -279,9 +279,16 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		M = migrationMatrix.get().getValues();
 
-		if (n>1 && M.length != n*(n-1))
-			if (migChangeTimesInput.get()==null || M.length != n*(n-1) *migChangeTimesInput.get().getDimension())
+		if (n>1 && M.length != n*(n-1)) {
+			double timeChanges = 0;
+			if (migChangeTimesInput.get()!=null) {
+				timeChanges = migChangeTimesInput.get().getDimension();
+			} else if(intervalTimes.get() != null){
+				timeChanges = intervalTimes.get().getDimension();
+			}
+			if (timeChanges == 0 || M.length != n*(n-1)*timeChanges ) 
 				throw new RuntimeException("Migration matrix dimension is incorrect!");
+			}
 
 		birthRateTimesRelative = birthRateChangeTimesRelativeInput.get();
 		b_ijTimesRelative = b_ijChangeTimesRelativeInput.get();
@@ -375,73 +382,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 	/**
-	 * Perform integration on ODEs g using a classical implementation (using double[] for the initial conditions and the output).
-	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
-	 * @param t
-	 * @param PG0
-	 * @param t0
-	 * @return
-	 */
-	public double[] getG(double t, double[] PG0, double t0,
-			FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
-
-		try {
-
-			if (Math.abs(T-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||  T < t) {
-				return PG0;
-			}
-
-			double from = t;
-			double to = t0;
-			double oneMinusRho;
-
-			int indexFrom = Utils.index(from, times, times.length);
-			int index = Utils.index(to, times, times.length);
-
-			int steps = index - indexFrom;
-			if (Math.abs(from-times[indexFrom]) < globalPrecisionThreshold ) steps--;
-			if (index>0 && Math.abs(to-times[index-1]) < globalPrecisionThreshold ) {
-				steps--;
-				index--;
-			}
-
-			index--;
-
-			while (steps > 0){
-
-				from = times[index];
-
-				pg_integrator.integrate(PG, to, PG0, from, PG0); // solve PG , store solution in PG0
-
-				if (rhoChanges>0){
-					for (int i=0; i<n; i++){
-						oneMinusRho = (1-rho[i*totalIntervals + index]);
-						PG0[i] *= oneMinusRho;
-						PG0[i+n] *= oneMinusRho;
-						System.out.println("In getG, multiplying with oneMinusRho: " + oneMinusRho);
-					}
-				}
-
-				to = times[index];
-
-				steps--;
-				index--;
-			}
-
-			pg_integrator.integrate(PG, to, PG0, t, PG0); // solve PG , store solution in PG0
-
-		}catch(Exception e){
-
-			throw new RuntimeException("couldn't calculate g");
-		}
-
-		if (pg_integrator.getEvaluations() > maxEvalsUsed) maxEvalsUsed = pg_integrator.getEvaluations();
-
-		return PG0;
-	}
-
-
-	/**
 	 * Implementation of getG with Small Number structure for the ge equations. Avoids underflowing of integration results.
 	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
 	 * @param t
@@ -449,7 +389,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	 * @param t0
 	 * @return
 	 */
-	public p0ge_InitialConditions getGSmallNumber(double t, p0ge_InitialConditions PG0, double t0,
+	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0,
 			FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		try {
@@ -932,7 +872,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 
-		if (!useRKInput.get() && useSmallNumbers.get()) {
+		if (!useRKInput.get()) {
 			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); //new HighamHall54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); // 
 			pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
@@ -1070,7 +1010,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		}
 		return min;
 	}
-
 
 	public p0ge_ODE getPG() {
 		return PG;

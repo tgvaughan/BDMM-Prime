@@ -402,6 +402,8 @@ public class BirthDeathMigrationTest extends TestCase {
 		assertEquals(-122.22277751599431, bdssm.calculateTreeLogLikelihood(mtTree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R 
 		//assertEquals(-16.26504480586609, bdssm.calculateTreeLogLikelihood(mtTree), 1e-4);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R //TO DO REMOVE THIS LINE
 
+		//TO DO remove comment
+		// VALUE CHANGED since 17/06/16: was -122.2313926454848
 	}
 
 	@Test
@@ -443,6 +445,8 @@ public class BirthDeathMigrationTest extends TestCase {
 				assertEquals(-103.01523037461553, bdssm.calculateTreeLogLikelihood(tree), 1e-4);    // this result is from BEAST (BirthDeathMigrationModelUncoloured)
 				//assertEquals(-10.891322664609273, bdssm.calculateTreeLogLikelihood(tree), 1e-3);    // this result is from BEAST (BirthDeathMigrationModelUncoloured) // TO DO remove this line
 
+				//TO DO remove comment
+				// VALUE CHANGED since 17/06/16: was -103.00541179401198
 			}
 			case 2:{
 				BirthDeathMigrationModel bdssm =  new BirthDeathMigrationModel();
@@ -467,6 +471,10 @@ public class BirthDeathMigrationTest extends TestCase {
 
 				assertEquals(-104.45995541445863, bdssm.calculateTreeLogLikelihood(tree), 1e-4);    // this result is from BEAST (BirthDeathMigrationModelUncoloured)
 				//assertEquals(-12.425307127180618, bdssm.calculateTreeLogLikelihood(tree), 1e-3);    // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R // TO DO remove this line
+			
+				//TO DO remove comment
+				// VALUE CHANGED since 17/06/16: was -103.00541179401198
+			
 			}
 
 			case 3:{
@@ -488,6 +496,9 @@ public class BirthDeathMigrationTest extends TestCase {
 
 				assertEquals(-100.05738793872999, bdssm.calculateTreeLogLikelihood(tree), 1e-3); 	 // this result is from BEAST (BirthDeathMigrationModelUncoloured) 
 				//assertEquals(5.805176735683993, bdssm.calculateTreeLogLikelihood(tree), 1e-3);     // this result is from BEAST (BirthDeathMigrationModelUncoloured), not double checked in R // TO DO remove this line
+				//TO DO remove comment
+				// VALUE CHANGED since 17/06/16: was -100.15682190617582
+			
 			}
 			}
 		}
