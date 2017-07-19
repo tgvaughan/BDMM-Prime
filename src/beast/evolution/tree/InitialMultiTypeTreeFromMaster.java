@@ -5,6 +5,8 @@ import beast.core.Input;
 import beast.core.StateNode;
 import beast.core.StateNodeInitialiser;
 import beast.core.parameter.RealParameter;
+import beast.evolution.alignment.Alignment;
+import beast.evolution.alignment.TaxonSet;
 import beast.util.Randomizer;
 import master.BeastTreeFromMaster;
 
@@ -19,6 +21,8 @@ import java.util.List;
  */
 @Description("Make a MultiTypeTree with tip dates and states obtained from MASTER simulation")
 public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements StateNodeInitialiser {
+
+    final public Input<Alignment> taxaInput = new Input<>("taxa", "set of taxa to initialise tree specified by alignment");
 
     public Input<BeastTreeFromMaster> masterTreeInput = new Input<BeastTreeFromMaster>(
             "masterTree",
@@ -60,15 +64,27 @@ public class InitialMultiTypeTreeFromMaster extends MultiTypeTree implements Sta
         for (Node beastNode : masterTree.getExternalNodes()){
 
             dates += beastNode.getID() + "=" + beastNode.getHeight() +",";
-            types += beastNode.getID() + "=" + ((int[])beastNode.getMetaData("location"))[0] +",";
+            types += beastNode.getID() + "=" + beastNode.getMetaData("location") +",";
 
         }
 
         dates = dates.substring(0,dates.length()-1);
         types = types.substring(0,types.length()-1);
 
-        typeTrait.initByName("value", types, "taxa", m_taxonset.get(), "traitname", "type");
-        dateTrait.initByName("value", dates, "taxa", m_taxonset.get(), "traitname", "date-backward");
+        Alignment taxa = taxaInput.get();
+        TaxonSet taxonset = new TaxonSet();
+
+        Alignment actualTaxa = new Alignment();
+        int taxonCount = masterTree.getLeafNodeCount();
+        for (int i=0; i<taxonCount; i++)
+            actualTaxa.setInputValue("sequence", taxa.sequenceInput.get().get(i));
+        actualTaxa.initAndValidate();
+
+        taxonset.initByName("alignment", actualTaxa);
+        setInputValue("taxonset",taxonset);
+
+        typeTrait.initByName("value", types, "taxa", taxonset, "traitname", "type");
+        dateTrait.initByName("value", dates, "taxa", taxonset, "traitname", "date-backward");
 
         SCMigrationModel migModel = new SCMigrationModel();
 
