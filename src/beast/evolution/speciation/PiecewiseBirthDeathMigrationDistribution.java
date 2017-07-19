@@ -728,20 +728,27 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				if (relative) end *= maxTime;
 				if (end < maxTime) changeTimes.add(end);
 			}
-			end = maxTime;
 
 			if (adjustTimesInput.get()!=null){
 
 				double iTime;
 				double aTime = adjustTimesInput.get().getValue();
 
-				for (int i = 0 ; i < changeTimes.size(); i++){
+				for (int i = 0 ; i < numChanges; i++){
 
 					iTime = intervalTimes.getArrayValue(i+1);
 
-					changeTimes.set(i, Math.abs(end-aTime+iTime) );
+					if (aTime<iTime) {
+						end = iTime - aTime;
+						if
+								(changeTimes.size() > i) changeTimes.set(i, end);
+						else
+						if (end < maxTime)
+							changeTimes.add(end);
+					}
 				}
 			}
+			end = maxTime;
 
 			changeTimes.add(end);
 		}
@@ -767,7 +774,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			state =  i/totalIntervals;
 
 			birth[i] = (identicalRatesForAllTypes[0]) ? birthRates[index(times[i%totalIntervals], birthRateChangeTimes)] :
-					 birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
+					birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
 			death[i] = (identicalRatesForAllTypes[1]) ? deathRates[index(times[i%totalIntervals], deathRateChangeTimes)] :
 					deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
 			psi[i] = (identicalRatesForAllTypes[2]) ? samplingRates[index(times[i%totalIntervals], samplingRateChangeTimes)] :
@@ -1209,7 +1216,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				for (int i = 0; i < migRates.length; i++) migRates[i] *= factor;
 			}
 
-				updateAmongParameter(M, migRates, migChanges, migChangeTimes);
+			updateAmongParameter(M, migRates, migChanges, migChangeTimes);
 		}
 
 		updateRho();
