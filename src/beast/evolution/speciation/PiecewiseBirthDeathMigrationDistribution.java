@@ -288,7 +288,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			}
 			if (timeChanges == 0 || M.length != n*(n-1)*timeChanges ) 
 				throw new RuntimeException("Migration matrix dimension is incorrect!");
-			}
+		}
 
 		birthRateTimesRelative = birthRateChangeTimesRelativeInput.get();
 		b_ijTimesRelative = b_ijChangeTimesRelativeInput.get();
