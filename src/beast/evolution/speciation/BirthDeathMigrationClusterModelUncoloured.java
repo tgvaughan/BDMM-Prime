@@ -21,9 +21,10 @@ public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrati
 
 	final public Input<ParametricDistribution> rateDistInput = new Input<>("distr", "the distribution governing the rates among branches. Must have mean of 1. The clock.rate parameter can be used to change the mean rate.", Input.Validate.REQUIRED);
 
-	final public Input<IntegerParameter> clusterNumbers = new Input<>("clusterNumbers", "the names of all clusters (need to be integers)");
 
-	final public Input<Integer> currentCluster = new Input<>("currentCluster", "the number of the current cluster");
+    final public Input<IntegerParameter> clusterNumbers = new Input<>("clusterNumbers", "the names of all clusters (need to be integers)", Input.Validate.REQUIRED);
+
+    final public Input<Integer> currentCluster = new Input<>("currentCluster", "the number of the current cluster", Input.Validate.REQUIRED);
 
 	final public Input<RealParameter> quantileInput = new Input<>("rateQuantiles", "the rate quantiles associated with clusters for sampling of individual rates among branches.", Input.Validate.REQUIRED);
 
@@ -110,13 +111,20 @@ public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrati
 			}
 		}
 
-		Double[] migRates = migrationMatrix.get().getValues();
+        Double[] migRates = migrationMatrix.get().getValues();
+        Double factor;
+        if (migrationMatrixScaleFactor.get()!=null) {
+            factor = migrationMatrixScaleFactor.get().getValue();
+            for (int i = 0; i < M.length; i++) M[i] *= factor;
+        }
+
 
 		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
 
 		updateRho();
 
-		for (int i = 0; i < totalIntervals; i++) birth[i]*=getRateForCluster(clusterIndices[currentCluster.get()-1]);
+        for (int i = 0; i < totalIntervals; i++)
+            birth[i]*=getRateForCluster(clusterIndices[currentCluster.get()-1]);
 
 		freq = frequencies.get().getValues();
 

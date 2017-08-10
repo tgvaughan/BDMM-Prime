@@ -26,6 +26,8 @@ import beast.util.HeapSort;
 		"Two implementations are available. The first is the fast classic one; the second one prevents underflowing, using so-called 'SmallNumbers', with the cost of additional computational complexity")
 public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistribution {
 
+	// !!! TODO: test birth among deme implementation!!!
+
 	public Input<MultiTypeRootBranch> originBranchInput =
 			new Input<>("originBranch", "MultiTypeRootBranch for origin coloring");
 
@@ -41,9 +43,11 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 		super.initAndValidate();
 
-		if (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null)
-			throw new RuntimeException("Error: You've specified birthRateAmongDemes or R0AmongDemes, but transmission among demes is currently not possible in MultiTypeTrees. " +
-					"Please use BirthDeathMigrationModelUncoloured instead.");
+		//		if (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null)
+		//			throw new RuntimeException("Error: You've specified birthRateAmongDemes or R0AmongDemes, but transmission among demes is currently not possible in MultiTypeTrees. " +
+		//					"Please use BirthDeathMigrationModelUncoloured instead.");
+
+		if (birthAmongDemes && migrationMatrix.get()!=null) throw new RuntimeException("Error in BDMM setup: When using MultiTypeTrees there can be migration OR transmission among types, but not  both.");
 
 		coltree = (MultiTypeTree) treeInput.get();
 
@@ -74,32 +78,32 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 	}
 
-	double updateRates(){
-
-		birth = new Double[n*totalIntervals];
-		death = new Double[n*totalIntervals];
-		psi = new Double[n*totalIntervals];
-		M = new Double[totalIntervals*(n*(n-1))];
-		if (SAModel) r =  new Double[n * totalIntervals];
-
-		if (transform)
-			transformParameters();
-
-		else
-			updateBirthDeathPsiParams();
-
-		Double[] migRates = migrationMatrix.get().getValues();
-
-		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
-
-		updateRho();
-
-		freq = frequencies.get().getValues();
-
-		setupIntegrators();
-
-		return 0.;
-	}
+	//	double updateRates(){
+	//
+	//		birth = new Double[n*totalIntervals];
+	//		death = new Double[n*totalIntervals];
+	//		psi = new Double[n*totalIntervals];
+	//		M = new Double[totalIntervals*(n*(n-1))];
+	//		if (SAModel) r =  new Double[n * totalIntervals];
+	//
+	//		if (transform)
+	//			transformParameters();
+	//
+	//		else
+	//			updateBirthDeathPsiParams();
+	//
+	//		Double[] migRates = migrationMatrix.get().getValues();
+	//
+	//		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
+	//
+	//		updateRho();
+	//
+	//		freq = frequencies.get().getValues();
+	//
+	//		setupIntegrators();
+	//
+	//		return 0.;
+	//	}
 
 	@Override
 	void computeRhoTips(){
@@ -162,6 +166,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			//							throw new RuntimeException("t0 est pas comme height");
 			//						}
 			//TO DO REMOVE IF IT WORKS
+
 			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
 			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
 		}
@@ -179,7 +184,8 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		MultiTypeNode root = (MultiTypeNode) coltree.getRoot();
 
 
-		if (!coltree.isValid() || (origin.get()!=null && !originBranchIsValid(root))){
+		//		if (!coltree.isValid(birthAmongDemes) || (origin.get()!=null && !originBranchIsValid(root, birthAmongDemes))){
+		if (!coltree.isValid() || (origin.get()!=null && !originBranchIsValid(root, birthAmongDemes))){
 			logP =  Double.NEGATIVE_INFINITY;
 			return logP;
 		}
@@ -187,7 +193,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		int node_state;
 		if (origin.get()==null) {
 			T = root.getHeight();
-			node_state =  ((MultiTypeNode) coltree.getRoot()).getNodeType(); 
+			node_state =  ((MultiTypeNode) coltree.getRoot()).getNodeType();
 		}
 		else{
 			updateOrigin(root);
@@ -201,7 +207,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		collectTimes(T);
 		setRho();
 
-		if (updateRates() < 0 ||  (times[totalIntervals-1] > T)) { 
+		if (updateRates() < 0 ||  (times[totalIntervals-1] > T)) {
 			logP =  Double.NEGATIVE_INFINITY;
 			return logP;
 		}
@@ -312,7 +318,11 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			g = calculateOriginLikelihood(migIndex, to, T - originBranch.getChangeTime(migIndex));
 
 			System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
-			init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
+
+			if (birthAmongDemes)
+				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+			else
+				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
 
 
 			return getG(from,  init,  to, pg_integrator, PG, T, maxEvalsUsed);
@@ -323,11 +333,17 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			g = calculateSubtreeLikelihood(coltree.getRoot(), false, null, to, orig);
 
 			System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
-			init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
+			if (birthAmongDemes)
+				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+			else
+				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
+
 
 			// TO DO CHECK THAT isMigrationEvent should really be set to false here (otherwise pb with getP calc in getG
+
 			// but should be ok bc coltree.getRoot should not be a leaf (except if tree with one tip maybe, which is not very interesting) 
 			return getG(from, init, to, coltree.getRoot(), false);
+
 		}
 	}
 
@@ -364,7 +380,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			p0ge_InitialConditions g = calculateSubtreeLikelihood(node, (migIndex >= 0), migIndex, to, T-time);
 
 			System.arraycopy(g.conditionsOnP, 0, init.conditionsOnP, 0, n);
-			init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]); // with ratechange in M
+			if (birthAmongDemes) // this might be a birth among demes where only the child with the different type got sampled
+				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+			if (M[0]!=null)     // or it really is a migration event
+				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
 
 			return getG(from, init, to, node, true);
 		}
@@ -465,14 +484,30 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 						childIndex = Math.abs(childIndex-1);
 
 						double t1 = T - node.getChild(childIndex).getHeight();
-						childChangeCount = ((MultiTypeNode)node.getChild(childIndex)).getChangeCount(); 
+						childChangeCount = ((MultiTypeNode)node.getChild(childIndex)).getChangeCount();
 						if (childChangeCount > 0)
 							t1 = T - ((MultiTypeNode)node.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
 						p0ge_InitialConditions g1 = calculateSubtreeLikelihood(node.getChild(childIndex), false, null, to, t1);
 
 						System.arraycopy(g0.conditionsOnP, 0, init.conditionsOnP, 0, n);
-						init.conditionsOnG[nodestate] = SmallNumber.multiply(g0.conditionsOnG[nodestate], g1.conditionsOnG[nodestate]).scalarMultiply(birth[nodestate*totalIntervals+index]);
+
+						if (((MultiTypeNode) node.getChild(0)).getFinalType() == nodestate && nodestate == ((MultiTypeNode) node.getChild(1)).getFinalType()) { // within type transmission event
+
+							init.conditionsOnG[nodestate] = SmallNumber.multiply(g0.conditionsOnG[nodestate], g1.conditionsOnG[nodestate]).scalarMultiply(birth[nodestate * totalIntervals + index]);
+
+						} else { // among type transmission event
+
+							if 	(((MultiTypeNode) node.getChild(0)).getFinalType() != nodestate && nodestate != ((MultiTypeNode) node.getChild(1)).getFinalType())
+								throw new RuntimeException("Error: Invalid tree (both children have typeChange event at parent node!");
+
+							int child = (((MultiTypeNode) node.getChild(0)).getFinalType() != nodestate) ? 0 : 1;
+							int childstate = ((MultiTypeNode)node.getChild(child)).getFinalType();
+
+							init.conditionsOnG[nodestate] =
+									SmallNumber.multiply(g0.conditionsOnG[child==0? childstate : nodestate], g1.conditionsOnG[child==1? childstate : nodestate]).scalarMultiply(b_ij[totalIntervals * (childstate * (n - 1) + (nodestate < childstate ? nodestate : nodestate - 1)) + index]);
+
+						}
 
 						// TO DO actually test this works with a tree with rho sampling at a branching event
 						// TO DO check that this part of the code is actually reached
@@ -492,12 +527,16 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		return getG(from, init, to, node, false);
 	}
 
-	public void transformParameters(){
-
-		transformWithinParameters();
+	//	public void transformParameters(){
+	//
+	//		transformWithinParameters();
+	//	}
+	public Boolean originBranchIsValid(MultiTypeNode root){
+		return  originBranchIsValid(root, false);
 	}
 
-	public Boolean originBranchIsValid(MultiTypeNode root){
+
+	public Boolean originBranchIsValid(MultiTypeNode root, Boolean allowChangeAtNode){
 
 		int count = originBranch.getChangeCount();
 
@@ -506,7 +545,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			if (originBranch.getChangeTime(0) < root.getHeight() || originBranch.getChangeTime(count-1) > origin.get().getValue() )
 				return false;
 
-			if (originBranch.getChangeType(0) == root.getFinalType())
+			if (!allowChangeAtNode && originBranch.getChangeType(0) == root.getFinalType())
 				return false;
 
 			for (int i=1; i<count; i++){

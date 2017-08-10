@@ -142,17 +142,24 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<RealParameter> samplingProportion =
 			new Input<>("samplingProportion", "The samplingProportion = samplingRate / becomeUninfectiousRate", Input.Validate.XOR, samplingRate);
 
+	public Input<BooleanParameter> identicalRatesForAllTypesInput =
+			new Input<>("identicalRatesForAllTypes", "True if all types should have the same 1) birth 2) death 3) sampling 4) rho 5) r 6) migration rate. Default false.");
+
 	public Input<RealParameter> R0_base =
 			new Input<>("R0_base",
 					"The basic reproduction number for the base pathogen class, should have the same dimension as " +
-					"the number of time intervals.");
+							"the number of time intervals.");
 	public Input<RealParameter> lambda_ratio =
 			new Input<>("lambda_ratio",
 					"The ratio of basic infection rates of all other classes when compared to the base lambda, " +
-					"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
+							"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
 
 	public Input<RealParameter> migrationMatrix =
-			new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted",  Input.Validate.REQUIRED);
+			new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted");
+	public Input<RealParameter> migrationMatrixScaleFactor =
+			new Input<>("migrationMatrixScaleFactor", "A real number with which each migration rate entry is scaled.");
+
+
 
 	public Input<RealParameter> birthRateAmongDemes =
 			new Input<>("birthRateAmongDemes", "birth rate vector with rate at which transmissions occur among locations");
@@ -262,6 +269,11 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	@Override
 	public void initAndValidate() {
+
+		identicalRatesForAllTypes = new Boolean[]{false, false, false, false, false, false};
+		if (identicalRatesForAllTypesInput.get()!=null)
+			identicalRatesForAllTypes = identicalRatesForAllTypesInput.get().getValues();
+
 		if (removalProbability.get() != null) SAModel = true;
 
 		birth = null;
@@ -277,18 +289,33 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		totalIntervals = 0;
 		n = stateNumber.get();
 
-		M = migrationMatrix.get().getValues();
+		birthAmongDemes = (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null);
 
-		if (n>1 && M.length != n*(n-1)) {
-			double timeChanges = 0;
-			if (migChangeTimesInput.get()!=null) {
-				timeChanges = migChangeTimesInput.get().getDimension();
-			} else if(intervalTimes.get() != null){
-				timeChanges = intervalTimes.get().getDimension();
+		Double factor;
+		if (migrationMatrix.get()!=null) {
+			M = migrationMatrix.get().getValues();
+
+			if (migrationMatrixScaleFactor.get()!=null) {
+				factor = migrationMatrixScaleFactor.get().getValue();
+				for (int i = 0; i < M.length; i++) M[i] *= factor;
 			}
-			if (timeChanges == 0 || M.length != n*(n-1)*timeChanges ) 
-				throw new RuntimeException("Migration matrix dimension is incorrect!");
+
+			if (n>1 && M.length != n*(n-1)) {
+				double timeChanges = 0;
+				if (migChangeTimesInput.get()!=null) {
+					timeChanges = migChangeTimesInput.get().getDimension();
+				} else if(intervalTimes.get() != null){
+					timeChanges = intervalTimes.get().getDimension();
+				}
+				if (timeChanges == 0 || M.length != n*(n-1)*timeChanges ) 
+					throw new RuntimeException("Migration matrix dimension is incorrect!");
+			}
+			migChanges = migrationMatrix.get().getDimension()/Math.max(1,(n*(n-1))) - 1;
+
 		}
+
+
+		else if (!birthAmongDemes) throw new RuntimeException("Error in BDMM setup: need to specify at least one of the following: migrationMatrix, R0AmongDemes, birthRateAmongDemes");
 
 		birthRateTimesRelative = birthRateChangeTimesRelativeInput.get();
 		b_ijTimesRelative = b_ijChangeTimesRelativeInput.get();
@@ -357,7 +384,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			samplingChanges = samplingRate.get().getDimension()/n - 1;
 		}
 
-		migChanges = migrationMatrix.get().getDimension()/Math.max(1,(n*(n-1))) - 1;
 
 		if (SAModel) rChanges = removalProbability.get().getDimension()/n -1;
 
@@ -382,6 +408,76 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 	/**
+<<<<<<< HEAD
+=======
+	 * Perform integration on ODEs g using a classical implementation (using double[] for the initial conditions and the output).
+	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
+	 * @param t
+	 * @param PG0
+	 * @param t0
+	 * @return
+	 */
+	public double[] getG(double t, double[] PG0, double t0,
+						 FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+
+		try {
+
+			if (Math.abs(T-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||  T < t) {
+				return PG0;
+			}
+
+			double from = t;
+			double to = t0;
+			double oneMinusRho;
+
+			int indexFrom = Utils.index(from, times, times.length);
+			int index = Utils.index(to, times, times.length);
+
+			int steps = index - indexFrom;
+			if (Math.abs(from-times[indexFrom]) < globalPrecisionThreshold ) steps--;
+			if (index>0 && Math.abs(to-times[index-1]) < globalPrecisionThreshold ) {
+				steps--;
+				index--;
+			}
+
+			index--;
+
+			while (steps > 0){
+
+				from = times[index];
+
+				pg_integrator.integrate(PG, to, PG0, from, PG0); // solve PG , store solution in PG0
+
+				if (rhoChanges>0){
+					for (int i=0; i<n; i++){
+						oneMinusRho = (1-rho[i*totalIntervals + index]);
+						PG0[i] *= oneMinusRho;
+						PG0[i+n] *= oneMinusRho;
+						System.out.println("In getG, multiplying with oneMinusRho: " + oneMinusRho);
+					}
+				}
+
+				to = times[index];
+
+				steps--;
+				index--;
+			}
+
+			pg_integrator.integrate(PG, to, PG0, t, PG0); // solve PG , store solution in PG0
+
+		}catch(Exception e){
+
+			throw new RuntimeException("couldn't calculate g");
+		}
+
+		if (pg_integrator.getEvaluations() > maxEvalsUsed) maxEvalsUsed = pg_integrator.getEvaluations();
+
+		return PG0;
+	}
+
+
+	/**
+>>>>>>> 3e28afb7f22a448345e4fbb1d4505a7fb3ace109
 	 * Implementation of getG with Small Number structure for the ge equations. Avoids underflowing of integration results.
 	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
 	 * @param t
@@ -391,6 +487,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	 */
 	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0,
 			FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+
 
 		try {
 
@@ -543,31 +640,31 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		getChangeTimes(maxTime, migChangeTimes,
 				migChangeTimesInput.get() != null ? migChangeTimesInput.get() : intervalTimes.get(),
-						migChanges, migTimesRelative, reverseTimeArrays[5]);
+				migChanges, migTimesRelative, reverseTimeArrays[5]);
 
 		getChangeTimes(maxTime, birthRateChangeTimes,
 				birthRateChangeTimesInput.get() != null ? birthRateChangeTimesInput.get() : intervalTimes.get(),
-						birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
+				birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
 
 		getChangeTimes(maxTime, b_ijChangeTimes,
 				b_ijChangeTimesInput.get() != null ? b_ijChangeTimesInput.get() : intervalTimes.get(),
-						b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
+				b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
 
 		getChangeTimes(maxTime, deathRateChangeTimes,
 				deathRateChangeTimesInput.get() != null ? deathRateChangeTimesInput.get() : intervalTimes.get(),
-						deathChanges, deathRateTimesRelative, reverseTimeArrays[1]);
+				deathChanges, deathRateTimesRelative, reverseTimeArrays[1]);
 
 		getChangeTimes(maxTime, samplingRateChangeTimes,
 				samplingRateChangeTimesInput.get() != null ? samplingRateChangeTimesInput.get() : intervalTimes.get(),
-						samplingChanges, samplingRateTimesRelative, reverseTimeArrays[2]);
+				samplingChanges, samplingRateTimesRelative, reverseTimeArrays[2]);
 
 		getChangeTimes(maxTime, rhoSamplingChangeTimes,
 				rhoSamplingTimes.get()!=null ? rhoSamplingTimes.get() : intervalTimes.get(),
-						rhoChanges, false, reverseTimeArrays[3]);
+				rhoChanges, false, reverseTimeArrays[3]);
 
 		if (SAModel) getChangeTimes(maxTime, rChangeTimes,
 				removalProbabilityChangeTimesInput.get() != null ? removalProbabilityChangeTimesInput.get() : intervalTimes.get(),
-						rChanges, rTimesRelative, reverseTimeArrays[4]);
+				rChanges, rTimesRelative, reverseTimeArrays[4]);
 
 		for (Double time : migChangeTimes) {
 			timesSet.add(time);
@@ -640,22 +737,29 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			for (int i = (reverse?0:1); i < dim; i++) {
 				end = reverse ? (maxTime - intervalTimes.getValue(dim - i - 1)) : intervalTimes.getValue(i);
 				if (relative) end *= maxTime;
-				if (end != maxTime) changeTimes.add(end);
+				if (end < maxTime) changeTimes.add(end);
 			}
-			end = maxTime;
 
 			if (adjustTimesInput.get()!=null){
 
 				double iTime;
 				double aTime = adjustTimesInput.get().getValue();
 
-				for (int i = 0 ; i < changeTimes.size(); i++){
+				for (int i = 0 ; i < numChanges; i++){
 
 					iTime = intervalTimes.getArrayValue(i+1);
 
-					changeTimes.set(i, Math.abs(end-aTime+iTime) );
+					if (aTime<iTime) {
+						end = iTime - aTime;
+						if
+								(changeTimes.size() > i) changeTimes.set(i, end);
+						else
+						if (end < maxTime)
+							changeTimes.add(end);
+					}
 				}
 			}
+			end = maxTime;
 
 			changeTimes.add(end);
 		}
@@ -680,10 +784,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			state =  i/totalIntervals;
 
-			birth[i] = birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
-			death[i] = deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
-			psi[i] = samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
-			if (SAModel) r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+			birth[i] = (identicalRatesForAllTypes[0]) ? birthRates[index(times[i%totalIntervals], birthRateChangeTimes)] :
+					birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
+			death[i] = (identicalRatesForAllTypes[1]) ? deathRates[index(times[i%totalIntervals], deathRateChangeTimes)] :
+					deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
+			psi[i] = (identicalRatesForAllTypes[2]) ? samplingRates[index(times[i%totalIntervals], samplingRateChangeTimes)] :
+					samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
+			if (SAModel) r[i] = (identicalRatesForAllTypes[4]) ? removalProbabilities[index(times[i%totalIntervals], rChangeTimes)] :
+					removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
 
 		}
 
@@ -698,8 +806,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 					if (i != j) {
 						param[(i * (n - 1) + (j < i ? j : j - 1)) * totalIntervals + dt]
 								= paramFrom[(paramFrom.length > (n * (n - 1)))
-								            ? (nrChanges + 1) * (n - 1) * i + index(times[dt], changeTimes)
-								            : (i * (n - 1) + (j < i ? j : j - 1))];
+								? (nrChanges + 1) * (n - 1) * i + index(times[dt], changeTimes)
+								: (i * (n - 1) + (j < i ? j : j - 1))];
 					}
 				}
 			}
@@ -721,7 +829,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 				rho[i]= rhoChanges>0?
 						rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
-								: rhos[0];
+						: rhos[0];
 			}
 		}
 	}
@@ -777,25 +885,38 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			state =  i/totalIntervals;
 
-			birth[i] = R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state]
-					* ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
+			birth[i] = ((identicalRatesForAllTypes[0]) ? R[index(times[i%totalIntervals], birthRateChangeTimes)] :
+					R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state])
+					* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
+					ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
 
 			if (!SAModel) {
-				psi[i] = p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state]
-						* ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state];
+				psi[i] = ((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
+						p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state])
+						* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
 
-				death[i] = ds[ds.length > n ? (deathChanges + 1) * state + index(times[i % totalIntervals], deathRateChangeTimes) : state] - psi[i];
+				death[i] = ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+						- psi[i];
 			}
 
 			else {
-				r[i] = removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+				r[i] = (identicalRatesForAllTypes[4]) ? removalProbabilities[index(times[i%totalIntervals], rChangeTimes)] :
+						removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
 
-				psi[i] = p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]
-						* ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]
-								/ (1+(r[i]-1)*p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]);
+				psi[i] = ((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
+						p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state])
+						* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+						/ (1+(r[i]-1)*
+						((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
+								p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]));
 
 
-				death[i] = ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state] - psi[i]*r[i];
+				death[i] = ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+						- psi[i]*r[i];
 			}
 		}
 
@@ -818,9 +939,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 						if (i!=j){
 							b_ij[(i*(n-1)+(j<i?j:j-1))*totalIntervals+dt]
 									= RaD[(RaD.length>(n*(n-1)))
-									      ?  (b_ij_Changes+1)*(n-1)*i + index(times[dt], b_ijChangeTimes)
-									      : (i*(n-1)+(j<i?j:j-1))]
-									    		  * ds[ds.length > n ? (deathChanges+1)*i+index(times[dt], deathRateChangeTimes) : i];
+									?  (b_ij_Changes+1)*(n-1)*i + index(times[dt], b_ijChangeTimes)
+									: (i*(n-1)+(j<i?j:j-1))]
+									* ds[ds.length > n ? (deathChanges+1)*i+index(times[dt], deathRateChangeTimes) : i];
 						}
 					}
 				}
@@ -867,16 +988,18 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		Boolean augmented = this instanceof BirthDeathMigrationModel;
 
-		P = new p0_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
-		PG = new p0ge_ODE(birth, ((!augmented && birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
+		P = new p0_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
+		PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
 
 		p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 
+
 		if (!useRKInput.get()) {
 			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); //new HighamHall54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); // 
+
 			pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
-			PG.p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); 
+			PG.p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 			PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
 		} else {
 			pg_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
@@ -900,7 +1023,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			return 0;
 
 		int offset = getArrayOffset(i, j);
-		return migrationMatrix.get().getValue(offset);
+
+		if (migrationMatrixScaleFactor.get()==null)
+			return migrationMatrix.get().getValue(offset);
+		else
+			return migrationMatrixScaleFactor.get().getValue()*migrationMatrix.get().getValue(offset);
+
 	}
 
 
@@ -960,7 +1088,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
 
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
-		if(Math.abs(from-to)< (T * 1e-10)) return pgScaled;
+		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
 
 		// we test to see if the current interval size can produce a sufficiently-precise result
 		double[] integrationResults = new double[pgScaled.getEquation().length];
@@ -1016,7 +1144,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 	/*
-	 * Find all initial conditions for all future integrations on p0 equations 
+	 * Find all initial conditions for all future integrations on p0 equations
 	 * @param tree
 	 * @return an array of arrays storing the initial conditions values
 	 */
@@ -1033,7 +1161,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		HeapSort.sort(leafHeights, indicesSortedByLeafHeight);
 		//"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
 
-		double[][] pInitialCondsAtLeaves = new double[leafCount + 1][n]; 
+		double[][] pInitialCondsAtLeaves = new double[leafCount + 1][n];
 
 		double t = leafHeights[indicesSortedByLeafHeight[leafCount-1]];
 
@@ -1064,5 +1192,60 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		return pInitialCondsAtLeaves;
 	}
+
+	protected Double updateRates() {
+
+		birth = new Double[n*totalIntervals];
+		death = new Double[n*totalIntervals];
+		psi = new Double[n*totalIntervals];
+		b_ij = new Double[totalIntervals*(n*(n-1))];
+		M = new Double[totalIntervals*(n*(n-1))];
+		if (SAModel) r =  new Double[n * totalIntervals];
+
+		if (transform) {
+			transformParameters();
+		}
+		else {
+
+			Double[] birthAmongDemesRates = new Double[1];
+
+			if (birthAmongDemes) birthAmongDemesRates = birthRateAmongDemes.get().getValues();
+
+			updateBirthDeathPsiParams();
+
+			if (birthAmongDemes) {
+
+				updateAmongParameter(b_ij, birthAmongDemesRates, b_ij_Changes, b_ijChangeTimes);
+			}
+		}
+
+		if (migrationMatrix.get()!=null) {
+			Double[] migRates = migrationMatrix.get().getValues();
+
+			Double factor;
+			if (migrationMatrixScaleFactor.get()!=null) {
+				factor = migrationMatrixScaleFactor.get().getValue();
+				for (int i = 0; i < migRates.length; i++) migRates[i] *= factor;
+			}
+
+			updateAmongParameter(M, migRates, migChanges, migChangeTimes);
+		}
+
+		updateRho();
+
+		freq = frequencies.get().getValues();
+
+		setupIntegrators();
+
+		return 0.;
+	}
+
+	public void transformParameters(){
+
+		transformWithinParameters();
+		transformAmongParameters();
+	}
+
+	Boolean[] identicalRatesForAllTypes;
 
 }

@@ -3,6 +3,7 @@ package beast.math;
 
 import java.util.Arrays;
 
+import beast.evolution.speciation.BirthDeathMigrationModel;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
@@ -30,6 +31,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	Double[] s;
 
 	Boolean augmented;
+	Boolean birthAmongDemes;
 
 	Double[] M;
 	double T;
@@ -62,6 +64,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		this.P = P;
 
 		this.augmented = augmented;
+		this.birthAmongDemes = b_ij!=null;
 
 	}
 
@@ -84,14 +87,14 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			gDot[i] = + (b[k]+d[k]+s[k]
 					- b[k] * g[i]) * g[i]
-							- d[k] ;
+					- d[k] ;
 
 			for (int j=0; j<dimension; j++){
 
 				l = (i*(dimension-1)+(j<i?j:j-1))*intervals + index;
 
 				if (i!=j){
-					if (b_ij!=null){     // infection among demes
+					if (birthAmongDemes){     // infection among demes
 
 						gDot[i] += b_ij[l]*g[i]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i];
 
@@ -99,10 +102,10 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 					}
 
-					// migration:
-					gDot[i] += M[l]*g[i];
-					gDot[i] -= M[l]*g[j];
-
+					if (M[0]!=null) {// migration:
+						gDot[i] += M[l] * g[i];
+						gDot[i] -= M[l] * g[j];
+					}
 				}
 			}
 
@@ -121,16 +124,16 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 					if (b_ij!=null){     // infection among demes
 
-
 						gDot[dimension+i] += b_ij[l]*g[dimension+i];
 						if (!augmented) {
 							gDot[dimension+i] -= b_ij[l]* ( g[i]*g[dimension+j] + g[j]*g[dimension+i]);
 						}
 					}
 
-					// migration:
-					gDot[dimension+i] +=  M[l]*g[dimension+i];
-					if (!augmented) gDot[dimension+i] -=  M[l]*g[dimension+j];
+					if (M[0]!=null) {// migration:
+						gDot[dimension + i] += M[l] * g[dimension + i];
+						if (!augmented) gDot[dimension + i] -= M[l] * g[dimension + j];
+					}
 				}
 			}
 
@@ -151,9 +154,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	public double[] getP(double t, double[]P0, double t0, Boolean rhoSampling, Double[] rho){
 
 
-		if (Math.abs(T-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   T < t) 
+		if (Math.abs(T-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   T < t)
 			return P0;
-	
+
 		double[] result = new double[P0.length];
 
 		try {
@@ -178,12 +181,12 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			while (steps > 0){
 
 				from = times[index];
-				
+
 				// TO DO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed 
 				if (Math.abs(from-to)>globalPrecisionThreshold){
 					p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
-					
-					if (rhoSampling){ 
+
+					if (rhoSampling){
 						for (int i=0; i<dimension; i++){
 							oneMinusRho = (1-rho[i*intervals + index]);
 							result[i] *= oneMinusRho;
@@ -207,7 +210,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			// check that both times are really overlapping
 			// but really not sure that this is enough, i have to build appropriate tests
 			if(Math.abs(t-times[indexFrom])<globalPrecisionThreshold) {
-				if (rhoSampling){ 
+				if (rhoSampling){
 					for (int i=0; i<dimension; i++){
 						oneMinusRho = (1-rho[i*intervals + indexFrom]);
 						result[i] *= oneMinusRho;
@@ -233,7 +236,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		if (!rhoSampling)
 			Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
-		
+
 		else{
 			for (int i = 0; i<dimension; i++) {
 				y[i] = (1 - rho[i * intervals + Utils.index(T, times, intervals)]);    // initial condition: y_i[T]=1-rho_i

@@ -1,5 +1,7 @@
 package beast.evolution.speciation;
 
+import beast.core.Loggable;
+import beast.core.parameter.IntegerParameter;
 import beast.evolution.tree.*;
 import beast.core.Input;
 import beast.core.Description;
@@ -8,10 +10,15 @@ import beast.core.util.Utils;
 import beast.math.SmallNumber;
 import beast.math.p0ge_InitialConditions;
 import beast.util.HeapSort;
+import java.io.PrintStream;
+
 
 // currently cleaning
 // removing the overflowing way (done)
 // refactor to rename methods appropriately (done)
+
+
+
 
 
 /**
@@ -25,10 +32,13 @@ import beast.util.HeapSort;
 		"This should be used when the migration process along the phylogeny is irrelevant. Otherwise the BirthDeathMigrationModel can be employed." +
 		"This implementation also works with sampled ancestor trees." +
 		"Two implementations are available. The first is the fast classic one; the second one prevents underflowing, using so-called 'SmallNumbers', with the cost of additional computational complexity")
-public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigrationDistribution {
+public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigrationDistribution implements Loggable {
 
-	public Input<TraitSet> tiptypes = new Input<>("tiptypes", "trait information for initializing traits (like node types/locations) in the tree",  Input.Validate.REQUIRED);
-	public Input<String> typeLabel = new Input<>("typeLabel", "type label in tree for initializing traits (like node types/locations) in the tree",  Input.Validate.XOR, tiptypes);
+
+	public Input<TraitSet> tiptypes = new Input<>("tiptypes", "trait information for initializing traits (like node types/locations) in the tree");
+	public Input<String> typeLabel = new Input<>("typeLabel", "type label in tree for initializing traits (like node types/locations) in the tree");
+	public Input<IntegerParameter> tipTypeArray = new Input<IntegerParameter>("tipTypeArray", "integer array of traits (like node types/locations) in the tree, index corresponds to node number in tree");
+
 
 	public Input<Boolean> storeNodeTypes = new Input<>("storeNodeTypes", "store tip node types? this assumes that tip types cannot change (default false)", false);
 
@@ -39,6 +49,10 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 	@Override
 	public void initAndValidate() {
 
+		if ((tiptypes.get()==null?0:1) + (typeLabel.get()==null?0:1) + (tipTypeArray.get()==null?0:1) != 1 )
+			throw new RuntimeException("Tip types need to be specified exactly once using either tiptypes OR typeLabel OR tipTypeArray.");
+
+
 		super.initAndValidate();
 
 		TreeInterface tree = treeInput.get();
@@ -46,8 +60,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		checkOrigin(tree);
 
 		ntaxa = tree.getLeafNodeCount();
-
-		birthAmongDemes = (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null);
 
 		if (storeNodeTypes.get()) {
 
@@ -71,44 +83,45 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		setRho();
 	}
 
-	protected Double updateRates(TreeInterface tree) {
 
-		birth = new Double[n*totalIntervals];
-		death = new Double[n*totalIntervals];
-		psi = new Double[n*totalIntervals];
-		b_ij = new Double[totalIntervals*(n*(n-1))];
-		M = new Double[totalIntervals*(n*(n-1))];
-		if (SAModel) r =  new Double[n * totalIntervals];
-
-		if (transform) {
-			transformParameters();
-		}
-		else {
-
-			Double[] birthAmongDemesRates = new Double[1];
-
-			if (birthAmongDemes) birthAmongDemesRates = birthRateAmongDemes.get().getValues();
-
-			updateBirthDeathPsiParams();
-
-			if (birthAmongDemes) {
-
-				updateAmongParameter(b_ij, birthAmongDemesRates, b_ij_Changes, b_ijChangeTimes);
-			}
-		}
-
-		Double[] migRates = migrationMatrix.get().getValues();
-
-		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
-
-		updateRho();
-
-		freq = frequencies.get().getValues();
-
-		setupIntegrators();
-
-		return 0.;
-	}
+//	protected Double updateRates(TreeInterface tree) {
+//
+//		birth = new Double[n*totalIntervals];
+//		death = new Double[n*totalIntervals];
+//		psi = new Double[n*totalIntervals];
+//		b_ij = new Double[totalIntervals*(n*(n-1))];
+//		M = new Double[totalIntervals*(n*(n-1))];
+//		if (SAModel) r =  new Double[n * totalIntervals];
+//
+//		if (transform) {
+//			transformParameters();
+//		}
+//		else {
+//
+//			Double[] birthAmongDemesRates = new Double[1];
+//
+//			if (birthAmongDemes) birthAmongDemesRates = birthRateAmongDemes.get().getValues();
+//
+//			updateBirthDeathPsiParams();
+//
+//			if (birthAmongDemes) {
+//
+//				updateAmongParameter(b_ij, birthAmongDemesRates, b_ij_Changes, b_ijChangeTimes);
+//			}
+//		}
+//
+//		Double[] migRates = migrationMatrix.get().getValues();
+//
+//		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
+//
+//		updateRho();
+//
+//		freq = frequencies.get().getValues();
+//
+//		setupIntegrators();
+//
+//		return 0.;
+//	}
 
 	void computeRhoTips(){
 
@@ -169,7 +182,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		collectTimes(T);
 		setRho();
 
-		if ((orig < 0) || updateRates(tree) < 0 ||  (times[totalIntervals-1] > T)) {
+		if ((orig < 0) || updateRates() < 0 ||  (times[totalIntervals-1] > T)) {
 			logP =  Double.NEGATIVE_INFINITY;
 			return logP;
 		}
@@ -214,13 +227,14 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 					p0ge_InitialConditions p1SN = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
 
 					for (int i =0; i<pSN.conditionsOnG.length; i++) pSN.conditionsOnG[i] = SmallNumber.multiply(pSN.conditionsOnG[i], p1SN.conditionsOnG[i]);
+
 			}
 
 			if (print) System.out.print("final p per state = ");
 
 				for (int root_state=0; root_state<n; root_state++){
 
-					if (pSN.conditionsOnG[root_state].getMantissa()>0 ) 
+					if (pSN.conditionsOnG[root_state].getMantissa()>0 )
 						PrSN = SmallNumber.add(PrSN, pSN.conditionsOnG[root_state].scalarMultiply(freq[root_state]));
 
 					if (print) System.out.print(pSN.conditionsOnP[root_state] + "\t" + pSN.conditionsOnG[root_state] + "\t");
@@ -229,8 +243,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 				if (conditionOnSurvival.get()){
 					PrSN = PrSN.scalarMultiply(1/(1-nosample));
 				}
-
-
 
 
 		}catch(Exception e){
@@ -264,19 +276,21 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 				int nodestate = tiptypes.get() != null ?
 						(int) tiptypes.get().getValue((node.getID())) :
-							((node instanceof MultiTypeNode) ? ((MultiTypeNode) node).getNodeType() : -2);
+						typeLabel.get()!=null ?
+								((node instanceof MultiTypeNode) ? ((MultiTypeNode) node).getNodeType() : -2) :
+								(int) tipTypeArray.get().getArrayValue((node.getNr()));
 
-						if (nodestate == -2) {
-							Object d = node.getMetaData(typeLabel.get());
+				if (nodestate == -2) {
+					Object d = node.getMetaData(typeLabel.get());
 
-							if (d instanceof Integer) nodestate = (Integer) node.getMetaData(typeLabel.get());
-							else if
+					if (d instanceof Integer) nodestate = (Integer) node.getMetaData(typeLabel.get());
+					else if
 							(d instanceof Double) nodestate = (((Double) node.getMetaData(typeLabel.get())).intValue());
-							else if
+					else if
 							(d instanceof int[]) nodestate = (((int[]) node.getMetaData(typeLabel.get()))[0]);
-						}
+				}
 
-						return nodestate;
+				return nodestate;
 
 			}
 			else return nodeStates[node.getNr()];
@@ -340,6 +354,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 									*rho[nodestate*totalIntervals+index])  :
 							new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ+δ)) //the +δ is translated by dividing p_i with 1-ρ_i (otherwise there's one too many "*ρ_i" )
 					
+
 				}
 
 			}
@@ -412,7 +427,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 					}
 
 
-					init.conditionsOnP[childstate] = g0.conditionsOnP[childstate]; 
+					init.conditionsOnP[childstate] = g0.conditionsOnP[childstate];
 					init.conditionsOnG[childstate] = SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[childstate]).scalarMultiply(birth[childstate * totalIntervals + index]);
 
 					if (birthAmongDemes) {
@@ -453,11 +468,11 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		return getG(from, init, to, node);
 	}
 
-	public void transformParameters(){
-
-		transformWithinParameters();
-		transformAmongParameters();
-	}
+//	public void transformParameters(){
+//
+//		transformWithinParameters();
+//		transformAmongParameters();
+//	}
 
 	// used to indicate that the state assignment went wrong
 	protected class ConstraintViolatedException extends RuntimeException {
@@ -468,6 +483,35 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		}
 
 	}
+
+	@Override
+	public void init(PrintStream out){
+
+		super.init(out);
+
+		if (tipTypeArray.get()!=null) {
+			IntegerParameter types = tipTypeArray.get();
+			for (int i = 0; i < types.getDimension(); i++) {
+				out.print(tipTypeArray.get().getID() + ("_node") + (i+1) + "\t");
+			}
+
+		}
+
+	}
+
+	@Override
+	public void log(int sampleNr, PrintStream out) {
+
+		super.log(sampleNr, out);
+
+		if (tipTypeArray.get()!=null) {
+			for (int i = 0; i < tipTypeArray.get().getDimension(); i++) {
+				out.print(treeInput.get().getNode(i).getID() + "\t");
+
+			}
+		}
+	}
+
 
 }
 
