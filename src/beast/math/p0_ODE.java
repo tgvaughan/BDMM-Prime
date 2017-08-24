@@ -79,9 +79,10 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 						yDot[i] -= b_ij[l]*y[i]*y[j];
 					}
 
-					// migration:
-					yDot[i] += M[l]*y[i];;
-					yDot[i] -= M[l]*y[j];
+					if (M[0]!=null) {// migration:
+						yDot[i] += M[l] * y[i];
+						yDot[i] -= M[l] * y[j];
+					}
 				}
 			}
 		}

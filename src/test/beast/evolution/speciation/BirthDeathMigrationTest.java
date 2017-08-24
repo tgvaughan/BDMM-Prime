@@ -26,6 +26,84 @@ public class BirthDeathMigrationTest extends TestCase {
 
 
 	@Test
+	public void testAmongDemes() throws Exception {
+
+		String R0 = "1.5 1.5";
+		String R0AmongDemes = "1.2 1.2";
+		String becomeUninfectiousRate = "0.5 0.5";
+		String samplingProportion = "0.3 0.5";
+
+		String tree = "((3[&state=1] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];";
+
+		BirthDeathMigrationModel bdm  = bdm_likelihood_MTAmong("2", null, "0.5 0.5",
+				tree, "6.", R0, R0AmongDemes, becomeUninfectiousRate, samplingProportion,
+				null, null, null, false);
+
+		bdm.initAndValidate();
+		double logL = bdm.calculateLogP();
+
+		String tree2 = "((3[&state=0] : 0.5, 4[&state=1] : 1.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];";
+
+		BirthDeathMigrationModel bdm2  = bdm_likelihood_MTAmong("2", null, "0.5 0.5",
+				tree2, "6.", R0, R0AmongDemes, becomeUninfectiousRate, samplingProportion,
+				null, null, null, false);
+
+		bdm2.initAndValidate();
+		double logL2 = bdm2.calculateLogP();
+
+		//        bdssm.setInputValue("birthRate", new RealParameter("2."));
+		//           bdssm.setInputValue("deathRate", new RealParameter("1."));
+		//           bdssm.setInputValue("samplingRate", new RealParameter("0.5"));
+		//
+		//
+		System.out.println("Birth-death result 1: " +logL);
+		System.out.println("Birth-death result 2: " +logL2);
+
+		assertEquals(logL, logL2, 1e-5);
+	}
+
+	@Test
+	public void testAmongDemes2() throws Exception {
+
+		String R0 = "1.5 1.5";
+		String R0AmongDemes = "1.2 1.2";
+		String becomeUninfectiousRate = "0.5 0.5";
+		String samplingProportion = "0.3 0.5";
+
+		String tree = "((3[&state=1] : 1.5, 4[&state=0] : 0.5)[&state=1] : 1 , (1[&state=0] : 1.5, 2[&state=0] : 0.5)[&state=0] : 1)[&state=0];";
+
+		BirthDeathMigrationModel bdm  = bdm_likelihood_MTAmong("2", null, "0.5 0.5",
+				tree, "6.", R0, R0AmongDemes, becomeUninfectiousRate, samplingProportion,
+				null, null, null, false);
+
+		bdm.setInputValue("checkRho", false);
+		bdm.initAndValidate();
+		double logL = bdm.calculateLogP();
+
+		String tree2 = "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=1] : 1.5, 2[&state=0] : 0.5)[&state=1] : 1)[&state=0];";
+
+		BirthDeathMigrationModel bdm2  = bdm_likelihood_MTAmong("2", null, "0.5 0.5",
+				tree2, "6.", R0, R0AmongDemes, becomeUninfectiousRate, samplingProportion,
+				null, null, null, false);
+
+		bdm2.setInputValue("checkRho", false);
+		bdm2.initAndValidate();
+		double logL2 = bdm2.calculateLogP();
+
+		//        bdssm.setInputValue("birthRate", new RealParameter("2."));
+		//           bdssm.setInputValue("deathRate", new RealParameter("1."));
+		//           bdssm.setInputValue("samplingRate", new RealParameter("0.5"));
+		//
+		//
+		System.out.println("Birth-death result 1: " +logL);
+		System.out.println("Birth-death result 2: " +logL2);
+
+//		assertEquals(logL, logL2, 1e-5);
+		double precision = 10000.;
+		assertNotSame(precision*Math.round(logL/precision),precision*Math.round(logL2/precision));
+	}
+
+	@Test
 	public void testmultiRho2tipsNoDeath() throws Exception {
 
 		MultiTypeTreeFromNewick tree = new MultiTypeTreeFromNewick();
@@ -601,9 +679,6 @@ public class BirthDeathMigrationTest extends TestCase {
 	public void testMini() throws Exception {
 
 		int pop = 10000;
-		double gamma = 0.062;
-		double beta = 0.08/pop;
-		double psi = 0.002;
 		String tree = "(1[&state=1]:28.0, (2[&state=1]:29.0, (3[&state=0]:22.0)[&state=1]:2.0)[&state=1]:0.5)[&state=1]:0.0;";
 		//        String tree = "(1[&state=1]:28.0, (2[&state=1]:29.0, 3[&state=1]:2.0)[&state=1]:0.5)[&state=1]:0.0;";
 
@@ -677,7 +752,44 @@ public class BirthDeathMigrationTest extends TestCase {
 
 	}
 
-	public double bdm_likelihood_MT(double tolerance, int maxEvals, String statenumber, String migrationMatrix,
+	public BirthDeathMigrationModel bdm_likelihood_MTAmong(String statenumber, String migrationMatrix,
+														   String frequencies, String tree, String origin,
+														   String R0, String R0AmongDemes, String becomeUninfectiousRate, String samplingProportion, String rho, String rhoSamplingTimes,
+														   String intervalTimes, Boolean conditionOnSurvival) throws Exception {
+
+		MultiTypeTreeFromNewick mtTree = new MultiTypeTreeFromNewick();
+		mtTree.initByName(
+				"adjustTipHeights", false,
+				"value", tree,
+				"typeLabel", "state");
+
+		BirthDeathMigrationModel bdm =  new BirthDeathMigrationModel();
+
+		bdm.setInputValue("tree", mtTree);
+
+		bdm.setInputValue("origin", origin);
+		bdm.setInputValue("originBranch", new MultiTypeRootBranch());
+		bdm.setInputValue("stateNumber", statenumber);
+		bdm.setInputValue("migrationMatrix", migrationMatrix);
+		bdm.setInputValue("frequencies", frequencies);
+
+		bdm.setInputValue("R0", R0);
+		bdm.setInputValue("R0AmongDemes", R0AmongDemes);
+		bdm.setInputValue("becomeUninfectiousRate", becomeUninfectiousRate);
+		bdm.setInputValue("samplingProportion", samplingProportion);
+		bdm.setInputValue("rho", rho);
+		bdm.setInputValue("maxEvaluations", maxEvals);
+		bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
+
+		if (rhoSamplingTimes!=null)  bdm.setInputValue("rhoSamplingTimes", rhoSamplingTimes);
+
+		if (intervalTimes!=null)  bdm.setInputValue("intervalTimes", intervalTimes);
+
+		return bdm;
+
+	}
+
+		public double bdm_likelihood_MT(double tolerance, int maxEvals, String statenumber, String migrationMatrix,
 			String frequencies, MultiTypeTree coltree, String origin,
 			String R0, String becomeUninfectiousRate, String samplingProportion, String rho, String rhoSamplingTimes,
 			String intervalTimes, Boolean conditionOnSurvival) throws Exception {
