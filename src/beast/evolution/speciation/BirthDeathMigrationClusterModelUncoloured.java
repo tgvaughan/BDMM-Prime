@@ -21,7 +21,6 @@ public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrati
 
 	final public Input<ParametricDistribution> rateDistInput = new Input<>("distr", "the distribution governing the rates among branches. Must have mean of 1. The clock.rate parameter can be used to change the mean rate.", Input.Validate.REQUIRED);
 
-
     final public Input<IntegerParameter> clusterNumbers = new Input<>("clusterNumbers", "the names of all clusters (need to be integers)", Input.Validate.REQUIRED);
 
     final public Input<Integer> currentCluster = new Input<>("currentCluster", "the number of the current cluster", Input.Validate.REQUIRED);
