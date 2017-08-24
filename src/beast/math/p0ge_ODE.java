@@ -216,7 +216,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 						result[i] *= oneMinusRho;
 					//	System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
 						
-
 					}
 				}
 			}

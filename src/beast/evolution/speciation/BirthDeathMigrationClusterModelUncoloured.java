@@ -19,96 +19,97 @@ import java.util.Arrays;
 @Description("UNTESTED! Birth-Death-Migration-model that allows distribution over parameters shared by clusters")
 public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrationModelUncoloured {
 
-    final public Input<ParametricDistribution> rateDistInput = new Input<>("distr", "the distribution governing the rates among branches. Must have mean of 1. The clock.rate parameter can be used to change the mean rate.", Input.Validate.REQUIRED);
+	final public Input<ParametricDistribution> rateDistInput = new Input<>("distr", "the distribution governing the rates among branches. Must have mean of 1. The clock.rate parameter can be used to change the mean rate.", Input.Validate.REQUIRED);
+
 
     final public Input<IntegerParameter> clusterNumbers = new Input<>("clusterNumbers", "the names of all clusters (need to be integers)", Input.Validate.REQUIRED);
 
     final public Input<Integer> currentCluster = new Input<>("currentCluster", "the number of the current cluster", Input.Validate.REQUIRED);
 
-    final public Input<RealParameter> quantileInput = new Input<>("rateQuantiles", "the rate quantiles associated with clusters for sampling of individual rates among branches.", Input.Validate.REQUIRED);
+	final public Input<RealParameter> quantileInput = new Input<>("rateQuantiles", "the rate quantiles associated with clusters for sampling of individual rates among branches.", Input.Validate.REQUIRED);
 
 
-    ParametricDistribution distribution;
-    IntegerParameter categories;
-    RealParameter quantiles;
-    private int clusterCount;
-    private Integer[] clusters;
-    private Integer[] clusterIndices;
+	ParametricDistribution distribution;
+	IntegerParameter categories;
+	RealParameter quantiles;
+	private int clusterCount;
+	private Integer[] clusters;
+	private Integer[] clusterIndices;
 
-    private boolean recompute = true;
+	private boolean recompute = true;
 
-    @Override
-    public void initAndValidate() {
+	@Override
+	public void initAndValidate() {
 
-        super.initAndValidate();
+		super.initAndValidate();
 
-        clusters = clusterNumbers.get().getValues();
-        clusterCount = clusters.length;
+		clusters = clusterNumbers.get().getValues();
+		clusterCount = clusters.length;
 
-        Integer max = 0;
-        for (int i = 0; i < clusters.length; ++i) {
-            max = Math.max(max, clusters[i]);
-        }
+		Integer max = 0;
+		for (int i = 0; i < clusters.length; ++i) {
+			max = Math.max(max, clusters[i]);
+		}
 
-        clusterIndices = new Integer[max]; // todo: stop wasting so much memory!!
-        Arrays.fill(clusterIndices,0);
+		clusterIndices = new Integer[max]; // todo: stop wasting so much memory!!
+		Arrays.fill(clusterIndices,0);
 
-        for (int i = 0; i < clusters.length; ++i) {
-            clusterIndices[clusters[i]-1] = i;
-        }
+		for (int i = 0; i < clusters.length; ++i) {
+			clusterIndices[clusters[i]-1] = i;
+		}
 
-        quantiles = quantileInput.get();
-        quantiles.setDimension(clusterCount);
-        Double[] initialQuantiles = new Double[clusterCount];
-        for (int i = 0; i < clusterCount; i++) {
-            initialQuantiles[i] = Randomizer.nextDouble();
-        }
-        RealParameter other = new RealParameter(initialQuantiles);
-        quantiles.assignFromWithoutID(other);
-        quantiles.setLower(0.0);
-        quantiles.setUpper(1.0);
+		quantiles = quantileInput.get();
+		quantiles.setDimension(clusterCount);
+		Double[] initialQuantiles = new Double[clusterCount];
+		for (int i = 0; i < clusterCount; i++) {
+			initialQuantiles[i] = Randomizer.nextDouble();
+		}
+		RealParameter other = new RealParameter(initialQuantiles);
+		quantiles.assignFromWithoutID(other);
+		quantiles.setLower(0.0);
+		quantiles.setUpper(1.0);
 
-        distribution = rateDistInput.get();
+		distribution = rateDistInput.get();
 
-        TreeInterface tree = treeInput.get();
+		TreeInterface tree = treeInput.get();
 
-        updateRates(tree);
+		updateRates(tree);
 
-//        try {
-//            double mean = rateDistInput.get().getMean();
-//            if (Math.abs(mean - 1.0) > 1e-6) {
-//                Log.warning.println("WARNING: mean of distribution for BirthDeathMigrationClusterModelUncoloured is not 1.0.");
-//            }
-//        } catch (RuntimeException e) {
-//            // ignore
-//        }
-    }
+		//        try {
+		//            double mean = rateDistInput.get().getMean();
+		//            if (Math.abs(mean - 1.0) > 1e-6) {
+		//                Log.warning.println("WARNING: mean of distribution for BirthDeathMigrationClusterModelUncoloured is not 1.0.");
+		//            }
+		//        } catch (RuntimeException e) {
+		//            // ignore
+		//        }
+	}
 
-    protected Double updateRates(TreeInterface tree) {
+	protected Double updateRates(TreeInterface tree) {
 
-        birth = new Double[n*totalIntervals];
-        death = new Double[n*totalIntervals];
-        psi = new Double[n*totalIntervals];
-        b_ij = new Double[totalIntervals*(n*(n-1))];
-        M = new Double[totalIntervals*(n*(n-1))];
-        if (SAModel) r =  new Double[n * totalIntervals];
+		birth = new Double[n*totalIntervals];
+		death = new Double[n*totalIntervals];
+		psi = new Double[n*totalIntervals];
+		b_ij = new Double[totalIntervals*(n*(n-1))];
+		M = new Double[totalIntervals*(n*(n-1))];
+		if (SAModel) r =  new Double[n * totalIntervals];
 
-        if (transform) {
-            transformParameters();
-        }
-        else {
+		if (transform) {
+			transformParameters();
+		}
+		else {
 
-            Double[] birthAmongDemesRates = new Double[1];
+			Double[] birthAmongDemesRates = new Double[1];
 
-            if (birthAmongDemes) birthAmongDemesRates = birthRateAmongDemes.get().getValues();
+			if (birthAmongDemes) birthAmongDemesRates = birthRateAmongDemes.get().getValues();
 
-            updateBirthDeathPsiParams();
+			updateBirthDeathPsiParams();
 
-            if (birthAmongDemes) {
+			if (birthAmongDemes) {
 
-                updateAmongParameter(b_ij, birthAmongDemesRates, b_ij_Changes, b_ijChangeTimes);
-            }
-        }
+				updateAmongParameter(b_ij, birthAmongDemesRates, b_ij_Changes, b_ijChangeTimes);
+			}
+		}
 
         Double[] migRates = migrationMatrix.get().getValues();
         Double factor;
@@ -117,56 +118,57 @@ public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrati
             for (int i = 0; i < M.length; i++) M[i] *= factor;
         }
 
-        updateAmongParameter(M, migRates, migChanges, migChangeTimes);
 
-        updateRho();
+		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
+
+		updateRho();
 
         for (int i = 0; i < totalIntervals; i++)
             birth[i]*=getRateForCluster(clusterIndices[currentCluster.get()-1]);
 
-        freq = frequencies.get().getValues();
+		freq = frequencies.get().getValues();
 
-        setupIntegrators();
+		setupIntegrators();
 
-        return 0.;
-    }
-
-
-
-    public double getRateForCluster(int cluster) {
-        if (recompute) {
-            // this must be synchronized to avoid being called simultaneously by
-            // two different likelihood threads
-//            synchronized (this) {
-                distribution = rateDistInput.get(); //prepare();
-                recompute = false;
-//            }
-        }
-
-        return getRawRateForQuantile(cluster) * birth[0]; // todo: make this work for birth dimension > 1?
-    }
+		return 0.;
+	}
 
 
-    private double getRawRateForQuantile(int cluster) {
 
-        try {
-            return distribution.inverseCumulativeProbability(quantiles.getValue(cluster));
-        } catch (MathException e) {
-            throw new RuntimeException("Failed to compute inverse cumulative probability!");
-        }
-    }
+	public double getRateForCluster(int cluster) {
+		if (recompute) {
+			// this must be synchronized to avoid being called simultaneously by
+			// two different likelihood threads
+			//            synchronized (this) {
+			distribution = rateDistInput.get(); //prepare();
+			recompute = false;
+			//            }
+		}
+
+		return getRawRateForQuantile(cluster) * birth[0]; // todo: make this work for birth dimension > 1?
+	}
 
 
-//    @Override
-//    public void store() {
-//        storedScaleFactor = scaleFactor;
-//        super.store();
-//    }
-//
-//    @Override
-//    public void restore() {
-//        scaleFactor = storedScaleFactor;
-//        super.restore();
-//    }
+	private double getRawRateForQuantile(int cluster) {
+
+		try {
+			return distribution.inverseCumulativeProbability(quantiles.getValue(cluster));
+		} catch (MathException e) {
+			throw new RuntimeException("Failed to compute inverse cumulative probability!");
+		}
+	}
+
+
+	//    @Override
+	//    public void store() {
+	//        storedScaleFactor = scaleFactor;
+	//        super.store();
+	//    }
+	//
+	//    @Override
+	//    public void restore() {
+	//        scaleFactor = storedScaleFactor;
+	//        super.restore();
+	//    }
 
 }

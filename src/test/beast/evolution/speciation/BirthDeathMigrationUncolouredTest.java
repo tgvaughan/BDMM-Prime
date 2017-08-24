@@ -413,32 +413,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		}
 	}
 
-
-	@Test  //1-dim test from BDSKY with
-	public void testLikelihood1dim() throws Exception {
-
-		String tree = "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];";
-
-		conditionOnSurvival = false;
-		int maxEvals = Integer.MAX_VALUE;
-		double tolerance = 1e-15;
-		String locations = "1=0,2=0,3=0,4=0" ;
-
-		double logL = bdm_likelihood(tolerance, maxEvals, "1",
-				"1",
-				"1.",
-				tree, "1",
-				"0.6666666667",null,
-				"4.5",
-				"0.4444444444",
-				"", locations, 4, null);
-
-	//	System.out.println("Birth-death result: " +logL);
-
-		assertEquals(-44.28713883581996, logL, 1e-4);   // result from BDSKY in BEAST 9 June 2015
-	}
-
-
 	//    @Test
 	//    public void testSALikelihoodCalculation1() throws Exception {
 	//
@@ -763,44 +737,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 
 	}
 
-
-	// non-migration example from BDSKY
-	//
-	// @Test
-	public void testLikelihoodCalculationNoMig() throws Exception {
-
-		String tree ="((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);"; //
-		String orig="1."; //
-		String stateNumber = "1";
-		String migrationMatrix = "0";
-		String frequencies = "1";
-
-		// test without rate change
-		String R0 = Double.toString(4./3.);
-		String becomeUninfectiousRate = "1.5";
-		String samplingProportion = Double.toString(1./3.);
-		String locations = "1=0,2=0,3=0,4=0" ;
-
-		conditionOnSurvival = false;
-		int maxEvals = Integer.MAX_VALUE;
-		double tolerance = 1e-10;
-
-		double logL;
-
-		logL = bdm_likelihood(tolerance, maxEvals, stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, orig,
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion,
-				"", locations, 4, null);
-
-
-//		System.out.println("Log-likelihood = " + logL);
-		assertEquals(-19.0198, logL, 1e-4); // -18.5741 if conditionOnSurvival=true
-
-	}
 
 
 	@Test  //1-dim test from BDSKY with
