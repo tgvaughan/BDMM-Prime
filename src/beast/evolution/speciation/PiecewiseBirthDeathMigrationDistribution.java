@@ -67,7 +67,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("relTolerance", "relative tolerance for numerical integration", 1e-7);
 
 	public Input<Double> absoluteTolerance =
-			new Input<>("absTolerance", "absolute tolerance for numerical integration", 1e-100);
+			new Input<>("absTolerance", "absolute tolerance for numerical integration", 1e-100 /*Double.MIN_VALUE*/);
 
 	// the interval times for the migration rates
 	public Input<RealParameter> migChangeTimesInput =
@@ -148,11 +148,11 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<RealParameter> R0_base =
 			new Input<>("R0_base",
 					"The basic reproduction number for the base pathogen class, should have the same dimension as " +
-							"the number of time intervals.");
+					"the number of time intervals.");
 	public Input<RealParameter> lambda_ratio =
 			new Input<>("lambda_ratio",
 					"The ratio of basic infection rates of all other classes when compared to the base lambda, " +
-							"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
+					"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
 
 	public Input<RealParameter> migrationMatrix =
 			new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted");
@@ -408,76 +408,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 	/**
-<<<<<<< HEAD
-=======
-	 * Perform integration on ODEs g using a classical implementation (using double[] for the initial conditions and the output).
-	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
-	 * @param t
-	 * @param PG0
-	 * @param t0
-	 * @return
-	 */
-	public double[] getG(double t, double[] PG0, double t0,
-						 FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
-
-		try {
-
-			if (Math.abs(T-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||  T < t) {
-				return PG0;
-			}
-
-			double from = t;
-			double to = t0;
-			double oneMinusRho;
-
-			int indexFrom = Utils.index(from, times, times.length);
-			int index = Utils.index(to, times, times.length);
-
-			int steps = index - indexFrom;
-			if (Math.abs(from-times[indexFrom]) < globalPrecisionThreshold ) steps--;
-			if (index>0 && Math.abs(to-times[index-1]) < globalPrecisionThreshold ) {
-				steps--;
-				index--;
-			}
-
-			index--;
-
-			while (steps > 0){
-
-				from = times[index];
-
-				pg_integrator.integrate(PG, to, PG0, from, PG0); // solve PG , store solution in PG0
-
-				if (rhoChanges>0){
-					for (int i=0; i<n; i++){
-						oneMinusRho = (1-rho[i*totalIntervals + index]);
-						PG0[i] *= oneMinusRho;
-						PG0[i+n] *= oneMinusRho;
-						System.out.println("In getG, multiplying with oneMinusRho: " + oneMinusRho);
-					}
-				}
-
-				to = times[index];
-
-				steps--;
-				index--;
-			}
-
-			pg_integrator.integrate(PG, to, PG0, t, PG0); // solve PG , store solution in PG0
-
-		}catch(Exception e){
-
-			throw new RuntimeException("couldn't calculate g");
-		}
-
-		if (pg_integrator.getEvaluations() > maxEvalsUsed) maxEvalsUsed = pg_integrator.getEvaluations();
-
-		return PG0;
-	}
-
-
-	/**
->>>>>>> 3e28afb7f22a448345e4fbb1d4505a7fb3ace109
 	 * Implementation of getG with Small Number structure for the ge equations. Avoids underflowing of integration results.
 	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
 	 * @param t
@@ -640,31 +570,31 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		getChangeTimes(maxTime, migChangeTimes,
 				migChangeTimesInput.get() != null ? migChangeTimesInput.get() : intervalTimes.get(),
-				migChanges, migTimesRelative, reverseTimeArrays[5]);
+						migChanges, migTimesRelative, reverseTimeArrays[5]);
 
 		getChangeTimes(maxTime, birthRateChangeTimes,
 				birthRateChangeTimesInput.get() != null ? birthRateChangeTimesInput.get() : intervalTimes.get(),
-				birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
+						birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
 
 		getChangeTimes(maxTime, b_ijChangeTimes,
 				b_ijChangeTimesInput.get() != null ? b_ijChangeTimesInput.get() : intervalTimes.get(),
-				b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
+						b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
 
 		getChangeTimes(maxTime, deathRateChangeTimes,
 				deathRateChangeTimesInput.get() != null ? deathRateChangeTimesInput.get() : intervalTimes.get(),
-				deathChanges, deathRateTimesRelative, reverseTimeArrays[1]);
+						deathChanges, deathRateTimesRelative, reverseTimeArrays[1]);
 
 		getChangeTimes(maxTime, samplingRateChangeTimes,
 				samplingRateChangeTimesInput.get() != null ? samplingRateChangeTimesInput.get() : intervalTimes.get(),
-				samplingChanges, samplingRateTimesRelative, reverseTimeArrays[2]);
+						samplingChanges, samplingRateTimesRelative, reverseTimeArrays[2]);
 
 		getChangeTimes(maxTime, rhoSamplingChangeTimes,
 				rhoSamplingTimes.get()!=null ? rhoSamplingTimes.get() : intervalTimes.get(),
-				rhoChanges, false, reverseTimeArrays[3]);
+						rhoChanges, false, reverseTimeArrays[3]);
 
 		if (SAModel) getChangeTimes(maxTime, rChangeTimes,
 				removalProbabilityChangeTimesInput.get() != null ? removalProbabilityChangeTimesInput.get() : intervalTimes.get(),
-				rChanges, rTimesRelative, reverseTimeArrays[4]);
+						rChanges, rTimesRelative, reverseTimeArrays[4]);
 
 		for (Double time : migChangeTimes) {
 			timesSet.add(time);
@@ -752,10 +682,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 					if (aTime<iTime) {
 						end = iTime - aTime;
 						if
-								(changeTimes.size() > i) changeTimes.set(i, end);
+						(changeTimes.size() > i) changeTimes.set(i, end);
 						else
-						if (end < maxTime)
-							changeTimes.add(end);
+							if (end < maxTime)
+								changeTimes.add(end);
 					}
 				}
 			}
@@ -785,13 +715,13 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			state =  i/totalIntervals;
 
 			birth[i] = (identicalRatesForAllTypes[0]) ? birthRates[index(times[i%totalIntervals], birthRateChangeTimes)] :
-					birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
+				birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
 			death[i] = (identicalRatesForAllTypes[1]) ? deathRates[index(times[i%totalIntervals], deathRateChangeTimes)] :
-					deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
+				deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
 			psi[i] = (identicalRatesForAllTypes[2]) ? samplingRates[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-					samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
+				samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
 			if (SAModel) r[i] = (identicalRatesForAllTypes[4]) ? removalProbabilities[index(times[i%totalIntervals], rChangeTimes)] :
-					removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+				removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
 
 		}
 
@@ -806,8 +736,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 					if (i != j) {
 						param[(i * (n - 1) + (j < i ? j : j - 1)) * totalIntervals + dt]
 								= paramFrom[(paramFrom.length > (n * (n - 1)))
-								? (nrChanges + 1) * (n - 1) * i + index(times[dt], changeTimes)
-								: (i * (n - 1) + (j < i ? j : j - 1))];
+								            ? (nrChanges + 1) * (n - 1) * i + index(times[dt], changeTimes)
+								            : (i * (n - 1) + (j < i ? j : j - 1))];
 					}
 				}
 			}
@@ -829,7 +759,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 				rho[i]= rhoChanges>0?
 						rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
-						: rhos[0];
+								: rhos[0];
 			}
 		}
 	}
@@ -886,36 +816,36 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			state =  i/totalIntervals;
 
 			birth[i] = ((identicalRatesForAllTypes[0]) ? R[index(times[i%totalIntervals], birthRateChangeTimes)] :
-					R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state])
+				R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state])
 					* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-					ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
 
 			if (!SAModel) {
 				psi[i] = ((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-						p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state])
+					p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state])
 						* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
+							ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
 
 				death[i] = ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+					ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
 						- psi[i];
 			}
 
 			else {
 				r[i] = (identicalRatesForAllTypes[4]) ? removalProbabilities[index(times[i%totalIntervals], rChangeTimes)] :
-						removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+					removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
 
 				psi[i] = ((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-						p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state])
+					p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state])
 						* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+							ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
 						/ (1+(r[i]-1)*
-						((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-								p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]));
+								((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
+									p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]));
 
 
 				death[i] = ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+					ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
 						- psi[i]*r[i];
 			}
 		}
@@ -939,9 +869,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 						if (i!=j){
 							b_ij[(i*(n-1)+(j<i?j:j-1))*totalIntervals+dt]
 									= RaD[(RaD.length>(n*(n-1)))
-									?  (b_ij_Changes+1)*(n-1)*i + index(times[dt], b_ijChangeTimes)
-									: (i*(n-1)+(j<i?j:j-1))]
-									* ds[ds.length > n ? (deathChanges+1)*i+index(times[dt], deathRateChangeTimes) : i];
+									      ?  (b_ij_Changes+1)*(n-1)*i + index(times[dt], b_ijChangeTimes)
+									      : (i*(n-1)+(j<i?j:j-1))]
+									    		  * ds[ds.length > n ? (deathChanges+1)*i+index(times[dt], deathRateChangeTimes) : i];
 						}
 					}
 				}
@@ -993,9 +923,21 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 
+		//		// TO DO CLEAN UP IF DOES NOT WORK
+		//		double[] absoluteToleranceVector = new double [2*n];
+		//		double[] relativeToleranceVector = new double [2*n];
+		//		for(int i = 0; i<n; i++) {
+		//			absoluteToleranceVector[i] = 1e-50;
+		//			absoluteToleranceVector[i+n] = 1e-180;
+		//			relativeToleranceVector[i] = 1e-7;
+		//			relativeToleranceVector[i+n] = 1e-7;
+		//		}
+
 
 		if (!useRKInput.get()) {
 			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); //new HighamHall54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); // 
+
+			//			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
 
 			pg_integrator.setMaxEvaluations(maxEvaluations.get());
 
@@ -1077,7 +1019,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 	/**
-	 * If integration interval is too long to provide precise results, cuts it in half and starts integration again.
+	 *
 	 * @param integrator
 	 * @param PG
 	 * @param to
@@ -1090,28 +1032,37 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
 		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
 
-		// we test to see if the current interval size can produce a sufficiently-precise result
-		double[] integrationResults = new double[pgScaled.getEquation().length];
-		integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
-		// look for the minimal value
-		double minRes = getMinIntegrationOnGe(integrationResults);
-
-		if(absoluteTolerance.get() > relativeTolerance.get())
-			throw new RuntimeException("Absolute tolerance higher than relative tolerance for the adaptive integrator. Change values for these inputs.");
-
-
-		if(minRes != Double.MAX_VALUE && (minRes<0 || absoluteTolerance.get()/minRes > relativeTolerance.get())) {
-
+		if(T>0 && Math.abs(from-to)>T/2 ) {
 			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);
 			pgScaled = safeIntegrate(integrator, PG, from + (to-from)/2, pgScaled, from);
-
 		} else {
 
+			double relativeToleranceConstant = 1e-7;
+			double absoluteToleranceConstant = 1e-100;
+			double[] absoluteToleranceVector = new double [2*n];
+			double[] relativeToleranceVector = new double [2*n];
+			for(int i = 0; i<n; i++) {
+				absoluteToleranceVector[i] = absoluteToleranceConstant;
+				if(pgScaled.getEquation()[i+n] > 0) {
+					absoluteToleranceVector[i+n] = Math.max(1e-310, pgScaled.getEquation()[i+n]*absoluteToleranceConstant);
+				} else {
+					absoluteToleranceVector[i+n] = absoluteToleranceConstant;
+				}
+				relativeToleranceVector[i] = relativeToleranceConstant;
+				relativeToleranceVector[i+n] = relativeToleranceConstant;
+			}
+
+			double[] integrationResults = new double[pgScaled.getEquation().length];
 			int a = pgScaled.getScalingFactor();
-			int n = integrationResults.length/2;
+			int n = pgScaled.getEquation().length/2;
+
+
+			integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
+			integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
+
+
 			double[] pConditions = new double[n];
 			SmallNumber[] geConditions = new SmallNumber[n];
-
 			for (int i = 0; i < n; i++) {
 				pConditions[i] = integrationResults[i];
 				geConditions[i] = new SmallNumber(integrationResults[i+n]);
@@ -1123,6 +1074,74 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		return pgScaled;
 	}
+
+
+	//	TO DO CLEAN UP IF ABOVE WORKS
+	//	/**
+	//	 * If integration interval is too long to provide precise results, cuts it in half and starts integration again.
+	//	 * OLD VERSION THAT LEADS SOME CHAINS TO BE STUCK (one element gets too small, so stuck in recursively cutting the loop)
+	//	 * @param integrator
+	//	 * @param PG
+	//	 * @param to
+	//	 * @param pgScaled
+	//	 * @param from
+	//	 * @return
+	//	 */
+	//	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
+	//
+	//		// if the integration interval is too small, nothing is done (to prevent infinite looping)
+	//		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
+	//
+	//		// we test to see if the current interval size can produce a sufficiently-precise result
+	//		double[] integrationResults = new double[pgScaled.getEquation().length];
+	//		
+	//		double relativeToleranceConstant = 1e-7;
+	//		double absoluteToleranceConstant = 1e-100;
+	//		double[] absoluteToleranceVector = new double [2*n];
+	//		double[] relativeToleranceVector = new double [2*n];
+	//		for(int i = 0; i<n; i++) {
+	//			absoluteToleranceVector[i] = absoluteToleranceConstant;
+	//			if(pgScaled.getEquation()[i+n] >0) {
+	//				absoluteToleranceVector[i+n] = Math.max(1e-310, pgScaled.getEquation()[i+n]*absoluteToleranceConstant);
+	//			} else {
+	//				absoluteToleranceVector[i+n] = absoluteToleranceConstant;
+	//			}
+	//			relativeToleranceVector[i] = relativeToleranceConstant;
+	//			relativeToleranceVector[i+n] = relativeToleranceConstant;
+	//		}
+	//		
+	//		integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
+	//		integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
+	//		// look for the minimal value
+	//		double minRes = getMinIntegrationOnGe(integrationResults);
+	//
+	//		if(absoluteTolerance.get() > relativeTolerance.get())
+	//			throw new RuntimeException("Absolute tolerance higher than relative tolerance for the adaptive integrator. Change values for these inputs.");
+	//
+	//
+	//		if(minRes != Double.MAX_VALUE && (minRes<0 || absoluteTolerance.get()/minRes > relativeTolerance.get())) {
+	//
+	//			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);
+	//			pgScaled = safeIntegrate(integrator, PG, from + (to-from)/2, pgScaled, from);
+	//
+	//		} else {
+	//
+	//			int a = pgScaled.getScalingFactor();
+	//			int n = integrationResults.length/2;
+	//			double[] pConditions = new double[n];
+	//			SmallNumber[] geConditions = new SmallNumber[n];
+	//
+	//			for (int i = 0; i < n; i++) {
+	//				pConditions[i] = integrationResults[i];
+	//				geConditions[i] = new SmallNumber(integrationResults[i+n]);
+	//			}
+	//			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions));
+	//			pgScaled.augmentFactor(a);
+	//
+	//		}
+	//
+	//		return pgScaled;
+	//	}
 
 	/**
 	 * Find the lowest non-zero value among the integration results, only on the ge part.

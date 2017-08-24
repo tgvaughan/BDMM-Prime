@@ -56,19 +56,21 @@ public class SmallNumber {
 
 
 			if(numExponent > 0) {
-				this.mantissa = num;
-				this.exponent = 0;
+				// instead of doing nothing in case of positive exponent, we decide to scale it as well
+				this.mantissa = num *Math.pow(2, -numExponent);
+				this.exponent = numExponent;
 			} else {
 				
 				// similar approach as in method SmallNumberScaler.multiplyByPowerOfTwo()
-				if(-numExponent>180 || -numExponent<0)
+				if(-numExponent>180)
 					this.mantissa = num *Math.pow(2, -numExponent);
 				else {
-					while(-numExponent>30) {
+					int temporaryExponent = numExponent;
+					while(-temporaryExponent>30) {
 						num = num*(1<<30);
-						numExponent+=30;
+						temporaryExponent+=30;
 					}
-					num = num*(1<<(-numExponent));
+					num = num*(1<<(-temporaryExponent));
 					this.mantissa = num;
 				}
 				
@@ -309,19 +311,24 @@ public class SmallNumber {
 	public static void main(String args[]) {
 
 		//Simple test 
+		
+		double testedA =  2.2914985084252684E90;
+		SmallNumber snA = new SmallNumber(testedA);
+		System.out.println(snA);
 
-//		double aOld = 0.00000000000000000000000000000000000000000000000000000000000000000000000000123645445640000;
-//		SmallNumber a = new SmallNumber(aOld);
-//		SmallNumber f = new SmallNumber(Math.pow(Math.E, -50));
-//		System.out.println("The value of log f is " + f.log());
-//		SmallNumber c = new SmallNumber(0);
-//		double abis = a.getMantissa()*Math.pow(2, a.getExponent());
-//		System.out.println("The value of a is " + a.toString() + "\t vs 1,2364544564E-75");
-//		System.out.println("The value of c is " + c.toString());
-//		SmallNumber b = SmallNumber.multiply(SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)),SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)));
-//		double bOld = aOld*aOld*aOld*aOld*aOld*aOld*aOld*aOld;
-//		System.out.println("The value of b is " + b.toString());
-//		System.out.println("The value of b using double would have been " + bOld);
+		double aOld = 0.00000000000000000000000000000000000000000000000000000000000000000000000000123645445640000;
+		SmallNumber a = new SmallNumber(aOld);
+		System.out.println("The value of a is " + a.toString());
+		SmallNumber f = new SmallNumber(Math.pow(Math.E, -50));
+		System.out.println("The value of log f is " + f.log());
+		SmallNumber c = new SmallNumber(0);
+		double abis = a.getMantissa()*Math.pow(2, a.getExponent());
+		System.out.println("The value of a is " + a.toString() + "\t vs 1,2364544564E-75");
+		System.out.println("The value of c is " + c.toString());
+		SmallNumber b = SmallNumber.multiply(SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)),SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)));
+		double bOld = aOld*aOld*aOld*aOld*aOld*aOld*aOld*aOld;
+		System.out.println("The value of b is " + b.toString());
+		System.out.println("The value of b using double would have been " + bOld);
 
 
 		//		SmallNumber s = new SmallNumber();
@@ -334,18 +341,18 @@ public class SmallNumber {
 
 
 		// Tests on basic operations
-				double aOld = 0.45643453;
-				double bOld = 8900.;
-				//				double bOld = 0;
-				SmallNumber a = new SmallNumber(aOld);
-				SmallNumber b = new SmallNumber(bOld);
-				SmallNumber c = SmallNumber.multiply(a, b);
-				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld);
-				double lambda = 0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005;
-				c = c.scalarMultiply(lambda);
-				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld*lambda);
-				SmallNumber d = SmallNumber.add(a, b);
-				System.out.println("With SmallNumber implementation: " + d.toString() + " vs "+ (aOld+bOld));
+//				double aOld = 0.45643453;
+//				double bOld = 8900.;
+//				//				double bOld = 0;
+//				SmallNumber a = new SmallNumber(aOld);
+//				SmallNumber b = new SmallNumber(bOld);
+//				SmallNumber c = SmallNumber.multiply(a, b);
+//				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld);
+//				double lambda = 0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005;
+//				c = c.scalarMultiply(lambda);
+//				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld*lambda);
+//				SmallNumber d = SmallNumber.add(a, b);
+//				System.out.println("With SmallNumber implementation: " + d.toString() + " vs "+ (aOld+bOld));
 		
 		//		double aOld = 4564.3453;
 		//		double bOld = 89;
