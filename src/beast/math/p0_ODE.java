@@ -89,8 +89,13 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 
 	}
 
+	/**
+	 * Some basic tests for numerical integration with this class
+	 * @param args
+	 * @throws Exception
+	 */
 	public static void main(String[] args) throws Exception{
-
+		
 		// 2d test
 		Double[] b = {1.03,1.06};
 		Double[] d = {1.,1.};

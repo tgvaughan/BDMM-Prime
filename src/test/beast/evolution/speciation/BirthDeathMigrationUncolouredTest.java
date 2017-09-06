@@ -329,7 +329,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				bdssm.initAndValidate();
 
 
-				System.out.println("\na) Likelihood: " + bdssm.calculateTreeLogLikelihood(tree));
+		//		System.out.println("\na) Likelihood: " + bdssm.calculateTreeLogLikelihood(tree));
 				assertEquals(-21.42666177086957, bdssm.calculateTreeLogLikelihood(tree), 1e-7);
 
 			}
@@ -413,32 +413,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		}
 	}
 
-
-	@Test  //1-dim test from BDSKY with
-	public void testLikelihood1dim() throws Exception {
-
-		String tree = "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];";
-
-		conditionOnSurvival = false;
-		int maxEvals = Integer.MAX_VALUE;
-		double tolerance = 1e-15;
-		String locations = "1=0,2=0,3=0,4=0" ;
-
-		double logL = bdm_likelihood(tolerance, maxEvals, "1",
-				"1",
-				"1.",
-				tree, "1",
-				"0.6666666667",null,
-				"4.5",
-				"0.4444444444",
-				"", locations, 4, null);
-
-		System.out.println("Birth-death result: " +logL);
-
-		assertEquals(-44.28713883581996, logL, 1e-4);   // result from BDSKY in BEAST 9 June 2015
-	}
-
-
 	//    @Test
 	//    public void testSALikelihoodCalculation1() throws Exception {
 	//
@@ -479,6 +453,87 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 	//            else    assertEquals(-22.524157039646802, model.calculateTreeLogLikelihood(tree), 1e-5);
 	//        }
 	//    }
+	
+	/**
+	 * Simple unit test on sampled-ancestors lik. calculation.
+	 * 2 leaves, 1 SA. 1 type, no rho-sampling, no rate-change
+	 * Reference value from BDSKY (23/03/2017)
+	 * @throws Exception
+	 */
+	@Test
+	public void testSALikelihoodMini() throws Exception {
+		
+		Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
+
+		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+
+		bdm.setInputValue("tree", tree);
+		bdm.setInputValue("typeLabel", "type");
+
+		bdm.setInputValue("stateNumber", "1");
+		bdm.setInputValue("migrationMatrix", "0.");
+		bdm.setInputValue("frequencies", "1");
+
+		bdm.setInputValue("R0", new RealParameter("1.5"));
+		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+		bdm.setInputValue("samplingProportion", new RealParameter("0.2") );
+		bdm.setInputValue("removalProbability", new RealParameter("0.9") );
+
+		bdm.setInputValue("conditionOnSurvival", true);
+		bdm.setInputValue("origin", "6.");
+
+		bdm.initAndValidate();
+
+
+		double logL = bdm.calculateLogP();
+
+		assertEquals(-18.854438107814335, bdm.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017 JS)
+
+	}
+	
+	/**
+	 * Unit test on sampled-ancestors lik. calculation with multi-rho sampling.
+	 * 2 leaves, 1 SA. 1 type, no rate-change
+	 * Reference value from BDSKY (06/04/2017)
+	 * @throws Exception
+	 */
+	@Test
+	public void testSALikelihoodMultiRho() throws Exception {
+		
+		Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
+
+		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+
+		bdm.setInputValue("tree", tree);
+		bdm.setInputValue("typeLabel", "type");
+
+		bdm.setInputValue("stateNumber", "1");
+		bdm.setInputValue("migrationMatrix", "0.");
+		bdm.setInputValue("frequencies", "1");
+
+		bdm.setInputValue("R0", new RealParameter("1.5"));
+		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
+		bdm.setInputValue("samplingProportion", new RealParameter("0.2") );
+		bdm.setInputValue("removalProbability", new RealParameter("0.9") );
+
+		bdm.setInputValue("conditionOnSurvival", true);
+		bdm.setInputValue("origin", "6.");
+		
+		bdm.setInputValue("rho", new RealParameter("0.3 0.05"));
+		bdm.setInputValue("rhoSamplingTimes", new RealParameter("0 1.5") );
+
+		bdm.setInputValue("reverseTimeArrays", "false false false true");
+
+		bdm.initAndValidate();
+
+
+//		double a = bdm.calculateLogP();	
+//		System.out.println(a);
+		
+		assertEquals(-22.348462265673483, bdm.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017 JS)
+
+	}
+	
 
 	@Test
 	public void testSALikelihoodCalculationWithoutAncestors() throws Exception {
@@ -605,7 +660,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				"", locations, 4, null);
 
 
-		System.out.println("Log-likelihood = " + logL);
+	//	System.out.println("Log-likelihood = " + logL);
 		assertEquals(-16.683533887631224, logL, 1e-4); // result from BEAST, 8 Jan 2015
 
 	}
@@ -641,7 +696,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				"", locations, 4, null);
 
 
-		System.out.println("Log-likelihood = " + logL);
+	//	System.out.println("Log-likelihood = " + logL);
 		assertEquals(-18.82798, logL, 1e-4); // tanja's result from R
 
 	}
@@ -677,49 +732,11 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				"", locations, 4, null);
 
 
-		System.out.println("Log-likelihood = " + logL);
+	//	System.out.println("Log-likelihood = " + logL);
 		assertEquals(-12.1441, logL, 1e-4); // tanja's result from R
 
 	}
 
-
-	// non-migration example from BDSKY
-	//
-	// @Test
-	public void testLikelihoodCalculationNoMig() throws Exception {
-
-		String tree ="((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);"; //
-		String orig="1."; //
-		String stateNumber = "1";
-		String migrationMatrix = "0";
-		String frequencies = "1";
-
-		// test without rate change
-		String R0 = Double.toString(4./3.);
-		String becomeUninfectiousRate = "1.5";
-		String samplingProportion = Double.toString(1./3.);
-		String locations = "1=0,2=0,3=0,4=0" ;
-
-		conditionOnSurvival = false;
-		int maxEvals = Integer.MAX_VALUE;
-		double tolerance = 1e-10;
-
-		double logL;
-
-		logL = bdm_likelihood(tolerance, maxEvals, stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, orig,
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion,
-				"", locations, 4, null);
-
-
-		System.out.println("Log-likelihood = " + logL);
-		assertEquals(-19.0198, logL, 1e-4); // -18.5741 if conditionOnSurvival=true
-
-	}
 
 
 	@Test  //1-dim test from BDSKY with
@@ -754,7 +771,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		//
 		//        bdssm.initAndValidate();
 		//        bdssm.printTempResults = true;
-		System.out.println("Birth-death result: " +logL);
+	//	System.out.println("Birth-death result: " +logL);
 
 		assertEquals(-33.7573, logL, 1e-2);
 	}
@@ -797,7 +814,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				samplingProportion,
 				"t", locations, nrTaxa, null);
 
-		System.out.println("Log-likelihood (conditioned on survival) " + logL + "\t");
+//		System.out.println("Log-likelihood (conditioned on survival) " + logL + "\t");
 		assertEquals(-667.885, logL, 1e-3);
 
 	}
@@ -907,7 +924,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 			if (conditionOnSurvival) assertEquals(-19.82658,logL, 1e-3);
 			else assertEquals(-20.035714,logL, 1e-3);
 		}
-		System.out.println("Log-likelihood ("+ (conditionOnSurvival?"":"NOT ") +"conditioned on survival) " + logL + "\t");
+	//	System.out.println("Log-likelihood ("+ (conditionOnSurvival?"":"NOT ") +"conditioned on survival) " + logL + "\t");
 
 	}
 
@@ -979,7 +996,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		//        if (conditionOnSurvival) assertEquals(-28.05224, logL, 1e-3);
 		//        else assertEquals(-28.18969, logL, 1e-3);
 
-		System.out.println("Log-likelihood ("+ (conditionOnSurvival?"":"NOT ") +"conditioned on survival) " + logL + "\t");
+	//	System.out.println("Log-likelihood ("+ (conditionOnSurvival?"":"NOT ") +"conditioned on survival) " + logL + "\t");
 
 	}
 
@@ -1108,7 +1125,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 			if (conditionOnSurvival) assertEquals( -25.34393,logL, 1e-5);  //result from R
 			else assertEquals(-25.64794,logL, 1e-5);//result from R
 		}
-		System.out.println("Log-likelihood ("+ (conditionOnSurvival?"":"NOT ") +"conditioned on survival) " + logL + "\t");
+//		System.out.println("Log-likelihood ("+ (conditionOnSurvival?"":"NOT ") +"conditioned on survival) " + logL + "\t");
 
 	}
 
@@ -1151,7 +1168,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				samplingProportion,
 				"t", locations, nrTaxa, null);
 
-		System.out.println("Log-likelihood ("+(conditionOnSurvival?"":"not ")+"conditioned on survival) " + logL + "\t");
+//		System.out.println("Log-likelihood ("+(conditionOnSurvival?"":"not ")+"conditioned on survival) " + logL + "\t");
 
 
 		assertEquals(-661.9588648301033, logL, 1e-5); // result from BEAST, not checked in R
@@ -1209,7 +1226,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				samplingProportion,
 				"", locations, 4, null);
 
-		System.out.println("Log-likelihood (NOT conditioned on survival) = " + logL);
+//		System.out.println("Log-likelihood (NOT conditioned on survival) = " + logL);
 		assertEquals(-26.53293, logL, 1e-5);
 
 	}
@@ -1262,7 +1279,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				2, null);
 
 		//         System.out.println("Log-likelihood (conditioned on survival) = " + logL);
-		System.out.println(logL + "\t");
+	//	System.out.println(logL + "\t");
 		assertEquals(-7.215222, logL, 1e-6); // result from R
 
 
@@ -1279,7 +1296,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				2, null);
 
 		//         System.out.println("Log-likelihood (conditioned on survival) = " + logL);
-		System.out.println(logL + "\t");
+	//	System.out.println(logL + "\t");
 		assertEquals(-7.404888, logL, 1e-6); // result from R
 
 		R0AmongDemes = "0.0666667 0.1" ;
@@ -1295,7 +1312,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				2, null);
 
 		//         System.out.println("Log-likelihood (conditioned on survival) = " + logL);
-		System.out.println(logL + "\t");
+	//	System.out.println(logL + "\t");
 		assertEquals(-7.18723, logL, 1e-6); // result from R
 
 		R0 = "2 1.3333333" ;
@@ -1311,7 +1328,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				2, null);
 
 		//         System.out.println("Log-likelihood (conditioned on survival) = " + logL);
-		System.out.println(logL + "\t");
+//		System.out.println(logL + "\t");
 		assertEquals(-7.350649, logL, 1e-6); // result from R
 
 		R0 = "2 1.5" ;
@@ -1331,7 +1348,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				2, null);
 
 		//         System.out.println("Log-likelihood (conditioned on survival) = " + logL);
-		System.out.println(logL + "\t");
+//		System.out.println(logL + "\t");
 		assertEquals(-6.504139, logL, 1e-6); // result from R
 
 		locations = "1=1,2=0";
@@ -1347,7 +1364,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 				2, null);
 
 		//         System.out.println("Log-likelihood (conditioned on survival) = " + logL);
-		System.out.println(logL + "\t");
+	//	System.out.println(logL + "\t");
 		assertEquals(-7.700916, logL, 1e-6); // result from R
 
 		//         }
@@ -1536,7 +1553,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		double logP = bdm.calculateLogP();
 
 		assertEquals(-37.8056,logP, 1e-2);
-		System.out.println("NOT conditioned on survival: " + logP);
+	//	System.out.println("NOT conditioned on survival: " + logP);
 
 		bdm.setInputValue("conditionOnSurvival", true);
 		bdm.initAndValidate();
@@ -1544,7 +1561,7 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 
 		logP = bdm.calculateLogP();
 		assertEquals(-37.30123947394569, logP, 1e-2);
-		System.out.println("conditioned on survival: " + logP);
+	//	System.out.println("conditioned on survival: " + logP);
 
 	}
 

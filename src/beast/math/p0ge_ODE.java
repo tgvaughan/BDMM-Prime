@@ -214,8 +214,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 					for (int i=0; i<dimension; i++){
 						oneMinusRho = (1-rho[i*intervals + indexFrom]);
 						result[i] *= oneMinusRho;
-						System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
-
+					//	System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
+						
 					}
 				}
 			}

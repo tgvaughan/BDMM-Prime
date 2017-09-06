@@ -84,7 +84,8 @@
 		       memorymaximumsize="256m"
 			   includeAntRuntime='false'
 			   source="1.8"
-		       target="1.8">
+		       target="1.8"
+			   encoding="UTF-8">
 			<include name="beast/**/**" />
 			<!-- compile JUnit test classes -->
 			<include name="test/beast/**" />

@@ -2,6 +2,10 @@ package beast.math;
 
 import beast.core.Description;
 
+/**
+ * Created by Jeremie Scire (jscire) on 24.06.16.
+ */
+
 @Description("Set of initial conditions for a system of ODEs, all increased by the same factor to prevent underflowing (which appears with numbers too small to be distinguished from zero, when using the type 'double')")
 public class ScaledNumbers {
 
