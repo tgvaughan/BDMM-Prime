@@ -9,15 +9,30 @@ import java.util.Arrays;
  */
 public class Utils {
 
+    /**
+     * Finds the index of the time interval t lies in
+     * @param t
+     * @param times
+     * @param m the total number of time intervals + 1 (the total number of time change events)
+     * @return
+     */
     public static int index(Double t, Double[] times, int m) {
 
+        // Sort the array times
+        Arrays.sort(times);
+
+        // Perform binary search on array times
         int epoch = Arrays.binarySearch(times, t);
 
+        // If t was not found in array times by binarySearch, then epoch is negative and binarySearch returns (-(insertion point) - 1).
+        // The insertion point is the point at which t would be inserted into the array times
+        // Therefore, change epoch in the corresponding interval number
         if (epoch < 0) {
             epoch = -epoch - 1;
         }
 
-        return Math.min(epoch, m-1); //Math.max((epoch - 1), 0);
+        // return at most the index of the last interval (m-1)
+        return Math.min(epoch, m-1);
     }
 
 

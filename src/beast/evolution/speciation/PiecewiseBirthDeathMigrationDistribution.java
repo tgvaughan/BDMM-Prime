@@ -628,6 +628,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 
 		times = timesSet.toArray(new Double[timesSet.size()]);
+		// TODO potentially refactor with totalIntervals = times.length-1 so that totalIntervals really represents the number of time intervals
 		totalIntervals = times.length;
 
 	}
@@ -769,7 +770,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	 * @param t the time in question
 	 * @return the index of the given time in the list of times, or if the time is not in the list, the index of the
 	 *         next smallest time
-	 *         This index function should only be used in transformParameters(), for likelihood calculations the times List needs to be used (e.g. with Untils.index(...))
+	 *         This index function should only be used in transformParameters(), for likelihood calculations the times List needs to be used (e.g. with Utils.index(...))
 	 */
 	public int index(double t, List<Double> times) {
 
