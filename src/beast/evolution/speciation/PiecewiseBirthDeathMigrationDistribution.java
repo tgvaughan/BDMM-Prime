@@ -100,10 +100,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("migTimesRelative", "True if migration rate change times specified relative to tree height? Default false", false);
 
 	public Input<Boolean> b_ijChangeTimesRelativeInput =
-			new Input<>("birthRateTimesRelative", "True if birth rate change times specified relative to tree height? Default false", false);
+			new Input<>("birthRateAmongDemesTimesRelative", "True if birth rate change times specified relative to tree height? Default false", false);
 
 	public Input<Boolean> birthRateChangeTimesRelativeInput =
-			new Input<>("birthRateAmongDemesTimesRelative", "True if birth rate change times specified relative to tree height? Default false", false);
+			new Input<>("birthRateTimesRelative", "True if birth rate change times specified relative to tree height? Default false", false);
 
 	public Input<Boolean> deathRateChangeTimesRelativeInput =
 			new Input<>("deathRateTimesRelative", "True if death rate change times specified relative to tree height? Default false", false);
