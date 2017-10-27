@@ -18,6 +18,28 @@ public class Utils {
      */
     public static int index(Double t, Double[] times, int m) {
 
+        int epoch = Arrays.binarySearch(times, t);
+
+        // If t was not found in array times by binarySearch, then epoch is negative and binarySearch returns (-(insertion point) - 1).
+        // The insertion point is the point at which t would be inserted into the array times
+        // Therefore, change epoch in the corresponding interval number
+        if (epoch < 0) {
+            epoch = -epoch - 1;
+        }
+
+        // return at most the index of the last interval (m-1)
+        return Math.min(epoch, m-1);
+    }
+
+
+    /**
+     * Finds the index of the time interval t lies in
+     * @param t
+     * @param times
+     * @return
+     */// TODO check that this exact method does not already exist somewhere else
+    public static int index(Double t, Double[] times) {
+
         // Sort the array times
         Arrays.sort(times);
 
@@ -31,8 +53,7 @@ public class Utils {
             epoch = -epoch - 1;
         }
 
-        // return at most the index of the last interval (m-1)
-        return Math.min(epoch, m-1);
+        return epoch;
     }
 
 

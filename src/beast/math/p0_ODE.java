@@ -126,13 +126,13 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		//
 		//
 		//        // 3d test
-		//        Double[] b = {1.03,1.06, 1.5};
-		//        Double[] d = {1.,1., 1.2};
-		//        Double[] s = {0.02,0.04, 0.1};
-		//        Double[] M = {3., 1.,4.,1.,2., 2.};
+		//        Double[] birth = {1.03,1.06, 1.5};
+		//        Double[] death = {1.,1., 1.2};
+		//        Double[] sampling = {0.02,0.04, 0.1};
+		//        Double[] migration = {3., 1.,4.,1.,2., 2.};
 		//
 		//        FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-8, 100.0, 1.0e-10, 1.0e-10);//new ClassicalRungeKuttaIntegrator(.01); //
-		//        FirstOrderDifferentialEquations ode = new p0_ODE(b,d,s,M, 3);
+		//        FirstOrderDifferentialEquations ode = new p0_ODE(birth,death,sampling,migration, 3);
 		//        double[] y0 = new double[]{1.,1.,1.};
 		//        double[] y = new double[3];
 		//

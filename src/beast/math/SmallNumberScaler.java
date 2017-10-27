@@ -20,7 +20,7 @@ public class SmallNumberScaler {
 	final static int safeGapMinMaxDouble = 2040;
 
 	/**
-	 * Determine the appropriate scale factor(s) and perform the multiplication by said scale factor.
+	 * Determine the appropriate scale factor(sampling) and perform the multiplication by said scale factor.
 	 * This "factor" is defined as the magnitude in base 10 by which the original values are increased.
 	 * They are increased so as to fit into the window of values accepted as doubles by java.
 	 * A parameter 'eqtype' is introduced, so that different rules for choosing a scale factor can be introduced for each type of equations dealt with.
@@ -181,7 +181,7 @@ public class SmallNumberScaler {
 	 */
 	public static double multiplyByPowerOfTwo(double x, int n){
 		if(x !=0) {
-			if(n>180 || n<0) // the threshold of 180 was chosen empirically to maximize the method's speed
+			if(n>180 || n<0) // the threshold of 180 was chosen empirically to maximize the method'sampling speed
 				return x*Math.pow(2, n);
 			else {
 				while(n>30) { //the number 30 comes from the max number of bits that can be left-shifted on an int and still be equivalent to a 2 to the power of n operation

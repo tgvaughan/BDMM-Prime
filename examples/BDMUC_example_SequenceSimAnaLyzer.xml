@@ -209,14 +209,14 @@
 
    	 <distribution spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" id="treePrior" tree="@tree" 
    	 typeLabel="type" stateNumber="2" conditionOnSurvival="true">
-		<migrationMatrix spec="RealParameter" id="rateMatrix" value="0.01" dimension="2" lower="0" upper="100"/>
-		<parameter name="frequencies" id="geo-frequencies" value=".5 .5" lower="0." upper="1." dimension="2"/>
-		<parameter name="R0" id="R0" lower="0" dimension="2" value="3"/> 
-		<parameter name="becomeUninfectiousRate" id="becomeUninfectiousRate" value=".1" lower="0" dimension="2" /> 
-		<parameter name="samplingProportion" id="samplingProportion" value="0.05 0.15" lower="0" dimension="2"  upper="1."/>	
+		<migrationMatrix spec="RealParameter" id="rateMatrix" value="0.01" numberOfDemes="2" lower="0" upper="100"/>
+		<parameter name="frequencies" id="geo-frequencies" value=".5 .5" lower="0." upper="1." numberOfDemes="2"/>
+		<parameter name="R0" id="R0" lower="0" numberOfDemes="2" value="3"/>
+		<parameter name="becomeUninfectiousRate" id="becomeUninfectiousRate" value=".1" lower="0" numberOfDemes="2" />
+		<parameter name="samplingProportion" id="samplingProportion" value="0.05 0.15" lower="0" numberOfDemes="2"  upper="1."/>
 	 </distribution>	
 	 
-	<RPNcalculator spec="beast.math.statistic.RPNcalculator" id="birth" expression="R0 becomeUninfectiousRate *"> <!-- s/(d+s) -->
+	<RPNcalculator spec="beast.math.statistic.RPNcalculator" id="birth" expression="R0 becomeUninfectiousRate *"> <!-- sampling/(death+sampling) -->
 		<parameter idref="becomeUninfectiousRate"/>
 		<parameter idref="R0"/>        
 	</RPNcalculator>
@@ -224,7 +224,7 @@
 		<parameter idref="becomeUninfectiousRate"/>
 		<parameter idref="samplingProportion"/>        
 	</RPNcalculator>
-	<RPNcalculator spec="beast.math.statistic.RPNcalculator" id="death" expression="becomeUninfectiousRate 1 samplingProportion - *"> <!-- b*S0/(d+s) -->
+	<RPNcalculator spec="beast.math.statistic.RPNcalculator" id="death" expression="becomeUninfectiousRate 1 samplingProportion - *"> <!-- birthRates*S0/(death+sampling) -->
 		<parameter idref="becomeUninfectiousRate"/>
 		<parameter idref="samplingProportion"/>        
     </RPNcalculator>
@@ -254,13 +254,13 @@
 			<distribution id="prior" spec="util.CompoundDistribution">
 				<distribution idref="treePrior"/>	
 				<prior id="R0Prior" name="distribution" x="@R0">
-					<LogNormal name="distr" M="0." S="1.25"/>
+					<LogNormal name="distr" migration="0." S="1.25"/>
 				</prior>
 				<prior id="becomeUninfectiousRatePrior" name="distribution" x="@becomeUninfectiousRate">
-					<LogNormal name="distr" M="-1" S="1.25"/>
+					<LogNormal name="distr" migration="-1" S="1.25"/>
 				</prior>
 				<prior id="migPrior" name="distribution" x="@rateMatrix">
-					<LogNormal name="distr" M="-3" S="1.25"/>
+					<LogNormal name="distr" migration="-3" S="1.25"/>
 				</prior>
 			</distribution>	
 			<distribution spec='TreeLikelihood' id="treeLikelihood" useAmbiguities="true" siteModel="@SiteModel" 
