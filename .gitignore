@@ -10,3 +10,12 @@
 # Misc cruft
 /META-INF
 /bin
+
+# Temporary tests and BEAST log files
+/src/tempTests/
+/examples/tempExamples/
+/*.state
+/*.trees
+/*.log
+/*.newick
+/*.nexus
