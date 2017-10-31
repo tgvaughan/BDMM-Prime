@@ -96,9 +96,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 				if (i!=j){
 					if (birthAmongDemes){     // infection among demes
 
-						gDot[i] += b_ij[l]*g[i]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+index]*g[i];
+						gDot[i] += b_ij[l]*g[i]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i];
 
-						gDot[i] -= b_ij[l]*g[i]*g[j]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+index]*g[i]*g[j];
+						gDot[i] -= b_ij[l]*g[i]*g[j]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i]*g[j];
 
 					}
 
@@ -242,7 +242,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 				y[i] = (1 - rho[i * intervals + Utils.index(T, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
 				
 				/*
-				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(T, rateChangeTimes, intervals)]) + ", t = " + t + ", to = " + T);
+				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.indexTimeInterval(T, rateChangeTimes, intervals)]) + ", t = " + t + ", to = " + T);
 				*/
 			}
 		}

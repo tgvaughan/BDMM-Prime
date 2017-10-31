@@ -22,7 +22,6 @@ public class Utils {
 
         // If t was not found in array times by binarySearch, then epoch is negative and binarySearch returns (-(insertion point) - 1).
         // The insertion point is the point at which t would be inserted into the array times
-        // Therefore, change epoch in the corresponding interval number
         if (epoch < 0) {
             epoch = -epoch - 1;
         }
@@ -43,14 +42,18 @@ public class Utils {
         // Sort the array times
         Arrays.sort(times);
 
+        if(t > times[times.length - 1]){
+            throw new RuntimeException("t is bigger than the biggest value in times array. Rework on times array so that it includes the upper bound for t.");
+        }
+
         // Perform binary search on array times
         int epoch = Arrays.binarySearch(times, t);
 
         // If t was not found in array times by binarySearch, then epoch is negative and binarySearch returns (-(insertion point) - 1).
-        // The insertion point is the point at which t would be inserted into the array times
-        // Therefore, change epoch in the corresponding interval number
-        if (epoch < 0) {
-            epoch = -epoch - 1;
+        // The insertion point is the point at which t would be inserted into the array times, the index of the first element greater than the key
+        // Therefore, change epoch in the corresponding interval number.
+        if (epoch < -1) {
+            epoch = -epoch - 2;
         }
 
         return epoch;
