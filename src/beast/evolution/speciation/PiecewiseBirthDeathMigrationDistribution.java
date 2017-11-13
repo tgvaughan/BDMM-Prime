@@ -184,7 +184,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
-	//  TO DO CHECKER QUE C'EST PAS POSSIBLE DE REMETTRE 1e-20
+	//  TODO CHECKER QUE C'EST PAS POSSIBLE DE REMETTRE 1e-20
 	public final static double globalPrecisionThreshold = 1e-10;
 
 	double T;
@@ -1088,7 +1088,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	//	 * @param from
 	//	 * @return
 	//	 */
-	//	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
+	//	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE_version_before_rework PG, double to, ScaledNumbers pgScaled, double from){
 	//
 	//		// if the integration interval is too small, nothing is done (to prevent infinite looping)
 	//		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;

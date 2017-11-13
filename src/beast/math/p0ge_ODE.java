@@ -1,17 +1,16 @@
 package beast.math;
 
 
-import java.util.Arrays;
-
-import beast.evolution.speciation.BirthDeathMigrationModel;
+import beast.core.util.Utils;
+import beast.math.p0_ODE;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.ode.nonstiff.*;
+import org.apache.commons.math3.ode.nonstiff.HighamHall54Integrator;
 
-import beast.core.util.Utils;
+import java.util.Arrays;
 
 /**
  * User: Denise
@@ -145,7 +144,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	}
 
 	/**
-	 * Perform integration on differential equations p 
+	 * Perform integration on differential equations p
 	 * @param t
 	 * @param rhoSampling
 	 * @param rho
@@ -182,7 +181,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 				from = times[index];
 
-				// TO DO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed 
+				// TO DO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
 				if (Math.abs(from-to)>globalPrecisionThreshold){
 					p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
 
@@ -190,7 +189,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 						for (int i=0; i<dimension; i++){
 							oneMinusRho = (1-rho[i*intervals + index]);
 							result[i] *= oneMinusRho;
-							
+
 							/*
 							System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", from = " + from);
 							*/
@@ -214,8 +213,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 					for (int i=0; i<dimension; i++){
 						oneMinusRho = (1-rho[i*intervals + indexFrom]);
 						result[i] *= oneMinusRho;
-					//	System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
-						
+						//	System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
+
 					}
 				}
 			}
@@ -240,7 +239,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		else{
 			for (int i = 0; i<dimension; i++) {
 				y[i] = (1 - rho[i * intervals + Utils.index(T, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
-				
+
 				/*
 				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.indexTimeInterval(T, rateChangeTimes, intervals)]) + ", t = " + t + ", to = " + T);
 				*/
