@@ -8,7 +8,7 @@ import beast.core.Input;
 
 import beast.math.SmallNumber;
 import beast.math.p0ge_InitialConditions;
-import beast.util.HeapSort;
+import java.util.concurrent.*;
 
 
 // currently cleaning
@@ -38,7 +38,34 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 	Boolean print = false;
 
-	@Override
+
+	//TODO Sth is wrong with the parallelization!!! In the unit tests, testMigs doesn't seem to finish when isParallelizedCalculation is set to true
+	//TODO refactor this parallelization stuff to PiecewiseBirthDeathMigrationDistribution class
+    static boolean isParallelizedCalculation = false;
+    static int maxNumberOfThreads = 2;
+
+    // if 'factorMinimalWeightForParallelization' = n then a new thread is only spawned to explore the rightChild
+    // if the subtree of the leftChild has at least weight x/n with x the minimum threshold for spawning a new thread
+    static int factorMinimalWeightForParallelization = 3;
+
+    static ExecutorService executor;
+    static ThreadPoolExecutor pool;
+
+    double firstParallelizationThreshold;
+    double secondParallelizationThreshold;
+
+    //TODO refactor as well to PiecewiseBirthDeathMigrationDistribution
+    static void executorBootUp(){
+        executor = Executors.newCachedThreadPool();
+        pool = (ThreadPoolExecutor) executor;
+    }
+
+    static void executorShutdown(){
+        //TODO check what happens if the pool has already been shutdown
+        pool.shutdown();
+    }
+
+    @Override
 	public void initAndValidate() {
 
 		super.initAndValidate();
@@ -174,6 +201,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		return getG(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
 	}
 
+	//TODO adapt to allow for a non-parallel way as well
 	@Override
 	public double calculateTreeLogLikelihood(TreeInterface tree) {
 
@@ -182,7 +210,13 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		coltree = (MultiTypeTree) tree;
 
 		MultiTypeNode root = (MultiTypeNode) coltree.getRoot();
-		
+
+		if(isParallelizedCalculation) {
+            // TODO rationalize calculation of thresholds (here two traversals of the whole tree)
+            this.firstParallelizationThreshold = root.getLeafNodeCount() / (double) (maxNumberOfThreads * factorMinimalWeightForParallelization);
+            this.secondParallelizationThreshold = root.getLeafNodeCount() / (double) maxNumberOfThreads;
+        }
+
 		//		if (!coltree.isValid(birthAmongDemes) || (origin.get()!=null && !originBranchIsValid(root, birthAmongDemes))){
 		if (!coltree.isValid() || (origin.get()!=null && !originBranchIsValid(root, birthAmongDemes))){
 			logP =  Double.NEGATIVE_INFINITY;
@@ -231,12 +265,23 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 			p0ge_InitialConditions pSN = new p0ge_InitialConditions();
 
+			//TODO maybe move this around, and add an input to switch on or off parallelization
+            executorBootUp();
+
 			if (orig>0){
-				if (originBranch.getChangeCount()>0) {
-					pSN = calculateOriginLikelihood(originBranch.getChangeCount()-1, 0, T-originBranch.getChangeTime(originBranch.getChangeCount()-1) );
-				} else {
-					pSN = calculateSubtreeLikelihood(root, false, null, 0, orig);
-				}
+			    if(isParallelizedCalculation) {
+                    if (originBranch.getChangeCount()>0) {
+                        pSN = calculateOriginLikelihoodInParallel(originBranch.getChangeCount()-1, 0, T-originBranch.getChangeTime(originBranch.getChangeCount()-1) );
+                    } else {
+                        pSN = calculateSubtreeLikelihoodInParallel(root, false, null, 0, orig);
+                    }
+                } else {
+                    if (originBranch.getChangeCount()>0) {
+                        pSN = calculateOriginLikelihood(originBranch.getChangeCount()-1, 0, T-originBranch.getChangeTime(originBranch.getChangeCount()-1) );
+                    } else {
+                        pSN = calculateSubtreeLikelihood(root, false, null, 0, orig);
+                    }
+                }
 			} else {
 				int childIndex = 0;
 				if (root.getChild(1).getNr() > root.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
@@ -246,6 +291,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 				if (childChangeCount > 0)
 					t0 = T - ((MultiTypeNode)root.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
+				//TODO add in parallel possibility
 				pSN = calculateSubtreeLikelihood(root.getChild(childIndex), false, null, 0., t0);
 
 				childIndex = Math.abs(childIndex-1);
@@ -255,6 +301,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 				if (childChangeCount > 0)
 					t0 = T - ((MultiTypeNode)root.getChild(childIndex)).getChangeTime(childChangeCount-1);
 
+                //TODO add in parallel possibility
 				p0ge_InitialConditions p1SN = calculateSubtreeLikelihood(root.getChild(childIndex), false, null, 0., t0);
 
 				for (int i=0; i<pSN.conditionsOnG.length; i++) pSN.conditionsOnG[i] = SmallNumber.multiply(pSN.conditionsOnG[i], p1SN.conditionsOnG[i]);
@@ -266,12 +313,12 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 			logP = Math.log(freq[node_state]) +  pSN.conditionsOnG[node_state].log();
 
-
-
 			maxEvalsUsed = Math.max(maxEvalsUsed, PG.maxEvalsUsed);
 
 		}catch(Exception e){
 			logP =  Double.NEGATIVE_INFINITY;
+			//TODO maybe move this around, and add an input to switch on or off parallelization
+            executorShutdown();
 			return logP;
 		}
 
@@ -284,69 +331,125 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			logP +=  Math.log(2)*internalNodeCount;
 		}
 
+        // TODO maybe move this around, and add an input to switch on or off parallelization
+        executorShutdown();
+
 		return logP;
 	}
 
-	/**
-	 * Implementation of calculateOriginLikelihood with Small Number structure. Avoids underflowing of integration results.
-	 * WARNING: calculateOriginLikelihood and calculateOriginLikelihoodSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
-	 * @param migIndex
-	 * @param from
-	 * @param to
-	 * @return
-	 */
-	p0ge_InitialConditions calculateOriginLikelihood(Integer migIndex, double from, double to) {
+    /**
+     * Implementation of calculateOriginLikelihood with Small Number structure. Avoids underflowing of integration results.
+     * WARNING: calculateOriginLikelihood and calculateOriginLikelihoodSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
+     * @param migIndex
+     * @param from
+     * @param to
+     * @return
+     */
+    p0ge_InitialConditions calculateOriginLikelihood(Integer migIndex, double from, double to) {
 
-		double[] pconditions = new double[n];
-		SmallNumber[] gconditions = new SmallNumber[n];
-		for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
+        double[] pconditions = new double[n];
+        SmallNumber[] gconditions = new SmallNumber[n];
+        for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
 
-		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
+        p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
 
-		int index = Utils.index(to, times, totalIntervals);
+        int index = Utils.index(to, times, totalIntervals);
 
-		int prevcol = originBranch.getChangeType(migIndex);
-		int col =  (migIndex > 0)?  originBranch.getChangeType(migIndex-1):  ((MultiTypeNode) coltree.getRoot()).getNodeType();
+        int prevcol = originBranch.getChangeType(migIndex);
+        int col =  (migIndex > 0)?  originBranch.getChangeType(migIndex-1):  ((MultiTypeNode) coltree.getRoot()).getNodeType();
 
-		migIndex--;
+        migIndex--;
 
-		p0ge_InitialConditions g ;
+        p0ge_InitialConditions g ;
 
-		if (migIndex >= 0){
+        if (migIndex >= 0){
 
-			g = calculateOriginLikelihood(migIndex, to, T - originBranch.getChangeTime(migIndex));
+            g = calculateOriginLikelihood(migIndex, to, T - originBranch.getChangeTime(migIndex));
 
-			System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
+            System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
 
-			if (birthAmongDemes)
-				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
-			else
-				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
-
-
-			return getG(from,  init,  to, pg_integrator, PG, T, maxEvalsUsed);
-
-		}
-		else {
-
-			g = calculateSubtreeLikelihood(coltree.getRoot(), false, null, to, orig);
-
-			System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
-			if (birthAmongDemes)
-				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
-			else
-				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
+            if (birthAmongDemes)
+                init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+            else
+                init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
 
 
-			// TO DO CHECK THAT isMigrationEvent should really be set to false here (otherwise pb with getP calc in getG
+            return getG(from,  init,  to, pg_integrator, PG, T, maxEvalsUsed);
 
-			// but should be ok bc coltree.getRoot should not be a leaf (except if tree with one tip maybe, which is not very interesting) 
-			return getG(from, init, to, coltree.getRoot(), false);
+        }
+        else {
 
-		}
-	}
+            g = calculateSubtreeLikelihood(coltree.getRoot(), false, null, to, orig);
 
-	/**
+            System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
+            if (birthAmongDemes)
+                init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+            else
+                init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
+
+
+            // TO DO CHECK THAT isMigrationEvent should really be set to false here (otherwise pb with getP calc in getG
+
+            // but should be ok bc coltree.getRoot should not be a leaf (except if tree with one tip maybe, which is not very interesting)
+            return getG(from, init, to, coltree.getRoot(), false);
+
+        }
+    }
+
+    //TODO rework how this method fits with the non-parallel calculateOriginLikelihood
+    p0ge_InitialConditions calculateOriginLikelihoodInParallel(Integer migIndex, double from, double to) {
+
+        double[] pconditions = new double[n];
+        SmallNumber[] gconditions = new SmallNumber[n];
+        for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
+
+        p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
+
+        int index = Utils.index(to, times, totalIntervals);
+
+        int prevcol = originBranch.getChangeType(migIndex);
+        int col =  (migIndex > 0)?  originBranch.getChangeType(migIndex-1):  ((MultiTypeNode) coltree.getRoot()).getNodeType();
+
+        migIndex--;
+
+        p0ge_InitialConditions g ;
+
+        if (migIndex >= 0){
+
+            g = calculateOriginLikelihood(migIndex, to, T - originBranch.getChangeTime(migIndex));
+
+            System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
+
+            if (birthAmongDemes)
+                init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+            else
+                init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+
+
+            return getG(from,  init,  to, pg_integrator, PG, T, maxEvalsUsed);
+
+        }
+        else {
+
+            g = calculateSubtreeLikelihood(coltree.getRoot(), false, null, to, orig);
+
+            System.arraycopy(g.conditionsOnP, 0, pconditions, 0, n);
+            if (birthAmongDemes)
+                init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+            else
+                init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);		// with ratechange in M
+
+
+            // TO DO CHECK THAT isMigrationEvent should really be set to false here (otherwise pb with getP calc in getG
+
+            // but should be ok bc coltree.getRoot should not be a leaf (except if tree with one tip maybe, which is not very interesting)
+            return getG(from, init, to, coltree.getRoot(), false);
+
+        }
+    }
+
+
+    /**
 	 * Implementation of calculateSubtreeLikelihood with Small Number structure. Avoids underflowing of integration results.
 	 * WARNING: calculateSubTreeLikelihood and calculateSubTreeLikelihoodSmalNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
 	 * @param node
@@ -526,6 +629,203 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		return getG(from, init, to, node, false);
 	}
 
+    //TODO rework how this method fits with the non-parallel calculateSubtreeLikelihood
+	p0ge_InitialConditions calculateSubtreeLikelihoodInParallel(Node node, Boolean isMigrationEvent, Integer migrationIndex, double from, double to) {
+
+		double[] pconditions = new double[n];
+		SmallNumber[] gconditions = new SmallNumber[n];
+		for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
+
+		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
+
+		int nodestate = ((MultiTypeNode)node).getNodeType();
+		int index = Utils.index(to, times, totalIntervals);
+
+		if (isMigrationEvent){ // migration event
+
+			int prevcol = ((MultiTypeNode) node).getChangeType(migrationIndex);
+			int col =  (migrationIndex > 0)?  ((MultiTypeNode) node).getChangeType(migrationIndex-1):  ((MultiTypeNode) node).getNodeType();
+			double time ;
+
+            migrationIndex--;
+
+			time = (migrationIndex >= 0)? ((MultiTypeNode) node).getChangeTime(migrationIndex) :node.getHeight();
+			p0ge_InitialConditions g = calculateSubtreeLikelihoodInParallel(node, (migrationIndex >= 0), migrationIndex, to, T-time);
+
+			System.arraycopy(g.conditionsOnP, 0, init.conditionsOnP, 0, n);
+			if (birthAmongDemes) // this might be a birth among demes where only the child with the different type got sampled
+				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(b_ij[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+			if (M[0]!=null)     // or it really is a migration event
+				init.conditionsOnG[prevcol] = g.conditionsOnG[col].scalarMultiply(M[totalIntervals * (prevcol * (n - 1) + (col < prevcol ? col : col - 1)) + index]);
+
+			return getG(from, init, to, node, true);
+		}
+
+		else {
+
+			if (migrationIndex==null &&  ((MultiTypeNode)node).getChangeCount()>0){ // node has migration event(psi)
+
+				return calculateSubtreeLikelihoodInParallel(node, true, ((MultiTypeNode)node).getChangeCount()-1, from, to) ;
+			}
+
+			else{
+
+				if (node.isLeaf()){ // sampling event
+
+					if (!isRhoTip[node.getNr()]){
+
+						init.conditionsOnG[nodestate] = SAModel
+								? new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
+								*psi[nodestate * totalIntervals + index])
+
+								: new SmallNumber(psi[nodestate * totalIntervals + index]);
+
+						//TO DO REMOVE IF ABOVE WORKS
+						//						init.conditionsOnG[nodestate] = SAModel
+						//								? new SmallNumber((r[nodestate * totalIntervals + index] + PG.getP(to, m_rho.get()!=null, rho)[nodestate]*(1-r[nodestate * totalIntervals + index]))
+						//										*psi[nodestate * totalIntervals + index])
+						//
+						//										: new SmallNumber(psi[nodestate * totalIntervals + index]);
+
+					} else {
+
+						//TO DO make the modif in the manuscript (for the "/(1-rho)" thing)
+						init.conditionsOnG[nodestate] = SAModel?
+								new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]/(1-rho[nodestate*totalIntervals+index])*(1-r[nodestate * totalIntervals + index]))
+										*rho[nodestate*totalIntervals+index])  :
+								new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ+δ)) //the +δ is translated by dividing p_i with 1-ρ_i (otherwise there's one too many "*ρ_i" )
+
+					}
+
+					if (print) System.out.println("Sampling at time " + to);
+
+					return getG(from, init, to, node, false);
+				}
+
+				else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
+
+					if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
+
+						if (r==null)
+							throw new RuntimeException("Error: Sampled ancestor found, but removalprobability not specified!");
+
+						int childIndex = 0;
+
+						if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
+
+						p0ge_InitialConditions g = calculateSubtreeLikelihoodInParallel(node.getChild(childIndex), false, null, to, T - node.getChild(childIndex).getHeight());
+
+						int saNodeState = ((MultiTypeNode) node.getChild(childIndex ^ 1)).getNodeType(); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
+
+						if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
+
+							init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
+							init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index]
+									* (1-r[saNodeState * totalIntervals + index]));
+
+							//							System.out.println("SA but not rho sampled");
+
+						} else {
+							// TO DO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
+							init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState]*(1-rho[saNodeState*totalIntervals+index]) ;
+							init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]
+									* (1-r[saNodeState * totalIntervals + index]));
+
+							//TO DO working on below, probably doesn't work
+							//							init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
+							//							init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]/(1-rho[saNodeState*totalIntervals+index])
+							//									* (1-r[saNodeState * totalIntervals + index]));
+
+							//							System.out.println("SA and rho sampled and rho is: " + rho[saNodeState*totalIntervals+index] );
+						}
+
+					}
+
+					else {   // birth / infection event
+
+						int indexFirstChild = 0;
+						if (node.getChild(1).getNr() > node.getChild(0).getNr()) indexFirstChild = 1; // always start with the same child to avoid numerical differences
+
+                        int indexSecondChild = Math.abs(indexFirstChild-1);
+
+                        //TODO add initial tree traversal to not waste time with traversing the tree everytime to get the size of the appending subtrees
+                        int weightFirstNode = node.getChild(indexFirstChild).getLeafNodeCount();
+                        int weightSecondNode = node.getChild(Math.abs(indexFirstChild-1)).getLeafNodeCount();
+
+						double t0 = T - node.getChild(indexFirstChild).getHeight();
+						int childChangeCount = ((MultiTypeNode)node.getChild(indexFirstChild)).getChangeCount();
+						if (childChangeCount > 0)
+							t0 = T - ((MultiTypeNode)node.getChild(indexFirstChild)).getChangeTime(childChangeCount-1);
+
+
+                        double t1 = T - node.getChild(indexSecondChild).getHeight();
+                        childChangeCount = ((MultiTypeNode)node.getChild(indexSecondChild)).getChangeCount();
+                        if (childChangeCount > 0)
+                            t1 = T - ((MultiTypeNode)node.getChild(indexSecondChild)).getChangeTime(childChangeCount-1);
+
+                        //TODO refactor with more explicit names
+                        p0ge_InitialConditions g0 = new p0ge_InitialConditions();
+                        p0ge_InitialConditions g1 = new p0ge_InitialConditions();
+
+                        // evaluate if the next step in the traversal should be split between one new thread and the currrent thread and run in parallel.
+                        if (weightSecondNode > this.secondParallelizationThreshold &&
+                                weightFirstNode > this.firstParallelizationThreshold) {
+
+                            try {
+                                // start a new thread to take care of the second subtree
+                                Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
+                                        new TraversalService(node.getChild(indexSecondChild),isMigrationEvent, migrationIndex, to, t1));
+
+                                g0 = calculateSubtreeLikelihoodInParallel(node.getChild(indexFirstChild), false, null, to, t0);
+                                g1 = secondChildTraversal.get();
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                                //TODO deal with exceptions properly, maybe do the traversal serially if something failed.
+                            }
+                        } else {
+                            g0 = calculateSubtreeLikelihoodInParallel(node.getChild(indexFirstChild), false, null, to, t0);
+                            g1 = calculateSubtreeLikelihoodInParallel(node.getChild(indexSecondChild), false, null, to, t1);
+                        }
+
+						System.arraycopy(g0.conditionsOnP, 0, init.conditionsOnP, 0, n);
+
+						if (((MultiTypeNode) node.getChild(0)).getFinalType() == nodestate && nodestate == ((MultiTypeNode) node.getChild(1)).getFinalType()) { // within type transmission event
+
+							init.conditionsOnG[nodestate] = SmallNumber.multiply(g0.conditionsOnG[nodestate], g1.conditionsOnG[nodestate]).scalarMultiply(birth[nodestate * totalIntervals + index]);
+
+						} else { // among type transmission event
+
+							if 	(((MultiTypeNode) node.getChild(0)).getFinalType() != nodestate && nodestate != ((MultiTypeNode) node.getChild(1)).getFinalType())
+								throw new RuntimeException("Error: Invalid tree (both children have typeChange event at parent node!");
+
+							int child = (((MultiTypeNode) node.getChild(0)).getFinalType() != nodestate) ? 0 : 1;
+							int childstate = ((MultiTypeNode)node.getChild(child)).getFinalType();
+
+							init.conditionsOnG[nodestate] =
+									SmallNumber.multiply(g0.conditionsOnG[child==0? childstate : nodestate], g1.conditionsOnG[child==1? childstate : nodestate]).scalarMultiply(b_ij[totalIntervals * (childstate * (n - 1) + (nodestate < childstate ? nodestate : nodestate - 1)) + index]);
+
+						}
+
+						// TO DO actually test this works with a tree with rho sampling at a branching event
+						// TO DO check that this part of the code is actually reached
+						if (m_rho.get()!=null && isRhoInternalNode[node.getNr()-treeInput.get().getLeafNodeCount()]) {
+
+							init.conditionsOnG[nodestate]= init.conditionsOnG[nodestate].scalarMultiply(1 - rho[nodestate*totalIntervals+index]);
+							// TO DO REMOVE PRINT
+							System.out.println("state " + nodestate + "\t 1-rho[childstate] " + (1 - rho[nodestate*totalIntervals+index]));
+
+						}
+					}
+				}
+			}
+		}
+
+		//TO DO: again, check that this can never be starting from a migration event, but it shouldn't
+		return getG(from, init, to, node, false);
+	}
+
+
 	//	public void transformParameters(){
 	//
 	//		transformWithinParameters();
@@ -555,4 +855,28 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		return true;
 	}
 
+	class TraversalService implements Callable<p0ge_InitialConditions> {
+
+		private Node rootSubtree;
+		private Boolean isMigrationEvent;
+		private Integer migrationIndex;
+		private double from;
+		private double to;
+
+		public TraversalService(Node root, Boolean isMigrationEvent, Integer migrationIndex, double from, double to) {
+			this.rootSubtree = root;
+			this.isMigrationEvent = isMigrationEvent;
+			this.migrationIndex = migrationIndex;
+			this.from = from;
+			this.to = to;
+		}
+
+		@Override
+		public p0ge_InitialConditions call() throws Exception {
+			// traverse the tree in a potentially-parallelized way
+			// cast the result to an Integer
+			return calculateSubtreeLikelihoodInParallel(rootSubtree, isMigrationEvent, migrationIndex, from, to);
+		}
+	}
 }
+

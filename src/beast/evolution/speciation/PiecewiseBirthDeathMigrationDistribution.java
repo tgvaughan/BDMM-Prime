@@ -416,7 +416,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	 * @return
 	 */
 	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0,
-			FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+									   FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 
 		try {
@@ -429,6 +429,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			double to = t0;
 			double oneMinusRho;
 
+			//TODO remove 'threshold'
 			double threshold  = T/10;
 
 			int indexFrom = Utils.index(from, times, times.length);
@@ -444,6 +445,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			// pgScaled contains the set of initial conditions scaled made to fit the requirements on the values 'double' can represent. It also contains the factor by which the numbers were multiplied
 			ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0);
+
+			//TODO remove integration results.
 			// integrationResults will temporarily store the results of	 each integration step as 'doubles', before converting them back to 'SmallNumbers'
 			double[] integrationResults = new double[2*n];
 
@@ -451,14 +454,20 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 				from = times[index];
 
-				if (useRKInput.get() || (to - from) < threshold) {
-					pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
-					PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
-				} else {
-					pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
-					// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-					PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
-				}
+				//TODO either remove the commented 'if', or reenable it. Although keeping useRK may be cool to test if pb with adaptive integrator.
+				//TODO or rather, create method that returns an integrator, so the integrator ca nbe directly changed there (replace set_integrator method)
+				// basically, safeIntegrate takes care of introducing a threshold for safety
+				// and useRK should probably be removed altogether as it is dangerous to integrate with RK and actually
+				// so this if/else should not be necessary
+
+//				if (useRKInput.get() || (to - from) < threshold) {
+//					pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
+//					PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
+//				} else {
+				pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
+				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
+				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
+//				}
 
 
 				if (rhoChanges>0){
@@ -481,15 +490,22 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				pgScaled = SmallNumberScaler.scale(PG0);
 			}
 
-			if (useRKInput.get() || (to - t) < threshold) {
-				pg_integrator.integrate(PG, to, pgScaled.getEquation(), t, integrationResults);
-				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
-			} else {
-				pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, t); // solve PG , store solution temporarily integrationResults
-				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
-			}
+			//TODO same thing: either remove the commented 'if', or reenable it.
+			// basically, safeIntegrate takes care of introducing a threshold for safety
+			// and useRK should probably be removed altogether as it is dangerous to integrate with RK and actually
+			// so this if/else should not be necessary
+//			if (useRKInput.get() || (to - t) < threshold) {
+//				pg_integrator.integrate(PG, to, pgScaled.getEquation(), t, integrationResults);
+//				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
+//			} else {
+			pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, t); // solve PG , store solution temporarily integrationResults
+			// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
+			PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
+//			}
 		}catch(Exception e){
+
+			//TODO remove next line (for debugging)
+			e.printStackTrace();
 
 			throw new RuntimeException("couldn't calculate g");
 		}
@@ -912,6 +928,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 
+	//TODO rework on setup integrator, should probably be specific to one calculation in safeIntegrate, and P and PG should maybe be specific to one thread, although P may need to be shared
 	void setupIntegrators(){   // set up ODE's and integrators
 
 		if (minstep == null) minstep = T*1e-100;
@@ -950,8 +967,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		}
 	}
-
-
 
 	/**
 	 * Obtain element of rate matrix for migration model for use in likelihood
@@ -996,7 +1011,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 
-
 	// Interface requirements:
 
 	@Override
@@ -1030,9 +1044,13 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	 */
 	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
 
+		//TODO why do I need to pass the integrator as an argument here? I don't think I do (js)
+		//TODO sort this out and remove the integrator then.
+
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
 		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
 
+		//TODO rework on threshold here, t/2 seems quite high. admittidly having a lower threshold slows things down but T/2 makes the safety pretty useless.
 		if(T>0 && Math.abs(from-to)>T/2 ) {
 			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);
 			pgScaled = safeIntegrate(integrator, PG, from + (to-from)/2, pgScaled, from);
