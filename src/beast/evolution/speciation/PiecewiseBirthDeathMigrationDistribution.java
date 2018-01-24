@@ -155,10 +155,16 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 					"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
 
 	public Input<RealParameter> migrationMatrix =
-			new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagnonal entries omitted");
+			new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagonal entries omitted");
 	public Input<RealParameter> migrationMatrixScaleFactor =
 			new Input<>("migrationMatrixScaleFactor", "A real number with which each migration rate entry is scaled.");
 
+	// adapted from SCMigrationModel class in package MultiTypeTree by Tim Vaughan
+	//TODO test (add unit test) to check this works
+	public Input<BooleanParameter> rateMatrixFlagsInput = new Input<>(
+			"rateMatrixFlags",
+			"Optional boolean parameter specifying which rates to use."
+					+ " (Default is to use all rates.)");
 
 
 	public Input<RealParameter> birthRateAmongDemes =
@@ -183,6 +189,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("useRK", "Use fixed step size Runge-Kutta integrator with 1000 steps. Default false", false);
 
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
+
+
+	//Below: optional inputs that have to do with how the calculations are implemented and done
+	//TODO changer, adapter a la taille de l'arbre donné
+	public Input<Integer> maxTreeSize =
+			new Input<>("maxTreeSize", "maximal size of an input tree", 10000);
+
+//	public static int maxTreeSize = 10000;
 
 	//  TODO CHECKER QUE C'EST PAS POSSIBLE DE REMETTRE 1e-20
 	public final static double globalPrecisionThreshold = 1e-10;
@@ -266,6 +280,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	double[][] pInitialConditions;
 	double[] sortedNodes;
 
+	protected BooleanParameter rateMatrixFlags;
+
+	public double[] weightOfNodeSubTree;
+
 
 	@Override
 	public void initAndValidate() {
@@ -294,6 +312,20 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		Double factor;
 		if (migrationMatrix.get()!=null) {
 			M = migrationMatrix.get().getValues();
+
+			if (rateMatrixFlagsInput.get() != null) {
+				rateMatrixFlags = rateMatrixFlagsInput.get();
+
+				if (rateMatrixFlags.getDimension() != migrationMatrix.get().getDimension())
+					throw new IllegalArgumentException("Migration rate flags"
+							+ " array does not have same number of elements as"
+							+ " migration rate matrix.");
+
+				for (int i = 0; i < M.length; i++) {
+					M[i] = rateMatrixFlags.getValue(i)? M[i] : 0.0;
+				}
+			}
+
 
 			if (migrationMatrixScaleFactor.get()!=null) {
 				factor = migrationMatrixScaleFactor.get().getValue();
@@ -576,6 +608,48 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	abstract void computeRhoTips();
 
+	/**
+	 * Perform an initial traversal of the tree to get the 'weights' (sum of all its edges lengths) of all sub-trees
+	 * Useful for performing parallelized calculations on the tree.
+	 * The weights of the subtrees tell us the depth at which parallelization should stop, so as to not parallelize on subtrees that are too small.
+	 * Results are stored in 'weightOfNodeSubTree' array
+	 * @param tree
+	 */
+	public void getAllSubTreesWeights(TreeInterface tree){
+		Node root = tree.getRoot();
+		double weight = 0;
+		for(final Node child : root.getChildren()) {
+			weight += getSubTreeWeight(child);
+		}
+		weightOfNodeSubTree[root.getNr()] = weight;
+	}
+
+	/**
+	 * Perform an initial traversal of the subtree to get its 'weight': sum of all its edges.
+	 * @param node
+	 * @return
+	 */
+	public double getSubTreeWeight(Node node){
+
+		// if leaf, stop recursion, get length of branch above and return
+		if(node.isLeaf()) {
+			weightOfNodeSubTree[node.getNr()] = node.getLength();
+			return node.getLength();
+		}
+
+		// else, iterate over the children of the node
+		double weight = 0;
+		for(final Node child : node.getChildren()) {
+			weight += getSubTreeWeight(child);
+		}
+		// add length of parental branch
+		weight += node.getLength();
+		// store the value
+		weightOfNodeSubTree[node.getNr()] = weight;
+
+		return weight;
+	}
+
 
 	/**
 	 * Collect all the times of parameter value changes and rho-sampling events
@@ -759,7 +833,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				}
 			}
 		}
-
 	}
 
 
@@ -1264,6 +1337,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			if (migrationMatrixScaleFactor.get()!=null) {
 				factor = migrationMatrixScaleFactor.get().getValue();
 				for (int i = 0; i < migRates.length; i++) migRates[i] *= factor;
+			}
+
+			if (rateMatrixFlagsInput.get() != null) {
+				rateMatrixFlags = rateMatrixFlagsInput.get();
+
+				for (int i = 0; i < migRates.length; i++) {
+					migRates[i] = rateMatrixFlags.getValue(i)? migRates[i] : 0.0;
+				}
 			}
 
 			updateAmongParameter(M, migRates, migChanges, migChangeTimes);

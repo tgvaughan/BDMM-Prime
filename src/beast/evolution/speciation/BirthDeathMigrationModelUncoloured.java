@@ -50,19 +50,26 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 	Boolean print = false;
 
-	//TODO refactor this parallelization stuff to PiecewiseBirthDeathMigrationDistribution class
-	public static boolean isParallelizedCalculation = false;
-	static int maxNumberOfThreads = 2;
+	//TODO make this an optional input with default value 5000
+	public static int maxTreeSize = 10000;
+	//TODO change the initialization of this as well (put in initAndValidate?)
+	public double[] weightOfNodeSubTree = new double[maxTreeSize];
 
-	// if 'factorMinimalWeightForParallelization' = n then a new thread is only spawned to explore the rightChild
-	// if the subtree of the leftChild has at least weight x/n with x the minimum threshold for spawning a new thread
-	static int factorMinimalWeightForParallelization = 4;
+	//TODO refactor this parallelization stuff to PiecewiseBirthDeathMigrationDistribution class
+
+
+	// TODO create input for isParallelized (Set default to true?) and for maxNumberOfThreads
+	public static boolean isParallelizedCalculation = true;
+	public static int maxNumberOfThreads = 2;
+
+	// if maxNumberOfThreads * factorMinimalWeightForParallelization = n then a new thread is only spawned to explore the rightChild
+	// if the subtree of the leftChild has at least weight x/n with x the overall weight of the tree
+	public static double factorMinimalWeightForParallelization = 2.5;
 
 	static ExecutorService executor;
 	static ThreadPoolExecutor pool;
 
-	double firstParallelizationThreshold;
-	double secondParallelizationThreshold;
+	double parallelizationThreshold;
 
 	//TODO refactor as well to PiecewiseBirthDeathMigrationDistribution
 	static void executorBootUp(){
@@ -110,7 +117,17 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 		collectTimes(T);
 		setRho();
-	}
+
+		//TODO refactor in piecewisebirthdeathdistribution
+		if(isParallelizedCalculation) {
+			getAllSubTreesWeights(tree);
+			// set 'parallelizationThreshold' to a fraction of the whole tree weight.
+			// The size of this fraction is determined by a tuning parameter. This parameter should be adjusted (increased) if more computation cores are available
+			parallelizationThreshold = weightOfNodeSubTree[tree.getRoot().getNr()] / (maxNumberOfThreads * factorMinimalWeightForParallelization);
+		}
+
+
+		}
 
 
 //	protected Double updateRates(TreeInterface tree) {
@@ -222,13 +239,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		SmallNumber PrSN = new SmallNumber(0);
 		double nosample = 0;
 
-		if(isParallelizedCalculation) {
-			// TODO rationalize calculation of thresholds (here two traversals of the whole tree)
-			this.firstParallelizationThreshold = root.getLeafNodeCount() / (double) (maxNumberOfThreads * factorMinimalWeightForParallelization);
-			this.secondParallelizationThreshold = root.getLeafNodeCount() / (double) maxNumberOfThreads;
-		}
-
-
 		try{  // start calculation
 
 			pInitialConditions = getAllInitialConditionsForP(tree);
@@ -251,8 +261,9 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			p0ge_InitialConditions pSN = new p0ge_InitialConditions();
 
+
 			//TODO maybe move this around, and add an input to switch on or off parallelization
-			executorBootUp();
+			if(isParallelizedCalculation) {executorBootUp();}
 
 			if ( orig > 0 ) {
 				if(isParallelizedCalculation) { pSN = calculateSubtreeLikelihoodInParallel(root,0,orig);}
@@ -620,9 +631,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 				int indexSecondChild = Math.abs(indexFirstChild-1);
 
-				//TODO add initial tree traversal to not waste time with traversing the tree every time to get the size of the appending subtrees
-				int weightFirstNode = node.getChild(indexFirstChild).getLeafNodeCount();
-				int weightSecondNode = node.getChild(Math.abs(indexFirstChild-1)).getLeafNodeCount();
+				double weightFirstNode = weightOfNodeSubTree[node.getChild(indexFirstChild).getNr()];
+				double weightSecondNode = weightOfNodeSubTree[node.getChild(indexSecondChild).getNr()];
 
 				//TODO refactor with more explicit names
 				p0ge_InitialConditions g0 = new p0ge_InitialConditions();
@@ -634,8 +644,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 //				if (weightSecondNode > this.secondParallelizationThreshold &&
 //						weightFirstNode > this.firstParallelizationThreshold) {
 
-				if (weightSecondNode > this.firstParallelizationThreshold &&
-						weightFirstNode > this.firstParallelizationThreshold) {
+				if (weightSecondNode > this.parallelizationThreshold &&
+						weightFirstNode > this.parallelizationThreshold) {
 					try {
 						// start a new thread to take care of the second subtree
 						Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
@@ -888,9 +898,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 					int indexSecondChild = Math.abs(indexFirstChild-1);
 
-					//TODO add initial tree traversal to not waste time with traversing the tree every time to get the size of the appending subtrees
-					int weightFirstNode = node.getChild(indexFirstChild).getLeafNodeCount();
-					int weightSecondNode = node.getChild(Math.abs(indexFirstChild-1)).getLeafNodeCount();
+					double weightFirstNode = weightOfNodeSubTree[node.getChild(indexFirstChild).getNr()];
+					double weightSecondNode = weightOfNodeSubTree[node.getChild(indexSecondChild).getNr()];
 
 					//TODO refactor with more explicit names
 					p0ge_InitialConditions g0 = new p0ge_InitialConditions();
@@ -902,8 +911,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 //				if (weightSecondNode > this.secondParallelizationThreshold &&
 //						weightFirstNode > this.firstParallelizationThreshold) {
 
-					if (weightSecondNode > firstParallelizationThreshold &&
-							weightFirstNode > firstParallelizationThreshold) {
+					if (weightSecondNode > parallelizationThreshold &&
+							weightFirstNode > parallelizationThreshold) {
 						try {
 							// start a new thread to take care of the second subtree
 							Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
@@ -1100,7 +1109,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		@Override
 		public p0ge_InitialConditions call() throws Exception {
 			// traverse the tree in a potentially-parallelized way
-			// cast the result to an Integer
 			return calculateSubtreeLikelihoodInThread(rootSubtree, from, to);
 		}
 	}
