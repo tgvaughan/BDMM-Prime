@@ -159,6 +159,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagonal entries omitted");
 
 
+	public Input<RealParameter> migrationMatrixScaleFactor =
+			new Input<>("migrationMatrixScaleFactor", "A real number with which each migration rate entry is scaled.");
+
 	// adapted from SCMigrationModel class in package MultiTypeTree by Tim Vaughan
 	//TODO test (add unit test) to check this works
 	public Input<BooleanParameter> rateMatrixFlagsInput = new Input<>(
@@ -199,8 +202,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			" must have to start parallel calculations on the children. (default: 1/10). ", new Double(1/10));
 
 
-	public Input<RealParameter> migrationMatrixScaleFactor =
-			new Input<>("migrationMatrixScaleFactor", "A real number with which each migration rate entry is scaled.");
+
 
 	public static boolean isParallelizedCalculation;
 
