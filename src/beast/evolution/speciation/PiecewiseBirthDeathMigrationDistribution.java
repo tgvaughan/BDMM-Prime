@@ -27,10 +27,11 @@ import java.util.List;
 import java.util.Random;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
 
-//currently cleaning
-//removing the overflowing way (done)
-//refactor to rename methods appropriately (done)
 
 /**
  * Created with IntelliJ IDEA.
@@ -148,16 +149,15 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<RealParameter> R0_base =
 			new Input<>("R0_base",
 					"The basic reproduction number for the base pathogen class, should have the same dimension as " +
-					"the number of time intervals.");
+							"the number of time intervals.");
 	public Input<RealParameter> lambda_ratio =
 			new Input<>("lambda_ratio",
 					"The ratio of basic infection rates of all other classes when compared to the base lambda, " +
-					"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
+							"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
 
 	public Input<RealParameter> migrationMatrix =
 			new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagonal entries omitted");
-	public Input<RealParameter> migrationMatrixScaleFactor =
-			new Input<>("migrationMatrixScaleFactor", "A real number with which each migration rate entry is scaled.");
+
 
 	// adapted from SCMigrationModel class in package MultiTypeTree by Tim Vaughan
 	//TODO test (add unit test) to check this works
@@ -191,17 +191,25 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
 
-	//Below: optional inputs that have to do with how the calculations are implemented and done
-	//TODO changer, adapter a la taille de l'arbre donné
-	public Input<Integer> maxTreeSize =
-			new Input<>("maxTreeSize", "maximal size of an input tree", 10000);
+	public Input<Boolean> isParallelizedCalculationInput = new Input<>("parallelize", "is the calculation parallelized on sibling subtrees or not (default true)", true);
 
-//	public static int maxTreeSize = 10000;
+	//If a large number a cores is available (more than 8 or 10) the calculation speed can be increased by diminishing the parallelization factor
+	//On the contrary, if only 2-4 cores are available, a slightly higher value (1/5 to 1/8) can be beneficial to the calculation speed.
+	public Input<Double> minimalProportionForParallelizationInput = new Input<>("parallelizationFactor", "the minimal relative size the two children subtrees of a node" +
+			" must have to start parallel calculations on the children. (default: 1/10). ", new Double(1/10));
 
-	//  TODO CHECKER QUE C'EST PAS POSSIBLE DE REMETTRE 1e-20
+
+	public Input<RealParameter> migrationMatrixScaleFactor =
+			new Input<>("migrationMatrixScaleFactor", "A real number with which each migration rate entry is scaled.");
+
+	public static boolean isParallelizedCalculation;
+
+	public static double minimalProportionForParallelization;
+
+	//  TODO check if it's possible to have 1e-20 there
 	public final static double globalPrecisionThreshold = 1e-10;
 
-	double T;
+	static volatile double T = 0;
 	double orig;
 	int ntaxa;
 
@@ -209,15 +217,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	p0ge_ODE PG;
 
 	FirstOrderIntegrator pg_integrator;
-	public int maxEvalsUsed;
-	public Double minstep;
-	public Double maxstep;
+	public static Double minstep;
+	public static Double maxstep;
 
 	// these four arrays are totalIntervals in length
 	protected Double[] birth;
 	Double[] death;
 	Double[] psi;
-	Double[] rho;
+	static  volatile Double[] rho;
 	Double[] r;
 
 	/**
@@ -228,7 +235,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	int b_ij_Changes;
 	int deathChanges;
 	int samplingChanges;
-	int rhoChanges;
+	static int rhoChanges;
 	int rChanges;
 
 
@@ -240,13 +247,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	int rhoSamplingCount;
 	Boolean constantRho;
 	Boolean[] isRhoTip;
-	Boolean[] isRhoInternalNode;
 
 	/**
 	 * Total interval count
 	 */
-	int totalIntervals;
-	int n;  // number of states / locations
+	static int totalIntervals;
+	static int n;  // number of states / locations
 
 	protected List<Double> migChangeTimes = new ArrayList<>();
 	protected List<Double> birthRateChangeTimes = new ArrayList<>();
@@ -259,7 +265,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	Boolean contempData;
 	SortedSet<Double> timesSet = new TreeSet<>();
 
-	protected Double[] times = new Double[]{0.};
+	protected static volatile Double[] times = new Double[]{0.};
 
 	protected Boolean transform;
 
@@ -277,16 +283,24 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	Double[] freq;
 
-	double[][] pInitialConditions;
-	double[] sortedNodes;
+	static double[][] pInitialConditions;
 
 	protected BooleanParameter rateMatrixFlags;
 
 	public double[] weightOfNodeSubTree;
 
+	double parallelizationThreshold;
+
+	static ExecutorService executor;
+	static ThreadPoolExecutor pool;
+
+
+	TreeInterface tree;
 
 	@Override
 	public void initAndValidate() {
+
+		tree = treeInput.get();
 
 		identicalRatesForAllTypes = new Boolean[]{false, false, false, false, false, false};
 		if (identicalRatesForAllTypesInput.get()!=null)
@@ -339,7 +353,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				} else if(intervalTimes.get() != null){
 					timeChanges = intervalTimes.get().getDimension();
 				}
-				if (timeChanges == 0 || M.length != n*(n-1)*timeChanges ) 
+				if (timeChanges == 0 || M.length != n*(n-1)*timeChanges )
 					throw new RuntimeException("Migration matrix dimension is incorrect!");
 			}
 			migChanges = migrationMatrix.get().getDimension()/Math.max(1,(n*(n-1))) - 1;
@@ -431,25 +445,44 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if (freqSum!=1.)
 			throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
 
-		//        // calculate equilibrium frequencies for 2 types:
-		//        double LambMu = -b[0]-b[1]-(d[0]+s[0])+(d[1]+s[1]);
-		//        double c = Math.sqrt(Math.pow(LambMu,2) +4*b_ij[0]*b_ij[1]);
-		//        freq[0] = (c+LambMu)/(c+LambMu+2*b_ij[0]) ;
-		//        freq[1] = 1 - freq[0];
+
+		ntaxa = tree.getLeafNodeCount();
+
+		int contempCount = 0;
+		for (Node node : tree.getExternalNodes())
+			if (node.getHeight()==0.)
+				contempCount++;
+
+		if (checkRho.get() && contempCount>1 && rho==null)
+			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
+
+		checkOrigin(tree);
+		collectTimes(T);
+		setRho();
+
+		weightOfNodeSubTree = new double[ntaxa * 2];
+
+		isParallelizedCalculation = isParallelizedCalculationInput.get();
+		minimalProportionForParallelization = minimalProportionForParallelizationInput.get();
+
+		if(isParallelizedCalculation) {
+			getAllSubTreesWeights(tree);
+			// set 'parallelizationThreshold' to a fraction of the whole tree weight.
+			// The size of this fraction is determined by a tuning parameter. This parameter should be adjusted (increased) if more computation cores are available
+			parallelizationThreshold = weightOfNodeSubTree[tree.getRoot().getNr()] * minimalProportionForParallelization;
+		}
 
 	}
 
 	/**
-	 * Implementation of getG with Small Number structure for the ge equations. Avoids underflowing of integration results.
-	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
+	 *
 	 * @param t
 	 * @param PG0
 	 * @param t0
+	 * @param PG
 	 * @return
 	 */
-	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0,
-									   FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
-
+	public static p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG){// PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		try {
 
@@ -460,9 +493,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			double from = t;
 			double to = t0;
 			double oneMinusRho;
-
-			//TODO remove 'threshold'
-			double threshold  = T/10;
 
 			int indexFrom = Utils.index(from, times, times.length);
 			int index = Utils.index(to, times, times.length);
@@ -478,28 +508,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			// pgScaled contains the set of initial conditions scaled made to fit the requirements on the values 'double' can represent. It also contains the factor by which the numbers were multiplied
 			ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0);
 
-			//TODO remove integration results.
-			// integrationResults will temporarily store the results of	 each integration step as 'doubles', before converting them back to 'SmallNumbers'
-			double[] integrationResults = new double[2*n];
-
 			while (steps > 0){
 
 				from = times[index];
 
-				//TODO either remove the commented 'if', or reenable it. Although keeping useRK may be cool to test if pb with adaptive integrator.
-				//TODO or rather, create method that returns an integrator, so the integrator ca nbe directly changed there (replace set_integrator method)
-				// basically, safeIntegrate takes care of introducing a threshold for safety
-				// and useRK should probably be removed altogether as it is dangerous to integrate with RK and actually
-				// so this if/else should not be necessary
+				pgScaled = safeIntegrate(PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
 
-//				if (useRKInput.get() || (to - from) < threshold) {
-//					pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
-//					PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
-//				} else {
-				pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
 				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
 				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
-//				}
 
 
 				if (rhoChanges>0){
@@ -507,9 +523,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 						oneMinusRho = 1-rho[i*totalIntervals + index];
 						PG0.conditionsOnP[i] *= oneMinusRho;
 						PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
-						/*
-						System.out.println("In getGSmallNumber, multiplying with oneMinusRho: " + oneMinusRho +", to = " +to);
-						 */
 					}
 				}
 
@@ -522,27 +535,16 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				pgScaled = SmallNumberScaler.scale(PG0);
 			}
 
-			//TODO same thing: either remove the commented 'if', or reenable it.
-			// basically, safeIntegrate takes care of introducing a threshold for safety
-			// and useRK should probably be removed altogether as it is dangerous to integrate with RK and actually
-			// so this if/else should not be necessary
-//			if (useRKInput.get() || (to - t) < threshold) {
-//				pg_integrator.integrate(PG, to, pgScaled.getEquation(), t, integrationResults);
-//				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
-//			} else {
-			pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, t); // solve PG , store solution temporarily integrationResults
+			pgScaled = safeIntegrate(PG, to, pgScaled, t); // solve PG , store solution temporarily integrationResults
+
 			// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
 			PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
-//			}
-		}catch(Exception e){
 
-			//TODO remove next line (for debugging)
-			e.printStackTrace();
+		}catch(Exception e){
+			// e.printStackTrace(); // for debugging
 
 			throw new RuntimeException("couldn't calculate g");
 		}
-
-		if (pg_integrator.getEvaluations() > maxEvalsUsed) maxEvalsUsed = pg_integrator.getEvaluations();
 
 		return PG0;
 	}
@@ -552,8 +554,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		isRhoTip = new Boolean[ treeInput.get().getLeafNodeCount()];
 		Arrays.fill(isRhoTip,false);
 
-		isRhoInternalNode = new Boolean[ treeInput.get().getInternalNodeCount()];
-		Arrays.fill(isRhoInternalNode,false);
 
 		if (m_rho.get() != null) {
 
@@ -660,31 +660,31 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		getChangeTimes(maxTime, migChangeTimes,
 				migChangeTimesInput.get() != null ? migChangeTimesInput.get() : intervalTimes.get(),
-						migChanges, migTimesRelative, reverseTimeArrays[5]);
+				migChanges, migTimesRelative, reverseTimeArrays[5]);
 
 		getChangeTimes(maxTime, birthRateChangeTimes,
 				birthRateChangeTimesInput.get() != null ? birthRateChangeTimesInput.get() : intervalTimes.get(),
-						birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
+				birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
 
 		getChangeTimes(maxTime, b_ijChangeTimes,
 				b_ijChangeTimesInput.get() != null ? b_ijChangeTimesInput.get() : intervalTimes.get(),
-						b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
+				b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
 
 		getChangeTimes(maxTime, deathRateChangeTimes,
 				deathRateChangeTimesInput.get() != null ? deathRateChangeTimesInput.get() : intervalTimes.get(),
-						deathChanges, deathRateTimesRelative, reverseTimeArrays[1]);
+				deathChanges, deathRateTimesRelative, reverseTimeArrays[1]);
 
 		getChangeTimes(maxTime, samplingRateChangeTimes,
 				samplingRateChangeTimesInput.get() != null ? samplingRateChangeTimesInput.get() : intervalTimes.get(),
-						samplingChanges, samplingRateTimesRelative, reverseTimeArrays[2]);
+				samplingChanges, samplingRateTimesRelative, reverseTimeArrays[2]);
 
 		getChangeTimes(maxTime, rhoSamplingChangeTimes,
 				rhoSamplingTimes.get()!=null ? rhoSamplingTimes.get() : intervalTimes.get(),
-						rhoChanges, false, reverseTimeArrays[3]);
+				rhoChanges, false, reverseTimeArrays[3]);
 
 		if (SAModel) getChangeTimes(maxTime, rChangeTimes,
 				removalProbabilityChangeTimesInput.get() != null ? removalProbabilityChangeTimesInput.get() : intervalTimes.get(),
-						rChanges, rTimesRelative, reverseTimeArrays[4]);
+				rChanges, rTimesRelative, reverseTimeArrays[4]);
 
 		for (Double time : migChangeTimes) {
 			timesSet.add(time);
@@ -773,10 +773,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 					if (aTime<iTime) {
 						end = iTime - aTime;
 						if
-						(changeTimes.size() > i) changeTimes.set(i, end);
+								(changeTimes.size() > i) changeTimes.set(i, end);
 						else
-							if (end < maxTime)
-								changeTimes.add(end);
+						if (end < maxTime)
+							changeTimes.add(end);
 					}
 				}
 			}
@@ -806,13 +806,13 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			state =  i/totalIntervals;
 
 			birth[i] = (identicalRatesForAllTypes[0]) ? birthRates[index(times[i%totalIntervals], birthRateChangeTimes)] :
-				birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
+					birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
 			death[i] = (identicalRatesForAllTypes[1]) ? deathRates[index(times[i%totalIntervals], deathRateChangeTimes)] :
-				deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
+					deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
 			psi[i] = (identicalRatesForAllTypes[2]) ? samplingRates[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-				samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
+					samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
 			if (SAModel) r[i] = (identicalRatesForAllTypes[4]) ? removalProbabilities[index(times[i%totalIntervals], rChangeTimes)] :
-				removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+					removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
 
 		}
 
@@ -827,8 +827,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 					if (i != j) {
 						param[(i * (n - 1) + (j < i ? j : j - 1)) * totalIntervals + dt]
 								= paramFrom[(paramFrom.length > (n * (n - 1)))
-								            ? (nrChanges + 1) * (n - 1) * i + index(times[dt], changeTimes)
-								            : (i * (n - 1) + (j < i ? j : j - 1))];
+								? (nrChanges + 1) * (n - 1) * i + index(times[dt], changeTimes)
+								: (i * (n - 1) + (j < i ? j : j - 1))];
 					}
 				}
 			}
@@ -849,7 +849,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 				rho[i]= rhoChanges>0?
 						rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
-								: rhos[0];
+						: rhos[0];
 			}
 		}
 	}
@@ -906,36 +906,36 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			state =  i/totalIntervals;
 
 			birth[i] = ((identicalRatesForAllTypes[0]) ? R[index(times[i%totalIntervals], birthRateChangeTimes)] :
-				R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state])
+					R[R.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state])
 					* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
+					ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
 
 			if (!SAModel) {
 				psi[i] = ((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-					p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state])
+						p[p.length > n ? (samplingChanges + 1) * state + index(times[i % totalIntervals], samplingRateChangeTimes) : state])
 						* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-							ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state]);
 
 				death[i] = ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-					ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
 						- psi[i];
 			}
 
 			else {
 				r[i] = (identicalRatesForAllTypes[4]) ? removalProbabilities[index(times[i%totalIntervals], rChangeTimes)] :
-					removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
+						removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
 
 				psi[i] = ((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-					p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state])
+						p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state])
 						* ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-							ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
 						/ (1+(r[i]-1)*
-								((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-									p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]));
+						((identicalRatesForAllTypes[2]) ? p[index(times[i%totalIntervals], samplingRateChangeTimes)] :
+								p[p.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state]));
 
 
 				death[i] = ((identicalRatesForAllTypes[1]) ? ds[index(times[i%totalIntervals], deathRateChangeTimes)] :
-					ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
+						ds[ds.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state])
 						- psi[i]*r[i];
 			}
 		}
@@ -959,9 +959,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 						if (i!=j){
 							b_ij[(i*(n-1)+(j<i?j:j-1))*totalIntervals+dt]
 									= RaD[(RaD.length>(n*(n-1)))
-									      ?  (b_ij_Changes+1)*(n-1)*i + index(times[dt], b_ijChangeTimes)
-									      : (i*(n-1)+(j<i?j:j-1))]
-									    		  * ds[ds.length > n ? (deathChanges+1)*i+index(times[dt], deathRateChangeTimes) : i];
+									?  (b_ij_Changes+1)*(n-1)*i + index(times[dt], b_ijChangeTimes)
+									: (i*(n-1)+(j<i?j:j-1))]
+									* ds[ds.length > n ? (deathChanges+1)*i+index(times[dt], deathRateChangeTimes) : i];
 						}
 					}
 				}
@@ -1001,9 +1001,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 
-	//TODO rework on setup integrator, should probably be specific to one calculation in safeIntegrate, and P and PG should maybe be specific to one thread, although P may need to be shared
 	void setupIntegrators(){   // set up ODE's and integrators
 
+		//TODO set these minstep and maxstep to be a class field
 		if (minstep == null) minstep = T*1e-100;
 		if (maxstep == null) maxstep = T/10;
 
@@ -1014,128 +1014,47 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 
-		//		// TO DO CLEAN UP IF DOES NOT WORK
-		//		double[] absoluteToleranceVector = new double [2*n];
-		//		double[] relativeToleranceVector = new double [2*n];
-		//		for(int i = 0; i<n; i++) {
-		//			absoluteToleranceVector[i] = 1e-50;
-		//			absoluteToleranceVector[i+n] = 1e-180;
-		//			relativeToleranceVector[i] = 1e-7;
-		//			relativeToleranceVector[i+n] = 1e-7;
-		//		}
-
-
 		if (!useRKInput.get()) {
-			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); //new HighamHall54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); // 
-
-			//			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
-
-			pg_integrator.setMaxEvaluations(maxEvaluations.get());
-
+			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 			PG.p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
-			PG.p_integrator.setMaxEvaluations(maxEvaluations.get());
 		} else {
 			pg_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
 			PG.p_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
-
 		}
 	}
 
 	/**
-	 * Obtain element of rate matrix for migration model for use in likelihood
-	 * calculation.
-	 *
-	 * @param i
-	 * @param j
-	 * @return Rate matrix element.
-	 */
-	public double getNbyNRate(int i, int j) {
-		if (i==j)
-			return 0;
-
-		int offset = getArrayOffset(i, j);
-
-		if (migrationMatrixScaleFactor.get()==null)
-			return migrationMatrix.get().getValue(offset);
-		else
-			return migrationMatrixScaleFactor.get().getValue()*migrationMatrix.get().getValue(offset);
-
-	}
-
-
-	/**
-	 * Obtain offset into "rate matrix" and associated flag arrays.
-	 *
-	 * @param i
-	 * @param j
-	 * @return Offset (or -1 if i==j)
-	 */
-	protected int getArrayOffset(int i, int j) {
-
-		if (i==j)
-			throw new RuntimeException("Programmer error: requested migration "
-					+ "rate array offset for diagonal element of "
-					+ "migration rate matrix.");
-
-
-		if (j>i)
-			j -= 1;
-		return i*(n-1)+j;   // todo: check if this is correct!!!
-	}
-
-
-	// Interface requirements:
-
-	@Override
-	public List<String> getArguments() {
-		return null;
-	}
-
-
-	@Override
-	public List<String> getConditions() {
-		return null;
-	}
-
-	@Override
-	public void sample(State state, Random random) {
-	}
-
-	@Override
-	public boolean requiresRecalculation(){
-		return true;
-	}
-
-	/**
-	 *
-	 * @param integrator
+	 * Perform the integration of PG with initial conds in pgScaled between to and from
+	 * Use an adaptive-step-size integrator
+	 * "Safe" because it divides the integration interval in two
+	 * if the interval is (arbitrarily) judged to be too big to give reliable results
 	 * @param PG
 	 * @param to
 	 * @param pgScaled
 	 * @param from
 	 * @return
 	 */
-	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
-
-		//TODO why do I need to pass the integrator as an argument here? I don't think I do (js)
-		//TODO sort this out and remove the integrator then.
+	public static ScaledNumbers safeIntegrate(p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
 
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
 		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
 
-		//TODO rework on threshold here, t/2 seems quite high. admittidly having a lower threshold slows things down but T/2 makes the safety pretty useless.
-		if(T>0 && Math.abs(from-to)>T/2 ) {
-			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);
-			pgScaled = safeIntegrate(integrator, PG, from + (to-from)/2, pgScaled, from);
+		//TODO make threshold a class field
+		if(T>0 && Math.abs(from-to)>T/6 ) {
+			pgScaled = safeIntegrate(PG, to, pgScaled, from + (to-from)/2);
+			pgScaled = safeIntegrate(PG, from + (to-from)/2, pgScaled, from);
 		} else {
 
+			//setup of the relativeTolerance and absoluteTolerance input of the adaptive integrator
+			//TODO set these two as class fields
 			double relativeToleranceConstant = 1e-7;
 			double absoluteToleranceConstant = 1e-100;
 			double[] absoluteToleranceVector = new double [2*n];
 			double[] relativeToleranceVector = new double [2*n];
+
 			for(int i = 0; i<n; i++) {
 				absoluteToleranceVector[i] = absoluteToleranceConstant;
-				if(pgScaled.getEquation()[i+n] > 0) {
+				if(pgScaled.getEquation()[i+n] > 0) { // adapt absoluteTolerance to the values stored in pgScaled
 					absoluteToleranceVector[i+n] = Math.max(1e-310, pgScaled.getEquation()[i+n]*absoluteToleranceConstant);
 				} else {
 					absoluteToleranceVector[i+n] = absoluteToleranceConstant;
@@ -1145,13 +1064,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			}
 
 			double[] integrationResults = new double[pgScaled.getEquation().length];
-			int a = pgScaled.getScalingFactor();
-			int n = pgScaled.getEquation().length/2;
+			int a = pgScaled.getScalingFactor(); // store scaling factor
+			int n = pgScaled.getEquation().length/2; // dimension of the ODE system
 
 
-			integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
-			integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
-
+			FirstOrderIntegrator integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
+			integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults); // perform the integration step
 
 			double[] pConditions = new double[n];
 			SmallNumber[] geConditions = new SmallNumber[n];
@@ -1161,115 +1079,29 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			}
 			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions));
 			pgScaled.augmentFactor(a);
-
 		}
 
 		return pgScaled;
 	}
 
-
-	//	TO DO CLEAN UP IF ABOVE WORKS
-	//	/**
-	//	 * If integration interval is too long to provide precise results, cuts it in half and starts integration again.
-	//	 * OLD VERSION THAT LEADS SOME CHAINS TO BE STUCK (one element gets too small, so stuck in recursively cutting the loop)
-	//	 * @param integrator
-	//	 * @param PG
-	//	 * @param to
-	//	 * @param pgScaled
-	//	 * @param from
-	//	 * @return
-	//	 */
-	//	public ScaledNumbers safeIntegrate(FirstOrderIntegrator integrator, p0ge_ODE_version_before_rework PG, double to, ScaledNumbers pgScaled, double from){
-	//
-	//		// if the integration interval is too small, nothing is done (to prevent infinite looping)
-	//		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
-	//
-	//		// we test to see if the current interval size can produce a sufficiently-precise result
-	//		double[] integrationResults = new double[pgScaled.getEquation().length];
-	//		
-	//		double relativeToleranceConstant = 1e-7;
-	//		double absoluteToleranceConstant = 1e-100;
-	//		double[] absoluteToleranceVector = new double [2*n];
-	//		double[] relativeToleranceVector = new double [2*n];
-	//		for(int i = 0; i<n; i++) {
-	//			absoluteToleranceVector[i] = absoluteToleranceConstant;
-	//			if(pgScaled.getEquation()[i+n] >0) {
-	//				absoluteToleranceVector[i+n] = Math.max(1e-310, pgScaled.getEquation()[i+n]*absoluteToleranceConstant);
-	//			} else {
-	//				absoluteToleranceVector[i+n] = absoluteToleranceConstant;
-	//			}
-	//			relativeToleranceVector[i] = relativeToleranceConstant;
-	//			relativeToleranceVector[i+n] = relativeToleranceConstant;
-	//		}
-	//		
-	//		integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
-	//		integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
-	//		// look for the minimal value
-	//		double minRes = getMinIntegrationOnGe(integrationResults);
-	//
-	//		if(absoluteTolerance.get() > relativeTolerance.get())
-	//			throw new RuntimeException("Absolute tolerance higher than relative tolerance for the adaptive integrator. Change values for these inputs.");
-	//
-	//
-	//		if(minRes != Double.MAX_VALUE && (minRes<0 || absoluteTolerance.get()/minRes > relativeTolerance.get())) {
-	//
-	//			pgScaled = safeIntegrate(integrator, PG, to, pgScaled, from + (to-from)/2);
-	//			pgScaled = safeIntegrate(integrator, PG, from + (to-from)/2, pgScaled, from);
-	//
-	//		} else {
-	//
-	//			int a = pgScaled.getScalingFactor();
-	//			int n = integrationResults.length/2;
-	//			double[] pConditions = new double[n];
-	//			SmallNumber[] geConditions = new SmallNumber[n];
-	//
-	//			for (int i = 0; i < n; i++) {
-	//				pConditions[i] = integrationResults[i];
-	//				geConditions[i] = new SmallNumber(integrationResults[i+n]);
-	//			}
-	//			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions));
-	//			pgScaled.augmentFactor(a);
-	//
-	//		}
-	//
-	//		return pgScaled;
-	//	}
-
 	/**
-	 * Find the lowest non-zero value among the integration results, only on the ge part.
-	 * @param values
-	 * @return
-	 */
-	public double getMinIntegrationOnGe(double[] values) {
-		double min=Double.MAX_VALUE;
-		if (values.length < 2)
-			throw new RuntimeException("Invalid inital-conditions array size");
-		for (int i = (values.length -1); i> (values.length/2 - 1) ; i-- ) {
-			if (values[i] < min && values[i]!=0 ) min=values[i];
-		}
-		return min;
-	}
-
-	public p0ge_ODE getPG() {
-		return PG;
-	}
-
-	/*
 	 * Find all initial conditions for all future integrations on p0 equations
 	 * @param tree
 	 * @return an array of arrays storing the initial conditions values
 	 */
 	public double[][] getAllInitialConditionsForP(TreeInterface tree){
+
 		int leafCount = tree.getLeafNodeCount();
 		double[] leafHeights = new double[leafCount];
 		int[] indicesSortedByLeafHeight  =new int[leafCount];
-		for (int i=0; i<leafCount; i++){
+
+		for (int i=0; i<leafCount; i++){ // get all leaf heights
 			leafHeights[i] = T - tree.getNode(i).getHeight();
 			// System.out.println(nodeHeight[i]);
 			indicesSortedByLeafHeight[i] = i;
 		}
 
-		HeapSort.sort(leafHeights, indicesSortedByLeafHeight);
+		HeapSort.sort(leafHeights, indicesSortedByLeafHeight); // sort leafs in order their height in the tree
 		//"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
 
 		double[][] pInitialCondsAtLeaves = new double[leafCount + 1][n];
@@ -1291,13 +1123,13 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]];
 					continue;
 				} else {
+					//TODO the integration performed in getP is done before all the other potentially-parallelized getG, so should not matter that it has its own integrator, but if it does (or to simplify the code), take care of passing an integrator as a local variable
 					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = PG.getP(t, pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]], t0, rhoSampling, rho);
 					t0 = t;
 				}
 
 			}
 		}
-
 
 		pInitialCondsAtLeaves[leafCount] = PG.getP(0, pInitialCondsAtLeaves[indicesSortedByLeafHeight[0]], t0, rhoSampling, rho);
 
@@ -1366,5 +1198,115 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 	Boolean[] identicalRatesForAllTypes;
+
+	static void executorBootUp(){
+		executor = Executors.newCachedThreadPool();
+		pool = (ThreadPoolExecutor) executor;
+	}
+
+	static void executorShutdown(){
+		pool.shutdown();
+	}
+
+	/**
+	 * Obtain element of rate matrix for migration model for use in likelihood
+	 * calculation.
+	 *
+	 * @param i
+	 * @param j
+	 * @return Rate matrix element.
+	 */
+	public double getNbyNRate(int i, int j) {
+		if (i==j)
+			return 0;
+
+		int offset = getArrayOffset(i, j);
+
+		if (migrationMatrixScaleFactor.get()==null)
+			return migrationMatrix.get().getValue(offset);
+		else
+			return migrationMatrixScaleFactor.get().getValue()*migrationMatrix.get().getValue(offset);
+
+	}
+
+
+	/**
+	 * Obtain offset into "rate matrix" and associated flag arrays.
+	 *
+	 * @param i
+	 * @param j
+	 * @return Offset (or -1 if i==j)
+	 */
+	protected int getArrayOffset(int i, int j) {
+
+		if (i==j)
+			throw new RuntimeException("Programmer error: requested migration "
+					+ "rate array offset for diagonal element of "
+					+ "migration rate matrix.");
+
+
+		if (j>i)
+			j -= 1;
+		return i*(n-1)+j;   // todo: check if this is correct!!!
+	}
+
+
+	// Interface requirements:
+	@Override
+	public List<String> getArguments() {
+		return null;
+	}
+
+
+	@Override
+	public List<String> getConditions() {
+		return null;
+	}
+
+	@Override
+	public void sample(State state, Random random) {
+	}
+
+	@Override
+	public boolean requiresRecalculation(){
+		return true;
+	}
+
+	abstract class TraversalService implements Callable<p0ge_InitialConditions> {
+
+		protected Node rootSubtree;
+		protected double from;
+		protected double to;
+		protected p0ge_ODE PG;
+		protected FirstOrderIntegrator pg_integrator;
+
+		public TraversalService(Node root, double from, double to, boolean augmented) {
+			this.rootSubtree = root;
+			this.from = from;
+			this.to = to;
+			this.setupODEs(augmented);
+		}
+
+		private void setupODEs(boolean augmented){  // set up ODE's and integrators
+
+			//TODO set minstep and maxstep to be PiecewiseBDDistr fields
+			if (minstep == null) minstep = T*1e-100;
+			if (maxstep == null) maxstep = T/10;
+
+			PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
+
+			p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
+
+			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
+		}
+
+		abstract protected p0ge_InitialConditions calculateSubtreeLikelihoodInThread();
+
+		@Override
+		public p0ge_InitialConditions call() throws Exception {
+			// traverse the tree in a potentially-parallelized way
+			return calculateSubtreeLikelihoodInThread();
+		}
+	}
 
 }

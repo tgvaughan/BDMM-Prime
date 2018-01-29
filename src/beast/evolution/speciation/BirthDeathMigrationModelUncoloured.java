@@ -8,22 +8,9 @@ import beast.core.Description;
 import beast.core.util.Utils;
 
 import beast.math.*;
-import beast.util.HeapSort;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
 import java.io.PrintStream;
 import java.util.concurrent.*;
-
-
-// currently cleaning
-// removing the overflowing way (done)
-// refactor to rename methods appropriately (done)
-
-
-
-
 
 /**
  * @author Denise Kuehnert
@@ -43,44 +30,11 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 	public Input<String> typeLabel = new Input<>("typeLabel", "type label in tree for initializing traits (like node types/locations) in the tree");
 	public Input<IntegerParameter> tipTypeArray = new Input<IntegerParameter>("tipTypeArray", "integer array of traits (like node types/locations) in the tree, index corresponds to node number in tree");
 
-
 	public Input<Boolean> storeNodeTypes = new Input<>("storeNodeTypes", "store tip node types? this assumes that tip types cannot change (default false)", false);
 
 	private int[] nodeStates;
 
 	Boolean print = false;
-
-	//TODO make this an optional input with default value 5000
-	public static int maxTreeSize = 10000;
-	//TODO change the initialization of this as well (put in initAndValidate?)
-	public double[] weightOfNodeSubTree = new double[maxTreeSize];
-
-	//TODO refactor this parallelization stuff to PiecewiseBirthDeathMigrationDistribution class
-
-
-	// TODO create input for isParallelized (Set default to true?) and for maxNumberOfThreads
-	public static boolean isParallelizedCalculation = true;
-	public static int maxNumberOfThreads = 2;
-
-	// if maxNumberOfThreads * factorMinimalWeightForParallelization = n then a new thread is only spawned to explore the rightChild
-	// if the subtree of the leftChild has at least weight x/n with x the overall weight of the tree
-	public static double factorMinimalWeightForParallelization = 2.5;
-
-	static ExecutorService executor;
-	static ThreadPoolExecutor pool;
-
-	double parallelizationThreshold;
-
-	//TODO refactor as well to PiecewiseBirthDeathMigrationDistribution
-	static void executorBootUp(){
-		executor = Executors.newCachedThreadPool();
-		pool = (ThreadPoolExecutor) executor;
-	}
-
-	static void executorShutdown(){
-		//TODO check what happens if the pool has already been shutdown
-		pool.shutdown();
-	}
 
 	@Override
 	public void initAndValidate() {
@@ -91,12 +45,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 		super.initAndValidate();
 
-		TreeInterface tree = treeInput.get();
-
-		checkOrigin(tree);
-
-		ntaxa = tree.getLeafNodeCount();
-
 		if (storeNodeTypes.get()) {
 
 			nodeStates = new int[ntaxa];
@@ -105,69 +53,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 				nodeStates[node.getNr()] = getNodeState(node, true);
 			}
 		}
-
-		int contempCount = 0;
-		for (Node node : tree.getExternalNodes())
-			if (node.getHeight()==0.)
-				contempCount++;
-
-
-		if (checkRho.get() && contempCount>1 && rho==null)
-			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
-
-		collectTimes(T);
-		setRho();
-
-		//TODO refactor in piecewisebirthdeathdistribution
-		if(isParallelizedCalculation) {
-			getAllSubTreesWeights(tree);
-			// set 'parallelizationThreshold' to a fraction of the whole tree weight.
-			// The size of this fraction is determined by a tuning parameter. This parameter should be adjusted (increased) if more computation cores are available
-			parallelizationThreshold = weightOfNodeSubTree[tree.getRoot().getNr()] / (maxNumberOfThreads * factorMinimalWeightForParallelization);
-		}
-
-
-		}
-
-
-//	protected Double updateRates(TreeInterface tree) {
-//
-//		birth = new Double[n*totalIntervals];
-//		death = new Double[n*totalIntervals];
-//		psi = new Double[n*totalIntervals];
-//		b_ij = new Double[totalIntervals*(n*(n-1))];
-//		M = new Double[totalIntervals*(n*(n-1))];
-//		if (SAModel) r =  new Double[n * totalIntervals];
-//
-//		if (transform) {
-//			transformParameters();
-//		}
-//		else {
-//
-//			Double[] birthAmongDemesRates = new Double[1];
-//
-//			if (birthAmongDemes) birthAmongDemesRates = birthRateAmongDemes.get().getValues();
-//
-//			updateBirthDeathPsiParams();
-//
-//			if (birthAmongDemes) {
-//
-//				updateAmongParameter(b_ij, birthAmongDemesRates, b_ij_Changes, b_ijChangeTimes);
-//			}
-//		}
-//
-//		Double[] migRates = migrationMatrix.get().getValues();
-//
-//		updateAmongParameter(M, migRates, migChanges, migChangeTimes);
-//
-//		updateRho();
-//
-//		freq = frequencies.get().getValues();
-//
-//		setupIntegrators();
-//
-//		return 0.;
-//	}
+	}
 
 	void computeRhoTips(){
 
@@ -180,7 +66,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			for (Double time:rhoSamplingChangeTimes){
 
-				// TO DO: make a warning that rho sampling precision is with 1e-10. Maybe do a threshold to the type of dating associated with the data?
+				// TODO: make a warning that rho sampling precision is with 1e-10. Maybe do a threshold to the type of dating associated with the data?
 				if (Math.abs(time-tipTime) <  globalPrecisionThreshold && rho[getNodeState(tip,false)*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
 
 			}
@@ -188,46 +74,27 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 	}
 
 	/**
-	 * Implementation of getG with Small Number structure for ge equations. Avoids underflowing of integration results.
-	 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
+	 *
 	 * @param t
 	 * @param PG0
 	 * @param t0
+	 * @param PG
 	 * @param node
 	 * @return
 	 */
-	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
-
+	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		if (node.isLeaf()) {
-
 			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
-			//TO DO clean up
-			//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
 		}
 
-		return getG(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
-
+		return getG(t,  PG0,  t0, PG);
 	}
 
-	/**
-	 * WARNING: calculateTreeLogLikelihood allows use of both classic and non-underflowing methods. Some chunks of code are therefore present in two similar versions in this method.
-	 * When modifying one of the versions, one should check if the other version also needs the corresponding changes.
-	 */
-	//TODO adapt to allow for a non-parallel way as well
 	@Override
 	public double calculateTreeLogLikelihood(TreeInterface tree) {
 
 		Node root = tree.getRoot();
-
-		if (origin.get()==null)
-			T = root.getHeight();
-		else
-			updateOrigin(root);
-
-
-		collectTimes(T);
-		setRho();
 
 		if ((orig < 0) || updateRates() < 0 ||  (times[totalIntervals-1] > T)) {
 			logP =  Double.NEGATIVE_INFINITY;
@@ -249,7 +116,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 
-
 				for (int root_state=0; root_state<n; root_state++){
 					nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
 				}
@@ -259,30 +125,23 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			}
 
-			p0ge_InitialConditions pSN = new p0ge_InitialConditions();
+			p0ge_InitialConditions pSN;
 
-
-			//TODO maybe move this around, and add an input to switch on or off parallelization
 			if(isParallelizedCalculation) {executorBootUp();}
 
 			if ( orig > 0 ) {
-				if(isParallelizedCalculation) { pSN = calculateSubtreeLikelihoodInParallel(root,0,orig);}
-				else{ pSN = calculateSubtreeLikelihood(root,0,orig);}
-			} else {
-				p0ge_InitialConditions p1SN = new p0ge_InitialConditions();
-				//TODO refactor/rename the childIndex thing
+				pSN = calculateSubtreeLikelihood(root,0,orig, PG);}
+			else {
+
 				int childIndex = 0;
 				if (root.getChild(1).getNr() > root.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
 
-				if(isParallelizedCalculation) {
-					pSN = calculateSubtreeLikelihoodInParallel(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
-					childIndex = Math.abs(childIndex-1);
-					p1SN = calculateSubtreeLikelihoodInParallel(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
-				} else{
-					pSN = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
-					childIndex = Math.abs(childIndex-1);
-					p1SN = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight());
-				}
+				pSN = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight(), PG);
+				childIndex = Math.abs(childIndex-1);
+
+				p0ge_InitialConditions p1SN;
+				p1SN = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight(), PG);
+
 				for (int i =0; i<pSN.conditionsOnG.length; i++) pSN.conditionsOnG[i] = SmallNumber.multiply(pSN.conditionsOnG[i], p1SN.conditionsOnG[i]);
 
 			}
@@ -307,12 +166,9 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			logP =  Double.NEGATIVE_INFINITY;
 
-			//TODO maybe move this around, and add an input to switch on or off parallelization
 			executorShutdown();
 			return logP;
 		}
-
-		maxEvalsUsed = Math.max(maxEvalsUsed, PG.maxEvalsUsed);
 
 		logP = PrSN.log();
 
@@ -325,7 +181,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			logP +=  Math.log(2)*internalNodeCount;
 		}
 
-		// TODO maybe move this around, and add an input to switch on or off parallelization
 		executorShutdown();
 		return logP;
 	}
@@ -362,15 +217,16 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		}
 	}
 
+
 	/**
-	 * Implementation of calculateSubtreeLikelihood with Small Number structure. Avoids underflowing of integration results.
-	 * WARNING: calculateSubTreeLikelihood and calculateSubTreeLikelihoodSmalNumber are very similar. A modification made in one of the two would likely be needed in the other one also
+	 *
 	 * @param node
 	 * @param from
 	 * @param to
+	 * @param PG
 	 * @return
 	 */
-	p0ge_InitialConditions calculateSubtreeLikelihood(Node node, double from, double to) {
+	p0ge_InitialConditions calculateSubtreeLikelihood(Node node, double from, double to, p0ge_ODE PG) {
 
 		double[] pconditions = new double[n];
 		SmallNumber[] gconditions = new SmallNumber[n];
@@ -407,10 +263,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 									*psi[nodestate * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
 							: new SmallNumber(psi[nodestate * totalIntervals + index]);
 
-
 				}	else {
-
-					//TO DO make the modif in the manuscript (for the "/(1-rho)" thing)
 					init.conditionsOnG[nodestate] = SAModel?
 							new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]/(1-rho[nodestate*totalIntervals+index])*(1-r[nodestate * totalIntervals + index]))
 									*rho[nodestate*totalIntervals+index])  :
@@ -420,7 +273,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			}
 			if (print) System.out.println("Sampling at time " + (T-to));
 
-			return getG(from, init, to, node);
+			return getG(from, init, to, PG, node);
 		}
 
 
@@ -435,168 +288,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
-				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
+				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight(), PG);
 
-				//				int saNodeState = getNodeState(node.getChild(Math.abs(childIndex - 1)), false); // get state of direct ancestor // TO DO REMOVE if below works
-				int saNodeState = getNodeState(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
-
-				if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
-
-					init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
-					init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index]
-							* (1-r[saNodeState * totalIntervals + index]));
-
-//					System.out.println("SA but not rho sampled");
-
-				} else {
-					// TO DO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
-					init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState]*(1-rho[saNodeState*totalIntervals+index]) ;
-					init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]
-							* (1-r[saNodeState * totalIntervals + index]));
-
-					//TO DO working on below, probably doesn't work
-//					init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
-//					init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]/(1-rho[saNodeState*totalIntervals+index])
-//							* (1-r[saNodeState * totalIntervals + index]));
-
-//					System.out.println("SA and rho sampled and rho is: " + rho[saNodeState*totalIntervals+index] );
-				}
-			}
-
-			else {   // birth / infection event
-
-				int childIndex = 0;
-				if (node.getChild(1).getNr() > node.getChild(0).getNr())
-					childIndex = 1; // always start with the same child to avoid numerical differences
-
-				p0ge_InitialConditions g0 = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
-
-				childIndex = Math.abs(childIndex - 1);
-
-				p0ge_InitialConditions g1 = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
-
-				if (print)
-					System.out.println("Infection at time " + (T - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
-
-
-				for (int childstate = 0; childstate < n; childstate++) {
-
-					if (print) {
-						System.out.println("state " + childstate + "\t p0 = " + g0.conditionsOnP[childstate] + "\t p1 = " + g1.conditionsOnP[childstate]);
-						System.out.println("\t\t g0 = " + g0.conditionsOnG[childstate] + "\t g1 = " + g1.conditionsOnG[childstate]);
-					}
-
-
-					init.conditionsOnP[childstate] = g0.conditionsOnP[childstate];
-					init.conditionsOnG[childstate] = SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[childstate]).scalarMultiply(birth[childstate * totalIntervals + index]);
-
-					if (birthAmongDemes) {
-						for (int j = 0; j < n; j++) {
-							if (childstate != j) {
-								init.conditionsOnG[childstate] = SmallNumber.add(init.conditionsOnG[childstate], SmallNumber.add(SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[j]) , SmallNumber.multiply(g0.conditionsOnG[j], g1.conditionsOnG[childstate]))
-										.scalarMultiply(0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index]));
-							}
-						}
-
-					}
-
-					// TO DO actually test this works with a tree with rho sampling at a branching event
-					//TO DO i should be able to remove this
-					//TO DO TAKE INTO ACCOUNT THE MODIFS IN THE BDMM MANUSCRIPT
-
-
-					if (Double.isInfinite(init.conditionsOnP[childstate])) {
-						throw new RuntimeException("infinite likelihood");
-					}
-				}
-			}
-		}
-
-
-		else {// found a single child node
-
-			throw new RuntimeException("Error: Single child-nodes found (although not using sampled ancestors)");
-		}
-
-		if (print){
-			System.out.print("p after subtree merge = ");
-			for (int i=0;i<n;i++) System.out.print(init.conditionsOnP[i] + "\t");
-			for (int i=0;i<n;i++) System.out.print(init.conditionsOnG[i] + "\t");
-			System.out.println();
-		}
-
-		return getG(from, init, to, node);
-	}
-
-	//TODO rework how this method fits with the non-parallel calculateSubtreeLikelihood and calculateSubtreeLikelihoodInThread
-	p0ge_InitialConditions calculateSubtreeLikelihoodInParallel(Node node, double from, double to) {
-
-		double[] pconditions = new double[n];
-		SmallNumber[] gconditions = new SmallNumber[n];
-		for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
-
-		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
-
-		int index = Utils.index(to,times, totalIntervals);
-
-		if (node.isLeaf()){ // sampling event
-
-			int nodestate = getNodeState(node, false);
-
-			if (nodestate==-1) { //unknown state
-
-				if (SAModel)
-					throw new ConstraintViolatedException("SA model not implemented with unknown states!");
-
-				for (int i=0; i<n; i++) {
-
-					if (!isRhoTip[node.getNr()]) {
-						init.conditionsOnG[i] = new SmallNumber(psi[i * totalIntervals + index]);
-					}
-					else
-						init.conditionsOnG[i] = new SmallNumber(rho[i*totalIntervals+index]);
-				}
-			}
-			else {
-
-				if (!isRhoTip[node.getNr()]) {
-
-					init.conditionsOnG[nodestate] = SAModel?
-							new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
-									*psi[nodestate * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
-							: new SmallNumber(psi[nodestate * totalIntervals + index]);
-
-
-				}	else {
-
-					//TO DO make the modif in the manuscript (for the "/(1-rho)" thing)
-					init.conditionsOnG[nodestate] = SAModel?
-							new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]/(1-rho[nodestate*totalIntervals+index])*(1-r[nodestate * totalIntervals + index]))
-									*rho[nodestate*totalIntervals+index])  :
-							new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ+δ)) //the +δ is translated by dividing p_i with 1-ρ_i (otherwise there's one too many "*ρ_i" )
-				}
-
-			}
-			if (print) System.out.println("Sampling at time " + (T-to));
-
-			return getG(from, init, to, node);
-		}
-
-
-		else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
-
-			if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
-
-				if (r==null)
-					throw new ConstraintViolatedException("Error: Sampled ancestor found, but removalprobability not specified!");
-
-				int childIndex = 0;
-
-				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
-
-				p0ge_InitialConditions g = calculateSubtreeLikelihoodInParallel(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
-
-				//				int saNodeState = getNodeState(node.getChild(Math.abs(childIndex - 1)), false); // get state of direct ancestor // TO DO REMOVE if below works
 				int saNodeState = getNodeState(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
 
 				if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
@@ -613,17 +306,10 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 					init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]
 							* (1-r[saNodeState * totalIntervals + index]));
 
-					//TO DO working on below, probably doesn't work
-//					init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
-//					init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]/(1-rho[saNodeState*totalIntervals+index])
-//							* (1-r[saNodeState * totalIntervals + index]));
-
-//					System.out.println("SA and rho sampled and rho is: " + rho[saNodeState*totalIntervals+index] );
 				}
 			}
 
 			else {   // birth / infection event
-
 
 				int indexFirstChild = 0;
 				if (node.getChild(1).getNr() > node.getChild(0).getNr())
@@ -631,27 +317,22 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 				int indexSecondChild = Math.abs(indexFirstChild-1);
 
-				double weightFirstNode = weightOfNodeSubTree[node.getChild(indexFirstChild).getNr()];
-				double weightSecondNode = weightOfNodeSubTree[node.getChild(indexSecondChild).getNr()];
-
 				//TODO refactor with more explicit names
 				p0ge_InitialConditions g0 = new p0ge_InitialConditions();
 				p0ge_InitialConditions g1 = new p0ge_InitialConditions();
 
 				// evaluate if the next step in the traversal should be split between one new thread and the currrent thread and run in parallel.
-				//TODO check to see if I shouldn't also check if vice-versa works
-				//TODO I changed the two thresholds to a single one set to the lowest value. Rethink that.
-//				if (weightSecondNode > this.secondParallelizationThreshold &&
-//						weightFirstNode > this.firstParallelizationThreshold) {
 
-				if (weightSecondNode > this.parallelizationThreshold &&
-						weightFirstNode > this.parallelizationThreshold) {
+				if(isParallelizedCalculation
+						&& weightOfNodeSubTree[node.getChild(indexFirstChild).getNr()] >  parallelizationThreshold
+						&& weightOfNodeSubTree[node.getChild(indexSecondChild).getNr()] > parallelizationThreshold){
+
 					try {
 						// start a new thread to take care of the second subtree
 						Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
-								new TraversalService(node.getChild(indexSecondChild), to, T - node.getChild(indexSecondChild).getHeight()));
+								new TraversalServiceUncoloured(node.getChild(indexSecondChild), to, T - node.getChild(indexSecondChild).getHeight()));
 
-						g0 = calculateSubtreeLikelihoodInParallel(node.getChild(indexFirstChild), to, T - node.getChild(indexFirstChild).getHeight());
+						g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), to, T - node.getChild(indexFirstChild).getHeight(), PG);
 						g1 = secondChildTraversal.get();
 
 					} catch (Exception e) {
@@ -659,8 +340,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 						//TODO deal with exceptions properly, maybe do the traversal serially if something failed.
 					}
 				} else {
-					g0 = calculateSubtreeLikelihoodInParallel(node.getChild(indexFirstChild), to, T - node.getChild(indexFirstChild).getHeight());
-					g1 = calculateSubtreeLikelihoodInParallel(node.getChild(indexSecondChild), to, T - node.getChild(indexSecondChild).getHeight());
+					g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), to, T - node.getChild(indexFirstChild).getHeight(), PG);
+					g1 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), to, T - node.getChild(indexSecondChild).getHeight(), PG);
 				}
 
 
@@ -675,7 +356,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 						System.out.println("\t\t g0 = " + g0.conditionsOnG[childstate] + "\t g1 = " + g1.conditionsOnG[childstate]);
 					}
 
-
 					init.conditionsOnP[childstate] = g0.conditionsOnP[childstate];
 					init.conditionsOnG[childstate] = SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[childstate]).scalarMultiply(birth[childstate * totalIntervals + index]);
 
@@ -688,11 +368,6 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 						}
 
 					}
-
-					// TO DO actually test this works with a tree with rho sampling at a branching event
-					//TO DO i should be able to remove this
-					//TO DO TAKE INTO ACCOUNT THE MODIFS IN THE BDMM MANUSCRIPT
-
 
 					if (Double.isInfinite(init.conditionsOnP[childstate])) {
 						throw new RuntimeException("infinite likelihood");
@@ -714,15 +389,9 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			System.out.println();
 		}
 
-		return getG(from, init, to, node);
+		return getG(from, init, to, PG, node);
 	}
 
-
-//	public void transformParameters(){
-//
-//		transformWithinParameters();
-//		transformAmongParameters();
-//	}
 
 	// used to indicate that the state assignment went wrong
 	protected class ConstraintViolatedException extends RuntimeException {
@@ -762,357 +431,18 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		}
 	}
 
-	//TODO rework on the whole nested class as, in this first implementation, a lot is repeated from other classes (Piecewise.. and BDMUC)
-	class TraversalService implements Callable<p0ge_InitialConditions> {
+	class TraversalServiceUncoloured extends TraversalService {
 
-		private Node rootSubtree;
-		private double from;
-		private double to;
-		private p0ge_ODE PG;
-		private FirstOrderIntegrator pg_integrator;
-
-
-		public TraversalService(Node root, double from, double to) {
-			this.rootSubtree = root;
-			this.from = from;
-			this.to = to;
-
-			this.setupODEs();
-		}
-
-		private void setupODEs(){   // set up ODE's and integrators
-
-			if (minstep == null) minstep = T*1e-100;
-			if (maxstep == null) maxstep = T/10;
-
-			boolean augmented = false; //since here it's BirthDeathMigrationUncoloured //TODO rework on that when implementing in BirthDeathMigration as well.
-
-			PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
-
-			p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
-
-			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get()); //new HighamHall54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince853Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //new DormandPrince54Integrator(minstep, maxstep, absolutePrecision.get(), tolerance.get()); //
-
-			pg_integrator.setMaxEvaluations(maxEvaluations.get());
-		}
-
-		private p0ge_InitialConditions calculateSubtreeLikelihoodInThread(Node node, double from, double to) {
-
-			double[] pconditions = new double[n];
-			SmallNumber[] gconditions = new SmallNumber[n];
-			for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
-
-			p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
-
-			int index = Utils.index(to,times, totalIntervals);
-
-			if (node.isLeaf()){ // sampling event
-
-				int nodestate = getNodeState(node, false);
-
-				if (nodestate==-1) { //unknown state
-
-					if (SAModel)
-						throw new ConstraintViolatedException("SA model not implemented with unknown states!");
-
-					for (int i=0; i<n; i++) {
-
-						if (!isRhoTip[node.getNr()]) {
-							init.conditionsOnG[i] = new SmallNumber(psi[i * totalIntervals + index]);
-						}
-						else
-							init.conditionsOnG[i] = new SmallNumber(rho[i*totalIntervals+index]);
-					}
-				}
-				else {
-
-					if (!isRhoTip[node.getNr()]) {
-
-						init.conditionsOnG[nodestate] = SAModel?
-								new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
-										*psi[nodestate * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
-								: new SmallNumber(psi[nodestate * totalIntervals + index]);
-
-
-					}	else {
-
-						//TO DO make the modif in the manuscript (for the "/(1-rho)" thing)
-						init.conditionsOnG[nodestate] = SAModel?
-								new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]/(1-rho[nodestate*totalIntervals+index])*(1-r[nodestate * totalIntervals + index]))
-										*rho[nodestate*totalIntervals+index])  :
-								new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ+δ)) //the +δ is translated by dividing p_i with 1-ρ_i (otherwise there's one too many "*ρ_i" )
-					}
-
-				}
-				if (print) System.out.println("Sampling at time " + (T-to));
-
-				return this.getG(from, init, to, node);
-			}
-
-
-			else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
-
-				if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
-
-					if (r==null)
-						throw new ConstraintViolatedException("Error: Sampled ancestor found, but removalprobability not specified!");
-
-					int childIndex = 0;
-
-					if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
-
-					p0ge_InitialConditions g = calculateSubtreeLikelihoodInParallel(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight());
-
-					//				int saNodeState = getNodeState(node.getChild(Math.abs(childIndex - 1)), false); // get state of direct ancestor // TO DO REMOVE if below works
-					int saNodeState = getNodeState(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
-
-					if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
-
-						init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
-						init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index]
-								* (1-r[saNodeState * totalIntervals + index]));
-
-//					System.out.println("SA but not rho sampled");
-
-					} else {
-						// TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
-						init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState]*(1-rho[saNodeState*totalIntervals+index]) ;
-						init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]
-								* (1-r[saNodeState * totalIntervals + index]));
-
-						//TO DO working on below, probably doesn't work
-//					init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
-//					init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]/(1-rho[saNodeState*totalIntervals+index])
-//							* (1-r[saNodeState * totalIntervals + index]));
-
-//					System.out.println("SA and rho sampled and rho is: " + rho[saNodeState*totalIntervals+index] );
-					}
-				}
-
-				else {   // birth / infection event
-
-
-					int indexFirstChild = 0;
-					if (node.getChild(1).getNr() > node.getChild(0).getNr())
-						indexFirstChild = 1; // always start with the same child to avoid numerical differences
-
-					int indexSecondChild = Math.abs(indexFirstChild-1);
-
-					double weightFirstNode = weightOfNodeSubTree[node.getChild(indexFirstChild).getNr()];
-					double weightSecondNode = weightOfNodeSubTree[node.getChild(indexSecondChild).getNr()];
-
-					//TODO refactor with more explicit names
-					p0ge_InitialConditions g0 = new p0ge_InitialConditions();
-					p0ge_InitialConditions g1 = new p0ge_InitialConditions();
-
-					// evaluate if the next step in the traversal should be split between one new thread and the currrent thread and run in parallel.
-					//TODO check to see if I shouldn't also check if vice-versa works
-					//TODO I changed the two thresholds to a single one set to the lowest value. Rethink that.
-//				if (weightSecondNode > this.secondParallelizationThreshold &&
-//						weightFirstNode > this.firstParallelizationThreshold) {
-
-					if (weightSecondNode > parallelizationThreshold &&
-							weightFirstNode > parallelizationThreshold) {
-						try {
-							// start a new thread to take care of the second subtree
-							Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
-									new TraversalService(node.getChild(indexSecondChild), to, T - node.getChild(indexSecondChild).getHeight()));
-
-							g0 = calculateSubtreeLikelihoodInParallel(node.getChild(indexFirstChild), to, T - node.getChild(indexFirstChild).getHeight());
-							g1 = secondChildTraversal.get();
-
-						} catch (Exception e) {
-							e.printStackTrace();
-							//TODO deal with exceptions properly, maybe do the traversal serially if something failed.
-						}
-					} else {
-						g0 = calculateSubtreeLikelihoodInParallel(node.getChild(indexFirstChild), to, T - node.getChild(indexFirstChild).getHeight());
-						g1 = calculateSubtreeLikelihoodInParallel(node.getChild(indexSecondChild), to, T - node.getChild(indexSecondChild).getHeight());
-					}
-
-
-					if (print)
-						System.out.println("Infection at time " + (T - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
-
-
-					for (int childstate = 0; childstate < n; childstate++) {
-
-						if (print) {
-							System.out.println("state " + childstate + "\t p0 = " + g0.conditionsOnP[childstate] + "\t p1 = " + g1.conditionsOnP[childstate]);
-							System.out.println("\t\t g0 = " + g0.conditionsOnG[childstate] + "\t g1 = " + g1.conditionsOnG[childstate]);
-						}
-
-
-						init.conditionsOnP[childstate] = g0.conditionsOnP[childstate];
-						init.conditionsOnG[childstate] = SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[childstate]).scalarMultiply(birth[childstate * totalIntervals + index]);
-
-						if (birthAmongDemes) {
-							for (int j = 0; j < n; j++) {
-								if (childstate != j) {
-									init.conditionsOnG[childstate] = SmallNumber.add(init.conditionsOnG[childstate], SmallNumber.add(SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[j]) , SmallNumber.multiply(g0.conditionsOnG[j], g1.conditionsOnG[childstate]))
-											.scalarMultiply(0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index]));
-								}
-							}
-
-						}
-
-						// TO DO actually test this works with a tree with rho sampling at a branching event
-						//TO DO i should be able to remove this
-						//TO DO TAKE INTO ACCOUNT THE MODIFS IN THE BDMM MANUSCRIPT
-
-
-						if (Double.isInfinite(init.conditionsOnP[childstate])) {
-							throw new RuntimeException("infinite likelihood");
-						}
-					}
-				}
-			}
-
-
-			else {// found a single child node
-
-				throw new RuntimeException("Error: Single child-nodes found (although not using sampled ancestors)");
-			}
-
-			if (print){
-				System.out.print("p after subtree merge = ");
-				for (int i=0;i<n;i++) System.out.print(init.conditionsOnP[i] + "\t");
-				for (int i=0;i<n;i++) System.out.print(init.conditionsOnG[i] + "\t");
-				System.out.println();
-			}
-
-			return getG(from, init, to, node);
-		}
-
-		private p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
-
-
-			if (node.isLeaf()) {
-
-				System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
-				//TO DO clean up
-				//System.arraycopy(PG.getP(t0, m_rho.get()!=null, rho), 0, PG0.conditionsOnP, 0, n);
-			}
-
-			return getG(t,  PG0,  t0, pg_integrator, PG, T, maxEvalsUsed);
-
-		}
-
-		/**
-		 * Implementation of getG with Small Number structure for the ge equations. Avoids underflowing of integration results.
-		 * WARNING: getG and getGSmallNumber are very similar. A modification made in one of the two would likely be needed in the other one also.
-		 * @param t
-		 * @param PG0
-		 * @param t0
-		 * @return
-		 */
-		private p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0,
-										   FirstOrderIntegrator pg_integrator, p0ge_ODE PG, Double T, int maxEvalsUsed){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
-
-
-			try {
-
-				if (Math.abs(T-t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  T < t) {
-					return PG0;
-				}
-
-				double from = t;
-				double to = t0;
-				double oneMinusRho;
-
-				//TODO remove 'threshold'
-				double threshold  = T/10;
-
-				int indexFrom = Utils.index(from, times, times.length);
-				int index = Utils.index(to, times, times.length);
-
-				int steps = index - indexFrom;
-				if (Math.abs(from-times[indexFrom]) < globalPrecisionThreshold ) steps--;
-				if (index>0 && Math.abs(to-times[index-1]) < globalPrecisionThreshold ) {
-					steps--;
-					index--;
-				}
-				index--;
-
-				// pgScaled contains the set of initial conditions scaled made to fit the requirements on the values 'double' can represent. It also contains the factor by which the numbers were multiplied
-				ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0);
-
-				//TODO remove integration results.
-				// integrationResults will temporarily store the results of	 each integration step as 'doubles', before converting them back to 'SmallNumbers'
-				double[] integrationResults = new double[2*n];
-
-				while (steps > 0){
-
-					from = times[index];
-
-					//TODO either remove the commented 'if', or reenable it. Although keeping useRK may be cool to test if pb with adaptive integrator.
-					//TODO or rather, create method that returns an integrator, so the integrator ca nbe directly changed there (replace set_integrator method)
-					// basically, safeIntegrate takes care of introducing a threshold for safety
-					// and useRK should probably be removed altogether as it is dangerous to integrate with RK and actually
-					// so this if/else should not be necessary
-
-//				if (useRKInput.get() || (to - from) < threshold) {
-//					pg_integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults);
-//					PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
-//				} else {
-					pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
-					// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-					PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
-//				}
-
-
-					if (rhoChanges>0){
-						for (int i=0; i<n; i++){
-							oneMinusRho = 1-rho[i*totalIntervals + index];
-							PG0.conditionsOnP[i] *= oneMinusRho;
-							PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
-						/*
-						System.out.println("In getGSmallNumber, multiplying with oneMinusRho: " + oneMinusRho +", to = " +to);
-						 */
-						}
-					}
-
-					to = times[index];
-
-					steps--;
-					index--;
-
-					// 'rescale' the results of the last integration to prepare for the next integration step
-					pgScaled = SmallNumberScaler.scale(PG0);
-				}
-
-				//TODO same thing: either remove the commented 'if', or reenable it.
-				// basically, safeIntegrate takes care of introducing a threshold for safety
-				// and useRK should probably be removed altogether as it is dangerous to integrate with RK and actually
-				// so this if/else should not be necessary
-//			if (useRKInput.get() || (to - t) < threshold) {
-//				pg_integrator.integrate(PG, to, pgScaled.getEquation(), t, integrationResults);
-//				PG0 = SmallNumberScaler.unscale(integrationResults, pgScaled.getScalingFactor());
-//			} else {
-				pgScaled = safeIntegrate(pg_integrator, PG, to, pgScaled, t); // solve PG , store solution temporarily integrationResults
-				// 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
-//			}
-			}catch(Exception e){
-
-				//TODO remove next line (for debugging)
-				e.printStackTrace();
-
-				throw new RuntimeException("couldn't calculate g");
-			}
-
-			if (pg_integrator.getEvaluations() > maxEvalsUsed) maxEvalsUsed = pg_integrator.getEvaluations();
-
-			return PG0;
+		public TraversalServiceUncoloured(Node root, double from, double to) {
+			super(root, from, to, false);
 		}
 
 		@Override
-		public p0ge_InitialConditions call() throws Exception {
-			// traverse the tree in a potentially-parallelized way
-			return calculateSubtreeLikelihoodInThread(rootSubtree, from, to);
+		protected p0ge_InitialConditions calculateSubtreeLikelihoodInThread() {
+			return calculateSubtreeLikelihood(rootSubtree, from, to, PG);
 		}
-	}
 
+	}
 
 }
 

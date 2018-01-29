@@ -181,7 +181,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 				from = times[index];
 
-				// TO DO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
+				// TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
 				if (Math.abs(from-to)>globalPrecisionThreshold){
 					p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
 

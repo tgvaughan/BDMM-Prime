@@ -840,7 +840,6 @@ public class BirthDeathMigrationTest extends TestCase {
 
 		runtime = System.currentTimeMillis() - startTime;
 
-		maxEvalsUsed = bdm.maxEvalsUsed;
 		assertEquals(0., 0., 1e-2);
 
 		return logL;

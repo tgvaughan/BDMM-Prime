@@ -912,7 +912,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		long startTime = System.currentTimeMillis();
 		logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
 		runtime = System.currentTimeMillis() - startTime;
-		maxEvalsUsed = bdm.maxEvalsUsed;
 		//        assertEquals( -19.76, logL,1e-2);
 
 		if (infectionAmongDemes) {
@@ -1108,7 +1107,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		long startTime = System.currentTimeMillis();
 		logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
 		runtime = System.currentTimeMillis() - startTime;
-		maxEvalsUsed = bdm.maxEvalsUsed;
 		//        assertEquals( -19.76, logL,1e-2);
 
 		if (infectionAmongDemes) {
@@ -1505,7 +1503,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		long startTime = System.currentTimeMillis();
 		double logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
 		runtime = System.currentTimeMillis() - startTime;
-		maxEvalsUsed = bdm.maxEvalsUsed;
 
 		assertEquals(0., 0., 1e-2); // TO DO REMOVE THIS LINE if no reason for it being here is found
 
@@ -1923,7 +1920,6 @@ public class BirthDeathMigrationUncolouredTest extends TestCase {
 		long startTime = System.currentTimeMillis();
 		double logL = bdm.calculateLogP(); //calculateTreeLogLikelihood(coltree.getUncolouredTree());
 		runtime = System.currentTimeMillis() - startTime;
-		maxEvalsUsed = bdm.maxEvalsUsed;
 
 		// TO DO REMOVE if not necessary
 		assertEquals(0., 0., 1e-2);
