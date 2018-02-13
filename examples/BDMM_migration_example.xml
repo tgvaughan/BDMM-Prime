@@ -214,12 +214,12 @@
         <stateNode idref="tree"/>
         <stateNode idref="rateMatrix"/>
         <parameter id="clockRate" name="stateNode" value="8.05e-3"/> <!-- 8.05e-3 is what Lemey et all estimated, personal communication-->
-        <parameter dimension="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0. 0.01 0. 0.01 0. 0.01"/>
-        <parameter dimension="3" id="becomeUninfectiousRate" lower="0.0" name="stateNode" value="40"/>
-        <parameter dimension="3" id="R0" lower="0.0" name="stateNode" value="1.3"/>
+        <parameter numberOfDemes="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0. 0.01 0. 0.01 0. 0.01"/>
+        <parameter numberOfDemes="3" id="becomeUninfectiousRate" lower="0.0" name="stateNode" value="40"/>
+        <parameter numberOfDemes="3" id="R0" lower="0.0" name="stateNode" value="1.3"/>
    		<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->
 	        <parameter idref="mutationRate.CP$(n)" name="stateNode">1.0</parameter>
-			<parameter dimension="4" id="freqParameter.CP$(n)" lower="0.0" name="stateNode" upper="1.0" value="0.25"/>
+			<parameter numberOfDemes="4" id="freqParameter.CP$(n)" lower="0.0" name="stateNode" upper="1.0" value="0.25"/>
 			<parameter id="kappa.CP$(n)" lower="0.0" name="stateNode" value="7"/>
 		</plate>
         <stateNode idref="geo-frequencies"/>
@@ -231,21 +231,21 @@
             <distribution spec="beast.evolution.speciation.BirthDeathMigrationModel" 
 					R0="@R0" becomeUninfectiousRate="@becomeUninfectiousRate" samplingProportion="@samplingProportion" 
 					id="BDMM" tree="@tree" stateNumber="3">
-				 <migrationMatrix id="rateMatrix" spec='RealParameter' value="1" dimension="6" lower="0" upper="1000"/>              
+				 <migrationMatrix id="rateMatrix" spec='RealParameter' value="1" numberOfDemes="6" lower="0" upper="1000"/>
 				 <frequencies id="geo-frequencies" spec='RealParameter' value="0.334 0.333 0.333" lower="0" upper="1"/>              
 				<parameter name="samplingRateChangeTimes" value="0. 2.63"/> <!-- earliest sample: 2003.019 , latest: 2005.641 (diff 2.622) -->
             	<reverseTimeArrays spec="beast.core.parameter.BooleanParameter" value="false false true false"/>        		
             </distribution> 
             <prior id="rateMatrixPrior" name="distribution" x="@rateMatrix">
-                <LogNormal name="distr" M="0" S="1"/>
+                <LogNormal name="distr" migration="0" S="1"/>
             </prior>
    			<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->          
 			   <prior id="KappaPrior.CP$(n)" name="distribution" x="@kappa.CP$(n)">
-					<LogNormal name="distr" M="1.0" S="1.25"/>
+					<LogNormal name="distr" migration="1.0" S="1.25"/>
 				</prior>
 			</plate>
              <prior id="R0PriorS" name="distribution" x="@R0">
-                <LogNormal name="distr" M="0." S="1.25"/>
+                <LogNormal name="distr" migration="0." S="1.25"/>
             </prior>
             <prior id="becomeUninfectiousRatePriorS" name="distribution" x="@becomeUninfectiousRate">
                 <Normal name="distr" mean="90" sigma="10."/>
@@ -257,7 +257,7 @@
         <distribution id="likelihood" spec="util.CompoundDistribution">
     		<plate spec='util.Plate' var='n' range='1+2,3'>
 				<distribution data="@Bahl_H3N2.CP$(n)" branchRateModel="@StrictClock" id="treeLikelihood.CP$(n)" spec="TreeLikelihood" tree="@tree">
-					<siteModel id="SiteModel.s:Bahl_H3N2.CP$(n)" spec="SiteModel">
+					<siteModel id="SiteModel.sampling:Bahl_H3N2.CP$(n)" spec="SiteModel">
 						<parameter estimate="false" id="mutationRate.CP$(n)" name="mutationRate" value="1.0"/>
 						<substModel id="hky.CP$(n)" kappa="@kappa.CP$(n)" spec="HKY">
 							<frequencies frequencies="@freqParameter.CP$(n)" id="estimatedFreqs.CP$(n)" spec="Frequencies"/>
@@ -289,7 +289,7 @@
     <!--operator delta="0.75" id="FixMeanMutationRatesOperator" spec="DeltaExchangeOperator" weight="2.0">
         <parameter idref="mutationRate.CP1+2"/>
         <parameter idref="mutationRate.CP3"/>
-        <weightvector dimension="2" estimate="false" id="weightparameter" lower="0" spec="parameter.IntegerParameter" upper="0">658 329</weightvector>
+        <weightvector numberOfDemes="2" estimate="false" id="weightparameter" lower="0" spec="parameter.IntegerParameter" upper="0">658 329</weightvector>
     </operator-->
 
 	<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->          

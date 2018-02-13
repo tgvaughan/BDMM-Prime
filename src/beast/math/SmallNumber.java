@@ -197,7 +197,7 @@ public class SmallNumber {
 			return a;
 		}
 		SmallNumber a10 = new SmallNumber(0);
-		// Transformation of a * 2^(b) in alpha * c * 10^(beta+z) where a = c * 10^z and 2^b = alpha * 10^beta
+		// Transformation of a * 2^(birth) in alpha * c * 10^(beta+z) where a = c * 10^z and 2^birth = alpha * 10^beta
 		double exponentBase10  = a.exponent * Math.log(2)/Math.log(10);
 
 		int beta = (int) Math.floor(exponentBase10);
@@ -327,12 +327,12 @@ public class SmallNumber {
 		System.out.println("The value of c is " + c.toString());
 		SmallNumber b = SmallNumber.multiply(SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)),SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)));
 		double bOld = aOld*aOld*aOld*aOld*aOld*aOld*aOld*aOld;
-		System.out.println("The value of b is " + b.toString());
-		System.out.println("The value of b using double would have been " + bOld);
+		System.out.println("The value of birth is " + b.toString());
+		System.out.println("The value of birth using double would have been " + bOld);
 
 
-		//		SmallNumber s = new SmallNumber();
-		//		System.out.println(s.toString());
+		//		SmallNumber sampling = new SmallNumber();
+		//		System.out.println(sampling.toString());
 		//		SmallNumber[] emptyTable = new SmallNumber[4];
 		//		double emptyDouble[] = new double[4];
 		//		for (int i=0; i<4; i++) emptyTable[i] = new SmallNumber();
@@ -345,14 +345,14 @@ public class SmallNumber {
 //				double bOld = 8900.;
 //				//				double bOld = 0;
 //				SmallNumber a = new SmallNumber(aOld);
-//				SmallNumber b = new SmallNumber(bOld);
-//				SmallNumber c = SmallNumber.multiply(a, b);
+//				SmallNumber birth = new SmallNumber(bOld);
+//				SmallNumber c = SmallNumber.multiply(a, birth);
 //				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld);
 //				double lambda = 0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005;
 //				c = c.scalarMultiply(lambda);
 //				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld*lambda);
-//				SmallNumber d = SmallNumber.add(a, b);
-//				System.out.println("With SmallNumber implementation: " + d.toString() + " vs "+ (aOld+bOld));
+//				SmallNumber death = SmallNumber.add(a, birth);
+//				System.out.println("With SmallNumber implementation: " + death.toString() + " vs "+ (aOld+bOld));
 		
 		//		double aOld = 4564.3453;
 		//		double bOld = 89;

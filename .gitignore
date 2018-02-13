@@ -14,8 +14,10 @@
 # Temporary tests and BEAST log files
 /src/tempTests/
 /examples/tempExamples/
+/Results/
 /*.state
 /*.trees
 /*.log
 /*.newick
 /*.nexus
+/src/beast/math/*Temp.java

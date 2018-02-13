@@ -1,17 +1,16 @@
 package beast.math;
 
 
-import java.util.Arrays;
-
-import beast.evolution.speciation.BirthDeathMigrationModel;
+import beast.core.util.Utils;
+import beast.math.p0_ODE;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.ode.nonstiff.*;
+import org.apache.commons.math3.ode.nonstiff.HighamHall54Integrator;
 
-import beast.core.util.Utils;
+import java.util.Arrays;
 
 /**
  * User: Denise
@@ -36,7 +35,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	Double[] M;
 	double T;
 
-	int dimension; /* ODE dimension = stateNumber */
+	int dimension; /* ODE numberOfDemes = stateNumber */
 	int intervals;
 	Double[] times;
 	int index;
@@ -96,9 +95,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 				if (i!=j){
 					if (birthAmongDemes){     // infection among demes
 
-						gDot[i] += b_ij[l]*g[i]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i];
+						gDot[i] += b_ij[l]*g[i]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i];
 
-						gDot[i] -= b_ij[l]*g[i]*g[j]; // b_ij[intervals*i*(dimension-1)+(j<i?j:j-1)+index]*g[i]*g[j];
+						gDot[i] -= b_ij[l]*g[i]*g[j]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i]*g[j];
 
 					}
 
@@ -139,13 +138,13 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		}
 
-		//        gDot[2] = -(-(b[0]+b_ij[0]+d[0]+s[0])*g[2] + 2*b[0]*g[0]*g[2] + b_ij[0]*g[0]*g[3] + b_ij[0]*g[1]*g[2]);
-		//        gDot[3] = -(-(b[1]+b_ij[1]+d[1]+s[1])*g[3] + 2*b[1]*g[1]*g[3] + b_ij[1]*g[1]*g[2] + b_ij[1]*g[0]*g[3]);
+		//        gDot[2] = -(-(birth[0]+birthAmongDemes_ij[0]+death[0]+sampling[0])*g[2] + 2*birth[0]*g[0]*g[2] + birthAmongDemes_ij[0]*g[0]*g[3] + birthAmongDemes_ij[0]*g[1]*g[2]);
+		//        gDot[3] = -(-(birth[1]+birthAmongDemes_ij[1]+death[1]+sampling[1])*g[3] + 2*birth[1]*g[1]*g[3] + birthAmongDemes_ij[1]*g[1]*g[2] + birthAmongDemes_ij[1]*g[0]*g[3]);
 
 	}
 
 	/**
-	 * Perform integration on differential equations p 
+	 * Perform integration on differential equations p
 	 * @param t
 	 * @param rhoSampling
 	 * @param rho
@@ -182,15 +181,15 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 				from = times[index];
 
-				// TO DO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed 
+				// TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
 				if (Math.abs(from-to)>globalPrecisionThreshold){
-					p_integrator.integrate(P, to, result, from, result); // solve P , store solution in y
+					p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
 
 					if (rhoSampling){
 						for (int i=0; i<dimension; i++){
 							oneMinusRho = (1-rho[i*intervals + index]);
 							result[i] *= oneMinusRho;
-							
+
 							/*
 							System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", from = " + from);
 							*/
@@ -204,18 +203,18 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 				index--;
 			}
 
-			p_integrator.integrate(P, to, result, t, result); // solve P, store solution in y
+			p_integrator.integrate(P, to, result, t, result); // solve diffEquationOnP, store solution in y
 
 			// TO DO
-			// check that both times are really overlapping
+			// check that both rateChangeTimes are really overlapping
 			// but really not sure that this is enough, i have to build appropriate tests
 			if(Math.abs(t-times[indexFrom])<globalPrecisionThreshold) {
 				if (rhoSampling){
 					for (int i=0; i<dimension; i++){
 						oneMinusRho = (1-rho[i*intervals + indexFrom]);
 						result[i] *= oneMinusRho;
-					//	System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
-						
+						//	System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
+
 					}
 				}
 			}
@@ -240,9 +239,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		else{
 			for (int i = 0; i<dimension; i++) {
 				y[i] = (1 - rho[i * intervals + Utils.index(T, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
-				
+
 				/*
-				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.index(T, times, intervals)]) + ", t = " + t + ", to = " + T);
+				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.indexTimeInterval(T, rateChangeTimes, intervals)]) + ", t = " + t + ", to = " + T);
 				*/
 			}
 		}
@@ -276,12 +275,12 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			b = new Double[]{i, i};
 
-			//            psi = 0.5 * ((i - d[0]) - Math.sqrt((d[0] - i) * (d[0] - i) - .04));  // assume b*s*m=constant
+			//            psi = 0.5 * ((i - death[0]) - Math.sqrt((death[0] - i) * (death[0] - i) - .04));  // assume birth*sampling*m=constant
 
 
-			M = new Double[]{b[0]-d[0]-c2/b[0], b[0]-d[0]-c2/b[0]};     // assume b-d-s=M
+			M = new Double[]{b[0]-d[0]-c2/b[0], b[0]-d[0]-c2/b[0]};     // assume birth-death-sampling=migration
 
-			psi = c2/c1 * M[0]; // assume b*m = c1 and b*s = c2
+			psi = c2/c1 * M[0]; // assume birth*m = c1 and birth*sampling = c2
 			s = new Double[] {psi,psi};
 
 
@@ -301,7 +300,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.});
 			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
 
-			System.out.println("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
+			System.out.println("birth[0] = "+b[0]+ ", death[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
 
 			double[] y0 = new double[]{1.1,1.1,4.,9.};
 			double[] y = new double[4];
@@ -372,7 +371,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		Double[] s = {.5,.5};
 		Double[] M = {0.,0.};
 
-		System.out.println("b\tp\tg");
+		System.out.println("birth\tp\tg");
 
 		//         for (double i = 0.; i<10.01; i+=0.01){
 
@@ -405,7 +404,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		res2 = pg_ode.getP(0, res, 5, false, new Double[]{0.});
 		System.out.println(b[0] + "\t" + res[0]+"\t"+res[1]);
 
-		//             System.out.print("b[0] = "+b[0]+ ", d[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
+		//             System.out.print("birth[0] = "+birth[0]+ ", death[0] = " + Math.round(death[0]*100.)/100.+ "\t\t");
 		System.out.println(b[0] + "\t" + p[0]+"\t"+p[1]);
 		System.out.println(b[0] + "\t" + y[0]+"\t"+y[1]+"\t"+y[2]+"\t"+y[3]);
 		//         }

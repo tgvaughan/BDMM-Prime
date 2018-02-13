@@ -9,10 +9,10 @@ import beast.core.Description;
 @Description("Set of initial conditions for a system of ODEs, all increased by the same factor to prevent underflowing (which appears with numbers too small to be distinguished from zero, when using the type 'double')")
 public class ScaledNumbers {
 
-	// scale factor(s)
+	// scale factor(sampling)
 	private int factor;
 
-	// set(s) of initial conditions on which the scale factor(s) was/were applied
+	// set(sampling) of initial conditions on which the scale factor(sampling) was/were applied
 	private double[] equation;
 
 	public ScaledNumbers(int f, double[] e){
