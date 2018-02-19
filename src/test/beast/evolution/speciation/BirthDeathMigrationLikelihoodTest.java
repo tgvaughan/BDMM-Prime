@@ -19,7 +19,6 @@ import beast.evolution.speciation.PiecewiseBirthDeathMigrationDistribution;
 
 /**
  * Created by Jeremie Scire (jscire) on 26.06.17.
- * TO DO ADD denise and julija if i also change piecewise test
  */
 
 public class BirthDeathMigrationLikelihoodTest extends TestCase {
