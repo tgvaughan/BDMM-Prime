@@ -181,7 +181,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			logP +=  Math.log(2)*internalNodeCount;
 		}
 
-		executorShutdown();
+		if(isParallelizedCalculation) executorShutdown();
 		return logP;
 	}
 
