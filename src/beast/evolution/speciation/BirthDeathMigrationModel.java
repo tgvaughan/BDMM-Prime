@@ -366,7 +366,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 							try {
 								// start a new thread to take care of the second subtree
 								Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
-										new TraversalServiceColoured(node.getChild(indexSecondChild), isMigrationEvent, migrationIndex, to, t1));
+										new TraversalServiceColoured(node.getChild(indexSecondChild), false, null, to, t1));
 
 								g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), false, null, to, t0, PG);
 								g1 = secondChildTraversal.get();
