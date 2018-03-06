@@ -107,6 +107,10 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 		double[] noSampleExistsProp =  new double[n];
 
+		// update the threshold for parallelization
+		//TODO only do it if tree shape changed
+		updateParallelizationThreshold();
+
 		try{  // start calculation
 
 			pInitialConditions = getAllInitialConditionsForP(tree);

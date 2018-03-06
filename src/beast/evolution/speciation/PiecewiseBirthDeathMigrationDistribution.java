@@ -456,6 +456,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if (checkRho.get() && contempCount>1 && rho==null)
 			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
 
+
 		checkOrigin(tree);
 		collectTimes(T);
 		setRho();
@@ -464,13 +465,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		isParallelizedCalculation = isParallelizedCalculationInput.get();
 		minimalProportionForParallelization = minimalProportionForParallelizationInput.get();
-
-		if(isParallelizedCalculation) {
-			getAllSubTreesWeights(tree);
-			// set 'parallelizationThreshold' to a fraction of the whole tree weight.
-			// The size of this fraction is determined by a tuning parameter. This parameter should be adjusted (increased) if more computation cores are available
-			parallelizationThreshold = weightOfNodeSubTree[tree.getRoot().getNr()] * minimalProportionForParallelization;
-		}
 
 	}
 
@@ -726,7 +720,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	/**
 	 * set change times
 	 */
-
 	public void getChangeTimes(double maxTime, List<Double> changeTimes, RealParameter intervalTimes, int numChanges, boolean relative, boolean reverse) {
 		changeTimes.clear();
 
@@ -851,6 +844,15 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 						rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
 						: rhos[0];
 			}
+		}
+	}
+
+	void updateParallelizationThreshold(){
+		if(isParallelizedCalculation) {
+			getAllSubTreesWeights(tree);
+			// set 'parallelizationThreshold' to a fraction of the whole tree weight.
+			// The size of this fraction is determined by a tuning parameter. This parameter should be adjusted (increased) if more computation cores are available
+			parallelizationThreshold = weightOfNodeSubTree[tree.getRoot().getNr()] * minimalProportionForParallelization;
 		}
 	}
 
