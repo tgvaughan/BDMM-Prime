@@ -101,6 +101,10 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			return logP;
 		}
 
+		// update the threshold for parallelization
+		//TODO only do it if tree shape changed
+		updateParallelizationThreshold();
+
 		double[] noSampleExistsProp ;
 
 		SmallNumber PrSN = new SmallNumber(0);

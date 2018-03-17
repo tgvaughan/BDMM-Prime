@@ -194,14 +194,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
 
-	public Input<Boolean> isParallelizedCalculationInput = new Input<>("parallelize", "is the calculation parallelized on sibling subtrees or not (default true)", false); // for debugging
+	public Input<Boolean> isParallelizedCalculationInput = new Input<>("parallelize", "is the calculation parallelized on sibling subtrees or not (default true)", true);
 
 	//If a large number a cores is available (more than 8 or 10) the calculation speed can be increased by diminishing the parallelization factor
 	//On the contrary, if only 2-4 cores are available, a slightly higher value (1/5 to 1/8) can be beneficial to the calculation speed.
 	public Input<Double> minimalProportionForParallelizationInput = new Input<>("parallelizationFactor", "the minimal relative size the two children subtrees of a node" +
 			" must have to start parallel calculations on the children. (default: 1/10). ", new Double(1/10));
-
-
 
 
 	public static boolean isParallelizedCalculation;
@@ -458,6 +456,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if (checkRho.get() && contempCount>1 && rho==null)
 			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
 
+
 		checkOrigin(tree);
 		collectTimes(T);
 		setRho();
@@ -466,13 +465,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		isParallelizedCalculation = isParallelizedCalculationInput.get();
 		minimalProportionForParallelization = minimalProportionForParallelizationInput.get();
-
-		if(isParallelizedCalculation) {
-			getAllSubTreesWeights(tree);
-			// set 'parallelizationThreshold' to a fraction of the whole tree weight.
-			// The size of this fraction is determined by a tuning parameter. This parameter should be adjusted (increased) if more computation cores are available
-			parallelizationThreshold = weightOfNodeSubTree[tree.getRoot().getNr()] * minimalProportionForParallelization;
-		}
 
 	}
 
@@ -728,7 +720,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	/**
 	 * set change times
 	 */
-
 	public void getChangeTimes(double maxTime, List<Double> changeTimes, RealParameter intervalTimes, int numChanges, boolean relative, boolean reverse) {
 		changeTimes.clear();
 
@@ -853,6 +844,15 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 						rhoSamplingChangeTimes.contains(times[i]) ? rhos[rhos.length > n ? (rhoChanges+1)*state+index(times[i%totalIntervals], rhoSamplingChangeTimes) : state] : 0.
 						: rhos[0];
 			}
+		}
+	}
+
+	void updateParallelizationThreshold(){
+		if(isParallelizedCalculation) {
+			getAllSubTreesWeights(tree);
+			// set 'parallelizationThreshold' to a fraction of the whole tree weight.
+			// The size of this fraction is determined by a tuning parameter. This parameter should be adjusted (increased) if more computation cores are available
+			parallelizationThreshold = weightOfNodeSubTree[tree.getRoot().getNr()] * minimalProportionForParallelization;
 		}
 	}
 
