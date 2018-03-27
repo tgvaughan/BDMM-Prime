@@ -41,6 +41,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 
 	}
 
+	// updateRates is not used here because a new p0_ODE is created each time PiecewiseBirthDeathMigrationDistribution.updateRates() is called (called through setUpIntegrators())
 	public void updateRates(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, Double[] times){
 
 		this.b = b;
