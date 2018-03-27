@@ -96,10 +96,21 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 		Node root = tree.getRoot();
 
+		// added
+		if (origin.get()==null)
+			T = root.getHeight();
+		else
+			updateOrigin(root);
+
+
+		collectTimes(T);
+		setRho();
+
 		if ((orig < 0) || updateRates() < 0 ||  (times[totalIntervals-1] > T)) {
 			logP =  Double.NEGATIVE_INFINITY;
 			return logP;
 		}
+		// end added
 
 		// update the threshold for parallelization
 		//TODO only do it if tree shape changed

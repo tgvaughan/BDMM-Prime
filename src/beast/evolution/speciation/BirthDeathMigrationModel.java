@@ -90,15 +90,20 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 		int node_state;
 		if (origin.get()==null) {
+			T = root.getHeight();
 			node_state =  ((MultiTypeNode) tree.getRoot()).getNodeType();
 		}
 		else{
+			updateOrigin(root);
 			node_state = (originBranch.getChangeCount()>0) ?
 					originBranch.getChangeType(originBranch.getChangeCount()-1) :
 					((MultiTypeNode) tree.getRoot()).getNodeType();
 			if (orig < 0)
 				return Double.NEGATIVE_INFINITY;
 		}
+
+		collectTimes(T);
+		setRho();
 
 		if (updateRates() < 0 ||  (times[totalIntervals-1] > T)) {
 			logP =  Double.NEGATIVE_INFINITY;
