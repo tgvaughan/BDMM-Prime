@@ -194,7 +194,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
 
 
-	public Input<Boolean> isParallelizedCalculationInput = new Input<>("parallelize", "is the calculation parallelized on sibling subtrees or not (default true)", true);
+	public Input<Boolean> isParallelizedCalculationInput = new Input<>("parallelize", "is the calculation parallelized on sibling subtrees or not (default true)", false);
 
 	//If a large number a cores is available (more than 8 or 10) the calculation speed can be increased by diminishing the parallelization factor
 	//On the contrary, if only 2-4 cores are available, a slightly higher value (1/5 to 1/8) can be beneficial to the calculation speed.
