@@ -97,7 +97,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 	 * @throws Exception
 	 */
 	@Test 
-	public void testLikelihoodRemovalProbChange() throws Exception{
+	public void testLikelihoodRemovalProbChangeBasic() throws Exception{
 
 		String newick = "((1[&type=0]: 1.5, 2[&type=0]: 0)3[&type=0]: 3.5, 4[&type=0]: 4) ;";
 
@@ -120,7 +120,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 				R0, becomeUninfectiousRate, samplingProportion,
 				null, null, removalProbability, intervalTimes, conditionOnSurvival);
 
-		//		System.out.println("Birth-death result 1: " +logL + "\t- Test LikelihoodRemovalProbChange");
+		//		System.out.println("Birth-death result 1: " +logL + "\t- Test LikelihoodRemovalProbChangeBasic");
 
 		assertEquals(-21.25413884159791, logL, 1e-5); // Reference BDMM (version 	0.2.0) 22/06/2017
 
@@ -143,10 +143,69 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 				samplingProportion,  removalProbability,
 				intervalTimes, conditionOnSurvival);
 
-		System.out.println("Birth-death result 2: " +logL2 + "\t- Test LikelihoodRemovalProbChange 2");
+		// System.out.println("Birth-death result 2: " +logL2 + "\t- Test LikelihoodRemovalProbChangeBasic 2");
 
 		assertEquals(-21.25413884159791, logL2, 1e-5); // Reference BDMM (version 	0.2.0) 22/06/2017
 	}
+
+	/**
+	 * Two-state test for removal-probability rate change
+	 * Coloured and uncoloured trees
+	 * Reference from BDMM itself
+	 * @throws Exception
+	 */
+	@Test
+	public void testLikelihoodRemovalProbChangeTwoState() throws Exception{
+
+		String newick = "((1[&type=0]: 1.5, 2[&type=1]: 0)3[&type=0]: 3.5, 4[&type=1]: 4) ;";
+
+		String orig="6.";
+		String stateNumber = "2";
+		String migrationMatrix = "0.2 0.3 0.2 0.3";
+		String frequencies = "0.5 0.5";
+		String R0 = Double.toString(4./3.) +  " 1.1 " + Double.toString(4./3.) + " 1.1";
+		String becomeUninfectiousRate = "1.5 1.4 1.5 1.4";
+		String samplingProportion = "0.33 0.33 0.33 0.33";
+		String removalProbability = "0.3 0.7 0.4 0.6";
+		boolean conditionOnSurvival = false;
+		String intervalTimes = "0. 1.";
+
+
+		// coloured tree
+		double logL = bdm_likelihood_MT(stateNumber,
+				migrationMatrix, frequencies,
+				newick, orig,
+				R0, becomeUninfectiousRate, samplingProportion,
+				null, null, removalProbability, intervalTimes, conditionOnSurvival);
+
+			//	System.out.println("Birth-death result 1: " +logL + "\t- Test LikelihoodRemovalProbChangeTwoState");
+
+		assertEquals(-22.20607074371644, logL, 1e-5); // Reference BDMM (version 	0.2.0) 29/03/2018
+
+		//uncoloured tree
+		Tree tree = new TreeParser(newick ,false);
+
+		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+
+		bdm.setInputValue("tree", tree);
+		bdm.setInputValue("typeLabel", "type");
+
+
+		double logL2 = bdm_likelihood(stateNumber,
+				migrationMatrix,
+				frequencies,
+				tree, "type",
+				"1.", // origin is defined at 1. instead of 6. because bdm_likelihood adds the height of the root of the tree to that value (here 5.)
+				R0,null,
+				becomeUninfectiousRate,
+				samplingProportion,  removalProbability,
+				intervalTimes, conditionOnSurvival);
+
+	//	System.out.println("Birth-death result 2: " +logL2 + "\t- Test LikelihoodRemovalProbChangeTwoState 2");
+
+		assertEquals(-21.185194919464568, logL2, 1e-5); // Reference BDMM (version 	0.2.0) 29/03/2018
+	}
+
 
 	/**
 	 * Test simple configuration with one rho-sampling event for
