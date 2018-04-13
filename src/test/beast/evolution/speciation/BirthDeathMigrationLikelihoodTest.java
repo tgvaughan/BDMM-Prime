@@ -41,9 +41,9 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		String stateNumber = "2";
 		String migrationMatrix = ".1 0.2 0.1 0.2";
 		String frequencies = "0.5 0.5";
-		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.);
-		String becomeUninfectiousRate = "1.5 1.5";
-		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.);
+		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.) + " " + Double.toString(4./3.) + " " + Double.toString(4./3.);
+		String becomeUninfectiousRate = "1.5 1.5 1.5 1.5";
+		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.);
 		String locations = "1=0,2=1" ;
 		String prefixname = "";
 		boolean conditionOnSurvival = false;
@@ -103,11 +103,11 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 
 		String orig="6.";
 		String stateNumber = "1";
-		String migrationMatrix = "0.";
+		String migrationMatrix = "0. 0.";
 		String frequencies = "1";
-		String R0 = Double.toString(4./3.);
-		String becomeUninfectiousRate = "1.5";
-		String samplingProportion = Double.toString(1./3.);
+		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.);
+		String becomeUninfectiousRate = "1.5 1.5";
+		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.);
 		String removalProbability = "0.3 0.7";
 		boolean conditionOnSurvival = false;
 		String intervalTimes = "0. 1.";
