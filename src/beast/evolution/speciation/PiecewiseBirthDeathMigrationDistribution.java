@@ -442,7 +442,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		double freqSum = 0;
 		for (double f : freq) freqSum+= f;
-		if (freqSum!=1.)
+		if (Math.abs(1.0-freqSum)>1e-10)
 			throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
 
 
