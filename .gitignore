@@ -9,6 +9,7 @@
 
 # Misc cruft
 /META-INF
+/META-INF2
 /bin
 
 # Temporary tests and BEAST log files

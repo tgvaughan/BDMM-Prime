@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-    <beast beautitemplate='Standard' beautistatus=''
-    namespace="beast.core
+<beast beautitemplate='Standard' beautistatus=''
+       namespace="beast.core
     :beast.evolution.tree.coalescent
     :beast.core.util
     :beast.evolution.nuc
@@ -123,36 +123,36 @@
 
     <run chainLength="1000000" id="mcmc" spec="MCMC" numInitializationAttempts="1000">
         <state id="state" storeEvery="5000">
-            <parameter numberOfDemes="1" id="origin" lower="0.0" name="stateNode" upper="Infinity" value="0"/>
-            <parameter numberOfDemes="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0.08519855595667872 0.08519855595667872 0.08519855595667872 0.2528735632183908 0.2528735632183908 0.2528735632183908"/>
-            <parameter numberOfDemes="6" id="becomeUninfectiousRate" lower="0.0" name="stateNode" upper="Infinity" value="1.0"/>
-            <parameter numberOfDemes="3" id="R0_base" lower="0.0" name="stateNode" upper="Infinity" value="1.05"/>
-            <parameter numberOfDemes="1" id="lambda_ratio" lower="0.0" name="stateNode" upper="Infinity" value="0.9"/>
-            <parameter numberOfDemes="6" name="stateNode" id="r" value="0"/>
+            <parameter dimension="1" id="origin" lower="0.0" name="stateNode" upper="Infinity" value="0"/>
+            <parameter dimension="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0.08519855595667872 0.08519855595667872 0.08519855595667872 0.2528735632183908 0.2528735632183908 0.2528735632183908"/>
+            <parameter dimension="6" id="becomeUninfectiousRate" lower="0.0" name="stateNode" upper="Infinity" value="1.0"/>
+            <parameter dimension="3" id="R0_base" lower="0.0" name="stateNode" upper="Infinity" value="1.05"/>
+            <parameter dimension="1" id="lambda_ratio" lower="0.0" name="stateNode" upper="Infinity" value="0.9"/>
+            <parameter dimension="6" name="stateNode" id="r" value="0"/>
             <stateNode idref="rateMatrix"/>
         </state>
 
         <distribution id="posterior" spec="CompoundDistribution">
             <distribution id="prior" spec="CompoundDistribution">
                 <distribution R0_base="@R0_base" lambda_ratio="@lambda_ratio"
-                    becomeUninfectiousRate="@becomeUninfectiousRate" id="BDMM"
-                    origin="@origin" samplingProportion="@samplingProportion"
-                    spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" tree="@tree"
-                    originIsRootEdge="true" typeLabel="location"
-                    removalProbability="@r" stateNumber="2" useRK="true">
+                              becomeUninfectiousRate="@becomeUninfectiousRate" id="BDMM"
+                              origin="@origin" samplingProportion="@samplingProportion"
+                              spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" tree="@tree"
+                              originIsRootEdge="true" typeLabel="location"
+                              removalProbability="@r" stateNumber="2" useRK="true">
 
-            <migrationMatrix id="rateMatrix" spec='RealParameter' value="0.04 0" numberOfDemes="2" lower="0" upper="100"/>
+                    <migrationMatrix id="rateMatrix" spec='RealParameter' value="0.04 0" dimension="2" lower="0" upper="100"/>
 
-                    <frequencies id="geo-frequencies" spec='RealParameter' value="1 0" lower="0" upper="1" numberOfDemes="2"/>
+                    <frequencies id="geo-frequencies" spec='RealParameter' value="1 0" lower="0" upper="1" dimension="2"/>
                 </distribution>
                 <prior id="R0SensPrior" name="distribution" x="@R0_base">
-                    <LogNormal migration="0" S="0.5" name="distr"/>
+                    <LogNormal M="0" S="0.5" name="distr"/>
                 </prior>
                 <prior id="LambdaRatioPrior" name="distribution" x="@lambda_ratio">
                     <Beta alpha="2" beta="2" name="distr"/>
                 </prior>
                 <prior id="becomeUninfectiousRatePrior" name="distribution" x="@becomeUninfectiousRate">
-                    <LogNormal migration="0" S="0.5" name="distr"/>
+                    <LogNormal M="0" S="0.5" name="distr"/>
                 </prior>
             </distribution>
         </distribution>
@@ -165,7 +165,7 @@
             <parameter idref="becomeUninfectiousRate" name="down"/>
         </operator>
 
-        <logger fileName="$(filebase)_$(seed).log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+        <logger fileName="tracelog.log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
             <log idref="posterior"/>
             <log idref="prior"/>
             <log idref="BDMM"/>

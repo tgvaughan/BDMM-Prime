@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?><beast beautitemplate='Standard' beautistatus='' namespace="beast.core:beast.evolution.alignment:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution.tree:beast.core.parameter:multitypetree.operators:multitypetree.util:beast.math.distributions" version="2.0">
 
-<!-- initial seed to get it started e.g. 1437659373994 -->
+	<!-- initial seed to get it started e.g. 1437659373994 -->
 
 	<map name="Beta">beast.math.distributions.Beta</map>
 	<map name="Exponential">beast.math.distributions.Exponential</map>
@@ -13,11 +13,11 @@
 	<map name="OneOnX">beast.math.distributions.OneOnX</map>
 	<map name="Normal">beast.math.distributions.Normal</map>
 
-    <alignment filter="1::3,2::3" id="Bahl_H3N2.CP1+2" spec="FilteredAlignment" data="@Bahl_H3N2"/>
-    <alignment filter="3::3" id="Bahl_H3N2.CP3" spec="FilteredAlignment" data="@Bahl_H3N2"/>
+	<alignment filter="1::3,2::3" id="Bahl_H3N2.CP1+2" spec="FilteredAlignment" data="@Bahl_H3N2"/>
+	<alignment filter="3::3" id="Bahl_H3N2.CP3" spec="FilteredAlignment" data="@Bahl_H3N2"/>
 	<branchRateModel clock.rate="@clockRate" id="StrictClock" spec="beast.evolution.branchratemodel.StrictClockModel"/>
 
-    <data id="Bahl_H3N2" name="alignment">
+	<data id="Bahl_H3N2" name="alignment">
 		<sequence id="SEA_2005.510_Cambodia/9/2005_H3N2"  taxon="SEA_2005.510_Cambodia/9/2005_H3N2"  totalcount="4" value="CAAAAACTTCCCGGAAATGACAACAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTACCAAACGGAACGATAGTGAAAACAATCACGAATGACCAAATTGAAGTTACTAATGCTACTGAGCTGGTTCAGAGTTCCTCAACAGGTGGAATATGCGACAGTCCTCATCAGATCCTTGATGGAGAAAACTGCACACTAATAGATGCTCTATTGGGAGACCCTCAGTGTGATGGCTTCCAAAATAAGAAATGGGACCTTTTTGTTGAACGCAGCAAAGCCTACAGCAACTGTTACCCTTATGATGTGCCGGATTATGCCTCCCTTAGGTCACTAGTTGCCTCATCCGGCACACTGGAGTTTAACAATGAAAGCTTCAATTGGACTGGAGTCACTCAAAATGGAACAAGCTCTGCTTGCAAAAGGAGATCTAATAACAGTTTCTTTAGTAGATTGAATTGGTTGACCCACTTAAAATTCAAATACCCAGCATTGAACGTGACTATGCCAAACAATGAAAAATTTGACAAATTGTACATTTGGGGGGTCCACCACCCGGGTACGGACAATGACCAAATCTTCTTGTATGCTCAAGCATCAGGAAGAATCACAGTCTCTACCAAAAGAAGCCAACAAACTGTAATCCCGAATATCTGGTCTAGACCCAGAGTAAGGAATATCCCCAGCAGAATAAGCATCTATTGGACAATAGTAAAACCGGGAGACATACTTTTGATTAACAGCACAGGGAATCTAATTGCTCCTAGGGGTTACTTCAAAATACGAAGTGGGAAAAGCTCAATAATGAGATCAGATGCACCCATTGGCAAATGCAATTCTGAATGCATCACTCCAAATGGAAGCATTCCCAATGACAAACCATTTCAAAATGTAAACAGGATCACATATGGGGCCTGTCCCAGATATGTTAAGCAAAACACTCTGAAATTGGCAACAGGGATGCGAAATGTACCAGAGAAACAAACTAGA"/>
 		<sequence id="SEA_2003.189_MALAYSIA/226/2003_H3N2"  taxon="SEA_2003.189_MALAYSIA/226/2003_H3N2"  totalcount="4" value="CAAAAACTTCCCGGAAATGACAACAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTACCAAACGGAACGATGGTGAAAACAATCACGAATGACCAAATTGAAGTTACTAATGCTACTGAGCTGGTTCAGAGTTCCTCAACAGGTGGAATATGCGACAGTCCTCATCAGATCCTTGATGGAGAAAACTGCACACTAATAGATGCTCTATTGGGAGACCCTCAGTGTGATGGCTTCCAAAATAAGAAATGGGACCTTTTTGTTGAACGCAGCAAAGCCTACAGCAACTGTTACCCTTATGATGTGCCGGATTATGCCTCCCTTAGGTCACTAGTTGCCTCATCCGGCACACTGGAGTTTAACAATGAAAGCTTCAATTGGACTGGAGTCACTCAGAATGGAACAAGCTCTGCTTGCAAAAGGAGATCTAATAAAAGTTTCTTTAGTAGATTGAATTGGTTGACCCATTTAAAATACAAATACCCAGCATTGAACGTGACTATGCCAAACAATGAAAAATTTGACAAATTGTACATTTGGGGGGTTCACCACCCGGGTACAGACAGTGACCAAATCAGCCTATATGCTCAAGCATCAGGAAGAATCACAGTCTCTACCAAAAGAAGCCAACAAACTGTAATCCCGAATATCGGATCTAGACCCAGGGTAAGGGATGTCTCCAGCAGAATAAGCATCTATTGGACAATAGTAAAACCGGGAGACATACTTTTGATTAACAGCACAGGGAATCTAATTGCTCCTCGGGGTTACTTCAAAATACGAAGTGGGAAAAGCTCAATAATGAGATCAGATGCACCCATTGGCAAATGCAATTCTGAATGCATCACTCCAAATGGAAGCATTCCCAATGACAAACCATTTCAAAATGTAAACAGGATCACATATGGGGCCTGTCCCAGATATGTTAAGCAAAACACTCTGAAATTGGCAACAGGGATGCGAAATGTACCAGAGAAACAAACTAGA"/>
 		<sequence id="SEA_2004.123_MALAYSIA/2556/2004_H3N2"  taxon="SEA_2004.123_MALAYSIA/2556/2004_H3N2"  totalcount="4" value="CAAAAACTTCCCGGAAATGACAACAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTACCAAACGGAACGATAGTGAAAACAATCACGAATGACCAAATTGAAGTTACTAATGCTACTGAGCTGGTTCAGAGTTCCTCAACAGGTGGAATATGCGACAGTCCTCATCAGATCCTTGATGGAGAAAACTGCACACTAATAGATGCTCTATTGGGAGACCCTCAGTGTGATGGCTTCCAAAATAAGAAATGGGACCTTTTTGTTGAACGCAGCAAAGCCTACAGCAATTGTTACCCTTATGATGTGCCGGATTATGCCTCCCTTAGGTCACTAATTGCCTCATCCGGCACACTGGAGTTTAACAATGAAAGCTTCAATTGGACTGGAGTCACTCAAAATGGAACAAGCTCTGCTTGCAAAAGGAGATCTAATAGCAGTTTCTTTAGTAGATTGAATTGGTTGACCCACTTAAAATTCAAATACCCAGCATTGAACGTGACTATGCCAAACAATGAAGAATTTGACAAATTGTACATTTGGGGGGTTCACCACCCGGGTACAGACAATGACCAAATCAGCCTATATGCTCAAGCATCAGGAAGAATCACAGTCTCTACCAAAAGAAGCCAACAAACTGTAATCCCGAATATCGGGTCTAGACCCAGGGTAAGGGATATCCCCAGCAGAATAAGCATCTACTGGACAATAGTAAAACCGGGAGACATACTTTTGATTAACAGCACAGGGAATCTAATTGCTCCTCGGGGTTACTTCAAAATACGAAGTGGGAAAAGCTCAATAATGAGATCAGATGCACCCATTGGCAAATGCAATTCTGAATGCATCACTCCAAATGGAAGCATTCCCAATGACAAACCATTTCAAAATGTAAACAGGATCACATATGGGGCCTGTCCCAGATATGTTAAGCAAAACACTCTGAAATTGGCAACAGGGATGCGAAATGTACCAGAGAAACAAACTAGA"/>
@@ -75,298 +75,298 @@
 		<sequence id="Euro_France_2004.820_EU501527_A/POITIERS/719/2004"  taxon="Euro_France_2004.820_EU501527_A/POITIERS/719/2004"  totalcount="4" value="CAAAAACTTCCCGGAAATGACAACAGCATGGCAACGCTGTGCCTTGGGCACCATGCAGTACCAAACGGAACGATAGTGAAAACAATCACGAATGACCAAGTTGAAGTTACTAATGCTACTGAGCTGGTTCAGATTTCCTCAACAGGTGGAATATGCGACAGTCCTCATCAGATCCTTGATGGAGAAAACTGCACACTAATAGATGCTCTACTGGGAGACCCTCAGTGTGATGGCTTCCAAAATAAGAAATGGGACCTTTTTGTTGAACGCAGCAAAGCCTACAGCAACTGTTACCCCTATGATGTGCCGGATTATGCCTCCCTTAGGTCACTAGTTGCCTCATCCGGCACACTGGAGTTTAACAATGAAAGCTTCGATTGGACTGGAGTCACTCAGAATGGAACAAGCTCTGCTTGCAAAAGGAGATCTATTAAAAGTTTCTTTAGTAGATTGAATTGGTTGACCCACTTAAATTACAAATACCCAGCATTGAACGTGACTATGCCAAACAATGAAAAATTTGACAAATTGTACATTTGGGGGGTTCACCACCCGAGTACGGACAGTGACCAAATCAGCCTATATGCTCAAGCATCAGGAAGAATCACAGTCTCTACCAAAAGAAGCCAACAAACTGTAATCCCGAATATCGGATCTAGACCCAGGATAAGGGATATCTCCAGCCGAATAAGCATCTATTGGACAATAGTAAAACCGGGTGACATACTTTTGATTAACAGCACAGGGAATCTAATTGCTCCTCGGGGCTACTTCAAAATACGAAGTGGGAAAAGCTCAATAATGAGATCAGATGCACCCATTGGCAAATGCAATTCTGAATGCATCACTCCAAATGGAAGCATTCCCAATGACAAACCATTTCAAAATGTAAACAGGATCACATATGGGGCCTGTCCCAGATATGTTAAGCAAAACACTCTGAAATTGGCAACAGGGATGCGAAATGTACCAGAGAAACAAACTAGA"/>
 	</data>
 
-	<trait id="typeTrait" spec="beast.evolution.tree.TraitSet" traitname="type"> 
-	<!-- 0=North, 1=Tropics, 2=South -->
-			SEA_2005.510_Cambodia/9/2005_H3N2=1,
-			SEA_2003.189_MALAYSIA/226/2003_H3N2=1,
-			SEA_2004.123_MALAYSIA/2556/2004_H3N2=1,
-			SEA_2004.536_Malaysia/1522/2004_H3N2=1,
-			SEA_2004.683_Malaysia/1875/2004_H3N2=1,
-			SEA_2004.746_Malaysia/2050/2004_H3N2=1,
-			SEA_2004.822_MALAYSIA/2256/2004_H3N2=1,
-			SEA_2005.066_Malaysia/99/2005_H3N2=1,
-			SEA_2005.562_Myanmar/M005/2005_H3N2=1,
-			SEA_2003.553_PHILIPPINES/621/2003_H3N2=1,
-			SEA_2003.553_PHILIPPINES/629/2003_H3N2=1,
-			SEA_2003.630_PHILIPPINES/1116/2003_H3N2=1,
-			SEA_2003.732_Philippines/825/2003_H3N2=1,
-			SEA_2005.411_Philippines/498/2005_H3N2=1,
-			SEA_2003.066_SINGAPORE/37/2003_H3N2=1,
-			SEA_2003.611_Mae_Hong_Son/317/2003_H3N2=1,
-			SEA_2003.611_Mae_Hong_Son/330/2003_H3N2=1,
-			SEA_2004.809_Lop_Buri/3128/2004_H3N2=1,
-			SEA_2005.200_Thailand/TH-TH-129-05/2005_H3N2=1,
-			SEA_2005.477_THAILAND/257/2005_H3N2=1,
-			AU_2003.633_South_Australia/19/2003_H3N2=2,
-			AU_2003.636_BRISBANE/68/2003_H3N2=2,
-			AU_2003.693_Queensland/40/2003_H3N2=2,
-			AU_2004.617_Victoria/500/2004_H3N2=2,
-			AU_2004.762_VICTORIA/144/2004_H3N2=2,
-			AU_2004.822_Queensland/50/2004_H3N2=2,
-			AU_2004.842_Victoria/523/2004_H3N2=2,
-			AU_2005.014_Perth/1/2005_H3N2=2,
-			AU_2005.468_Victoria/512/2005_egg_passaged_H3N2=2,
-			AU_2005.567_Queensland/53/2005_H3N2=2,
-			AU_2005.595_BRISBANE/119/2005_H3N2=2,
-			NZ_2003.488_Waikato/94/2003_H3N2_HA=2,
-			NZ_2003.537_Canterbury/416/2003_H3N2_HA=2,
-			NZ_2003.537_Canterbury/427/2003_H3N2_HA=2,
-			NZ_2003.510_Canterbury/406/2003_H3N2_HA=2,
-			NZ_2003.595_Canterbury/441/2003_H3N2_HA=2,
-			NZ_2003.600_Waikato/150/2003_H3N2_HA=2,
-			NZ_2004.680_Waikato/21/2004_H3N2_HA=2,
-			NZ_2004.686_Waikato/22/2004_H3N2_HA=2,
-			NZ_2005.518_Canterbury/166/2005_H3N2_HA=2,
-			NY_2003.348_CY001469_NY/203/2003_H3N2=0,
-			NY_2003.910_New_York/272/2003_H3N2=0,
-			NY_2003.978_New_York/66/2003_H3N2=0,
-			NY_2004.940_New_York/207/2004_H3N2=0,
-			NY_2004.973_New_York/392/2004_H3N2=0,
-			NY_2005.066_New_York/395/2005_H3N2=0,
-			Euro_Austria_2005.156_EU106668_A/Austria/211120/2005=0,
-			Euro_Austria_2004.038_CY026049_A/Austria/136353/2004=0,
-			Euro_Austria_2004.071_CY026061_A/Austria/138560/2004=0,
-			Euro_Austria_2005.066_CY026084_A/Austria/204233/2005=0,
-			Euro_Austria_2003.211_CY026134_A/Austria/82615/2003=0,
-			Euro_Finland_2003.038_EU501247_A/Finland/170/2003=0,
-			Euro_Finland_2004.973_EU502512_A/Finland/487/2004=0,
-			Euro_France_2005.014_EF566231_A/Lyon_Chu/01375/2005=0,
-			Euro_France_2004.820_EU501527_A/POITIERS/719/2004=0
-	   <taxa id="TaxonSet" spec="TaxonSet">
-		   <data idref="Bahl_H3N2" name="alignment"/>
-	   </taxa>
+	<trait id="typeTrait" spec="beast.evolution.tree.TraitSet" traitname="type">
+		<!-- 0=North, 1=Tropics, 2=South -->
+		SEA_2005.510_Cambodia/9/2005_H3N2=1,
+		SEA_2003.189_MALAYSIA/226/2003_H3N2=1,
+		SEA_2004.123_MALAYSIA/2556/2004_H3N2=1,
+		SEA_2004.536_Malaysia/1522/2004_H3N2=1,
+		SEA_2004.683_Malaysia/1875/2004_H3N2=1,
+		SEA_2004.746_Malaysia/2050/2004_H3N2=1,
+		SEA_2004.822_MALAYSIA/2256/2004_H3N2=1,
+		SEA_2005.066_Malaysia/99/2005_H3N2=1,
+		SEA_2005.562_Myanmar/M005/2005_H3N2=1,
+		SEA_2003.553_PHILIPPINES/621/2003_H3N2=1,
+		SEA_2003.553_PHILIPPINES/629/2003_H3N2=1,
+		SEA_2003.630_PHILIPPINES/1116/2003_H3N2=1,
+		SEA_2003.732_Philippines/825/2003_H3N2=1,
+		SEA_2005.411_Philippines/498/2005_H3N2=1,
+		SEA_2003.066_SINGAPORE/37/2003_H3N2=1,
+		SEA_2003.611_Mae_Hong_Son/317/2003_H3N2=1,
+		SEA_2003.611_Mae_Hong_Son/330/2003_H3N2=1,
+		SEA_2004.809_Lop_Buri/3128/2004_H3N2=1,
+		SEA_2005.200_Thailand/TH-TH-129-05/2005_H3N2=1,
+		SEA_2005.477_THAILAND/257/2005_H3N2=1,
+		AU_2003.633_South_Australia/19/2003_H3N2=2,
+		AU_2003.636_BRISBANE/68/2003_H3N2=2,
+		AU_2003.693_Queensland/40/2003_H3N2=2,
+		AU_2004.617_Victoria/500/2004_H3N2=2,
+		AU_2004.762_VICTORIA/144/2004_H3N2=2,
+		AU_2004.822_Queensland/50/2004_H3N2=2,
+		AU_2004.842_Victoria/523/2004_H3N2=2,
+		AU_2005.014_Perth/1/2005_H3N2=2,
+		AU_2005.468_Victoria/512/2005_egg_passaged_H3N2=2,
+		AU_2005.567_Queensland/53/2005_H3N2=2,
+		AU_2005.595_BRISBANE/119/2005_H3N2=2,
+		NZ_2003.488_Waikato/94/2003_H3N2_HA=2,
+		NZ_2003.537_Canterbury/416/2003_H3N2_HA=2,
+		NZ_2003.537_Canterbury/427/2003_H3N2_HA=2,
+		NZ_2003.510_Canterbury/406/2003_H3N2_HA=2,
+		NZ_2003.595_Canterbury/441/2003_H3N2_HA=2,
+		NZ_2003.600_Waikato/150/2003_H3N2_HA=2,
+		NZ_2004.680_Waikato/21/2004_H3N2_HA=2,
+		NZ_2004.686_Waikato/22/2004_H3N2_HA=2,
+		NZ_2005.518_Canterbury/166/2005_H3N2_HA=2,
+		NY_2003.348_CY001469_NY/203/2003_H3N2=0,
+		NY_2003.910_New_York/272/2003_H3N2=0,
+		NY_2003.978_New_York/66/2003_H3N2=0,
+		NY_2004.940_New_York/207/2004_H3N2=0,
+		NY_2004.973_New_York/392/2004_H3N2=0,
+		NY_2005.066_New_York/395/2005_H3N2=0,
+		Euro_Austria_2005.156_EU106668_A/Austria/211120/2005=0,
+		Euro_Austria_2004.038_CY026049_A/Austria/136353/2004=0,
+		Euro_Austria_2004.071_CY026061_A/Austria/138560/2004=0,
+		Euro_Austria_2005.066_CY026084_A/Austria/204233/2005=0,
+		Euro_Austria_2003.211_CY026134_A/Austria/82615/2003=0,
+		Euro_Finland_2003.038_EU501247_A/Finland/170/2003=0,
+		Euro_Finland_2004.973_EU502512_A/Finland/487/2004=0,
+		Euro_France_2005.014_EF566231_A/Lyon_Chu/01375/2005=0,
+		Euro_France_2004.820_EU501527_A/POITIERS/719/2004=0
+		<taxa id="TaxonSet" spec="TaxonSet">
+			<data idref="Bahl_H3N2" name="alignment"/>
+		</taxa>
 	</trait>
 
 	<trait id="dateTrait" spec="beast.evolution.tree.TraitSet" traitname="date">
-			SEA_2005.510_Cambodia/9/2005_H3N2=2005.51,
-			SEA_2003.189_MALAYSIA/226/2003_H3N2=2003.189,
-			SEA_2004.123_MALAYSIA/2556/2004_H3N2=2004.123,
-			SEA_2004.536_Malaysia/1522/2004_H3N2=2004.536,
-			SEA_2004.683_Malaysia/1875/2004_H3N2=2004.683,
-			SEA_2004.746_Malaysia/2050/2004_H3N2=2004.746,
-			SEA_2004.822_MALAYSIA/2256/2004_H3N2=2004.822,
-			SEA_2005.066_Malaysia/99/2005_H3N2=2005.066,
-			SEA_2005.562_Myanmar/M005/2005_H3N2=2005.562,
-			SEA_2003.553_PHILIPPINES/621/2003_H3N2=2003.553,
-			SEA_2003.553_PHILIPPINES/629/2003_H3N2=2003.553,
-			SEA_2003.630_PHILIPPINES/1116/2003_H3N2=2003.63,
-			SEA_2003.732_Philippines/825/2003_H3N2=2003.732,
-			SEA_2005.411_Philippines/498/2005_H3N2=2005.411,
-			SEA_2003.066_SINGAPORE/37/2003_H3N2=2003.066,
-			SEA_2003.611_Mae_Hong_Son/317/2003_H3N2=2003.611,
-			SEA_2003.611_Mae_Hong_Son/330/2003_H3N2=2003.611,
-			SEA_2004.809_Lop_Buri/3128/2004_H3N2=2004.809,
-			SEA_2005.200_Thailand/TH-TH-129-05/2005_H3N2=2005.2,
-			SEA_2005.477_THAILAND/257/2005_H3N2=2005.477,
-			AU_2003.633_South_Australia/19/2003_H3N2=2003.633,
-			AU_2003.636_BRISBANE/68/2003_H3N2=2003.636,
-			AU_2003.693_Queensland/40/2003_H3N2=2003.693,
-			AU_2004.617_Victoria/500/2004_H3N2=2004.617,
-			AU_2004.762_VICTORIA/144/2004_H3N2=2004.762,
-			AU_2004.822_Queensland/50/2004_H3N2=2004.822,
-			AU_2004.842_Victoria/523/2004_H3N2=2004.842,
-			AU_2005.014_Perth/1/2005_H3N2=2005.014,
-			AU_2005.468_Victoria/512/2005_egg_passaged_H3N2=2005.468,
-			AU_2005.567_Queensland/53/2005_H3N2=2005.567,
-			AU_2005.595_BRISBANE/119/2005_H3N2=2005.595,
-			NZ_2003.488_Waikato/94/2003_H3N2_HA=2003.488,
-			NZ_2003.537_Canterbury/416/2003_H3N2_HA=2003.537,
-			NZ_2003.537_Canterbury/427/2003_H3N2_HA=2003.537,
-			NZ_2003.510_Canterbury/406/2003_H3N2_HA=2003.51,
-			NZ_2003.595_Canterbury/441/2003_H3N2_HA=2003.595,
-			NZ_2003.600_Waikato/150/2003_H3N2_HA=2003.6,
-			NZ_2004.680_Waikato/21/2004_H3N2_HA=2004.68,
-			NZ_2004.686_Waikato/22/2004_H3N2_HA=2004.686,
-			NZ_2005.518_Canterbury/166/2005_H3N2_HA=2005.518,
-			NY_2003.348_CY001469_NY/203/2003_H3N2=2003.348,
-			NY_2003.910_New_York/272/2003_H3N2=2003.91,
-			NY_2003.978_New_York/66/2003_H3N2=2003.978,
-			NY_2004.940_New_York/207/2004_H3N2=2004.94,
-			NY_2004.973_New_York/392/2004_H3N2=2004.973,
-			NY_2005.066_New_York/395/2005_H3N2=2005.066,
-			Euro_Austria_2005.156_EU106668_A/Austria/211120/2005=2005.156,
-			Euro_Austria_2004.038_CY026049_A/Austria/136353/2004=2004.038,
-			Euro_Austria_2004.071_CY026061_A/Austria/138560/2004=2004.071,
-			Euro_Austria_2005.066_CY026084_A/Austria/204233/2005=2005.066,
-			Euro_Austria_2003.211_CY026134_A/Austria/82615/2003=2003.211,
-			Euro_Finland_2003.038_EU501247_A/Finland/170/2003=2003.038,
-			Euro_Finland_2004.973_EU502512_A/Finland/487/2004=2004.973,
-			Euro_France_2005.014_EF566231_A/Lyon_Chu/01375/2005=2005.014,
-			Euro_France_2004.820_EU501527_A/POITIERS/719/2004=2004.82        
-		   <taxa idref="TaxonSet"/>
-	   </trait>    
-       
-    <model spec='MigrationModelForward' id="migModel"  rateMatrixIsForward="true">
-        <rateMatrix idref="rateMatrix"/>
-        <popSizes id="popSize" spec="RealParameter" value="1 1 1"/> 
-    </model>
-	
+		SEA_2005.510_Cambodia/9/2005_H3N2=2005.51,
+		SEA_2003.189_MALAYSIA/226/2003_H3N2=2003.189,
+		SEA_2004.123_MALAYSIA/2556/2004_H3N2=2004.123,
+		SEA_2004.536_Malaysia/1522/2004_H3N2=2004.536,
+		SEA_2004.683_Malaysia/1875/2004_H3N2=2004.683,
+		SEA_2004.746_Malaysia/2050/2004_H3N2=2004.746,
+		SEA_2004.822_MALAYSIA/2256/2004_H3N2=2004.822,
+		SEA_2005.066_Malaysia/99/2005_H3N2=2005.066,
+		SEA_2005.562_Myanmar/M005/2005_H3N2=2005.562,
+		SEA_2003.553_PHILIPPINES/621/2003_H3N2=2003.553,
+		SEA_2003.553_PHILIPPINES/629/2003_H3N2=2003.553,
+		SEA_2003.630_PHILIPPINES/1116/2003_H3N2=2003.63,
+		SEA_2003.732_Philippines/825/2003_H3N2=2003.732,
+		SEA_2005.411_Philippines/498/2005_H3N2=2005.411,
+		SEA_2003.066_SINGAPORE/37/2003_H3N2=2003.066,
+		SEA_2003.611_Mae_Hong_Son/317/2003_H3N2=2003.611,
+		SEA_2003.611_Mae_Hong_Son/330/2003_H3N2=2003.611,
+		SEA_2004.809_Lop_Buri/3128/2004_H3N2=2004.809,
+		SEA_2005.200_Thailand/TH-TH-129-05/2005_H3N2=2005.2,
+		SEA_2005.477_THAILAND/257/2005_H3N2=2005.477,
+		AU_2003.633_South_Australia/19/2003_H3N2=2003.633,
+		AU_2003.636_BRISBANE/68/2003_H3N2=2003.636,
+		AU_2003.693_Queensland/40/2003_H3N2=2003.693,
+		AU_2004.617_Victoria/500/2004_H3N2=2004.617,
+		AU_2004.762_VICTORIA/144/2004_H3N2=2004.762,
+		AU_2004.822_Queensland/50/2004_H3N2=2004.822,
+		AU_2004.842_Victoria/523/2004_H3N2=2004.842,
+		AU_2005.014_Perth/1/2005_H3N2=2005.014,
+		AU_2005.468_Victoria/512/2005_egg_passaged_H3N2=2005.468,
+		AU_2005.567_Queensland/53/2005_H3N2=2005.567,
+		AU_2005.595_BRISBANE/119/2005_H3N2=2005.595,
+		NZ_2003.488_Waikato/94/2003_H3N2_HA=2003.488,
+		NZ_2003.537_Canterbury/416/2003_H3N2_HA=2003.537,
+		NZ_2003.537_Canterbury/427/2003_H3N2_HA=2003.537,
+		NZ_2003.510_Canterbury/406/2003_H3N2_HA=2003.51,
+		NZ_2003.595_Canterbury/441/2003_H3N2_HA=2003.595,
+		NZ_2003.600_Waikato/150/2003_H3N2_HA=2003.6,
+		NZ_2004.680_Waikato/21/2004_H3N2_HA=2004.68,
+		NZ_2004.686_Waikato/22/2004_H3N2_HA=2004.686,
+		NZ_2005.518_Canterbury/166/2005_H3N2_HA=2005.518,
+		NY_2003.348_CY001469_NY/203/2003_H3N2=2003.348,
+		NY_2003.910_New_York/272/2003_H3N2=2003.91,
+		NY_2003.978_New_York/66/2003_H3N2=2003.978,
+		NY_2004.940_New_York/207/2004_H3N2=2004.94,
+		NY_2004.973_New_York/392/2004_H3N2=2004.973,
+		NY_2005.066_New_York/395/2005_H3N2=2005.066,
+		Euro_Austria_2005.156_EU106668_A/Austria/211120/2005=2005.156,
+		Euro_Austria_2004.038_CY026049_A/Austria/136353/2004=2004.038,
+		Euro_Austria_2004.071_CY026061_A/Austria/138560/2004=2004.071,
+		Euro_Austria_2005.066_CY026084_A/Austria/204233/2005=2005.066,
+		Euro_Austria_2003.211_CY026134_A/Austria/82615/2003=2003.211,
+		Euro_Finland_2003.038_EU501247_A/Finland/170/2003=2003.038,
+		Euro_Finland_2004.973_EU502512_A/Finland/487/2004=2004.973,
+		Euro_France_2005.014_EF566231_A/Lyon_Chu/01375/2005=2005.014,
+		Euro_France_2004.820_EU501527_A/POITIERS/719/2004=2004.82
+		<taxa idref="TaxonSet"/>
+	</trait>
 
-<run chainLength="100000000" id="mcmc" spec="MCMC" storeEvery="1000" numInitializationAttempts="100">
+	<model spec='MigrationModelForward' id="migModel"  rateMatrixIsForward="true">
+		<rateMatrix idref="rateMatrix"/>
+		<popSizes id="popSize" spec="RealParameter" value="1 1 1"/>
+	</model>
 
-     <init spec='beast.evolution.tree.StructuredCoalescentMultiTypeTree' id='tree' >
-		<migrationModel spec="MigrationModelForward" popSizes="1 1 1" rateMatrix=".1 1 .1 1 .2 .2" rateMatrixIsForward="true"/>    
-         <trait idref='typeTrait'/>
-         <trait idref='dateTrait'/>
-     </init>
 
-    <state id="state" storeEvery="1000">
-        <stateNode idref="tree"/>
-        <stateNode idref="rateMatrix"/>
-        <parameter id="clockRate" name="stateNode" value="8.05e-3"/> <!-- 8.05e-3 is what Lemey et all estimated, personal communication-->
-        <parameter numberOfDemes="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0. 0.01 0. 0.01 0. 0.01"/>
-        <parameter numberOfDemes="3" id="becomeUninfectiousRate" lower="0.0" name="stateNode" value="40"/>
-        <parameter numberOfDemes="3" id="R0" lower="0.0" name="stateNode" value="1.3"/>
-   		<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->
-	        <parameter idref="mutationRate.CP$(n)" name="stateNode">1.0</parameter>
-			<parameter numberOfDemes="4" id="freqParameter.CP$(n)" lower="0.0" name="stateNode" upper="1.0" value="0.25"/>
-			<parameter id="kappa.CP$(n)" lower="0.0" name="stateNode" value="7"/>
-		</plate>
-        <stateNode idref="geo-frequencies"/>
-        <!--stateNode idref="weightparameter"/-->
-    </state>
+	<run chainLength="100000000" id="mcmc" spec="MCMC" storeEvery="1000" numInitializationAttempts="100">
 
-    <distribution id="posterior" spec="util.CompoundDistribution">
-        <distribution id="prior" spec="util.CompoundDistribution"> 
-            <distribution spec="beast.evolution.speciation.BirthDeathMigrationModel" 
-					R0="@R0" becomeUninfectiousRate="@becomeUninfectiousRate" samplingProportion="@samplingProportion" 
-					id="BDMM" tree="@tree" stateNumber="3">
-				 <migrationMatrix id="rateMatrix" spec='RealParameter' value="1" numberOfDemes="6" lower="0" upper="1000"/>
-				 <frequencies id="geo-frequencies" spec='RealParameter' value="0.334 0.333 0.333" lower="0" upper="1"/>              
-				<parameter name="samplingRateChangeTimes" value="0. 2.63"/> <!-- earliest sample: 2003.019 , latest: 2005.641 (diff 2.622) -->
-            	<reverseTimeArrays spec="beast.core.parameter.BooleanParameter" value="false false true false"/>        		
-            </distribution> 
-            <prior id="rateMatrixPrior" name="distribution" x="@rateMatrix">
-                <LogNormal name="distr" migration="0" S="1"/>
-            </prior>
-   			<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->          
-			   <prior id="KappaPrior.CP$(n)" name="distribution" x="@kappa.CP$(n)">
-					<LogNormal name="distr" migration="1.0" S="1.25"/>
-				</prior>
+		<init spec='beast.evolution.tree.StructuredCoalescentMultiTypeTree' id='tree' >
+			<migrationModel spec="MigrationModelForward" popSizes="1 1 1" rateMatrix=".1 1 .1 1 .2 .2" rateMatrixIsForward="true"/>
+			<trait idref='typeTrait'/>
+			<trait idref='dateTrait'/>
+		</init>
+
+		<state id="state" storeEvery="1000">
+			<stateNode idref="tree"/>
+			<stateNode idref="rateMatrix"/>
+			<parameter id="clockRate" name="stateNode" value="8.05e-3"/> <!-- 8.05e-3 is what Lemey et all estimated, personal communication-->
+			<parameter dimension="6" id="samplingProportion" lower="0.0" name="stateNode" upper="1.0" value="0. 0.01 0. 0.01 0. 0.01"/>
+			<parameter dimension="3" id="becomeUninfectiousRate" lower="0.0" name="stateNode" value="40"/>
+			<parameter dimension="3" id="R0" lower="0.0" name="stateNode" value="1.3"/>
+			<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->
+				<parameter idref="mutationRate.CP$(n)" name="stateNode">1.0</parameter>
+				<parameter dimension="4" id="freqParameter.CP$(n)" lower="0.0" name="stateNode" upper="1.0" value="0.25"/>
+				<parameter id="kappa.CP$(n)" lower="0.0" name="stateNode" value="7"/>
 			</plate>
-             <prior id="R0PriorS" name="distribution" x="@R0">
-                <LogNormal name="distr" migration="0." S="1.25"/>
-            </prior>
-            <prior id="becomeUninfectiousRatePriorS" name="distribution" x="@becomeUninfectiousRate">
-                <Normal name="distr" mean="90" sigma="10."/>
-            </prior>
-           <distribution spec="multitypetree.distributions.ExcludablePrior" xInclude="false true false true false true" id="samplingProportionPriorS" name="distribution" x="@samplingProportion">
-                <Beta id="Beta.0" name="distr" alpha="1." beta="9999."/>
-            </distribution>
-        </distribution>
-        <distribution id="likelihood" spec="util.CompoundDistribution">
-    		<plate spec='util.Plate' var='n' range='1+2,3'>
-				<distribution data="@Bahl_H3N2.CP$(n)" branchRateModel="@StrictClock" id="treeLikelihood.CP$(n)" spec="TreeLikelihood" tree="@tree">
-					<siteModel id="SiteModel.sampling:Bahl_H3N2.CP$(n)" spec="SiteModel">
-						<parameter estimate="false" id="mutationRate.CP$(n)" name="mutationRate" value="1.0"/>
-						<substModel id="hky.CP$(n)" kappa="@kappa.CP$(n)" spec="HKY">
-							<frequencies frequencies="@freqParameter.CP$(n)" id="estimatedFreqs.CP$(n)" spec="Frequencies"/>
-						</substModel>
-					</siteModel>
+			<stateNode idref="geo-frequencies"/>
+			<!--stateNode idref="weightparameter"/-->
+		</state>
+
+		<distribution id="posterior" spec="util.CompoundDistribution">
+			<distribution id="prior" spec="util.CompoundDistribution">
+				<distribution spec="beast.evolution.speciation.BirthDeathMigrationModel"
+							  R0="@R0" becomeUninfectiousRate="@becomeUninfectiousRate" samplingProportion="@samplingProportion"
+							  id="BDMM" tree="@tree" stateNumber="3">
+					<migrationMatrix id="rateMatrix" spec='RealParameter' value="1" dimension="6" lower="0" upper="1000"/>
+					<frequencies id="geo-frequencies" spec='RealParameter' value="0.334 0.333 0.333" lower="0" upper="1"/>
+					<parameter name="samplingRateChangeTimes" value="0. 2.63"/> <!-- earliest sample: 2003.019 , latest: 2005.641 (diff 2.622) -->
+					<reverseTimeArrays spec="beast.core.parameter.BooleanParameter" value="false false true false"/>
 				</distribution>
+				<prior id="rateMatrixPrior" name="distribution" x="@rateMatrix">
+					<LogNormal name="distr" M="0" S="1"/>
+				</prior>
+				<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->
+					<prior id="KappaPrior.CP$(n)" name="distribution" x="@kappa.CP$(n)">
+						<LogNormal name="distr" M="1.0" S="1.25"/>
+					</prior>
 				</plate>
-        </distribution>
-    </distribution>
+				<prior id="R0PriorS" name="distribution" x="@R0">
+					<LogNormal name="distr" M="0." S="1.25"/>
+				</prior>
+				<prior id="becomeUninfectiousRatePriorS" name="distribution" x="@becomeUninfectiousRate">
+					<Normal name="distr" mean="90" sigma="10."/>
+				</prior>
+				<distribution spec="ExcludablePrior" xInclude="false true false true false true" id="samplingProportionPriorS" name="distribution" x="@samplingProportion">
+					<Beta id="Beta.0" name="distr" alpha="1." beta="9999."/>
+				</distribution>
+			</distribution>
+			<distribution id="likelihood" spec="util.CompoundDistribution">
+				<plate spec='util.Plate' var='n' range='1+2,3'>
+					<distribution data="@Bahl_H3N2.CP$(n)" branchRateModel="@StrictClock" id="treeLikelihood.CP$(n)" spec="TreeLikelihood" tree="@tree">
+						<siteModel id="SiteModel.s:Bahl_H3N2.CP$(n)" spec="SiteModel">
+							<parameter estimate="false" id="mutationRate.CP$(n)" name="mutationRate" value="1.0"/>
+							<substModel id="hky.CP$(n)" kappa="@kappa.CP$(n)" spec="HKY">
+								<frequencies frequencies="@freqParameter.CP$(n)" id="estimatedFreqs.CP$(n)" spec="Frequencies"/>
+							</substModel>
+						</siteModel>
+					</distribution>
+				</plate>
+			</distribution>
+		</distribution>
 
-	 <operator spec='TypedSubtreeExchange' id='CSTX' weight="3" multiTypeTree="@tree" migrationModel="@migModel"/>
-	 <operator spec="NodeRetype" id="NR" weight="3" multiTypeTree="@tree" migrationModel="@migModel"/>
-	 <operator spec="NodeShiftRetype" id="NSR1" weight="3" multiTypeTree="@tree" rootOnly="true" migrationModel="@migModel"/>
+		<operator spec='TypedSubtreeExchange' id='CSTX' weight="3" multiTypeTree="@tree" migrationModel="@migModel"/>
+		<operator spec="NodeRetype" id="NR" weight="3" multiTypeTree="@tree" migrationModel="@migModel"/>
+		<operator spec="NodeShiftRetype" id="NSR1" weight="3" multiTypeTree="@tree" rootOnly="true" migrationModel="@migModel"/>
 
-	<operator spec="NodeShiftRetype" id="NSR2" weight="3" multiTypeTree="@tree" noRoot="true" migrationModel="@migModel"/>
-     <operator spec="MultiTypeUniform" id="MTU" weight="3" multiTypeTree="@tree" includeRoot="true" rootScaleFactor="0.98" migrationModel="@migModel"/>
-		
-	 <operator spec="MultiTypeTreeScale" id="CTS" weight="5" multiTypeTree="@tree" scaleFactor="0.9" useOldTreeScaler="false" migrationModel="@migModel"/>
-<!--	<operator spec="MultiTypeTreeScale" id="CTSupdownMu" weight="5" multiTypeTree="@tree" scaleFactor="0.98" useOldTreeScaler="false" migrationModel="@migModel">
-		<parameterInverse idref="clockRate"/>
-	 </operator>-->
-	<operator spec="MultiTypeTreeScale" id="CTSupdownMigs" weight="10" multiTypeTree="@tree" scaleFactor="0.9" useOldTreeScaler="false" migrationModel="@migModel">
-		<parameterInverse idref="rateMatrix"/>
-	 </operator>
+		<operator spec="NodeShiftRetype" id="NSR2" weight="3" multiTypeTree="@tree" noRoot="true" migrationModel="@migModel"/>
+		<operator spec="MultiTypeUniform" id="MTU" weight="3" multiTypeTree="@tree" includeRoot="true" rootScaleFactor="0.98" migrationModel="@migModel"/>
 
-	<operator spec="TypedWilsonBalding" id="CWB" weight="3" multiTypeTree="@tree" alpha="0.1" migrationModel="@migModel"/>
-		 
-<!--    <operator id="clockRateScaler" parameter="@clockRate" scaleFactor="0.9" spec="ScaleOperator" weight="1"/>-->
-    <!--operator delta="0.75" id="FixMeanMutationRatesOperator" spec="DeltaExchangeOperator" weight="2.0">
-        <parameter idref="mutationRate.CP1+2"/>
-        <parameter idref="mutationRate.CP3"/>
-        <weightvector numberOfDemes="2" estimate="false" id="weightparameter" lower="0" spec="parameter.IntegerParameter" upper="0">658 329</weightvector>
-    </operator-->
+		<operator spec="MultiTypeTreeScale" id="CTS" weight="5" multiTypeTree="@tree" scaleFactor="0.9" useOldTreeScaler="false" migrationModel="@migModel"/>
+		<!--	<operator spec="MultiTypeTreeScale" id="CTSupdownMu" weight="5" multiTypeTree="@tree" scaleFactor="0.98" useOldTreeScaler="false" migrationModel="@migModel">
+                <parameterInverse idref="clockRate"/>
+             </operator>-->
+		<operator spec="MultiTypeTreeScale" id="CTSupdownMigs" weight="10" multiTypeTree="@tree" scaleFactor="0.9" useOldTreeScaler="false" migrationModel="@migModel">
+			<parameterInverse idref="rateMatrix"/>
+		</operator>
 
-	<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->          
-	   <operator id="KappaScaler.CP$(n)" parameter="@kappa.CP$(n)" scaleFactor="0.75" spec="ScaleOperator" weight="0.1"/>
-	   <operator delta="0.01" id="FrequenciesExchanger.CP$(n)" spec="DeltaExchangeOperator" weight="0.1">
-    	    <parameter idref="freqParameter.CP$(n)"/>
-	    </operator>
-    </plate>
-    
-    <operator id="rateMatrixScaler" parameter="@rateMatrix" scaleFactor="0.9" spec="ScaleOperator" weight="10.0" />
-    
-    <operator id="becomeUninfectiousRatecalerS" parameter="@becomeUninfectiousRate" scaleFactor="0.9" spec="ScaleOperator" weight="1" scaleAll="true" optimise="false"/>
-    <operator id="samplingScalerS" parameter="@samplingProportion" scaleFactor="0.9" spec="ScaleOperator" weight="3.0" />
-    
-    <operator id="updownBD" scaleFactor="0.9" spec="UpDownOperator" weight="3.0">
-        <up idref="R0"/>
-        <down idref="becomeUninfectiousRate"/>
-    </operator>
-    
-    <operator id="updownBM" scaleFactor="0.9" spec="UpDownOperator" weight="3.0">
-        <up idref="R0"/>
-        <down idref="rateMatrix"/>
-    </operator>
-    
-    <operator id="updownDS" scaleFactor="0.9" spec="UpDownOperator" weight="3.0">
-        <up idref="samplingProportion"/>
-        <down idref="becomeUninfectiousRate"/>
-    </operator>
-    
-    <operator id="R0Scaler" parameter="@R0" scaleFactor="0.8" spec="ScaleOperator" weight="3" />
-  
-	<operator id="geo-frequenciesExchange" spec="DeltaExchangeOperator" parameter="@geo-frequencies" delta="0.1" weight=".1"/>
+		<operator spec="TypedWilsonBalding" id="CWB" weight="3" multiTypeTree="@tree" alpha="0.1" migrationModel="@migModel"/>
 
-    <logger fileName="$(filebase)_$(seed).log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
-        <log idref="ESS.0"/>
-        <log idref="posterior"/>
-        <log idref="prior"/>
-        <log idref="BDMM"/>
-        <log idref="likelihood"/>
-        <log idref="treeLikelihood.CP1+2"/>
-        <log idref="treeLikelihood.CP3"/>
-        <log id="TreeHeight" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree"/>
-		<log id="TreeRootCol" spec="TreeRootTypeLogger" multiTypeTree="@tree"/>
-		<log id="MigCount" spec="TypeChangeCounts" multiTypeTree="@tree"  migrationModel="@migModel"/>
-        <log idref="R0"/>
-        <log idref="becomeUninfectiousRate"/>
-        <log idref="samplingProportion"/>
-        <log idref="rateMatrix"/>
-		<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->          
-    	    <log idref="mutationRate.CP$(n)"/>
-    	    <log idref="kappa.CP$(n)"/>
-        	<log idref="freqParameter.CP$(n)"/>
-        </plate>
-        <log idref="clockRate"/>
-        <log idref="geo-frequencies"/>
-    </logger>
+		<!--    <operator id="clockRateScaler" parameter="@clockRate" scaleFactor="0.9" spec="ScaleOperator" weight="1"/>-->
+		<!--operator delta="0.75" id="FixMeanMutationRatesOperator" spec="DeltaExchangeOperator" weight="2.0">
+            <parameter idref="mutationRate.CP1+2"/>
+            <parameter idref="mutationRate.CP3"/>
+            <weightvector dimension="2" estimate="false" id="weightparameter" lower="0" spec="parameter.IntegerParameter" upper="0">658 329</weightvector>
+        </operator-->
 
-    <logger id="screenlog" logEvery="1000">
-        <log idref="posterior"/>
-        <log arg="@posterior" id="ESS.0" spec="util.ESS"/>
-        <log idref="likelihood"/>
-        <log idref="prior"/>
-        <log idref="clockRate"/>
-        <log idref="TreeHeight"/>
-		<log idref="TreeRootCol"/>
-        <log idref="R0"/>
-        <log idref="samplingProportion"/>
-        <log idref="becomeUninfectiousRate"/>
-        <log idref="rateMatrix"/>
-    </logger>
-    
-	<logger fileName="$(filebase)_$(seed).col.trees" id="coltreelog" log="@tree" logEvery="1000" mode="tree"/>
-  
-    <logger fileName="$(filebase)_$(seed).trees" id="treelog" logEvery="1000" mode="tree">
-        <log branchratemodel="@StrictClock" id="TreeWithMetaDataLogger.t:Bahl" spec="beast.evolution.tree.TreeWithMetaDataLogger" tree="@tree"/>
-    </logger>
+		<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->
+			<operator id="KappaScaler.CP$(n)" parameter="@kappa.CP$(n)" scaleFactor="0.75" spec="ScaleOperator" weight="0.1"/>
+			<operator delta="0.01" id="FrequenciesExchanger.CP$(n)" spec="DeltaExchangeOperator" weight="0.1">
+				<parameter idref="freqParameter.CP$(n)"/>
+			</operator>
+		</plate>
 
-</run>
+		<operator id="rateMatrixScaler" parameter="@rateMatrix" scaleFactor="0.9" spec="ScaleOperator" weight="10.0" />
+
+		<operator id="becomeUninfectiousRatecalerS" parameter="@becomeUninfectiousRate" scaleFactor="0.9" spec="ScaleOperator" weight="1" scaleAll="true" optimise="false"/>
+		<operator id="samplingScalerS" parameter="@samplingProportion" scaleFactor="0.9" spec="ScaleOperator" weight="3.0" />
+
+		<operator id="updownBD" scaleFactor="0.9" spec="UpDownOperator" weight="3.0">
+			<up idref="R0"/>
+			<down idref="becomeUninfectiousRate"/>
+		</operator>
+
+		<operator id="updownBM" scaleFactor="0.9" spec="UpDownOperator" weight="3.0">
+			<up idref="R0"/>
+			<down idref="rateMatrix"/>
+		</operator>
+
+		<operator id="updownDS" scaleFactor="0.9" spec="UpDownOperator" weight="3.0">
+			<up idref="samplingProportion"/>
+			<down idref="becomeUninfectiousRate"/>
+		</operator>
+
+		<operator id="R0Scaler" parameter="@R0" scaleFactor="0.8" spec="ScaleOperator" weight="3" />
+
+		<operator id="geo-frequenciesExchange" spec="DeltaExchangeOperator" parameter="@geo-frequencies" delta="0.1" weight=".1"/>
+
+		<logger fileName="BDMM_migration_example_$(seed).log" id="tracelog" logEvery="1000" model="@posterior" sanitiseHeaders="true" sort="smart">
+			<log idref="ESS.0"/>
+			<log idref="posterior"/>
+			<log idref="prior"/>
+			<log idref="BDMM"/>
+			<log idref="likelihood"/>
+			<log idref="treeLikelihood.CP1+2"/>
+			<log idref="treeLikelihood.CP3"/>
+			<log id="TreeHeight" spec="beast.evolution.tree.TreeHeightLogger" tree="@tree"/>
+			<log id="TreeRootCol" spec="TreeRootTypeLogger" multiTypeTree="@tree"/>
+			<log id="MigCount" spec="TypeChangeCounts" multiTypeTree="@tree"  migrationModel="@migModel"/>
+			<log idref="R0"/>
+			<log idref="becomeUninfectiousRate"/>
+			<log idref="samplingProportion"/>
+			<log idref="rateMatrix"/>
+			<plate spec='util.Plate' var='n' range='1+2,3'> <!--.CP$(n)-->
+				<log idref="mutationRate.CP$(n)"/>
+				<log idref="kappa.CP$(n)"/>
+				<log idref="freqParameter.CP$(n)"/>
+			</plate>
+			<log idref="clockRate"/>
+			<log idref="geo-frequencies"/>
+		</logger>
+
+		<logger id="screenlog" logEvery="1000">
+			<log idref="posterior"/>
+			<log arg="@posterior" id="ESS.0" spec="util.ESS"/>
+			<log idref="likelihood"/>
+			<log idref="prior"/>
+			<log idref="clockRate"/>
+			<log idref="TreeHeight"/>
+			<log idref="TreeRootCol"/>
+			<log idref="R0"/>
+			<log idref="samplingProportion"/>
+			<log idref="becomeUninfectiousRate"/>
+			<log idref="rateMatrix"/>
+		</logger>
+
+		<logger fileName="BDMM_migration_example_$(seed).col.trees" id="coltreelog" log="@tree" logEvery="1000" mode="tree"/>
+
+		<logger fileName="BDMM_migration_example_$(seed).trees" id="treelog" logEvery="1000" mode="tree">
+			<log branchratemodel="@StrictClock" id="TreeWithMetaDataLogger.t:Bahl" spec="beast.evolution.tree.TreeWithMetaDataLogger" tree="@tree"/>
+		</logger>
+
+	</run>
 
 </beast>
