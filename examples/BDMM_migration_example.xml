@@ -250,7 +250,7 @@
 				<prior id="becomeUninfectiousRatePriorS" name="distribution" x="@becomeUninfectiousRate">
 					<Normal name="distr" mean="90" sigma="10."/>
 				</prior>
-				<distribution spec="ExcludablePrior" xInclude="false true false true false true" id="samplingProportionPriorS" name="distribution" x="@samplingProportion">
+				<distribution spec="multitypetree.distributions.ExcludablePrior" xInclude="false true false true false true" id="samplingProportionPriorS" name="distribution" x="@samplingProportion">
 					<Beta id="Beta.0" name="distr" alpha="1." beta="9999."/>
 				</distribution>
 			</distribution>
