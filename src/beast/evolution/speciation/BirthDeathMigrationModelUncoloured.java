@@ -21,8 +21,7 @@ import java.util.concurrent.*;
 
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel with discrete locations and migration events among demes. " +
 		"This should be used when the migration process along the phylogeny is irrelevant. Otherwise the BirthDeathMigrationModel can be employed." +
-		"This implementation also works with sampled ancestor trees." +
-		"Two implementations are available. The first is the fast classic one; the second one prevents underflowing, using so-called 'SmallNumbers', with the cost of additional computational complexity")
+		"This implementation also works with sampled ancestor trees.")
 public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigrationDistribution implements Loggable {
 
 
@@ -140,7 +139,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			p0ge_InitialConditions pSN;
 
-			if(isParallelizedCalculation) {executorBootUp();}
+			//if(isParallelizedCalculation) {executorBootUp();}
 
 			if ( orig > 0 ) {
 				pSN = calculateSubtreeLikelihood(root,0,orig, PG);}
@@ -179,7 +178,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			logP =  Double.NEGATIVE_INFINITY;
 
-			executorShutdown();
+			//if(isParallelizedCalculation) executorShutdown();
 			return logP;
 		}
 
@@ -194,7 +193,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			logP +=  Math.log(2)*internalNodeCount;
 		}
 
-		if(isParallelizedCalculation) executorShutdown();
+		//if(isParallelizedCalculation) executorShutdown();
 		return logP;
 	}
 

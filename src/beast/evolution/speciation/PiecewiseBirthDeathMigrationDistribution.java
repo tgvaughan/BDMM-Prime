@@ -466,6 +466,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		isParallelizedCalculation = isParallelizedCalculationInput.get();
 		minimalProportionForParallelization = minimalProportionForParallelizationInput.get();
 
+		if(isParallelizedCalculation) executorBootUp();
+
 	}
 
 	/**
