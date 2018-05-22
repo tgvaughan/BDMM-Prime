@@ -177,7 +177,7 @@
             <parameter idref="geo-frequencies" name="log"/>
             <parameter idref="rateMatrix" name="log"/>
             <log idref="r"/>
-            <log id="SACount" spec="beast.evolution.tree.SampledAncestorLogger" tree="@tree"/>
+            <!--log id="SACount" spec="beast.evolution.tree.SampledAncestorLogger" tree="@tree"/-->
             <!--log expression="R0 becomeUninfectiousRate *" id="birth" spec="beast.math.statistic.RPNcalculator">
                 <parameter idref="becomeUninfectiousRate"/>
                 <parameter idref="R0"/>
@@ -195,7 +195,7 @@
             <log idref="posterior"/>
             <log arg="@posterior" id="ESS.0" spec="util.ESS"/>
             <log idref="prior"/>
-            <log idref="SACount"/>
+            <!--log idref="SACount"/-->
         </logger>
     </run>
 
