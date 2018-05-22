@@ -140,7 +140,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			p0ge_InitialConditions pSN;
 
-			if(isParallelizedCalculation) {executorBootUp();}
+			//if(isParallelizedCalculation) {executorBootUp();}
 
 			if ( orig > 0 ) {
 				pSN = calculateSubtreeLikelihood(root,0,orig, PG);}
@@ -179,7 +179,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			logP =  Double.NEGATIVE_INFINITY;
 
-			executorShutdown();
+			//if(isParallelizedCalculation) executorShutdown();
 			return logP;
 		}
 
@@ -194,7 +194,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			logP +=  Math.log(2)*internalNodeCount;
 		}
 
-		if(isParallelizedCalculation) executorShutdown();
+		//if(isParallelizedCalculation) executorShutdown();
 		return logP;
 	}
 

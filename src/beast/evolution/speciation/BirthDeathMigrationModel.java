@@ -134,7 +134,8 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 
 			p0ge_InitialConditions pSN;
 
-			if(isParallelizedCalculation) {executorBootUp();}
+			//TODO remove these executorBootUp and shutdown if keeping the threadpool alive during the whole MCMC works
+			//if(isParallelizedCalculation) {executorBootUp();}
 
 			if (orig>0){
 				if (originBranch.getChangeCount()>0) {
@@ -179,7 +180,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 		}catch(Exception e){
 			logP =  Double.NEGATIVE_INFINITY;
 
-			if(isParallelizedCalculation) executorShutdown();
+			//if(isParallelizedCalculation) executorShutdown();
 
 			return logP;
 		}
@@ -193,7 +194,7 @@ public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistri
 			logP +=  Math.log(2)*internalNodeCount;
 		}
 
-		if (isParallelizedCalculation) executorShutdown();
+		//if (isParallelizedCalculation) executorShutdown();
 
 		return logP;
 	}
