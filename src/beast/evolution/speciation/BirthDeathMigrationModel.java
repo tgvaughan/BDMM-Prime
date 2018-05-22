@@ -17,8 +17,7 @@ import java.util.concurrent.*;
  */
 
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel with discrete locations and migration events among demes. " +
-		"This should only be used when the migration process along the phylogeny is important. Otherwise the computationally less intense BirthDeathMigrationModelUncoloured can be employed." +
-		"Two implementations are available. The first is the fast classic one; the second one prevents underflowing, using so-called 'SmallNumbers', with the cost of additional computational complexity")
+		"This should only be used when the migration process along the phylogeny is important. Otherwise the computationally less intense BirthDeathMigrationModelUncoloured can be employed.")
 public class BirthDeathMigrationModel extends PiecewiseBirthDeathMigrationDistribution {
 
 	// !!! TODO: test birth among deme implementation!!!
