@@ -197,6 +197,7 @@
 	</trait>
 
 	<model spec='MigrationModelForward' id="migModel"  rateMatrixIsForward="true">
+		<typeSet spec="beast.evolution.tree.TypeSet" id="typeSet" typeTraitSet="@typeTrait"/>
 		<rateMatrix idref="rateMatrix"/>
 		<popSizes id="popSize" spec="RealParameter" value="1 1 1"/>
 	</model>
@@ -205,7 +206,10 @@
 	<run chainLength="100000000" id="mcmc" spec="MCMC" storeEvery="1000" numInitializationAttempts="100">
 
 		<init spec='beast.evolution.tree.StructuredCoalescentMultiTypeTree' id='tree' >
-			<migrationModel spec="MigrationModelForward" popSizes="1 1 1" rateMatrix=".1 1 .1 1 .2 .2" rateMatrixIsForward="true"/>
+			<typeSet idref="typeSet"/>
+			<migrationModel spec="MigrationModelForward" popSizes="1 1 1" rateMatrix=".1 1 .1 1 .2 .2" rateMatrixIsForward="true">
+				<typeSet idref="typeSet"/>
+			</migrationModel>
 			<trait idref='typeTrait'/>
 			<trait idref='dateTrait'/>
 		</init>
