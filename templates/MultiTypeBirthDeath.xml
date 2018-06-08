@@ -205,6 +205,7 @@
                 <typeSet spec="beast.evolution.tree.TypeSet" id="typeSet.t:$(n)"/>
                 <migrationModel spec='beast.evolution.tree.SCMigrationModel' id="migModel.t:$(n)">
                     <rateMatrix spec='parameter.RealParameter' value="1.0 1.0" estimate="false"/>
+                    <rateMatrixScaleFactor spec="parameter.RealParameter" value="1.0" estimate="false"/>
                     <popSizes spec='parameter.RealParameter' value="1.0 1.0" estimate="false"/>
                     <popSizesScaleFactor spec="parameter.RealParameter" value="1.0" estimate="false"/>
                     <typeSet idref="typeSet.t:$(n)"/>
