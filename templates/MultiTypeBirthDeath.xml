@@ -364,6 +364,8 @@
 			<connect method="beast.app.beauti.SiteModelInputEditor.customConnector"/>
 			<connect method="beast.app.multitypetree.beauti.InitMigrationModelConnector.customConnector"/>
 
+            <connect srcID="typeTraitSetInput.t:$(n)" targetID="typeSet.t:$(n)" inputName="typeTraitSet"/>
+
             <connect srcID='Tree.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(Tree.t:$(n))'/>
             <connect srcID='mutationRate.s:$(n)' targetID='state' inputName='stateNode' if='inlikelihood(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>
             <connect srcID='proportionInvariant.s:$(n)' targetID='state' inputName='stateNode' if='inlikelihood(proportionInvariant.s:$(n)) and proportionInvariant.s:$(n)/estimate=true'/>
