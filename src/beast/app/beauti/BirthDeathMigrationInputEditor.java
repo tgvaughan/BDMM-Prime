@@ -247,11 +247,15 @@ public class BirthDeathMigrationInputEditor extends InputEditor.Base {
 
             dimChangeInProgress = true;
 
+            System.out.println("Dimension change starting.");
+
+            int samplingIntervals = samplingModel.getColumnCount()/oldDim;
+
             R0Model.setColumnCount(R0Model.getColumnCount()/oldDim*newDim);
             bdmm.R0.get().setDimension(R0Model.getColumnCount());
             deltaModel.setColumnCount(deltaModel.getColumnCount()/oldDim*newDim);
             bdmm.becomeUninfectiousRate.get().setDimension(deltaModel.getColumnCount());
-            samplingModel.setColumnCount(samplingModel.getColumnCount()/oldDim*newDim);
+            samplingModel.setColumnCount(samplingIntervals*newDim);
             bdmm.samplingProportion.get().setDimension(samplingModel.getColumnCount());
             bdmm.setInputValue("stateNumber",newDim);
 
@@ -283,8 +287,11 @@ public class BirthDeathMigrationInputEditor extends InputEditor.Base {
                 if (deltaModel.getValueAt(0, i) == null) {
                     deltaModel.setValueAt(1.0, 0, i);
                 }
-                if (samplingModel.getValueAt(0, i) == null) {
-                    samplingModel.setValueAt(1.0, 0, i);
+                for (int j=0; j<samplingIntervals; j++) {
+                    int k = i * samplingIntervals + j;
+                    if (samplingModel.getValueAt(0, k) == null) {
+                        samplingModel.setValueAt(1.0, 0, k);
+                    }
                 }
                 for (int j=0; j<newDim; j++) {
                     if (i==j)
@@ -294,6 +301,8 @@ public class BirthDeathMigrationInputEditor extends InputEditor.Base {
                     }
                 }
             }
+
+            System.out.println("Dimension change finishing.");
 
             dimChangeInProgress = false;
 
@@ -489,6 +498,8 @@ public class BirthDeathMigrationInputEditor extends InputEditor.Base {
             R0EstCheckBox.isSelected(), bdmm.R0.get());
         bdmm.migrationMatrix.get().isEstimatedInput.setValue(
             rateMatrixEstCheckBox.isSelected(), bdmm.migrationMatrix.get());
+        bdmm.samplingProportion.get().isEstimatedInput.setValue(
+                samplingEstCheckBox.isSelected(), bdmm.samplingProportion.get());
 
         try {
             bdmm.R0.get().initAndValidate();

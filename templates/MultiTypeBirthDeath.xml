@@ -205,6 +205,7 @@
                 <typeSet spec="beast.evolution.tree.TypeSet" id="typeSet.t:$(n)"/>
                 <migrationModel spec='beast.evolution.tree.SCMigrationModel' id="migModel.t:$(n)">
                     <rateMatrix spec='parameter.RealParameter' value="1.0 1.0" estimate="false"/>
+                    <rateMatrixScaleFactor spec="parameter.RealParameter" value="1.0" estimate="false"/>
                     <popSizes spec='parameter.RealParameter' value="1.0 1.0" estimate="false"/>
                     <popSizesScaleFactor spec="parameter.RealParameter" value="1.0" estimate="false"/>
                     <typeSet idref="typeSet.t:$(n)"/>
@@ -275,7 +276,8 @@
 				</distr>	
 			</distribution>
  
-			<distribution spec='multitypetree.distributions.ExcludablePrior' id="samplingProportionPrior.t:$(n)" x="@samplingProportion.t:$(n)" xInclude="false true false true">
+			<distribution spec='multitypetree.distributions.ExcludablePrior' id="samplingProportionPrior.t:$(n)" x="@samplingProportion.t:$(n)">
+			<xInclude spec='parameter.BooleanParameter' id="samplingProportionXInclude.t:$(n)" value="false true false true" estimate="true"/>
 				<distr spec="beast.math.distributions.Beta" offset="0.">
 					<parameter name="alpha" value="1." estimate="false"/> 
 					<parameter name="beta" value="1." estimate="false"/> 
@@ -362,6 +364,9 @@
 
 			<connect method="beast.app.beauti.SiteModelInputEditor.customConnector"/>
 			<connect method="beast.app.multitypetree.beauti.InitMigrationModelConnector.customConnector"/>
+            <connect method="beast.app.beauti.XIncludeDimensionConnector.customConnector"/>
+
+            <connect srcID="typeTraitSetInput.t:$(n)" targetID="typeSet.t:$(n)" inputName="typeTraitSet"/>
 
             <connect srcID='Tree.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(Tree.t:$(n))'/>
             <connect srcID='mutationRate.s:$(n)' targetID='state' inputName='stateNode' if='inlikelihood(mutationRate.s:$(n)) and mutationRate.s:$(n)/estimate=true'/>
@@ -373,6 +378,7 @@
             <connect srcID='samplingProportion.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(samplingProportion.t:$(n)) and samplingProportion.t:$(n)/estimate=true'/>
             <connect srcID='rateMatrix.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(rateMatrix.t:$(n)) and rateMatrix.t:$(n)/estimate=true'/>
             <connect srcID='geo-frequencies.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(geo-frequencies.t:$(n)) and geo-frequencies.t:$(n)/estimate=true'/>
+            <connect srcID='R0.t:$(n)' targetID='state' inputName='stateNode' if='inposterior(R0.t:$(n)) and R0.t:$(n)/estimate=true'/>
 
             <connect srcID='treeLikelihood.$(n)' targetID='likelihood' inputName='distribution' if="isInitializing"/>
             <connect srcID='birthDeathMigration.t:$(n)' targetID='prior' inputName='distribution' if="Tree.t:$(n)/estimate=true"/>
