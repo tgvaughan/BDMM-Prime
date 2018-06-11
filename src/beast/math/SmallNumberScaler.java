@@ -13,7 +13,7 @@ public class SmallNumberScaler {
 	/**
 	 * TODO: change the comments here
 	 * The maximal value a double can take is 1.80E308, the minimal value is 4.9E-324.
-	 * With a safety margin, two doubles can be dealt with by Java when there is 630 orders of magnitude between them.
+	 * With a safety margin, two doubles can be dealt with by Java when there is 630 orders of magnitude (2040 in base 2) between them.
 	 */
 	final static int exponentMaxValueDouble = 1023;
 	final static int exponentMinValueDouble = -1022;
@@ -21,7 +21,7 @@ public class SmallNumberScaler {
 
 	/**
 	 * Determine the appropriate scale factor(sampling) and perform the multiplication by said scale factor.
-	 * This "factor" is defined as the magnitude in base 10 by which the original values are increased.
+	 * This "factor" is defined as the magnitude in base 2 by which the original values are increased.
 	 * They are increased so as to fit into the window of values accepted as doubles by java.
 	 * A parameter 'eqtype' is introduced, so that different rules for choosing a scale factor can be introduced for each type of equations dealt with.
 	 * For now, whether we are dealing with only p equations or g and p equations, the rules are basically the same for each ODE system.
@@ -181,7 +181,7 @@ public class SmallNumberScaler {
 	 */
 	public static double multiplyByPowerOfTwo(double x, int n){
 		if(x !=0) {
-			if(n>180 || n<0) // the threshold of 180 was chosen empirically to maximize the method'sampling speed
+			if(n>180 || n<0) // the threshold of 180 was chosen empirically to maximize the method's sampling speed
 				return x*Math.pow(2, n);
 			else {
 				while(n>30) { //the number 30 comes from the max number of bits that can be left-shifted on an int and still be equivalent to a 2 to the power of n operation
