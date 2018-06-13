@@ -225,9 +225,9 @@
 
             <!-- Tree prior -->
 
-            <distribution spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" id="birthDeathMigration.t:$(n)" tree="@tree"
+            <distribution spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" id="birthDeathMigration.t:$(n)" tree="@Tree.t:$(n)"
 				  stateNumber="2" conditionOnSurvival="true">
-                <migrationMatrix spec="RealParameter" id="rateMatrix.t:$(n)" value="0.01" dimension="2" lower="0" upper="100"/>
+                <migrationMatrix spec="beast.core.parameter.RealParameter" id="rateMatrix.t:$(n)" value="0.01" dimension="2" lower="0" upper="100"/>
                 <parameter name="frequencies" id="geo-frequencies.t:$(n)" value=".5 .5" lower="0." upper="1." dimension="2"/>
                 <parameter name="R0" id="R0.t:$(n)" lower="0" dimension="2" value="3"/>
                 <parameter name="becomeUninfectiousRate" id="becomeUninfectiousRate.t:$(n)" value=".1" lower="0" dimension="2" />
@@ -313,20 +313,22 @@
 
             <!-- Tree operators -->
 
-            <operator id="treeScaler" scaleFactor="0.75" spec="ScaleOperator" tree="@Tree.t:$(n)" weight="3.0"/>
-            <operator id="treeRootScaler" rootOnly="true" scaleFactor="0.75" spec="ScaleOperator" tree="@Tree.t:$(n)" weight="3.0"/>
-            <operator id="narrow" spec="Exchange" tree="@Tree.t:(n)" weight="15.0"/>
-            <operator id="UniformOperator" spec="Uniform" tree="@Tree.t:(n)" weight="30.0"/>
-            <operator id="SubtreeSlide" spec="SubtreeSlide" tree="@Tree.t:(n)" weight="15.0"/>
-            <operator id="wide" isNarrow="false" spec="Exchange" tree="@Tree.t:(n)" weight="3.0"/>
-            <operator id="WilsonBalding" spec="WilsonBalding" tree="@Tree.t:(n)" weight="3.0"/>
-            <operator id="updowntree" spec="UpDownOperator" scaleFactor=".9" weight="3" up="@Tree.t:(n)" down="@mutationRate"/>
-            <operator id='mutationOperator' spec='ScaleOperator' scaleFactor=".75" weight="1" parameter="@mutationRate.t:$(n)"/>
+
+            <operator id='TreeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.5" weight="3" tree="@Tree.t:$(n)"/>
+            <operator id='TreeRootScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.5" weight="3" tree="@Tree.t:$(n)" rootOnly='true'/>
+            <operator id='UniformOperator.t:$(n)' spec='Uniform' weight="30" tree="@Tree.t:$(n)"/>
+            <operator id='SubtreeSlide.t:$(n)' spec='SubtreeSlide' weight="15" gaussian="true" size="1.0" tree="@Tree.t:$(n)"/>
+            <operator id='Narrow.t:$(n)' spec='Exchange' isNarrow='true' weight="15" tree="@Tree.t:$(n)"/>
+            <operator id='Wide.t:$(n)' spec='Exchange' isNarrow='false' weight="3" tree="@Tree.t:$(n)"/>
+            <operator id='WilsonBalding.t:$(n)' spec='WilsonBalding' weight="3" tree="@Tree.t:$(n)"/>
+
+            <operator id="updowntree.t:$(n)" spec="UpDownOperator" scaleFactor=".9" weight="3" up="@Tree.t:$(n)" down="@mutationRate.s:$(n)"/>
+            <operator id='mutationOperator' spec='ScaleOperator' scaleFactor=".75" weight="1" parameter="@mutationRate.s:$(n)"/>
             <operator id='R0Operator' spec='ScaleOperator' scaleFactor=".85" weight="2" parameter="@R0.t:$(n)"/>
             <operator id='bsOperator' spec='ScaleOperator' scaleFactor=".9" weight="2" parameter="@becomeUninfectiousRate.t:$(n)" scaleAll="false"/>
             <operator id='rateMatrixOperator' spec='ScaleOperator' scaleFactor=".75" weight="2" parameter="@rateMatrix.t:$(n)"/>
-            <operator id="updown1" spec="UpDownOperator" scaleFactor=".9" weight="2" up="@R0" down="@becomeUninfectiousRate.t:$(n)"/>
-            <operator id="updown2" spec="UpDownOperator" scaleFactor=".9" weight="2" up="@rateMatrix" down="@becomeUninfectiousRate.t:$(n)"/>
+            <operator id="updown1" spec="UpDownOperator" scaleFactor=".9" weight="2" up="@R0.t:$(n)" down="@becomeUninfectiousRate.t:$(n)"/>
+            <operator id="updown2" spec="UpDownOperator" scaleFactor=".9" weight="2" up="@rateMatrix.t:$(n)" down="@becomeUninfectiousRate.t:$(n)"/>
 
 
             <!-- Tree log -->
