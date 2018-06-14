@@ -17,31 +17,25 @@
 package beast.app.beauti;
 
 import beast.core.BEASTInterface;
-import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.Parameter;
 import beast.core.parameter.RealParameter;
 import beast.evolution.likelihood.TreeLikelihood;
-import beast.evolution.tree.SCMigrationModel;
-import beast.evolution.tree.StructuredCoalescentMultiTypeTree;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import multitypetree.distributions.ExcludablePrior;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 
 /**
  * Class containing a static method used as a "custom connector" in the
  * MultiTypeBirthDeath BEAUti template.  This connector ensures that the
- * xInclude input for the samplingProportion priors exclude elements that
- * are zero when computing the prior.
+ * trait set is initialized properly.
  *
  * @author Tim Vaughan (tgvaughan@gmail.com)
  */
-public class XIncludeDimensionConnector {
+public class TraitSetInitConnector {
 
     public static boolean customConnector(BeautiDoc doc) {
 
@@ -51,34 +45,21 @@ public class XIncludeDimensionConnector {
 
             String pID = BeautiDoc.parsePartition(tree.getID());
 
-            ExcludablePrior excludablePrior = (ExcludablePrior) doc.pluginmap.get(
-                    "samplingProportionPrior.t:" + pID);
+            TraitSet typeTraitSet = (TraitSet) doc.pluginmap.get(
+                    "typeTraitSet.t:" + pID);
 
+            if (typeTraitSet.traitsInput.get() == null
+                    || typeTraitSet.traitsInput.get().trim().isEmpty()) {
 
-            RealParameter samplingPropParam =  (RealParameter) excludablePrior.m_x.get();
-            samplingPropParam.initAndValidate();
-            int samplingPropDim = samplingPropParam.getDimension();
-
-            StringBuilder xIncludeStrBuilder = new StringBuilder();
-            for (int i=0; i<samplingPropDim; i++) {
-                if (samplingPropParam.getValue(i) > 0.0)
-                    xIncludeStrBuilder.append("true ");
-                else
-                    xIncludeStrBuilder.append("false ");
+                try {
+                    String newValue = typeTraitSet.taxaInput.get().getTaxaNames().stream()
+                            .map(n -> n + "=NOT_SET").collect(Collectors.joining(","));
+                    typeTraitSet.traitsInput.setValue(newValue, typeTraitSet);
+                    typeTraitSet.initAndValidate();
+                } catch (Exception ex) {
+                    System.err.println("Error configuration initial migration model.");
+                }
             }
-
-            excludablePrior.xIncludeInput.get().setDimension(samplingPropDim);
-            excludablePrior.xIncludeInput.get().valuesInput.setValue(
-                    xIncludeStrBuilder.toString(),
-                    excludablePrior.xIncludeInput.get());
-
-            try {
-                excludablePrior.xIncludeInput.get().initAndValidate();
-                excludablePrior.initAndValidate();
-            } catch (Exception ex) {
-                System.err.println("Error configuring initial migration model.");
-            }
-
         }
 
         return false;
