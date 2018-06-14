@@ -24,9 +24,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	p0_ODE P;
 	public FirstOrderIntegrator p_integrator;
 
-	Double[] b;
+	double[] b;
 	Double[] b_ij;
-	Double[] d;
+	double[] d;
 	Double[] s;
 
 	Boolean augmented;
@@ -45,7 +45,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	public static double globalPrecisionThreshold;
 
 
-	public p0ge_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented){
+	public p0ge_ODE(double[] b, Double[] b_ij, double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented){
 
 
 		this.b = b;
@@ -260,8 +260,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	 */
 	public static void testCorrelations(){
 
-		Double[] b;
-		Double[] d = {1.,1.};
+		double[] b;
+		double[] d = {1.,1.};
 		Double[] s;
 		Double[] M;// = {3.,3.};
 
@@ -273,7 +273,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		for (double i =1.1; i<2; i+=0.125){
 
-			b = new Double[]{i, i};
+			b = new double[]{i, i};
 
 			//            psi = 0.5 * ((i - death[0]) - Math.sqrt((death[0] - i) * (death[0] - i) - .04));  // assume birth*sampling*m=constant
 
@@ -365,9 +365,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		testCorrelations();
 
-		Double[] birth = {2.,2.};
-		Double[] b;
-		Double[] d = {.5,.5};
+		double[] birth = {2.,2.};
+		double[] b;
+		double[] d = {.5,.5};
 		Double[] s = {.5,.5};
 		Double[] M = {0.,0.};
 
@@ -377,7 +377,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		int i = 1;
 
-		b = new Double[]{i*birth[0], i*birth[1]};
+		b = new double[]{i*birth[0], i*birth[1]};
 
 		FirstOrderIntegrator integrator = new DormandPrince853Integrator(1.0e-4, 1., 1.0e-6, 1.0e-6);//new ClassicalRungeKuttaIntegrator(.01); //
 
