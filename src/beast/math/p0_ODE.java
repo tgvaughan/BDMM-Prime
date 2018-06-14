@@ -15,9 +15,9 @@ import beast.core.util.Utils;
 
 public class p0_ODE implements FirstOrderDifferentialEquations {
 
-	Double[] b;
+	double[] b;
 	Double[] b_ij;
-	Double[] d;
+	double[] d;
 	Double[] s;
 
 	Double[] M;
@@ -27,7 +27,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	Double[] times;
 	int index;
 
-	public p0_ODE(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, int dimension , int intervals, Double[] times) {
+	public p0_ODE(double[] b, Double[] b_ij, double[] d, Double[] s, Double[] M, int dimension , int intervals, Double[] times) {
 
 		this.b = b;
 		this.b_ij = b_ij;
@@ -42,7 +42,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	}
 
 	// updateRates is not used here because a new p0_ODE is created each time PiecewiseBirthDeathMigrationDistribution.updateRates() is called (called through setUpIntegrators())
-	public void updateRates(Double[] b, Double[] b_ij, Double[] d, Double[] s, Double[] M, Double[] times){
+	public void updateRates(double[] b, Double[] b_ij, double[] d, Double[] s, Double[] M, Double[] times){
 
 		this.b = b;
 		this.b_ij = b_ij;
@@ -98,8 +98,8 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	public static void main(String[] args) throws Exception{
 		
 		// 2d test
-		Double[] b = {1.03,1.06};
-		Double[] d = {1.,1.};
+		double[] b = {1.03,1.06};
+		double[] d = {1.,1.};
 		Double[] s = {0.02,0.04};
 		Double[] M = new Double[]{3.,4.};
 

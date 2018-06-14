@@ -86,8 +86,8 @@ public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrati
 
 	protected Double updateRates(TreeInterface tree) {
 
-		birth = new Double[n*totalIntervals];
-		death = new Double[n*totalIntervals];
+		birth = new double[n*totalIntervals];
+		death = new double[n*totalIntervals];
 		psi = new Double[n*totalIntervals];
 		b_ij = new Double[totalIntervals*(n*(n-1))];
 		M = new Double[totalIntervals*(n*(n-1))];
