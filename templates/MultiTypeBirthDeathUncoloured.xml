@@ -39,7 +39,7 @@
                             beast.evolution.tree.coalescent.ConstantPopulation,
                             beast.evolution.tree.coalescent.Coalescent,
                             beast.core.State.stateNode,
-                            beast.evolution.tree.MultiTypeTree.migrationModel'
+							beast.evolution.speciation.BirthDeathMigrationModelUncoloured.stateNumber'
            collapsedPlugins = 'beast.core.MCMC.logger'
            suppressPlugins = 'beast.core.MCMC.operator,
                               beast.core.MCMC.operatorschedule,
@@ -115,7 +115,6 @@
 							beast.evolution.speciation.BirthDeathMigrationModelUncoloured.migChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModelUncoloured.birthRateChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModelUncoloured.birthRateAmongDemesChangeTimes,
-							beast.evolution.speciation.BirthDeathMigrationModelUncoloured.samplingRateChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModelUncoloured.deathRateChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModelUncoloured.removalProbabilityChangeTimes,
 							beast.evolution.speciation.BirthDeathMigrationModelUncoloured.intervalTimes,
@@ -239,7 +238,8 @@
                 <frequencies spec="parameter.RealParameter" id="geo-frequencies.t:$(n)" value=".5 .5" lower="0." upper="1." dimension="2"/>
                 <R0 spec="parameter.RealParameter" id="R0.t:$(n)" lower="0" dimension="2" value="1.5"/>
                 <becomeUninfectiousRate spec="parameter.RealParameter" id="becomeUninfectiousRate.t:$(n)" value="0.1" lower="0" dimension="2" />
-                <samplingProportion spec="parameter.RealParameter" id="samplingProportion.t:$(n)" value="0.05" lower="0" dimension="2"  upper="1."/>
+                <samplingProportion spec="parameter.RealParameter" id="samplingProportion.t:$(n)" value="0.1 0.05 0.1 0.05" lower="0" dimension="4"  upper="1."/>
+                <samplingRateChangeTimes spec="parameter.RealParameter" id="samplingRateChangeTimes.t:$(n)" value="0.0 5.0" estimate="false"/>
                 <rho spec="parameter.RealParameter" id="rho.t:$(n)" value="0.5" dimension="2"/>
             </distribution>
 
@@ -277,7 +277,7 @@
 			</distribution>
  
 			<distribution spec='multitypetree.distributions.ExcludablePrior' id="samplingProportionPrior.t:$(n)" x="@samplingProportion.t:$(n)">
-			<xInclude spec='parameter.BooleanParameter' id="samplingProportionXInclude.t:$(n)" value="true true"/>
+			<xInclude spec='parameter.BooleanParameter' id="samplingProportionXInclude.t:$(n)" value="true true true true"/>
 				<distr spec="beast.math.distributions.Beta" offset="0.">
 					<parameter name="alpha" value="1." estimate="false"/> 
 					<parameter name="beta" value="1." estimate="false"/> 
@@ -432,7 +432,7 @@
         </partitiontemplate>
 
         <mergepoint id='substModelTemplates'/>
-		<mergepoint id='mttClockModelTemplates'/>
+		<mergepoint id='clockModelTemplates'/>
         <mergepoint id='parametricDistributions'/>
     </beauticonfig>
 
