@@ -268,10 +268,11 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			//TODO potentially refactor to make few lines below more concise and clearer
 			if (nodestate==-1) { //unknown state
 
+				//TODO remove entirely when tested
 //				if (SAModel)
 //					throw new ConstraintViolatedException("SA model not implemented with unknown states!");
 
-				//TODO test if SA model case is properly implemented
+				//TODO test if SA model case is properly implemented (not tested!)
 				for (int i=0; i<n; i++) {
 
 					if (!isRhoTip[node.getNr()]) {
@@ -326,6 +327,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 				int saNodeState = getNodeState(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
 
+				//TODO test if properly implemented (not tested!)
 				if (saNodeState == -1) { // unknown state
 					for (int i = 0; i < n; i++) {
 						if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
