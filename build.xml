@@ -1,213 +1,337 @@
-<!-- Build BDMM. It is also used by Hudson BDMM project. JUnit test is available for this build. -->
-<project basedir="." default="build_jar_all_BDMM" name="BUILD_BDMM">
-	<description>
-	    Build BDMM. 
-            Also used by Hudson BDMM project. 
-	    JUnit test is available for this build.
-	    $Id: build_BDMM.xml $
-	</description>
+<project default="build" basedir=".">
 
-	<!-- set global properties for this build -->
-	<property name="srcBDMM" location="src" />
-	<property name="buildBDMM" location="build" />
-	<property name="libBDMM" location="lib" />
-	<property name="release_dir" value="release" />
-	<property name="distBDMM" location="${buildBDMM}/dist" />
-	<property name="beast2path" location="../beast2" />
-	<property name="libBeast2" location="${beast2path}/lib" />
-	<property name="srcBeast2" location="${beast2path}/src" />
-	<property name="beast2classpath" location="${beast2path}/build" />
-	<property name="masterclasspath" location="../MASTER/build" />
-	<property name="mttclasspath" location="../MultiTypeTree/build" />
-	<property name="sampledancestorclasspath" location="..out/production/sampled-ancestors"/>
-	<property name="Add_on_dir" value="${release_dir}/add-on" />
+    <!-- Source, JUnit test code and jar library locations. -->
+    <property name="src" location="src"/>
+    <property name="src/test" location="src/test"/>
+    <property name="lib" location="lib"/>
 
-    <import file="${beast2path}/build.xml" />
+    <!-- Location to check for local copy of beast2 repository -->
+    <property name="beastDir" location="../beast2"/>
 
-	<property name="main_class_BEAST" value="beast.app.BeastMCMC" />
-	<property name="report" value="${buildBDMM}/junitreport"/>
+    <!-- BEAST 2 currently uses Java 1.8 -->
+    <property name="sourceVersion" value="1.8"/>
+    <property name="targetVersion" value="1.8"/>
 
-	<path id="classpath">
-        <pathelement path="${buildBDMM}"/>
-		<fileset dir="${libBeast2}" includes="junit-4.8.2.jar"/>
-		<fileset dir="${libBeast2}" includes="fest.jar"/>
-		<fileset dir="${libBeast2}" includes="jam.jar"/>
-		<fileset dir="${libBeast2}" includes="beagle.jar"/>
-		<fileset dir="${libBeast2}" includes="commons-math3-3.1.1.jar"/>
-		<fileset dir="${libBeast2}" includes="antlr-runtime-4.7.jar"/>
-		<fileset dir="../MultiTypeTree/build-lib" includes="guava-15.0.jar"/>
-		<fileset dir="../MultiTypeTree/build-lib" includes="jblas-1.2.3.jar"/>
-		<pathelement path="${beast2classpath}"/>
-		<pathelement path="${masterclasspath}"/>
-		<pathelement path="${mttclasspath}"/>
-		<pathelement path="${sampledancestorclasspath}"/>
-	</path>
+    <!-- Directories necessary for all BEAST 2 packages -->
+    <property name="doc" location="doc"/>
+    <property name="examples" location="examples"/>
+    <property name="scripts" location="scripts"/>
+    <property name="templates" location="templates"/>
 
-	<!-- start -->
-	<target name="initBDMM">
-		<echo message="${ant.project.name}: ${ant.file}" />
-	</target>
+    <!-- BEAST branch and version to build against
+         (only different for version tags because of
+         a Github peculiarity) -->
+    <property name="beast-branch" value="master"/>
+    <property name="beast-version" value="master"/>
 
-	<target name="cleanBDMM">
-    	<delete dir="${buildBDMM}" />
-	</target>
+    <!-- Names of temporary build/test directories -->
+    <property name="build" location="build"/>
+    <property name="build-lib" location="build-lib"/>
+    <property name="test-reports" location="test-reports"/>
+    <property name="dist" location="dist"/>
+    <property name="pack" location="${dist}/package"/>
+    <property name="depends" location="depends"/>
 
-	<!-- clean previous build, and then compile Java source code, and Juint test -->
-	<target name="build_all_BDMM" depends="cleanBDMM,compile-allBDMM,junitBDMM"
-        description="Clean and Build all run-time stuff">
-	</target>
+    <!-- Prepare for compilation -->
+    <target name="init">
 
-	<!-- clean previous build, compile Java source code, and Junit test, and make the beast.jar and beauti.jar -->
-	<target name="build_jar_all_BDMM" depends="cleanBDMM,compile-allBDMM,junitBDMM,dist_all_BDMM"
-        description="Clean and Build all run-time stuff">
-	</target>
+        <available file="version.xml" property="versionAvailable"/>
+        <fail unless="versionAvailable">
+            ** Required file version.xml does not exist. **
+            If this is a new project, run "ant skeleton" from
+            the command line to create the files required for
+            your BEAST 2 package.
+        </fail>
+
+        <!-- Read package name and version from xml file -->
+        <xmlproperty file="version.xml" prefix="fromVersionFile" />
+        <property name="projName" value="${fromVersionFile.addon(name)}" />
+        <property name="projVersion" value="${fromVersionFile.addon(version)}" />
+
+        <mkdir dir="${build}"/>
+        <mkdir dir="${build-lib}"/>
+        <mkdir dir="${depends}"/>
+        <mkdir dir="${dist}"/>
+
+        <copy todir="${build-lib}">
+            <fileset dir="${lib}" includes="*.jar"/>
+        </copy>
+    </target>
+
+    <!-- Get beast -->
+
+    <target name="find-beast" depends="init">
+        <available file="${beastDir}" property="localBeastAvailable"/>
+    </target>
+
+    <target name="build-remote-beast" depends="find-beast" unless="localBeastAvailable">
+        <echo>No local copy of the beast2 source found at ${beastDir}.</echo>
+        <echo>Compiling against version ${beast-version} from GitHub.</echo>
+
+        <property name="build-beast" location="build-beast"/>
+        <mkdir dir="${build-beast}"/>
+
+        <get src="https://github.com/CompEvol/beast2/archive/${beast-branch}.zip" dest="${build-beast}/beast.zip"/>
+        <unzip src="${build-beast}/beast.zip" dest="${build-beast}"/>
+        <mkdir dir="${build-beast}/beast2-${beast-version}/build"/>
+        <javac target="${targetVersion}" source="${sourceVersion}"
+            srcdir="${build-beast}/beast2-${beast-version}/src"
+            destdir="${build-beast}/beast2-${beast-version}/build" includeantruntime="false">
+            <classpath>
+                <pathelement path="${classpath}"/>
+                <fileset dir="${build-beast}/beast2-${beast-version}/lib" includes="*.jar"/>
+            </classpath>
+        </javac>
+        <jar jarfile="${build-lib}/beast2.jar" basedir="${build-beast}/beast2-${beast-version}/build" />
+        <copy todir="${build-lib}">
+            <fileset dir="${build-beast}/beast2-${beast-version}/lib" includes="*.jar"/>
+        </copy>
+
+        <delete dir="${build-beast}" />
+    </target>
+
+    <target name="build-local-beast" depends="find-beast" if="localBeastAvailable">
+        <echo>Compiling against beast2 source found at ${beastDir}.</echo>
+
+        <property name="build-beast" location="build-beast"/>
+        <mkdir dir="${build-beast}"/>
+
+        <javac target="${targetVersion}" source="${sourceVersion}"
+            srcdir="${beastDir}/src"
+            destdir="${build-beast}" includeantruntime="false">
+            <classpath>
+                <pathelement path="${classpath}"/>
+                <fileset dir="${beastDir}/lib" includes="*.jar"/>
+            </classpath>
+        </javac>
+        <jar jarfile="${build-lib}/beast2.jar" basedir="${build-beast}" />
+        <copy todir="${build-lib}">
+            <fileset dir="${beastDir}/lib" includes="*.jar"/>
+        </copy>
+
+        <delete dir="${build-beast}" />
+    </target>
+
+    <target name="build-beast" depends="build-local-beast,build-remote-beast"/>
+
+    <target name="get-dependencies">
+      <echo>Downloading dependencies...</echo>
+
+      <echo>MultiTypeTree:</echo>
+      <get src="https://github.com/tgvaughan/MultiTypeTree/releases/download/v7.0.0/MultiTypeTree.v7.0.0.zip"
+           dest="${build-lib}/MultiTypeTree.zip"/>
+      <mkdir dir="${build-lib}/MultiTypeTree"/>
+      <unzip src="${build-lib}/MultiTypeTree.zip" dest="${build-lib}/MultiTypeTree"/>
+      <move todir="${build-lib}">
+        <fileset dir="${build-lib}/MultiTypeTree/lib" includes="*.jar"/>
+      </move>
+
+      <echo>MASTER:</echo>
+      <get src="https://github.com/tgvaughan/MASTER/releases/download/v6.0.0/MASTER.package.v6.0.0.zip"
+           dest="${build-lib}/MASTER.zip"/>
+      <mkdir dir="${build-lib}/MASTER"/>
+      <unzip src="${build-lib}/MASTER.zip" dest="${build-lib}/MASTER"/>
+      <move todir="${build-lib}">
+        <fileset dir="${build-lib}/MASTER/lib" includes="*.jar"/>
+      </move>
+
+    </target>
+
+    <!-- Compile -->
+    <target name="compile" depends="build-beast, get-dependencies">
+        <javac target="${targetVersion}" source="${sourceVersion}" srcdir="${src}" destdir="${build}" includeantruntime="false">
+            <classpath>
+                <pathelement path="${classpath}"/>
+                <fileset dir="${build-lib}" includes="*.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="copy-resources" depends="compile">
+        <copy todir="${build}">
+            <fileset dir="${src}"
+                     includes="**/*.png" />
+        </copy>
+    </target>
+
+    <!-- Prepare for unit test compilation -->
+    <target name="init-test" depends="init">
+        <mkdir dir="${test-reports}"/>
+    </target>
+
+    <!-- Run unit tests -->
+    <target name="test" depends="compile,init-test">
+        <junit printsummary="yes" failureproperty="testFailed" showoutput="true">
+            <classpath>
+                <pathelement path="${classpath}"/>
+                <pathelement path="${build}" />
+                <fileset dir="${build-lib}" includes="*.jar"/>
+                <fileset dir="${lib}" includes="*.jar"/>
+            </classpath>
+            <batchtest fork="yes" todir="${test-reports}">
+                <fileset dir="${build}">
+                    <include name="**/*Test.class"/>
+                </fileset>
+                <formatter type="plain"/>
+                <formatter type="plain" usefile="false"/> <!-- to screen -->
+            </batchtest>
+        </junit>
+
+        <fail if="testFailed" status="1" message="Unit test failed."/>
+    </target>
 
 
-	<!-- No JUnit Test, clean previous build, compile Java source code, and make the BDMM.jar and beauti.jar -->
-	<target name="build_jar_all_BDMM_NoJUnitTest" depends="cleanBDMM,compile-allBDMM,dist_all_BDMM"
-        description="Clean and Build all run-time stuff">
-	</target>
+    <!-- Create BEAST 2 package -->
+    <target name="build" depends="compile,copy-resources">
+        <property name="fullName" value="${projName}.v${projVersion}"/>
 
-	<!-- compile Java source code -->
-	<target name="compile-allBDMM" depends="initBDMM,compile-all">
+        <mkdir dir="${pack}"/>
+        <mkdir dir="${pack}/examples"/>
+        <mkdir dir="${pack}/scripts"/>
+        <mkdir dir="${pack}/templates"/>
+        <mkdir dir="${pack}/lib"/>
+        <mkdir dir="${pack}/doc"/>
 
+        <jar jarfile="${pack}/${fullName}.src.jar" basedir="${src}" />
 
-	    <!-- Capture the path as a delimited property using the refid attribute -->
-	    <property name="myclasspath" refid="classpath"/>
-	    <!-- Emit the property to the ant console -->
-	    <echo message="Classpath = ${myclasspath}"/>
+        <mkdir dir="${lib}" />
+        <copy todir="${pack}/lib">
+            <fileset dir="${lib}" includes="*.jar" />
+        </copy>
+        <jar jarfile="${pack}/lib/${fullName}.jar" basedir="${build}" />
 
-		<mkdir dir="${buildBDMM}" />
+        <copy file="README.md" tofile="${pack}/README" />
+        <copy file="COPYING" todir="${pack}" failonerror="false" quiet="true" />
+        <copy file="LICENSE" todir="${pack}" failonerror="false" quiet="true" />
+        <copy todir="${pack}">
+            <fileset dir="${lib}" includes="LICENSE*" />
+        </copy>
 
-		<!-- Compile the java code from ${srcBDMM} into ${buildBDMM} /bin -->
-		<javac srcdir="${srcBDMM}" destdir="${buildBDMM}" classpathref="classpath" 
-		       fork="true"
-		       memoryinitialsize="256m"
-		       memorymaximumsize="4096m"
-			   includeAntRuntime='false'
-			   source="1.8"
-		       target="1.8"
-			   encoding="UTF-8">
-			<include name="beast/**/**" />
-			<!-- compile JUnit test classes -->
-			<include name="test/beast/**" />
-		</javac>
-		<echo message="Successfully compiled." />
-	</target>
+        <mkdir dir="${examples}" />
+        <copy todir="${pack}/examples">
+            <fileset dir="${examples}" includes="**/*.xml" />
+            <fileset dir="${examples}" includes="**/*.fasta" />
+        </copy>
 
-	<!-- make the beast.jar and beauti.jar -->
-	<target name="dist_all_BDMM" depends="compile-allBDMM" description="create BDMM jar">
-		<!-- Create the distribution directory -->
-		<mkdir dir="${distBDMM}" />
-
-		<!-- Put everything in ${buildBDMM} into the beast.jar file -->
-		<jar jarfile="${distBDMM}/BDMM.jar">
-			<manifest>
-				<attribute name="Built-By" value="${user.name}" />
-				<attribute name="Main-Class" value="${main_class_BEAST}" />
-			</manifest>
-			<fileset dir="${buildBDMM}">
-				<include name="beast/**/*.class" />
-			</fileset>
-			<fileset dir="${beast2classpath}">
-				<include name="beast/**/*.class" />
-				<include name="beast/**/*.properties" />
-				<include name="beast/**/*.png" />
-				<include name="beagle/**/*.class" />
-				<include name="org/**/*.class" />
-			</fileset>
-		</jar>
-		<jar jarfile="${distBDMM}/BDMM.src.jar">
-			<fileset dir="${srcBDMM}">
-				<include name="beast/**/*.java" />
-				<include name="beast/**/*.png" />
-				<include name="beast/**/*.xsl" />
-			</fileset>
-        </jar>
-		<jar jarfile="${distBDMM}/BDMM.addon.jar">
-			<manifest>
-				<attribute name="Built-By" value="${user.name}" />
-			</manifest>
-			<fileset dir="${buildBDMM}">
-				<include name="beast/**/*.class" />
-				<include name="util/**/*.class" />
-				<include name="**/*.properties" />
-			</fileset>
-		</jar>
-	</target>
-
-	<!-- run beast.jar -->
-	<target name="run_BDMM">
-		<java jar="${distBDMM}/BDMM.jar" fork="true" />
-	</target>
-
-	
-	<!-- JUnit test -->
-	<target name="junitBDMM">
-		<mkdir dir="${report}" />
-		<junit printsummary="yes"> <!--showoutput='yes'-->
-			<classpath>
-				<path refid="classpath" />
-				<path location="${buildBDMM}" />
-			</classpath>
-
-			<formatter type="xml" />
-
-			<batchtest fork="yes" todir="${report}">
-				<fileset dir="${srcBDMM}">
-                    <include name="test/**/*Test.java"/>                                         
-				</fileset>
-				<fileset dir="${srcBeast2}">
-                    <include name="test/beast/integration/**/*Test.java"/>                                         
-                    <exclude name="test/beast/integration/**/ResumeTest.java"/>                                         
-				</fileset>
-			</batchtest>
-		</junit>
-		<echo message="JUnit test finished." />
-	</target>
-    
-    <target name="junitreport">
-		<junitreport todir="${report}">
-			<fileset dir="${report}" includes="*.xml"/>
-			<report format="frames" todir="${report}"/>
-		</junitreport>
-		<echo message="JUnit test report finished." />
-	</target>
+        <mkdir dir="${scripts}" />
+        <copy todir="${pack}/scripts">
+            <fileset dir="${scripts}" includes="**/*" />
+        </copy>
 
 
-	<target name="addon"
-	        depends="build_jar_all_BDMM_NoJUnitTest"
-	        description="release BEAST 2 add-on version of BDMM">
+        <mkdir dir="${templates}" />
+        <copy todir="${pack}/templates">
+            <fileset dir="${templates}" includes="*.xml" />
+        </copy>
 
-		<delete dir="${Add_on_dir}" />
-		<!-- Create the release directory -->
-		<mkdir dir="${Add_on_dir}" />
-		<mkdir dir="${Add_on_dir}/lib" />
-		<mkdir dir="${Add_on_dir}/examples" />
-		<mkdir dir="${Add_on_dir}/templates" />
+        <mkdir dir="${doc}" />
+        <copy todir="${pack}/doc">
+            <fileset dir="${doc}" includes="*.tex,*.doc,*.lyx,*.txt"/>
+        </copy>
 
-		<copy todir="${Add_on_dir}">
-			<fileset file="version.xml"/>
-		</copy>
-		<copy todir="${Add_on_dir}/examples">
-			<fileset dir="examples" />
-		</copy>
-		<copy todir="${Add_on_dir}/lib">
-			<fileset dir="${distBDMM}" includes="BDMM.addon.jar" />
-		</copy>
-		<copy todir="${Add_on_dir}">
-			<fileset dir="${distBDMM}" includes="BDMM.src.jar" />
-		</copy>
-		<copy todir="${Add_on_dir}/templates">
-			<fileset file="templates/MultiTypeBirthDeath.xml" />
-		</copy>
+        <copy file="version.xml" todir="${pack}" />
 
-		<jar jarfile="${distBDMM}/BDMM.addon.zip">
-			<fileset dir="${Add_on_dir}">
-				<include name="**/*" />
-			</fileset>
-        </jar>
-		<echo message="Add-on version release is finished." />
-	</target>
+        <zip destfile="${dist}/${fullName}.zip" basedir="${pack}" />
+
+        <delete dir="${pack}"/>
+
+        <echo/>
+        <echo/>
+        <echo>** Package ${dist}/${fullName}.zip created successfuly! **</echo>
+    </target>
+
+
+    <!-- Revert to pristine state. -->
+    <target name="clean">
+        <delete dir="${build}" />
+        <delete dir="${build-lib}" />
+        <delete dir="${dist}" />
+        <delete dir="${test-reports}" />
+    </target>
+
+
+    <!-- Create skeleton package layout in current directory -->
+    <target name="skeleton">
+
+        <fail>
+            <condition>
+                <or>
+                    <resourcecount when="gt" count="1">
+                        <fileset dir="${basedir}"/>
+                    </resourcecount>
+                    <resourcecount when="gt" count="1">
+                        <dirset dir="${basedir}"/>
+                    </resourcecount>
+                </or>
+            </condition>
+
+            ** This directory contains files besides the build script. **
+            You should run "ant skeleton" in a directory containing only the build script.
+        </fail>
+
+        <echo>===============================</echo>
+        <echo>Create skeleton BEAST 2 package</echo>
+        <echo>===============================</echo>
+        <echo/>
+        <echo>First, we need some information...</echo>
+        <echo/>
+
+        <basename property="defaultProjName" file="${basedir}"/>
+
+        <input addproperty="projName" defaultvalue="${defaultProjName}">Enter package name</input>
+        <input addproperty="license" defaultvalue="gpl3" validargs="gpl3,lgpl3,lgpl2.1,apache2">Select open source software license</input>
+        <input addproperty="projVersion" defaultvalue="1.0.0">Enter package version</input>
+        <input addproperty="beastVersionReq" defaultvalue="2.1.0">Enter minimum required BEAST 2 version</input>
+
+        <echo>Assembling files and directory structure...</echo>
+
+        <echo file="version.xml">&lt;addon name="${projName}" version="${projVersion}"&gt;
+            &lt;depends on="beast2" atleast="${beastVersionReq}"/&gt;
+
+            &lt;!-- Add other dependencies as necessary. --&gt;
+            &lt;/addon&gt;
+        </echo>
+
+        <echo file="README.md" message="README for my package.${line.separator}"/>
+
+        <condition property="licenseURL" value="https://www.gnu.org/licenses/gpl-3.0.txt">
+            <equals arg1="${license}" arg2="gpl3"/>
+        </condition>
+        <condition property="licenseURL" value="https://www.gnu.org/licenses/lgpl-3.0.txt">
+            <equals arg1="${license}" arg2="lgpl3"/>
+        </condition>
+        <condition property="licenseURL" value="https://www.gnu.org/licenses/lgpl-2.1.txt">
+            <equals arg1="${license}" arg2="lgpl2.1"/>
+        </condition>
+        <condition property="licenseURL" value="http://www.apache.org/licenses/LICENSE-2.0.txt">
+            <equals arg1="${license}" arg2="apache2"/>
+        </condition>
+
+        <get src="${licenseURL}" dest="COPYING"/>
+
+        <mkdir dir="${src}"/>
+        <mkdir dir="${test}"/>
+        <mkdir dir="${lib}"/>
+        <mkdir dir="${examples}"/>
+        <mkdir dir="${templates}"/>
+        <mkdir dir="${doc}"/>
+
+        <echo/>
+        <echo>Done.</echo>
+        <echo/>
+        <echo>The directory structure is as follows:</echo>
+        <echo>${src} - your java source goes here</echo>
+        <echo>${test} - your junit tests go here (You _are_ going to write, those, aren't you!)</echo>
+        <echo>${doc} - your documentation goes here</echo>
+        <echo>${examples} - your example XML scripts go here</echo>
+        <echo>${templates} - your BEAUti templates go here</echo>
+        <echo/>
+        <echo>To build your package, just type "ant" at the command line.</echo>
+        <echo/>
+        <echo>To run unit tests, type "ant test".</echo>
+        <echo/>
+        <echo>That's it!  Happy coding!</echo>
+
+    </target>
 
 </project>

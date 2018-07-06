@@ -8,8 +8,7 @@ import beast.core.Description;
  * Created by Jeremie Scire (jscire) on 24.06.16.
  */
 
-@Description("This class contains the tools needed to represent and do basic calculations with numbers in scientific representation."
-		+ " For instance, 0.0523 would be written as 5.23E-2 in scientific representation. In this implementation, the attribute 'mantissa' would be 5.23 and 'exponent' would be -2.")
+@Description("This class contains the tools needed to represent and do basic calculations with numbers in extended floating point representation (EPFP).")
 public class SmallNumber {
 
 	private double mantissa;
@@ -81,8 +80,7 @@ public class SmallNumber {
 	}
 
 	/**
-	 * TODO UPDATE THE COMMENTS ON THE WHOLE CLASS
-	 * Make sure a number is in scientific representation, if not make it so.
+	 * Make sure a number is in proper SmallNumber representation (mantissa not too large, not too small), if not make it so.
 	 */
 	public void update(){
 		if (Double.isInfinite(this.mantissa))
@@ -110,7 +108,7 @@ public class SmallNumber {
 	}
 
 	/**
-	 * Multiply two numbers in scientific representation 
+	 * Multiply two SmallNumbers
 	 * @param a
 	 * @param b
 	 * @return a new SmallNumber
@@ -140,7 +138,7 @@ public class SmallNumber {
 	}
 
 	/**
-	 * Increase the value of a SmallNumber by 'exp' orders of magnitude
+	 * Increase the value of a SmallNumber by 'exp' orders of magnitude (in base 2)
 	 * @param exp
 	 */
 	public void addExponent(int exp){
@@ -157,7 +155,7 @@ public class SmallNumber {
 	}
 
 	/**
-	 * Add two numbers in scientific representation
+	 * Add two SmallNumbers
 	 * @param a
 	 * @param b
 	 * @return

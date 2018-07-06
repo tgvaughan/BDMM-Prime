@@ -1,9 +1,6 @@
 package beast.evolution.speciation;
 
-import beast.core.Citation;
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.State;
+import beast.core.*;
 import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.RealParameter;
 import beast.core.util.Utils;
@@ -126,9 +123,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<Boolean> contemp =
 			new Input<>("contemp", "Only contemporaneous sampling (i.e. all tips are from same sampling time, default false)", false);
 
-	public Input<RealParameter> birthRate =
+	public Input<Function> birthRate =
 			new Input<>("birthRate", "BirthRate = BirthRateVector * birthRateScalar, birthrate can change over time");
-	public Input<RealParameter> deathRate =
+	public Input<Function> deathRate =
 			new Input<>("deathRate", "The deathRate vector with birthRates between times");
 	public Input<RealParameter> samplingRate =
 			new Input<>("samplingRate", "The sampling rate per individual");      // psi
@@ -222,8 +219,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public static Double maxstep;
 
 	// these four arrays are totalIntervals in length
-	protected Double[] birth;
-	Double[] death;
+	protected double[] birth;
+	double[] death;
 	Double[] psi;
 	static  volatile Double[] rho;
 	Double[] r;
@@ -390,9 +387,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		} else if (birthRate.get() != null && deathRate.get() != null && samplingRate.get() != null) {
 
 			transform = false;
-			death = deathRate.get().getValues();
+			death = deathRate.get().getDoubleValues();
 			psi = samplingRate.get().getValues();
-			birth = birthRate.get().getValues();
+			birth = birthRate.get().getDoubleValues();
 			if (SAModel) r = removalProbability.get().getValues();
 
 			if (birthRateAmongDemes.get()!=null ){
@@ -466,6 +463,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		isParallelizedCalculation = isParallelizedCalculationInput.get();
 		minimalProportionForParallelization = minimalProportionForParallelizationInput.get();
+
+		if(isParallelizedCalculation) executorBootUp();
 
 	}
 
@@ -783,8 +782,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	void updateBirthDeathPsiParams(){
 
-		Double[] birthRates = birthRate.get().getValues();
-		Double[] deathRates = deathRate.get().getValues();
+		double[] birthRates = birthRate.get().getDoubleValues();
+		double[] deathRates = deathRate.get().getDoubleValues();
 		Double[] samplingRates = samplingRate.get().getValues();
 		Double[] removalProbabilities = new Double[1];
 
@@ -1141,8 +1140,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	protected Double updateRates() {
 
-		birth = new Double[n*totalIntervals];
-		death = new Double[n*totalIntervals];
+		birth = new double[n*totalIntervals];
+		death = new double[n*totalIntervals];
 		psi = new Double[n*totalIntervals];
 		b_ij = new Double[totalIntervals*(n*(n-1))];
 		M = new Double[totalIntervals*(n*(n-1))];

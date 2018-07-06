@@ -9,7 +9,6 @@
 
 # Misc cruft
 /META-INF
-/META-INF2
 /bin
 
 # Temporary tests and BEAST log files
@@ -22,3 +21,7 @@
 /*.newick
 /*.nexus
 /src/beast/math/*Temp.java
+/src/treeSimulator/
+
+# MacOS cruft
+.DS_Store

@@ -21,8 +21,7 @@ import java.util.concurrent.*;
 
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel with discrete locations and migration events among demes. " +
 		"This should be used when the migration process along the phylogeny is irrelevant. Otherwise the BirthDeathMigrationModel can be employed." +
-		"This implementation also works with sampled ancestor trees." +
-		"Two implementations are available. The first is the fast classic one; the second one prevents underflowing, using so-called 'SmallNumbers', with the cost of additional computational complexity")
+		"This implementation also works with sampled ancestor trees.")
 public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigrationDistribution implements Loggable {
 
 
@@ -140,7 +139,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			p0ge_InitialConditions pSN;
 
-			if(isParallelizedCalculation) {executorBootUp();}
+			//if(isParallelizedCalculation) {executorBootUp();}
 
 			if ( orig > 0 ) {
 				pSN = calculateSubtreeLikelihood(root,0,orig, PG);}
@@ -179,7 +178,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			logP =  Double.NEGATIVE_INFINITY;
 
-			executorShutdown();
+			//if(isParallelizedCalculation) executorShutdown();
 			return logP;
 		}
 
@@ -194,7 +193,7 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 			logP +=  Math.log(2)*internalNodeCount;
 		}
 
-		if(isParallelizedCalculation) executorShutdown();
+		//if(isParallelizedCalculation) executorShutdown();
 		return logP;
 	}
 
@@ -253,18 +252,27 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			int nodestate = getNodeState(node, false);
 
+			//TODO potentially refactor to make few lines below more concise and clearer
 			if (nodestate==-1) { //unknown state
 
-				if (SAModel)
-					throw new ConstraintViolatedException("SA model not implemented with unknown states!");
+//				if (SAModel)
+//					throw new ConstraintViolatedException("SA model not implemented with unknown states!");
 
+				//TODO test if SA model case is properly implemented
 				for (int i=0; i<n; i++) {
 
 					if (!isRhoTip[node.getNr()]) {
-						init.conditionsOnG[i] = new SmallNumber(psi[i * totalIntervals + index]);
+						init.conditionsOnG[i] = SAModel?
+								new SmallNumber((r[i * totalIntervals + index] + pInitialConditions[node.getNr()][i]*(1-r[i * totalIntervals + index]))
+										*psi[i * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
+								: new SmallNumber(psi[i * totalIntervals + index]);
 					}
-					else
-						init.conditionsOnG[i] = new SmallNumber(rho[i*totalIntervals+index]);
+					else {
+						init.conditionsOnG[i] = SAModel ?
+								new SmallNumber((r[i * totalIntervals + index] + pInitialConditions[node.getNr()][i] / (1 - rho[i * totalIntervals + index]) * (1 - r[i * totalIntervals + index]))
+										* rho[i * totalIntervals + index]) :
+								new SmallNumber(rho[i * totalIntervals + index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ+δ)) //the +δ is translated by dividing p_i with 1-ρ_i (otherwise there's one too many "*ρ_i" )
+					}
 				}
 			}
 			else {
@@ -305,20 +313,39 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 				int saNodeState = getNodeState(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
 
-				if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
+				if (saNodeState == -1) { // unknown state
+					for (int i = 0; i < n; i++) {
+						if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
-					init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
-					init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index]
-							* (1-r[saNodeState * totalIntervals + index]));
+							init.conditionsOnP[i] = g.conditionsOnP[i];
+							init.conditionsOnG[i] = g.conditionsOnG[i].scalarMultiply(psi[i * totalIntervals + index]
+									* (1 - r[i * totalIntervals + index]));
+
+						} else {
+							// TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
+							init.conditionsOnP[i] = g.conditionsOnP[i] * (1 - rho[i * totalIntervals + index]);
+							init.conditionsOnG[i] = g.conditionsOnG[i].scalarMultiply(rho[i * totalIntervals + index]
+									* (1 - r[i * totalIntervals + index]));
+
+						}
+					}
+				}
+				else {
+					if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
+
+						init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState];
+						init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(psi[saNodeState * totalIntervals + index]
+								* (1 - r[saNodeState * totalIntervals + index]));
 
 //					System.out.println("SA but not rho sampled");
 
-				} else {
-					// TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
-					init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState]*(1-rho[saNodeState*totalIntervals+index]) ;
-					init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState*totalIntervals+index]
-							* (1-r[saNodeState * totalIntervals + index]));
+					} else {
+						// TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
+						init.conditionsOnP[saNodeState] = g.conditionsOnP[saNodeState] * (1 - rho[saNodeState * totalIntervals + index]);
+						init.conditionsOnG[saNodeState] = g.conditionsOnG[saNodeState].scalarMultiply(rho[saNodeState * totalIntervals + index]
+								* (1 - r[saNodeState * totalIntervals + index]));
 
+					}
 				}
 			}
 
