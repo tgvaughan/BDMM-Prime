@@ -77,7 +77,7 @@ public class RootBranchRetype extends RandomRetypeOperator {
      */
     protected double retypeBranch(MultiTypeRootBranch srcNode) {
 
-        double mu = muInput.get();
+        double mu = muInput.get().getArrayValue();
 
         double t_srcNode = mtTree.getRoot().getHeight();
         double t_srcNodeParent = originInput.get().getValue();
@@ -129,7 +129,7 @@ public class RootBranchRetype extends RandomRetypeOperator {
      */
     protected double getBranchTypeProb(MultiTypeRootBranch srcNode) {
 
-        double mu = muInput.get();
+        double mu = muInput.get().getArrayValue();
         int n = srcNode.getChangeCount();
         int N = migModel.getNTypes();
 
