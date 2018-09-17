@@ -156,13 +156,15 @@
             path='distribution/distribution[id="likelihood"]/distribution/data'
             hasPartitions="none" forceExpansion='FALSE'
             type='beast.evolution.alignment.Alignment'
-            />
+        />
+		<mergepoint id='aux-partitions-panels'/>
 
 		<panel spec='BeautiPanelConfig' panelname="Tip Dates" tiptext="Specify times at which taxa were sampled"
             path='tree'
             hasPartitions="Tree" forceExpansion='TRUE'
             isVisible='true'
         />
+		<mergepoint id='aux-tipdates-panels'/>
 
 		<panel spec='BeautiPanelConfig' panelname="Tip Locations" tiptext="Specify locations from which taxa were sampled"
             path='distribution/distribution[id="prior"]/distribution[type="beast.evolution.speciation.BirthDeathMigrationModelUncoloured"]/tiptypes'
@@ -174,28 +176,33 @@
             path='siteModel'
             hasPartitions="SiteModel" forceExpansion='TRUE'
             />
+		<mergepoint id='aux-sitemodel-panels'/>
 
         <panel spec='BeautiPanelConfig' panelname="Clock Model" tiptext="Clock model"
             path='branchRateModel'
             hasPartitions="ClockModel" forceExpansion='TRUE'
         />
+		<mergepoint id='aux-clockmodel-panels'/>
 
         <panel spec='BeautiPanelConfig' panelname="Priors" tiptext="Other priors"
             path='distribution/distribution[id="prior"]/distribution'
             hasPartitions="none" forceExpansion='TRUE_START_COLLAPSED'
             type='beast.core.Distribution'
         />
+		<mergepoint id='aux-priors-panels'/>
 
         <panel spec='BeautiPanelConfig' panelname="Operators" tiptext="MCMC Operator details"
             path='operator'
             hasPartitions="none" forceExpansion='TRUE_START_COLLAPSED'
             isVisible='false' buttonStatus='ADD_ONLY'
         />
+		<mergepoint id='aux-operators-panels'/>
 
 		<panel spec='BeautiPanelConfig' panelname="MCMC" tiptext="MCMC parameters"
             path=''
             hasPartitions="none" forceExpansion='TRUE'
             />
+		<mergepoint id='aux-panels'/>
 
 		<alignmentProvider id="Add Alignment" spec='BeautiAlignmentProvider' template='@StandardPartitionTemplate'/>
 
