@@ -1,4 +1,4 @@
-<addon name="BDMM" version="0.3.1">
+<addon name="BDMM" version="0.3.2">
   <depends on="beast2" atleast="2.5.0"/>
   <depends on="MultiTypeTree" atleast="7.0.0"/>
   <depends on="MASTER" atleast="6.0.0"/>
