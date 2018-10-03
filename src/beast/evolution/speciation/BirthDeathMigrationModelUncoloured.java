@@ -203,21 +203,34 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			if (!storeNodeTypes.get() || init){
 
-				int nodestate = tiptypes.get() != null ?
-						(int) tiptypes.get().getValue((node.getID())) :
-						typeLabel.get()!=null ?
-								((node instanceof MultiTypeNode) ? ((MultiTypeNode) node).getNodeType() : -2) :
-								(int) tipTypeArray.get().getArrayValue((node.getNr()));
+				int nodestate = -1;
 
-				if (nodestate == -2) {
-					Object d = node.getMetaData(typeLabel.get());
+				if (tiptypes.get() != null) {
 
-					if (d instanceof Integer) nodestate = (Integer) node.getMetaData(typeLabel.get());
-					else if
-							(d instanceof Double) nodestate = (((Double) node.getMetaData(typeLabel.get())).intValue());
-					else if
-							(d instanceof int[]) nodestate = (((int[]) node.getMetaData(typeLabel.get()))[0]);
-				}
+                    nodestate = (int) tiptypes.get().getValue((node.getID()));
+
+                } else if (node instanceof MultiTypeNode) {
+
+                       nodestate = ((MultiTypeNode) node).getNodeType();
+
+                } else if (typeLabel.get()!=null) {
+
+                       Object d = node.getMetaData(typeLabel.get());
+
+                       if (d instanceof Integer) nodestate = (Integer) d;
+                       else if (d instanceof Double) nodestate = ((Double) d).intValue();
+                       else if (d instanceof int[]) nodestate = ((int[]) d)[0];
+                       else if (d instanceof String) nodestate = Integer.valueOf((String)d);
+                       else
+                           throw new RuntimeException("Error interpreting as type index: " + d);
+
+                } else {
+
+                    nodestate = (int) tipTypeArray.get().getArrayValue((node.getNr()));
+                }
+
+                if (nodestate < -1)
+                    throw new ConstraintViolatedException("State assignment failed.");
 
 				return nodestate;
 
