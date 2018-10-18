@@ -242,6 +242,13 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 		}
 	}
 
+	public int getLeafStateForLogging(Node node, long sampleNr) {
+		if(!node.isLeaf()) {
+			throw new IllegalArgumentException("Node should be a leaf");
+		}
+		return getNodeState(node, sampleNr==0);
+	}
+
 
 	/**
 	 *
