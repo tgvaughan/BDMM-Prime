@@ -300,6 +300,7 @@
 			<log idref="birth"/>
 			<log idref="death"/>
 			<log idref="sampling"/>
+            <log spec="bdmm.loggers.RootProbLogger" bdmmuc="@treePrior"/>
 		</logger>
 
 		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).trees" logEvery="1000" mode="autodetect"

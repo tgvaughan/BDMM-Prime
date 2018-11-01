@@ -35,6 +35,8 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 	Boolean print = false;
 
+	double[] rootTypeProbs, storedRootTypeProbs;
+
 	@Override
 	public void initAndValidate() {
 
@@ -52,6 +54,9 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 				nodeStates[node.getNr()] = getNodeState(node, true);
 			}
 		}
+
+		rootTypeProbs = new double[n];
+        storedRootTypeProbs = new double[n];
 	}
 
 	void computeRhoTips(){
@@ -162,11 +167,22 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 			for (int root_state=0; root_state<n; root_state++){
 
-				if (pSN.conditionsOnG[root_state].getMantissa()>0 )
-					PrSN = SmallNumber.add(PrSN, pSN.conditionsOnG[root_state].scalarMultiply(freq[root_state]));
+                SmallNumber jointProb = pSN.conditionsOnG[root_state].scalarMultiply(freq[root_state]);
+				if (jointProb.getMantissa()>0 ) {
+				    rootTypeProbs[root_state] = jointProb.log();
+                    PrSN = SmallNumber.add(PrSN, jointProb);
+                } else {
+                    rootTypeProbs[root_state] = Double.NEGATIVE_INFINITY;
+                }
 
 				if (print) System.out.print(pSN.conditionsOnP[root_state] + "\t" + pSN.conditionsOnG[root_state] + "\t");
 			}
+
+			// Normalize root type probs:
+            for (int root_state=0; root_state<n; root_state++) {
+                rootTypeProbs[root_state] -= PrSN.log();
+                rootTypeProbs[root_state] = Math.exp(rootTypeProbs[root_state]);
+            }
 
 			if (conditionOnSurvival.get()){
 				PrSN = PrSN.scalarMultiply(1/(1-nosample));
@@ -506,5 +522,30 @@ public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigra
 
 	}
 
+    /**
+     * @return retrieve current set of root type probabilities.
+     */
+	public double[] getRootTypeProbs() {
+	    return rootTypeProbs;
+    }
+
+	/* StateNode implementation */
+
+    @Override
+    public void store() {
+        super.store();
+
+        for (int i=0; i<n; i++)
+            storedRootTypeProbs[i] = rootTypeProbs[i];
+    }
+
+    @Override
+    public void restore() {
+        super.restore();
+
+        double[] tmp = storedRootTypeProbs;
+        rootTypeProbs = storedRootTypeProbs;
+        storedRootTypeProbs = tmp;
+    }
 }
 
