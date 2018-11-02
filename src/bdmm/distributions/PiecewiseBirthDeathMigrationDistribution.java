@@ -42,14 +42,11 @@ import java.util.concurrent.ThreadPoolExecutor;
 public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 
+    public Input<Parameterization> bdmmParameterizationInput =
+            new Input<>("parameterization", "BDMM parameterization", Input.Validate.REQUIRED);
+
 	public Input<RealParameter> frequencies =
 			new Input<>("frequencies", "The frequencies for each type",  Input.Validate.REQUIRED);
-
-	public Input<RealParameter> origin =
-			new Input<>("origin", "The origin of infection x1");
-
-	public Input<Boolean> originIsRootEdge =
-			new Input<>("originIsRootEdge", "The origin is only the length of the root edge", false);
 
 	public Input<Integer> maxEvaluations =
 			new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", 1000000);
@@ -194,6 +191,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<Double> minimalProportionForParallelizationInput = new Input<>("parallelizationFactor", "the minimal relative size the two children subtrees of a node" +
 			" must have to start parallel calculations on the children. (default: 1/10). ", new Double(1/10));
 
+	Parameterization parameterization;
 
 	public static boolean isParallelizedCalculation;
 
@@ -202,8 +200,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	//  TODO check if it's possible to have 1e-20 there
 	public final static double globalPrecisionThreshold = 1e-10;
 
-	static volatile double T = 0;
-	double orig;
 	int ntaxa;
 
 	p0_ODE P;
@@ -292,6 +288,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	@Override
 	public void initAndValidate() {
+	    parameterization = bdmmParameterizationInput.get();
 
 		tree = treeInput.get();
 
@@ -449,9 +446,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if (checkRho.get() && contempCount>1 && rho==null)
 			throw new RuntimeException("Error: multiple tips given at present, but sampling probability \'rho\' is not specified.");
 
-
-		checkOrigin(tree);
-		collectTimes(T);
+		collectTimes();
 		setRho();
 
 		weightOfNodeSubTree = new double[ntaxa * 2];
@@ -475,7 +470,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		try {
 
-			if (Math.abs(T-t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  T < t) {
+			if (Math.abs(PG.T-t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  PG.T < t) {
 				return PG0;
 			}
 
@@ -643,35 +638,35 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	/**
 	 * Collect all the times of parameter value changes and rho-sampling events
 	 */
-	void collectTimes(double maxTime) {
+	void collectTimes() {
 
 		timesSet.clear();
 
-		getChangeTimes(maxTime, migChangeTimes,
+		getChangeTimes(migChangeTimes,
 				migChangeTimesInput.get() != null ? migChangeTimesInput.get() : intervalTimes.get(),
 				migChanges, migTimesRelative, reverseTimeArrays[5]);
 
-		getChangeTimes(maxTime, birthRateChangeTimes,
+		getChangeTimes(birthRateChangeTimes,
 				birthRateChangeTimesInput.get() != null ? birthRateChangeTimesInput.get() : intervalTimes.get(),
 				birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
 
-		getChangeTimes(maxTime, b_ijChangeTimes,
+		getChangeTimes(b_ijChangeTimes,
 				b_ijChangeTimesInput.get() != null ? b_ijChangeTimesInput.get() : intervalTimes.get(),
 				b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
 
-		getChangeTimes(maxTime, deathRateChangeTimes,
+		getChangeTimes(deathRateChangeTimes,
 				deathRateChangeTimesInput.get() != null ? deathRateChangeTimesInput.get() : intervalTimes.get(),
 				deathChanges, deathRateTimesRelative, reverseTimeArrays[1]);
 
-		getChangeTimes(maxTime, samplingRateChangeTimes,
+		getChangeTimes(samplingRateChangeTimes,
 				samplingRateChangeTimesInput.get() != null ? samplingRateChangeTimesInput.get() : intervalTimes.get(),
 				samplingChanges, samplingRateTimesRelative, reverseTimeArrays[2]);
 
-		getChangeTimes(maxTime, rhoSamplingChangeTimes,
+		getChangeTimes(rhoSamplingChangeTimes,
 				rhoSamplingTimes.get()!=null ? rhoSamplingTimes.get() : intervalTimes.get(),
 				rhoChanges, false, reverseTimeArrays[3]);
 
-		if (SAModel) getChangeTimes(maxTime, rChangeTimes,
+		if (SAModel) getChangeTimes(rChangeTimes,
 				removalProbabilityChangeTimesInput.get() != null ? removalProbabilityChangeTimesInput.get() : intervalTimes.get(),
 				rChanges, rTimesRelative, reverseTimeArrays[4]);
 
@@ -715,19 +710,19 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	/**
 	 * set change times
 	 */
-	public void getChangeTimes(double maxTime, List<Double> changeTimes, RealParameter intervalTimes, int numChanges, boolean relative, boolean reverse) {
+	public void getChangeTimes(List<Double> changeTimes, RealParameter intervalTimes, int numChanges, boolean relative, boolean reverse) {
 		changeTimes.clear();
 
 		if (intervalTimes == null) { //equidistant
 
-			double intervalWidth = maxTime / (numChanges + 1);
+			double intervalWidth = parameterization.getMaxTime() / (numChanges + 1);
 
 			double end;
 			for (int i = 1; i <= numChanges; i++) {
 				end = (intervalWidth) * i;
 				changeTimes.add(end);
 			}
-			end = maxTime;
+			end = parameterization.getMaxTime();
 			changeTimes.add(end);
 
 		} else {
@@ -744,9 +739,9 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			double end;
 			for (int i = (reverse?0:1); i < dim; i++) {
-				end = reverse ? (maxTime - intervalTimes.getValue(dim - i - 1)) : intervalTimes.getValue(i);
-				if (relative) end *= maxTime;
-				if (end < maxTime) changeTimes.add(end);
+				end = reverse ? (parameterization.getMaxTime() - intervalTimes.getValue(dim - i - 1)) : intervalTimes.getValue(i);
+				if (relative) end *= parameterization.getMaxTime();
+				if (end < parameterization.getMaxTime()) changeTimes.add(end);
 			}
 
 			if (adjustTimesInput.get()!=null){
@@ -763,12 +758,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 						if
 								(changeTimes.size() > i) changeTimes.set(i, end);
 						else
-						if (end < maxTime)
+						if (end < parameterization.getMaxTime())
 							changeTimes.add(end);
 					}
 				}
 			}
-			end = maxTime;
+			end = parameterization.getMaxTime();
 
 			changeTimes.add(end);
 		}
@@ -968,44 +963,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 
-	void checkOrigin(TreeInterface tree){
-
-		if (origin.get()==null){
-			T = tree.getRoot().getHeight();
-		}
-		else {
-
-			updateOrigin(tree.getRoot());
-
-			if (!Boolean.valueOf(System.getProperty("beast.resume")) && orig < 0)
-				throw new RuntimeException("Error: origin("+T+") must be larger than tree height("+tree.getRoot().getHeight()+")!");
-		}
-
-	}
-
-
-	void updateOrigin(Node root){
-
-		T = origin.get().getValue();
-		orig = T - root.getHeight();
-
-		if (originIsRootEdge.get()) {
-
-			orig = origin.get().getValue();
-			T = orig + root.getHeight();
-		}
-
-	}
-
-
 	void setupIntegrators(){   // set up ODE's and integrators
 
 		//TODO set these minstep and maxstep to be a class field
-		if (minstep == null) minstep = T*1e-100;
-		if (maxstep == null) maxstep = T/10;
+		if (minstep == null) minstep = parameterization.getMaxTime()*1e-100;
+		if (maxstep == null) maxstep = parameterization.getMaxTime()/10;
 
 		P = new p0_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
-		PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get());
+		PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, parameterization.getMaxTime(), times, P, maxEvaluations.get());
 
 		p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 
@@ -1013,8 +978,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 			PG.p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 		} else {
-			pg_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
-			PG.p_integrator = new ClassicalRungeKuttaIntegrator(T / 1000);
+			pg_integrator = new ClassicalRungeKuttaIntegrator(parameterization.getMaxTime() / 1000);
+			PG.p_integrator = new ClassicalRungeKuttaIntegrator(parameterization.getMaxTime() / 1000);
 		}
 	}
 
@@ -1035,7 +1000,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
 
 		//TODO make threshold a class field
-		if(T>0 && Math.abs(from-to)>T/6 ) {
+		if(PG.T>0 && Math.abs(from-to)>PG.T/6 ) {
 			pgScaled = safeIntegrate(PG, to, pgScaled, from + (to-from)/2);
 			pgScaled = safeIntegrate(PG, from + (to-from)/2, pgScaled, from);
 		} else {
@@ -1091,7 +1056,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		int[] indicesSortedByLeafHeight  =new int[leafCount];
 
 		for (int i=0; i<leafCount; i++){ // get all leaf heights
-			leafHeights[i] = T - tree.getNode(i).getHeight();
+			leafHeights[i] = parameterization.getMaxTime() - tree.getNode(i).getHeight();
 			// System.out.println(nodeHeight[i]);
 			indicesSortedByLeafHeight[i] = i;
 		}
@@ -1285,10 +1250,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		private void setupODEs(){  // set up ODE's and integrators
 
 			//TODO set minstep and maxstep to be PiecewiseBDDistr fields
-			if (minstep == null) minstep = T*1e-100;
-			if (maxstep == null) maxstep = T/10;
+			if (minstep == null) minstep = parameterization.getMaxTime()*1e-100;
+			if (maxstep == null) maxstep = parameterization.getMaxTime()/10;
 
-			PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get());
+			PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, parameterization.getMaxTime(), times, P, maxEvaluations.get());
 
 			p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 

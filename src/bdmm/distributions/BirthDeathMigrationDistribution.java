@@ -62,7 +62,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 		for (Node tip : treeInput.get().getExternalNodes()) {
 
-			tipTime = T-tip.getHeight();
+			tipTime = parameterization.getMaxTime()-tip.getHeight();
 			isRhoTip[tip.getNr()] = false;
 
 			for (Double time:rhoSamplingChangeTimes){
@@ -97,16 +97,12 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 		Node root = tree.getRoot();
 
-		if (origin.get()==null)
-			T = root.getHeight();
-		else
-			updateOrigin(root);
-
-
-		collectTimes(T);
+		collectTimes();
 		setRho();
 
-		if ((orig < 0) || updateRates() < 0 ||  (times[totalIntervals-1] > T)) {
+		if (parameterization.getRootEdgeLength(tree) < 0.0
+                || updateRates() < 0
+                || (times[totalIntervals-1] > parameterization.getMaxTime())) {
 			logP =  Double.NEGATIVE_INFINITY;
 			return logP;
 		}
@@ -143,18 +139,18 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 			//if(isParallelizedCalculation) {executorBootUp();}
 
-			if ( orig > 0 ) {
-				pSN = calculateSubtreeLikelihood(root,0,orig, PG);}
-			else {
+			if (parameterization.hasOrigin()) {
+				pSN = calculateSubtreeLikelihood(root,0, parameterization.getRootEdgeLength(tree), PG);
+			} else {
 
 				int childIndex = 0;
 				if (root.getChild(1).getNr() > root.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
 
-				pSN = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight(), PG);
+				pSN = calculateSubtreeLikelihood(root.getChild(childIndex),0., parameterization.getMaxTime() - root.getChild(childIndex).getHeight(), PG);
 				childIndex = Math.abs(childIndex-1);
 
 				p0ge_InitialConditions p1SN;
-				p1SN = calculateSubtreeLikelihood(root.getChild(childIndex),0., T - root.getChild(childIndex).getHeight(), PG);
+				p1SN = calculateSubtreeLikelihood(root.getChild(childIndex),0., parameterization.getMaxTime() - root.getChild(childIndex).getHeight(), PG);
 
 				for (int i =0; i<pSN.conditionsOnG.length; i++) pSN.conditionsOnG[i] = SmallNumber.multiply(pSN.conditionsOnG[i], p1SN.conditionsOnG[i]);
 
@@ -322,7 +318,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 				}
 
 			}
-			if (print) System.out.println("Sampling at time " + (T-to));
+			if (print) System.out.println("Sampling at time " + (parameterization.getMaxTime()-to));
 
 			return getG(from, init, to, PG, node);
 		}
@@ -339,7 +335,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
-				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), to, T - node.getChild(childIndex).getHeight(), PG);
+				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), to, parameterization.getMaxTime() - node.getChild(childIndex).getHeight(), PG);
 
 				int saNodeState = getNodeState(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
 
@@ -401,9 +397,9 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 					try {
 						// start a new thread to take care of the second subtree
 						Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
-								new TraversalServiceUncoloured(node.getChild(indexSecondChild), to, T - node.getChild(indexSecondChild).getHeight()));
+								new TraversalServiceUncoloured(node.getChild(indexSecondChild), to, parameterization.getMaxTime() - node.getChild(indexSecondChild).getHeight()));
 
-						g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), to, T - node.getChild(indexFirstChild).getHeight(), PG);
+						g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), to, parameterization.getMaxTime() - node.getChild(indexFirstChild).getHeight(), PG);
 						g1 = secondChildTraversal.get();
 
 					} catch (Exception e) {
@@ -411,13 +407,13 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 						//TODO deal with exceptions properly, maybe do the traversal serially if something failed.
 					}
 				} else {
-					g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), to, T - node.getChild(indexFirstChild).getHeight(), PG);
-					g1 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), to, T - node.getChild(indexSecondChild).getHeight(), PG);
+					g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), to, parameterization.getMaxTime() - node.getChild(indexFirstChild).getHeight(), PG);
+					g1 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), to, parameterization.getMaxTime() - node.getChild(indexSecondChild).getHeight(), PG);
 				}
 
 
 				if (print)
-					System.out.println("Infection at time " + (T - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
+					System.out.println("Infection at time " + (parameterization.getMaxTime() - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
 
 
 				for (int childstate = 0; childstate < n; childstate++) {

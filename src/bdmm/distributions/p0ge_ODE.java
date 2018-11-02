@@ -31,7 +31,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	Boolean birthAmongDemes;
 
 	Double[] M;
-	double T;
+	public double T;
 
 	int dimension; /* ODE numberOfDemes = stateNumber */
 	int intervals;

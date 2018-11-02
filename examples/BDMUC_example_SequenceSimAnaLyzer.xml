@@ -232,7 +232,7 @@
 	<run chainLength="5000000" id="mcmc" spec="MCMC" storeEvery="10000" numInitializationAttempts="100">
 
 
-		<init spec="RandomTreeFromMaster" masterTree="@mastertree"  taxa="@input_alignment">
+		<init spec="bdmm.util.RandomTreeFromMaster" masterTree="@mastertree"  taxa="@input_alignment">
 			<tree spec="beast.evolution.tree.RandomTree" id="tree" taxa="@input_alignment">
 				<populationModel spec="ConstantPopulation">
 					<parameter name="popSize">5.0</parameter>
@@ -315,6 +315,7 @@
 			<log idref="becomeUninfectiousRate"/>
 			<log idref="rateMatrix"/>
 			<log idref="mutationRate"/>
+            <log spec="bdmm.loggers.RootProbLogger" bdmmuc="@treePrior"/>
 		</logger>
 	</run>
 
