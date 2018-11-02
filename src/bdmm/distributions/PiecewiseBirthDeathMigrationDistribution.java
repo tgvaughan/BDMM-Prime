@@ -1004,7 +1004,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if (minstep == null) minstep = T*1e-100;
 		if (maxstep == null) maxstep = T/10;
 
-		Boolean augmented = this instanceof BirthDeathMigrationModel;
+		Boolean augmented = false;
 
 		P = new p0_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
 		PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
