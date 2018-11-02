@@ -286,7 +286,7 @@
 
 		<operator spec="DeltaExchangeOperator" parameter="@geo-frequencies" delta="0.2" weight=".1"/>
 
-		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).log" id="log" logEvery="10000" mode="autodetect">
+		<logger fileName="$(filebase).log" id="log" logEvery="10000" mode="autodetect">
 			<distribution idref="posterior" name="log"/>
 			<log idref="treeLikelihood"/>
 			<log idref="treePrior"/>
@@ -303,7 +303,7 @@
             <log spec="bdmm.loggers.RootProbLogger" bdmmuc="@treePrior"/>
 		</logger>
 
-		<logger fileName="BDMUC_SequenceSimAnaLyzer_$(seed).trees" logEvery="1000" mode="autodetect"
+		<logger fileName="$(filebase).trees" logEvery="1000" mode="autodetect"
 				log="@tree"/>
 
 		<logger id="screenlog" logEvery="1000" mode="autodetect">
