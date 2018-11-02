@@ -1004,10 +1004,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if (minstep == null) minstep = T*1e-100;
 		if (maxstep == null) maxstep = T/10;
 
-		Boolean augmented = false;
-
 		P = new p0_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, times);
-		PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
+		PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get());
 
 		p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 
@@ -1277,20 +1275,20 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		protected p0ge_ODE PG;
 		protected FirstOrderIntegrator pg_integrator;
 
-		public TraversalService(Node root, double from, double to, boolean augmented) {
+		public TraversalService(Node root, double from, double to) {
 			this.rootSubtree = root;
 			this.from = from;
 			this.to = to;
-			this.setupODEs(augmented);
+			this.setupODEs();
 		}
 
-		private void setupODEs(boolean augmented){  // set up ODE's and integrators
+		private void setupODEs(){  // set up ODE's and integrators
 
 			//TODO set minstep and maxstep to be PiecewiseBDDistr fields
 			if (minstep == null) minstep = T*1e-100;
 			if (maxstep == null) maxstep = T/10;
 
-			PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get(), augmented);
+			PG = new p0ge_ODE(birth, ((birthAmongDemes) ? b_ij : null), death,psi,M, n, totalIntervals, T, times, P, maxEvaluations.get());
 
 			p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
 

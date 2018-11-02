@@ -28,7 +28,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	double[] d;
 	Double[] s;
 
-	Boolean augmented;
 	Boolean birthAmongDemes;
 
 	Double[] M;
@@ -44,7 +43,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	public static double globalPrecisionThreshold;
 
 
-	public p0ge_ODE(double[] b, Double[] b_ij, double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals, Boolean augmented){
+	public p0ge_ODE(double[] b, Double[] b_ij, double[] d, Double[] s, Double[] M, int dimension, int intervals, double T, Double[] times, p0_ODE P, int maxEvals){
 
 
 		this.b = b;
@@ -61,7 +60,6 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		this.times= times;
 		this.P = P;
 
-		this.augmented = augmented;
 		this.birthAmongDemes = b_ij!=null;
 
 	}
@@ -123,14 +121,12 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 					if (b_ij!=null){     // infection among demes
 
 						gDot[dimension+i] += b_ij[l]*g[dimension+i];
-						if (!augmented) {
-							gDot[dimension+i] -= b_ij[l]* ( g[i]*g[dimension+j] + g[j]*g[dimension+i]);
-						}
+                        gDot[dimension+i] -= b_ij[l]* ( g[i]*g[dimension+j] + g[j]*g[dimension+i]);
 					}
 
 					if (M[0]!=null) {// migration:
 						gDot[dimension + i] += M[l] * g[dimension + i];
-						if (!augmented) gDot[dimension + i] -= M[l] * g[dimension + j];
+						gDot[dimension + i] -= M[l] * g[dimension + j];
 					}
 				}
 			}
@@ -297,7 +293,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			Boolean augmented = true;
 
 			p0_ODE p_ode = new p0_ODE(b,null, d,s,M, 2, 1, new Double[]{0.});
-			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
+			p0ge_ODE pg_ode = new p0ge_ODE(b,null, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE);
 
 			System.out.println("birth[0] = "+b[0]+ ", death[0] = " + Math.round(d[0]*100.)/100.+ "\t\t");
 
@@ -384,7 +380,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		Boolean augmented = false;
 
 		p0_ODE p_ode = new p0_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, new Double[]{0.});
-		p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE,augmented);
+		p0ge_ODE pg_ode = new p0ge_ODE(b,new Double[]{1.,1.}, d,s,M, 2, 1, T, new Double[]{0.}, p_ode, Integer.MAX_VALUE);
 
 		pg_ode.p_integrator = integrator;
 		double[] p0 = new double[]{1.,1.};

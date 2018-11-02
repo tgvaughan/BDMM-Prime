@@ -490,7 +490,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 	}
 
 	@Override
-	public void log(int sampleNr, PrintStream out) {
+	public void log(long sampleNr, PrintStream out) {
 
 		super.log(sampleNr, out);
 
@@ -505,7 +505,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 	class TraversalServiceUncoloured extends TraversalService {
 
 		public TraversalServiceUncoloured(Node root, double from, double to) {
-			super(root, from, to, false);
+			super(root, from, to);
 		}
 
 		@Override
