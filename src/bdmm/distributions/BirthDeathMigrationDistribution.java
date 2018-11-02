@@ -222,10 +222,6 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
                     nodestate = (int) tiptypes.get().getValue((node.getID()));
 
-                } else if (node instanceof MultiTypeNode) {
-
-                       nodestate = ((MultiTypeNode) node).getNodeType();
-
                 } else if (typeLabel.get()!=null) {
 
                        Object d = node.getMetaData(typeLabel.get());
