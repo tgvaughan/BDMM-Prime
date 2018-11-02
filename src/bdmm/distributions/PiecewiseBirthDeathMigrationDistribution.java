@@ -60,123 +60,46 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public Input<Double> absoluteTolerance =
 			new Input<>("absTolerance", "absolute tolerance for numerical integration", 1e-100 /*Double.MIN_VALUE*/);
 
-	// the interval times for the migration rates
-	public Input<RealParameter> migChangeTimesInput =
-			new Input<>("migChangeTimes", "The times t_i specifying when migration rate changes occur", (RealParameter) null);
 
-	// the interval times for the birth rate
-	public Input<RealParameter> birthRateChangeTimesInput =
-			new Input<>("birthRateChangeTimes", "The times t_i specifying when birth/R rate changes occur", (RealParameter) null);
-
-	// the interval times for the birth rate among demes
-	public Input<RealParameter> b_ijChangeTimesInput =
-			new Input<>("birthRateAmongDemesChangeTimes", "The times t_i specifying when birth/R among demes changes occur", (RealParameter) null);
-
-	// the interval times for the death rate
-	public Input<RealParameter> deathRateChangeTimesInput =
-			new Input<>("deathRateChangeTimes", "The times t_i specifying when death/becomeUninfectious rate changes occur", (RealParameter) null);
-
-	// the interval times for sampling rate
-	public Input<RealParameter> samplingRateChangeTimesInput =
-			new Input<>("samplingRateChangeTimes", "The times t_i specifying when sampling rate or sampling proportion changes occur", (RealParameter) null);
-
-	// the interval times for removal probability
-	public Input<RealParameter> removalProbabilityChangeTimesInput =
-			new Input<RealParameter>("removalProbabilityChangeTimes", "The times t_i specifying when removal probability changes occur", (RealParameter) null);
-
-	public Input<RealParameter> intervalTimes =
-			new Input<>("intervalTimes", "The time t_i for all parameters if they are the same", (RealParameter) null);
-
-	public Input<Boolean> migTimesRelativeInput =
-			new Input<>("migTimesRelative", "True if migration rate change times specified relative to tree height? Default false", false);
-
-	public Input<Boolean> b_ijChangeTimesRelativeInput =
-			new Input<>("birthRateAmongDemesTimesRelative", "True if birth rate change times specified relative to tree height? Default false", false);
-
-	public Input<Boolean> birthRateChangeTimesRelativeInput =
-			new Input<>("birthRateTimesRelative", "True if birth rate change times specified relative to tree height? Default false", false);
-
-	public Input<Boolean> deathRateChangeTimesRelativeInput =
-			new Input<>("deathRateTimesRelative", "True if death rate change times specified relative to tree height? Default false", false);
-
-	public Input<Boolean> samplingRateChangeTimesRelativeInput =
-			new Input<>("samplingRateTimesRelative", "True if sampling rate times specified relative to tree height? Default false", false);
-
-	Input<Boolean> removalProbabilityChangeTimesRelativeInput =
-			new Input<Boolean>("removalProbabilityTimesRelative", "True if removal probability change times specified relative to tree height? Default false", false);
-
-	public Input<BooleanParameter> reverseTimeArraysInput =
-			new Input<>("reverseTimeArrays", "True if the time arrays are given in backwards time (from the present back to root). Order: 1) birth 2) death 3) sampling 4) rho 5) r 6) migration. Default false." +
-					"Careful, rate array must still be given in FORWARD time (root to tips).");
-
-	// the times for rho sampling
-	public Input<RealParameter> rhoSamplingTimes =
-			new Input<>("rhoSamplingTimes", "The times t_i specifying when rho-sampling occurs", (RealParameter) null);
 	public Input<Boolean> contemp =
 			new Input<>("contemp", "Only contemporaneous sampling (i.e. all tips are from same sampling time, default false)", false);
 
-	public Input<Function> birthRate =
-			new Input<>("birthRate", "BirthRate = BirthRateVector * birthRateScalar, birthrate can change over time");
-	public Input<Function> deathRate =
-			new Input<>("deathRate", "The deathRate vector with birthRates between times");
-	public Input<RealParameter> samplingRate =
-			new Input<>("samplingRate", "The sampling rate per individual");      // psi
-
-	public Input<RealParameter> m_rho =
-			new Input<>("rho", "The proportion of lineages sampled at rho-sampling times (default 0.)");
-
-
+	/*
 	public Input<RealParameter> R0 =
 			new Input<>("R0", "The basic reproduction number");
 	public Input<RealParameter> becomeUninfectiousRate =
 			new Input<>("becomeUninfectiousRate", "Rate at which individuals become uninfectious (through recovery or sampling)", Input.Validate.XOR, deathRate);
 	public Input<RealParameter> samplingProportion =
 			new Input<>("samplingProportion", "The samplingProportion = samplingRate / becomeUninfectiousRate", Input.Validate.XOR, samplingRate);
+			*/
 
 	public Input<BooleanParameter> identicalRatesForAllTypesInput =
 			new Input<>("identicalRatesForAllTypes", "True if all types should have the same 1) birth 2) death 3) sampling 4) rho 5) r 6) migration rate. Default false.");
 
+	/*
 	public Input<RealParameter> R0_base =
 			new Input<>("R0_base",
 					"The basic reproduction number for the base pathogen class, should have the same dimension as " +
 							"the number of time intervals.");
+							*/
 	public Input<RealParameter> lambda_ratio =
 			new Input<>("lambda_ratio",
 					"The ratio of basic infection rates of all other classes when compared to the base lambda, " +
 							"should have the dimension of the number of pathogens - 1, as it is kept constant over intervals.");
 
-	public Input<RealParameter> migrationMatrix =
-			new Input<>("migrationMatrix", "Flattened migration matrix, can be asymmetric, diagonal entries omitted");
-
 
 	public Input<RealParameter> migrationMatrixScaleFactor =
 			new Input<>("migrationMatrixScaleFactor", "A real number with which each migration rate entry is scaled.");
 
-	// adapted from SCMigrationModel class in package MultiTypeTree by Tim Vaughan
-	//TODO test (add unit test) to check this works
-	public Input<BooleanParameter> rateMatrixFlagsInput = new Input<>(
-			"rateMatrixFlags",
-			"Optional boolean parameter specifying which rates to use."
-					+ " (Default is to use all rates.)");
 
-
-	public Input<RealParameter> birthRateAmongDemes =
-			new Input<>("birthRateAmongDemes", "birth rate vector with rate at which transmissions occur among locations");
-
+	/*
 	public Input<RealParameter> R0AmongDemes =
 			new Input<>("R0AmongDemes", "The basic reproduction number determining transmissions occur among locations");
-
-
-	public Input<RealParameter> removalProbability =
-			new Input<RealParameter>("removalProbability", "The probability of an individual to become noninfectious immediately after the sampling");
+			*/
 
 
 	public Input<Integer> stateNumber =
 			new Input<>("stateNumber", "The number of states or locations", Input.Validate.REQUIRED);
-
-	public Input<RealParameter> adjustTimesInput =
-			new Input<>("adjustTimes", "Origin of MASTER sims which has to be deducted from the change time arrays");
-	// <!-- HACK ALERT for reestimation from MASTER sims: adjustTimes is used to correct the forward changetimes such that they don't include orig-root (when we're not estimating the origin) -->
 
 	public Input<Boolean> useRKInput =
 			new Input<>("useRK", "Use fixed step size Runge-Kutta integrator with 1000 steps. Default false", false);
@@ -240,21 +163,10 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	/**
 	 * Total interval count
 	 */
-	static int totalIntervals;
 	static int n;  // number of states / locations
-
-	protected List<Double> migChangeTimes = new ArrayList<>();
-	protected List<Double> birthRateChangeTimes = new ArrayList<>();
-	protected List<Double> b_ijChangeTimes = new ArrayList<>();
-	protected List<Double> deathRateChangeTimes = new ArrayList<>();
-	protected List<Double> samplingRateChangeTimes = new ArrayList<>();
-	protected List<Double> rhoSamplingChangeTimes = new ArrayList<>();
-	protected List<Double> rChangeTimes = new ArrayList<Double>();
 
 	Boolean contempData;
 	SortedSet<Double> timesSet = new TreeSet<>();
-
-	protected static volatile Double[] times = new Double[]{0.};
 
 	protected Boolean transform;
 
@@ -304,11 +216,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		psi = null;
 		rho = null;
 		r = null;
-		birthRateChangeTimes.clear();
-		deathRateChangeTimes.clear();
-		samplingRateChangeTimes.clear();
-		if (SAModel) rChangeTimes.clear();
-		totalIntervals = 0;
 		n = stateNumber.get();
 
 		birthAmongDemes = (birthRateAmongDemes.get() !=null || R0AmongDemes.get()!=null);
@@ -632,141 +539,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		weightOfNodeSubTree[node.getNr()] = weight;
 
 		return weight;
-	}
-
-
-	/**
-	 * Collect all the times of parameter value changes and rho-sampling events
-	 */
-	void collectTimes() {
-
-		timesSet.clear();
-
-		getChangeTimes(migChangeTimes,
-				migChangeTimesInput.get() != null ? migChangeTimesInput.get() : intervalTimes.get(),
-				migChanges, migTimesRelative, reverseTimeArrays[5]);
-
-		getChangeTimes(birthRateChangeTimes,
-				birthRateChangeTimesInput.get() != null ? birthRateChangeTimesInput.get() : intervalTimes.get(),
-				birthChanges, birthRateTimesRelative, reverseTimeArrays[0]);
-
-		getChangeTimes(b_ijChangeTimes,
-				b_ijChangeTimesInput.get() != null ? b_ijChangeTimesInput.get() : intervalTimes.get(),
-				b_ij_Changes, b_ijTimesRelative, reverseTimeArrays[0]);
-
-		getChangeTimes(deathRateChangeTimes,
-				deathRateChangeTimesInput.get() != null ? deathRateChangeTimesInput.get() : intervalTimes.get(),
-				deathChanges, deathRateTimesRelative, reverseTimeArrays[1]);
-
-		getChangeTimes(samplingRateChangeTimes,
-				samplingRateChangeTimesInput.get() != null ? samplingRateChangeTimesInput.get() : intervalTimes.get(),
-				samplingChanges, samplingRateTimesRelative, reverseTimeArrays[2]);
-
-		getChangeTimes(rhoSamplingChangeTimes,
-				rhoSamplingTimes.get()!=null ? rhoSamplingTimes.get() : intervalTimes.get(),
-				rhoChanges, false, reverseTimeArrays[3]);
-
-		if (SAModel) getChangeTimes(rChangeTimes,
-				removalProbabilityChangeTimesInput.get() != null ? removalProbabilityChangeTimesInput.get() : intervalTimes.get(),
-				rChanges, rTimesRelative, reverseTimeArrays[4]);
-
-		for (Double time : migChangeTimes) {
-			timesSet.add(time);
-		}
-
-		for (Double time : birthRateChangeTimes) {
-			timesSet.add(time);
-		}
-
-		for (Double time : b_ijChangeTimes) {
-			timesSet.add(time);
-		}
-
-		for (Double time : deathRateChangeTimes) {
-			timesSet.add(time);
-		}
-
-		for (Double time : samplingRateChangeTimes) {
-			timesSet.add(time);
-		}
-
-		for (Double time : rhoSamplingChangeTimes) {
-			timesSet.add(time);
-		}
-
-		if (SAModel) {
-			for (Double time : rChangeTimes) {
-				timesSet.add(time);
-			}
-		}
-
-
-		times = timesSet.toArray(new Double[timesSet.size()]);
-		// TODO potentially refactor with totalIntervals = times.length-1 so that totalIntervals really represents the number of time intervals
-		totalIntervals = times.length;
-
-	}
-
-	/**
-	 * set change times
-	 */
-	public void getChangeTimes(List<Double> changeTimes, RealParameter intervalTimes, int numChanges, boolean relative, boolean reverse) {
-		changeTimes.clear();
-
-		if (intervalTimes == null) { //equidistant
-
-			double intervalWidth = parameterization.getMaxTime() / (numChanges + 1);
-
-			double end;
-			for (int i = 1; i <= numChanges; i++) {
-				end = (intervalWidth) * i;
-				changeTimes.add(end);
-			}
-			end = parameterization.getMaxTime();
-			changeTimes.add(end);
-
-		} else {
-
-			if (!reverse && intervalTimes.getValue(0) != 0.0) {
-				throw new RuntimeException("First time in interval times parameter should always be zero.");
-			}
-
-			if (numChanges > 0 && intervalTimes.getDimension() != numChanges + 1) {
-				throw new RuntimeException("The time interval parameter should be numChanges + 1 long (" + (numChanges + 1) + ").");
-			}
-
-			int dim = intervalTimes.getDimension();
-
-			double end;
-			for (int i = (reverse?0:1); i < dim; i++) {
-				end = reverse ? (parameterization.getMaxTime() - intervalTimes.getValue(dim - i - 1)) : intervalTimes.getValue(i);
-				if (relative) end *= parameterization.getMaxTime();
-				if (end < parameterization.getMaxTime()) changeTimes.add(end);
-			}
-
-			if (adjustTimesInput.get()!=null){
-
-				double iTime;
-				double aTime = adjustTimesInput.get().getValue();
-
-				for (int i = 0 ; i < numChanges; i++){
-
-					iTime = intervalTimes.getArrayValue(i+1);
-
-					if (aTime<iTime) {
-						end = iTime - aTime;
-						if
-								(changeTimes.size() > i) changeTimes.set(i, end);
-						else
-						if (end < parameterization.getMaxTime())
-							changeTimes.add(end);
-					}
-				}
-			}
-			end = parameterization.getMaxTime();
-
-			changeTimes.add(end);
-		}
 	}
 
 
