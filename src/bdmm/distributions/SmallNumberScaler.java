@@ -1,4 +1,4 @@
-package beast.math;
+package bdmm.distributions;
 
 import beast.core.Description;
 

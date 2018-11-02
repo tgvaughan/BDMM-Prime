@@ -3,18 +3,18 @@ package bdmm.loggers;
 import beast.core.BEASTObject;
 import beast.core.Input;
 import beast.core.Loggable;
-import beast.evolution.speciation.BirthDeathMigrationModelUncoloured;
+import bdmm.distributions.BirthDeathMigrationDistribution;
 
 import java.io.PrintStream;
 
 public class RootProbLogger extends BEASTObject implements Loggable {
 
-    public Input<BirthDeathMigrationModelUncoloured> bdmmucInput = new Input<>(
+    public Input<BirthDeathMigrationDistribution> bdmmucInput = new Input<>(
             "bdmmuc",
             "Instance of BirthDeathMigrationModelUncoloured which records the root state probabilities",
             Input.Validate.REQUIRED);
 
-    BirthDeathMigrationModelUncoloured bdmmuc;
+    BirthDeathMigrationDistribution bdmmuc;
 
     @Override
     public void initAndValidate() {

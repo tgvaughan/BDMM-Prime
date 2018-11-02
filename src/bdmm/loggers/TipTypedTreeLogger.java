@@ -1,10 +1,10 @@
-package logger;
+package bdmm.loggers;
 
 import beast.core.BEASTObject;
 import beast.core.Input;
 import beast.core.Loggable;
 
-import beast.evolution.speciation.BirthDeathMigrationModelUncoloured;
+import bdmm.distributions.BirthDeathMigrationDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
@@ -19,7 +19,7 @@ public class TipTypedTreeLogger extends BEASTObject implements Loggable {
             "tree",
             "Sample-typed tree to log.",
             Input.Validate.REQUIRED);
-    public Input<BirthDeathMigrationModelUncoloured> bdmucInput = new Input<>(
+    public Input<BirthDeathMigrationDistribution> bdmucInput = new Input<>(
             "bdmuc",
             "Birth-Death migration uncoloured model",
             Input.Validate.REQUIRED);

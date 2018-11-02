@@ -1,13 +1,11 @@
-package beast.evolution.speciation;
+package bdmm.distributions;
 
 import beast.core.Loggable;
 import beast.core.parameter.IntegerParameter;
 import beast.evolution.tree.*;
 import beast.core.Input;
 import beast.core.Description;
-import beast.core.util.Utils;
-
-import beast.math.*;
+import bdmm.util.Utils;
 
 import java.io.PrintStream;
 import java.util.concurrent.*;
@@ -20,9 +18,8 @@ import java.util.concurrent.*;
  */
 
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel with discrete locations and migration events among demes. " +
-		"This should be used when the migration process along the phylogeny is irrelevant. Otherwise the BirthDeathMigrationModel can be employed." +
 		"This implementation also works with sampled ancestor trees.")
-public class BirthDeathMigrationModelUncoloured extends PiecewiseBirthDeathMigrationDistribution implements Loggable {
+public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigrationDistribution implements Loggable {
 
 
 	public Input<TraitSet> tiptypes = new Input<>("tiptypes", "trait information for initializing traits (like node types/locations) in the tree");

@@ -1,10 +1,10 @@
-package beast.evolution.operators;
+package bdmm.operators;
 
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.MultiTypeNode;
-import beast.evolution.tree.MultiTypeRootBranch;
+import bdmm.tree.MultiTypeRootBranch;
 import beast.evolution.tree.Node;
 import beast.util.Randomizer;
 import multitypetree.operators.RandomRetypeOperator;

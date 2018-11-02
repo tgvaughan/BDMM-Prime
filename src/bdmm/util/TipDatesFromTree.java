@@ -1,4 +1,4 @@
-package beast.core.util;
+package bdmm.util;
 
 import beast.core.Description;
 import beast.core.Input;

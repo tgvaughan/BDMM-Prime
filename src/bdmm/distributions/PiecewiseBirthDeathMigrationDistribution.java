@@ -1,17 +1,12 @@
-package beast.evolution.speciation;
+package bdmm.distributions;
 
 import beast.core.*;
 import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.RealParameter;
-import beast.core.util.Utils;
+import bdmm.util.Utils;
+import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
-import beast.math.ScaledNumbers;
-import beast.math.SmallNumber;
-import beast.math.SmallNumberScaler;
-import beast.math.p0_ODE;
-import beast.math.p0ge_InitialConditions;
-import beast.math.p0ge_ODE;
 import beast.util.HeapSort;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;

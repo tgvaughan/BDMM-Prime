@@ -137,7 +137,7 @@
                 <distribution R0_base="@R0_base" lambda_ratio="@lambda_ratio"
                               becomeUninfectiousRate="@becomeUninfectiousRate" id="BDMM"
                               origin="@origin" samplingProportion="@samplingProportion"
-                              spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" tree="@tree"
+                              spec="bdmm.distributions.BirthDeathMigrationDistribution" tree="@tree"
                               originIsRootEdge="true" typeLabel="location"
                               removalProbability="@r" stateNumber="2" useRK="true">
 

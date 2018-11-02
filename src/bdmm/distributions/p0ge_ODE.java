@@ -1,8 +1,7 @@
-package beast.math;
+package bdmm.distributions;
 
 
-import beast.core.util.Utils;
-import beast.math.p0_ODE;
+import bdmm.util.Utils;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;

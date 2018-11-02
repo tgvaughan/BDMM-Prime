@@ -1,4 +1,4 @@
-package beast.evolution.operators;
+package bdmm.operators;
 
 import beast.core.Description;
 import beast.core.Input;

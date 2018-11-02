@@ -207,8 +207,8 @@
 	</data>
 
 
-	<distribution spec="beast.evolution.speciation.BirthDeathMigrationModelUncoloured" id="treePrior" tree="@tree"
-				  typeLabel="type" stateNumber="2" conditionOnSurvival="true">
+	<distribution spec="bdmm.distributions.BirthDeathMigrationDistribution" id="treePrior" tree="@tree"
+                  typeLabel="type" stateNumber="2" conditionOnSurvival="true">
 		<migrationMatrix spec="RealParameter" id="rateMatrix" value="0.01" dimension="2" lower="0" upper="100"/>
 		<parameter name="frequencies" id="geo-frequencies" value=".5 .5" lower="0." upper="1." dimension="2"/>
 		<parameter name="R0" id="R0" lower="0" dimension="2" value="3"/>

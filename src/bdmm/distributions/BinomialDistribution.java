@@ -1,15 +1,16 @@
-package beast.math.distributions;
+package bdmm.distributions;
 
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.math.distributions.ParametricDistribution;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
 import org.apache.commons.math.distribution.PoissonDistributionImpl;
 
 @Description("Binomial distribution, used as prior  Pr(k; n; p)=\\binom{n}{k} p^k (1-p)^{n-k}" +
         "If the input x is a multidimensional parameter, each of the dimensions is considered as a " +
         "separate independent component.")
-public class BinomialDistribution extends ParametricDistribution{
+public class BinomialDistribution extends ParametricDistribution {
     final public Input<RealParameter> pInput = new Input<>("p", "probability p parameter, defaults to 0.5");
     final public Input<RealParameter> trialsInput = new Input<>("trials", "number of trials parameter, defaults to 1");
 

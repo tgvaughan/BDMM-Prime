@@ -1,10 +1,9 @@
-package beast.evolution.speciation;
+package bdmm.distributions;
 
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
-import beast.core.util.Log;
 import beast.evolution.tree.TreeInterface;
 import beast.math.distributions.ParametricDistribution;
 import beast.util.Randomizer;
@@ -17,7 +16,7 @@ import java.util.Arrays;
  */
 
 @Description("UNTESTED! Birth-Death-Migration-model that allows distribution over parameters shared by clusters")
-public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrationModelUncoloured {
+public class BirthDeathMigrationClusterModelUncoloured extends BirthDeathMigrationDistribution {
 
 	final public Input<ParametricDistribution> rateDistInput = new Input<>("distr", "the distribution governing the rates among branches. Must have mean of 1. The clock.rate parameter can be used to change the mean rate.", Input.Validate.REQUIRED);
 

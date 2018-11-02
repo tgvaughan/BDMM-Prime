@@ -1,5 +1,6 @@
 package test.beast.evolution.speciation;
 
+import bdmm.tree.MultiTypeRootBranch;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.*;
 import beast.util.TreeParser;
@@ -13,8 +14,7 @@ import org.junit.Test;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.speciation.BirthDeathMigrationModel;
-import beast.evolution.speciation.BirthDeathMigrationModelUncoloured;
-import beast.evolution.speciation.PiecewiseBirthDeathMigrationDistribution;
+import bdmm.distributions.BirthDeathMigrationDistribution;
 
 
 /**
@@ -127,7 +127,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		//uncoloured tree
 		Tree tree = new TreeParser(newick ,false);
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 		bdm.setInputValue("typeLabel", "type");
@@ -185,7 +185,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		//uncoloured tree
 		Tree tree = new TreeParser(newick ,false);
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 		bdm.setInputValue("typeLabel", "type");
@@ -221,7 +221,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		// Uncoloured-tree test cases
 		Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=0]: 4.5):1,3[&type=0]:5.5);",false);
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 
@@ -296,7 +296,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		// two tips sampled at the same time
 		Tree tree = new TreeParser("(3[&type=0]: 4, 4[&type=0]: 4) ;",false);
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 		bdm.setInputValue("typeLabel", "type");
@@ -375,7 +375,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		// Uncoloured tree
 		Tree treeU = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
 
-		BirthDeathMigrationModelUncoloured bdssm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
 		bdssm.setInputValue("typeLabel", "type");
 		bdssm.setInputValue("frequencies", "1");
 		bdssm.setInputValue("migrationMatrix", "0.");
@@ -450,7 +450,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 
 			switch (i){
 			case 0:{ // no rate-change, rho-sampling at present
-				BirthDeathMigrationModelUncoloured bdssm =  new BirthDeathMigrationModelUncoloured();
+				BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
 				bdssm.setInputValue("typeLabel", "type");
 				bdssm.setInputValue("frequencies", "1");
 				bdssm.setInputValue("migrationMatrix", "0.");
@@ -472,7 +472,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 
 			}
 			case 1:{ // rate-changes, rho-sampling in the past
-				BirthDeathMigrationModelUncoloured bdssm =  new BirthDeathMigrationModelUncoloured();
+				BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
 				bdssm.setInputValue("typeLabel", "type");
 				bdssm.setInputValue("frequencies", "1");
 				bdssm.setInputValue("migrationMatrix", "0.");
@@ -498,7 +498,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 
 			}
 			case 2:{ // rate-changes, rho-sampling in the past and present
-				BirthDeathMigrationModelUncoloured bdssm =  new BirthDeathMigrationModelUncoloured();
+				BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
 				bdssm.setInputValue("typeLabel", "type");
 				bdssm.setInputValue("frequencies", "1");
 				bdssm.setInputValue("migrationMatrix", "0.");
@@ -524,7 +524,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 			}
 
 			case 3:{ // rate-changes, rho-sampling in the past and present, with reversed times
-				BirthDeathMigrationModelUncoloured bdssm =  new BirthDeathMigrationModelUncoloured();
+				BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
 				bdssm.setInputValue("typeLabel", "type");
 				bdssm.setInputValue("frequencies", "1");
 				bdssm.setInputValue("migrationMatrix", "0.");
@@ -1091,7 +1091,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 
 		// uncoloured, symmetric tree
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		String newick = "((t3[&type=1]:0.004214277605,t4[&type=1]:0.02157681391):0.229186993,(t2[&type=0]:0.624713651,t1[&type=1]:1.347400211):0.06231047755);";
 		String prefixname = "t";
@@ -1158,7 +1158,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		String migrationMatrix = "0.2 0.1" ; //"0.2 0.1" ; //"1. 1.";
 		frequencies = "0.5 0.5";
 
-		bdm =  new BirthDeathMigrationModelUncoloured();
+		bdm =  new BirthDeathMigrationDistribution();
 
 		birth = "2. 6.25";
 		birthRateAmongDemes = "0.2 0.1"; // "0. 0.";
@@ -1443,7 +1443,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		// Uncoloured tree
 		Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=1]: 4.5):1,3[&type=0]:5.5);",false);
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 
@@ -1517,7 +1517,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		// uncoloured tree
 		Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 		bdm.setInputValue("typeLabel", "type");
@@ -1582,7 +1582,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 		// uncoloured tree
 		Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 		bdm.setInputValue("typeLabel", "type");
@@ -1663,7 +1663,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 	public void testSALikelihoodCalculationWithoutAncestors() throws Exception {
 
 		// uncoloured tree
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		ArrayList<Taxon> taxa = new ArrayList<Taxon>();
 
@@ -1750,7 +1750,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 			String R0, String R0AmongDemes, String becomeUninfectiousRate, String samplingProportion, String removalProbability,
 			String intervalTimes, Boolean conditionOnSurvival) throws Exception {
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 		bdm.setInputValue("typeLabel", typeLabel);
@@ -1788,7 +1788,7 @@ public class BirthDeathMigrationLikelihoodTest extends TestCase {
 			String R0, String R0AmongDemes, String becomeUninfectiousRate, String samplingProportion, String removalProbability,
 			String intervalTimes, Boolean conditionOnSurvival) throws Exception {
 
-		BirthDeathMigrationModelUncoloured bdm =  new BirthDeathMigrationModelUncoloured();
+		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
 
 		bdm.setInputValue("tree", tree);
 		bdm.setInputValue("tiptypes", trait);

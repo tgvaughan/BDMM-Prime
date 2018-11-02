@@ -1,10 +1,10 @@
-package beast.math;
+package bdmm.distributions;
 
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 
-import beast.core.util.Utils;
+import bdmm.util.Utils;
 
 
 /**
