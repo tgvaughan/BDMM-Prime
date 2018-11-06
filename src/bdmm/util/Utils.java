@@ -31,34 +31,6 @@ public class Utils {
     }
 
 
-    /**
-     * Finds the index of the time interval t lies in
-     * @param t
-     * @param times
-     * @return
-     */
-    public static int indexTimeIntervalBelow(Double t, Double[] times) {
-
-        // Sort the array times
-        Arrays.sort(times);
-
-        if(t > times[times.length - 1]){
-            throw new RuntimeException("t is bigger than the biggest value in times array. Rework on times array so that it includes the upper bound for t.");
-        }
-
-        // Perform binary search on array times
-        int epoch = Arrays.binarySearch(times, t);
-
-        // If t was not found in array times by binarySearch, then epoch is negative and binarySearch returns (-(insertion point) - 1).
-        // The insertion point is the point at which t would be inserted into the array times, the index of the first element greater than the key
-        // Therefore, change epoch in the corresponding interval number.
-        if (epoch < -1) {
-            epoch = -epoch - 2;
-        }
-
-        return epoch;
-    }
-
 
     /**
      * Finds the index of the time interval t lies in
@@ -88,5 +60,31 @@ public class Utils {
         return epoch;
     }
 
+    public static void reverseDoubleArray(double[] array) {
+        double tmp;
+        for (int i=0; i<array.length/2; i++) {
+            tmp = array[i];
+            array[i] = array[array.length - 1 - i];
+            array[array.length - 1 - i] = tmp;
+        }
+    }
+
+    public static void printArray(double[] array) {
+        System.out.print("{");
+        for (int i=0; i<array.length; i++) {
+            System.out.print(array[i]);
+            if (i<array.length-1)
+                System.out.print(", ");
+        }
+        System.out.println("}");
+    }
+
+    public static void main(String[] args) {
+        double[] testArray = {1.0, 2.0, 3.0, 4.0, 5.0, 6.0};
+
+        printArray(testArray);
+        reverseDoubleArray(testArray);
+        printArray(testArray);
+    }
 
 }

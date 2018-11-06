@@ -2,64 +2,133 @@ package bdmm.distributions;
 
 import beast.core.Input;
 
-import java.util.List;
-
 public class CanonicalParameterization extends Parameterization {
 
-    public Input<Skyline> migRateInput = new Input<>("migrationRate",
+    public Input<SkylineParameter> migRateInput = new Input<>("migrationRate",
             "Migration rate skyline.", Input.Validate.REQUIRED);
 
-    public Input<Skyline> birthRateInput = new Input<>("birthRate",
+    public Input<SkylineParameter> birthRateInput = new Input<>("birthRate",
             "Birth rate skyline.", Input.Validate.REQUIRED);
 
-    public Input<Skyline> crossBirthRateInput = new Input<>("birthRateAmongDemes",
+    public Input<SkylineParameter> crossBirthRateInput = new Input<>("birthRateAmongDemes",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
-    public Input<Skyline> deathRateInput = new Input<>("deathRate",
+    public Input<SkylineParameter> deathRateInput = new Input<>("deathRate",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
-    public Input<Skyline> samplingRateInput = new Input<>("samplingRate",
+    public Input<SkylineParameter> samplingRateInput = new Input<>("samplingRate",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
-    public Input<Skyline> removalRateInput = new Input<>("removalRate",
+    public Input<SkylineParameter> removalProbInput = new Input<>("removalRate",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
-    public Input<Skyline> rhoSamplingInput = new Input<>("rhoSampling",
+    public Input<SkylineParameter> rhoSamplingInput = new Input<>("rhoSampling",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
 
     @Override
-    public List<Double> getMigRateChangeTimes(double maxTime) {
-        return migRateInput.get().getSanitizedChangeTimes(maxTime);
+    public double[] getMigRateChangeTimes() {
+        return migRateInput.get().getChangeTimes();
     }
 
     @Override
-    public List<Double> getBirthRateChangeTimes(double maxTime) {
-        return birthRateInput.get().getSanitizedChangeTimes(maxTime);
+    public double[] getBirthRateChangeTimes() {
+        return birthRateInput.get().getChangeTimes();
     }
 
     @Override
-    public List<Double> getCrossBirthRateChangeTimes(double maxTime) {
-        return crossBirthRateInput.get().getSanitizedChangeTimes(maxTime);
+    public double[] getCrossBirthRateChangeTimes() {
+        return crossBirthRateInput.get().getChangeTimes();
     }
 
     @Override
-    public List<Double> getDeathRateChangeTimes(double maxTime) {
-        return deathRateInput.get().getSanitizedChangeTimes(maxTime);
+    public double[] getDeathRateChangeTimes() {
+        return deathRateInput.get().getChangeTimes();
     }
 
     @Override
-    public List<Double> getSamplingRateChangeTimes(double maxTime) {
-        return samplingRateInput.get().getSanitizedChangeTimes(maxTime);
+    public double[] getSamplingRateChangeTimes() {
+        return samplingRateInput.get().getChangeTimes();
     }
 
     @Override
-    public List<Double> getRemovalProbChangeTimes(double maxTime) {
-        return removalRateInput.get().getSanitizedChangeTimes(maxTime);
+    public double[] getRemovalProbChangeTimes() {
+        return removalProbInput.get().getChangeTimes();
     }
 
     @Override
-    public List<Double> getRhoSamplingTimes(double maxTime) {
-        return rhoSamplingInput.get().getSanitizedChangeTimes(maxTime);
+    public double[] getRhoSamplingTimes() {
+        return rhoSamplingInput.get().getChangeTimes();
+    }
+
+
+    @Override
+    public int getMigRateChangeCount() {
+        return migRateInput.get().getChangeCount();
+    }
+
+    @Override
+    public int getBirthRateChangeCount() {
+        return birthRateInput.get().getChangeCount();
+    }
+
+    @Override
+    public int getCrossBirthRateChangeCount() {
+        return crossBirthRateInput.get().getChangeCount();
+    }
+
+    @Override
+    public int getDeathRateChangeCount() {
+        return deathRateInput.get().getChangeCount();
+    }
+
+    @Override
+    public int getSamplingRateChangeCount() {
+        return samplingRateInput.get().getChangeCount();
+    }
+
+    @Override
+    public int getRemovalProbChangeCount() {
+        return removalProbInput.get().getChangeCount();
+    }
+
+    @Override
+    public int getRhoChangeCount() {
+        return rhoSamplingInput.get().getChangeCount();
+    }
+
+    @Override
+    public double getMigRateValue(double time) {
+        return migRateInput.get().getValueAtTime(time);
+    }
+
+    @Override
+    public double getBirthRateValue(double time) {
+        return birthRateInput.get().getValueAtTime(time);
+    }
+
+    @Override
+    public double getCrossBirthRateValue(double time) {
+        return crossBirthRateInput.get().getValueAtTime(time);
+    }
+
+    @Override
+    public double getDeathRateValue(double time) {
+        return deathRateInput.get().getValueAtTime(time);
+    }
+
+    @Override
+    public double getSamplingRateValue(double time) {
+        return samplingRateInput.get().getValueAtTime(time);
+    }
+
+    @Override
+    public double getRemovalProbValue(double time) {
+        return removalProbInput.get().getValueAtTime(time);
+    }
+
+    @Override
+    public double getRhoValue(double time) {
+        return rhoSamplingInput.get().getValueAtTime(time);
     }
 }

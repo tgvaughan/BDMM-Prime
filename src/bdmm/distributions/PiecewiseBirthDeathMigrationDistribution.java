@@ -139,24 +139,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	static  volatile Double[] rho;
 	Double[] r;
 
-	/**
-	 * The number of change points in the birth rate, b_ij, death rate, sampling rate, rho, r
-	 */
-	int migChanges;
-	int birthChanges;
-	int b_ij_Changes;
-	int deathChanges;
-	int samplingChanges;
-	static int rhoChanges;
-	int rChanges;
-
-
 	public boolean SAModel;
 
-	/**
-	 * The number of times rho-sampling occurs
-	 */
-	int rhoSamplingCount;
 	Boolean constantRho;
 	Boolean[] isRhoTip;
 
@@ -169,14 +153,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	SortedSet<Double> timesSet = new TreeSet<>();
 
 	protected Boolean transform;
-
-	Boolean migTimesRelative = false;
-	Boolean birthRateTimesRelative = false;
-	Boolean b_ijTimesRelative = false;
-	Boolean deathRateTimesRelative = false;
-	Boolean samplingRateTimesRelative = false;
-	Boolean rTimesRelative = false;
-	Boolean[] reverseTimeArrays;
 
 	Double[] M;
 	Double[] b_ij;
@@ -542,36 +518,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	}
 
 
-	void updateBirthDeathPsiParams(){
 
-		double[] birthRates = birthRate.get().getDoubleValues();
-		double[] deathRates = deathRate.get().getDoubleValues();
-		Double[] samplingRates = samplingRate.get().getValues();
-		Double[] removalProbabilities = new Double[1];
-
-		if (SAModel) {
-			removalProbabilities = removalProbability.get().getValues();
-			r =  new Double[n*totalIntervals];
-		}
-
-		int state;
-
-		for (int i = 0; i < n*totalIntervals; i++) {
-
-			state =  i/totalIntervals;
-
-			birth[i] = (identicalRatesForAllTypes[0]) ? birthRates[index(times[i%totalIntervals], birthRateChangeTimes)] :
-					birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
-			death[i] = (identicalRatesForAllTypes[1]) ? deathRates[index(times[i%totalIntervals], deathRateChangeTimes)] :
-					deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
-			psi[i] = (identicalRatesForAllTypes[2]) ? samplingRates[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-					samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
-			if (SAModel) r[i] = (identicalRatesForAllTypes[4]) ? removalProbabilities[index(times[i%totalIntervals], rChangeTimes)] :
-					removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
-
-		}
-
-	}
 
 
 	void updateAmongParameter(Double[] param, Double[] paramFrom, int nrChanges, List<Double> changeTimes){
@@ -616,24 +563,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			// The size of this fraction is determined by a tuning parameter. This parameter should be adjusted (increased) if more computation cores are available
 			parallelizationThreshold = weightOfNodeSubTree[tree.getRoot().getNr()] * minimalProportionForParallelization;
 		}
-	}
-
-
-	/**
-	 * @param t the time in question
-	 * @return the index of the given time in the list of times, or if the time is not in the list, the index of the
-	 *         next smallest time
-	 *         This index function should only be used in transformParameters(), for likelihood calculations the times List needs to be used (e.g. with Utils.index(...))
-	 */
-	public int index(double t, List<Double> times) {
-
-		int epoch = Collections.binarySearch(times, t);
-
-		if (epoch < 0) {
-			epoch = -epoch - 1;
-		}
-
-		return epoch;
 	}
 
 
