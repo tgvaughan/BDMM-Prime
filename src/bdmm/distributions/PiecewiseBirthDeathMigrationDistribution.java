@@ -404,25 +404,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		pool.shutdown();
 	}
 
-	/**
-	 * Obtain offset into "rate matrix" and associated flag arrays.
-	 *
-	 * @param i
-	 * @param j
-	 * @return Offset (or -1 if i==j)
-	 */
-	protected int getArrayOffset(int i, int j) {
-
-		if (i==j)
-			throw new RuntimeException("Programmer error: requested migration "
-					+ "rate array offset for diagonal element of "
-					+ "migration rate matrix.");
-
-
-		if (j>i)
-			j -= 1;
-		return i*(n-1)+j;   // todo: check if this is correct!!!
-	}
 
 
 	// Interface requirements:

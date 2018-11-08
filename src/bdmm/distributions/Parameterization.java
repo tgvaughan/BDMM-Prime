@@ -144,6 +144,43 @@ public abstract class Parameterization extends CalculationNode {
         }
     }
 
+    public double[][] getBirthRates() {
+        update();
+
+        return birthRates;
+    }
+
+    public double[][] getDeathRates() {
+        update();
+
+        return deathRates;
+    }
+
+    public double[][] getSamplingRates() {
+        update();
+
+        return samplingRates;
+    }
+
+    public double[][] getRemovalProbs() {
+        update();
+
+        return removalProbs;
+    }
+
+    public double[][] getMigRates() {
+        update();
+
+        return migRates;
+    }
+
+    public double[][] getCrossBirthRates() {
+        update();
+
+        return crossBirthRates;
+    }
+
+
     @Override
     protected boolean requiresRecalculation() {
         dirty = true;

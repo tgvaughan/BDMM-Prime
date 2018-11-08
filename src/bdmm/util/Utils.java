@@ -16,7 +16,7 @@ public class Utils {
      * @param m the total number of time intervals + 1 (the total number of time change events)
      * @return
      */
-    public static int index(Double t, Double[] times, int m) {
+    public static int index(double t, double[] times, int m) {
 
         int epoch = Arrays.binarySearch(times, t);
 
@@ -68,6 +68,29 @@ public class Utils {
             array[array.length - 1 - i] = tmp;
         }
     }
+
+
+
+	/**
+	 * Obtain offset into "rate matrix" and associated flag arrays.
+	 *
+	 * @param i row index
+	 * @param j column index
+     * @param matrixSide side of square matrix
+	 * @return Offset
+	 */
+	public static int getArrayOffset(int i, int j, int matrixSide) {
+
+		if (i==j)
+			throw new RuntimeException("Programmer error: requested migration "
+					+ "rate array offset for diagonal element of "
+					+ "migration rate matrix.");
+
+
+		if (j>i)
+			j -= 1;
+		return i*(matrixSide-1)+j;   // todo: check if this is correct!!!
+	}
 
     public static void printArray(double[] array) {
         System.out.print("{");
