@@ -3,8 +3,6 @@ package bdmm.distributions;
 import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeInterface;
 
 import java.util.*;
 
@@ -14,13 +12,19 @@ public abstract class Parameterization extends CalculationNode {
             "Number of types in model.",
             Input.Validate.REQUIRED);
 
+    public Input<RealParameter> originInput = new Input<>("origin",
+            "Time between start of process and most recent sample.",
+            Input.Validate.REQUIRED);
+
     private boolean dirty;
 
-    SortedSet<Double> modelEventTimesSet = new TreeSet<>();
-    List<Double> modelEventTimes = new ArrayList<>();
+    SortedSet<Double> intervalStartTimesSet = new TreeSet<>();
 
-    double[] migRates, birthRates, deathRates, crossBirthRates, samplingRates, removalProbs, rhoValues;
-    double[] storedMigRates, storedBirthRates, storedDeathRates, storedCrossBirthRates,
+    double[] intervalStartTimes;
+
+    double[][] migRates, birthRates, deathRates, crossBirthRates,
+            samplingRates, removalProbs, rhoValues;
+    double[][] storedMigRates, storedBirthRates, storedDeathRates, storedCrossBirthRates,
             storedSamplingRates, storedRemovalProbs, storedRhoValues;
 
     int nTypes;
@@ -32,32 +36,28 @@ public abstract class Parameterization extends CalculationNode {
         dirty = true;
     }
 
-    public abstract double[] getMigRateChangeTimes();
-    public abstract double[] getBirthRateChangeTimes();
-    public abstract double[] getCrossBirthRateChangeTimes();
-    public abstract double[] getDeathRateChangeTimes();
-    public abstract double[] getSamplingRateChangeTimes();
-    public abstract double[] getRemovalProbChangeTimes();
-    public abstract double[] getRhoSamplingTimes();
+    protected abstract double[] getBirthRateChangeTimes();
+    protected abstract double[] getMigRateChangeTimes();
+    protected abstract double[] getCrossBirthRateChangeTimes();
+    protected abstract double[] getDeathRateChangeTimes();
+    protected abstract double[] getSamplingRateChangeTimes();
+    protected abstract double[] getRemovalProbChangeTimes();
+    protected abstract double[] getRhoSamplingTimes();
 
-    public abstract double[] getMigRateValues(double time);
-    public abstract double[] getBirthRateValues(double time);
-    public abstract double[] getCrossBirthRateValues(double time);
-    public abstract double[] getDeathRateValues(double time);
-    public abstract double[] getSamplingRateValues(double time);
-    public abstract double[] getRemovalProbValues(double time);
-    public abstract double getRhoValue(double time);
-
-    public abstract int getMigRateChangeCount();
-    public abstract int getBirthRateChangeCount();
-    public abstract int getCrossBirthRateChangeCount();
-    public abstract int getDeathRateChangeCount();
-    public abstract int getSamplingRateChangeCount();
-    public abstract int getRemovalProbChangeCount();
-    public abstract int getRhoChangeCount();
+    protected abstract double[] getBirthRateValues(double time);
+    protected abstract double[] getMigRateValues(double time);
+    protected abstract double[] getCrossBirthRateValues(double time);
+    protected abstract double[] getDeathRateValues(double time);
+    protected abstract double[] getSamplingRateValues(double time);
+    protected abstract double[] getRemovalProbValues(double time);
+    protected abstract double[] getRhoValues(double time);
 
     public int getNTypes() {
         return nTypes;
+    }
+
+    public double getOrigin() {
+        return originInput.get().getValue();
     }
 
     private void update() {
@@ -67,38 +67,39 @@ public abstract class Parameterization extends CalculationNode {
         updateModelEventTimes();
 
         if (birthRates == null) {
+            birthRates = new double[intervalStartTimes.length][nTypes];
+            migRates = new double[intervalStartTimes.length][nTypes*(nTypes-1)];
+            crossBirthRates = new double[intervalStartTimes.length][nTypes*(nTypes-1)];
+            deathRates = new double[intervalStartTimes.length][nTypes];
+            samplingRates = new double[intervalStartTimes.length][nTypes];
+            removalProbs = new double[intervalStartTimes.length][nTypes];
+            rhoValues = new double[intervalStartTimes.length][nTypes];
 
-            migRates = new double[nTypes*(nTypes-1)*(modelEventTimes.size()+1)];
-            birthRates = new double[nTypes*(modelEventTimes.size()+1)];
-            crossBirthRates = new double[nTypes*(nTypes-1)*(modelEventTimes.size()+1)];
-            deathRates = new double[nTypes*(modelEventTimes.size()+1)];
-            samplingRates = new double[nTypes*(modelEventTimes.size()+1)];
-            removalProbs = new double[modelEventTimes.size()+1];
-            rhoValues = new double[modelEventTimes.size()+1];
-
-            storedMigRates = new double[nTypes*(nTypes-1)*(modelEventTimes.size()+1)];
-            storedBirthRates = new double[modelEventTimes.size()+1];
-            storedCrossBirthRates = new double[nTypes*(nTypes-1)*(modelEventTimes.size()+1)];
-            storedDeathRates = new double[modelEventTimes.size()+1];
-            storedSamplingRates = new double[modelEventTimes.size()+1];
-            storedRemovalProbs = new double[modelEventTimes.size()+1];
-            rhoValues = new double[modelEventTimes.size()+1];
-
+            storedBirthRates = new double[intervalStartTimes.length][nTypes];
+            storedMigRates = new double[intervalStartTimes.length][nTypes*(nTypes-1)];
+            storedCrossBirthRates = new double[intervalStartTimes.length][nTypes*(nTypes-1)];
+            storedDeathRates = new double[intervalStartTimes.length][nTypes];
+            storedSamplingRates = new double[intervalStartTimes.length][nTypes];
+            storedRemovalProbs = new double[intervalStartTimes.length][nTypes];
+            storedRhoValues = new double[intervalStartTimes.length][nTypes];
         }
 
-        updateBirthDeathPsiParams();
+        updateValues();
 
         dirty = false;
     }
 
     private void addTimes(double[] times) {
         for (double time : times)
-            modelEventTimes.add(time);
+            intervalStartTimesSet.add(time);
     }
 
     private void updateModelEventTimes() {
 
-        modelEventTimesSet.clear();
+        intervalStartTimesSet.clear();
+
+        intervalStartTimesSet.add(0.0); // Start time of first interval
+
         addTimes(getMigRateChangeTimes());
         addTimes(getBirthRateChangeTimes());
         addTimes(getCrossBirthRateChangeTimes());
@@ -107,44 +108,40 @@ public abstract class Parameterization extends CalculationNode {
         addTimes(getRemovalProbChangeTimes());
         addTimes(getRhoSamplingTimes());
 
-        modelEventTimes.clear();
-        modelEventTimes.addAll(modelEventTimesSet);
+        if (intervalStartTimes == null)
+            intervalStartTimes = new double[intervalStartTimesSet.size()];
+
+        List<Double> timeList = new ArrayList<>(intervalStartTimesSet);
+        for (int i=0; i<intervalStartTimesSet.size(); i++)
+            intervalStartTimes[i] = timeList.get(i);
     }
 
-    public List<Double> getModelEventTimes() {
+    public double[] getIntervalStartTimes() {
         update();
 
-        return modelEventTimes;
+        return intervalStartTimes;
     }
 
-    public int getTotalModelEvents() {
+    public int getTotalIntervalCount() {
         update();
 
-        return modelEventTimes.size();
+        return intervalStartTimes.length;
     }
 
-    void updateBirthDeathPsiParams() {
+    void updateValues() {
 
-        int state;
+        for (int interval = 0; interval< intervalStartTimes.length; interval++) {
 
-        for (int i=0; i<modelEventTimes.size()+1; i++) {
+            double t = intervalStartTimes[interval];
+            System.arraycopy(getBirthRateValues(t), 0, birthRates[interval], 0, nTypes);
+            System.arraycopy(getDeathRateValues(t), 0, deathRates[interval], 0, nTypes);
+            System.arraycopy(getSamplingRateValues(t), 0, samplingRates[interval], 0, nTypes);
+            System.arraycopy(getRemovalProbValues(t), 0, removalProbs[interval], 0, nTypes);
+            System.arraycopy(getRhoValues(t), 0, rhoValues[interval], 0, nTypes);
 
+            System.arraycopy(getMigRateValues(t), 0, migRates[interval], 0, nTypes*(nTypes-1));
+            System.arraycopy(getCrossBirthRateValues(t), 0, crossBirthRates[interval], 0, nTypes*(nTypes-1));
         }
-        for (int i = 0; i < n*totalIntervals; i++) {
-
-            state =  i/totalIntervals;
-
-            birth[i] = (identicalRatesForAllTypes[0]) ? birthRates[index(times[i%totalIntervals], birthRateChangeTimes)] :
-                    birthRates[birthRates.length > n ? (birthChanges+1)*state+index(times[i%totalIntervals], birthRateChangeTimes) : state];
-            death[i] = (identicalRatesForAllTypes[1]) ? deathRates[index(times[i%totalIntervals], deathRateChangeTimes)] :
-                    deathRates[deathRates.length > n ? (deathChanges+1)*state+index(times[i%totalIntervals], deathRateChangeTimes) : state];
-            psi[i] = (identicalRatesForAllTypes[2]) ? samplingRates[index(times[i%totalIntervals], samplingRateChangeTimes)] :
-                    samplingRates[samplingRates.length > n ? (samplingChanges+1)*state+index(times[i%totalIntervals], samplingRateChangeTimes) : state];
-            if (SAModel) r[i] = (identicalRatesForAllTypes[4]) ? removalProbabilities[index(times[i%totalIntervals], rChangeTimes)] :
-                    removalProbabilities[removalProbabilities.length > n ? (rChanges+1)*state+index(times[i%totalIntervals], rChangeTimes) : state];
-
-        }
-
     }
 
     @Override

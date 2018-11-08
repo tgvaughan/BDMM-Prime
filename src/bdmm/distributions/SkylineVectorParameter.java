@@ -35,6 +35,8 @@ public class SkylineVectorParameter extends SkylineParameter {
     }
 
     public double[] getValuesAtTime(double time) {
+        update();
+
         int intervalIdx = getIntervalIdx(time);
 
         System.arraycopy(values, intervalIdx*nTypes, valuesAtTime, 0, nTypes);

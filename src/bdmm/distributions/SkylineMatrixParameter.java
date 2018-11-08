@@ -39,6 +39,8 @@ public class SkylineMatrixParameter extends SkylineParameter {
     }
 
     public double[] getValuesAtTime(double time) {
+        update();
+
         int intervalIdx = getIntervalIdx(time);
 
         System.arraycopy(values, intervalIdx*elementsPerMatrix, valuesAtTime, 0, elementsPerMatrix);
