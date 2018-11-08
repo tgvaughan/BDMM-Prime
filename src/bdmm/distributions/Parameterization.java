@@ -10,17 +10,25 @@ import java.util.*;
 
 public abstract class Parameterization extends CalculationNode {
 
+    public Input<Integer> nTypesInput = new Input<>("nTypes",
+            "Number of types in model.",
+            Input.Validate.REQUIRED);
+
     private boolean dirty;
 
     SortedSet<Double> modelEventTimesSet = new TreeSet<>();
     List<Double> modelEventTimes = new ArrayList<>();
 
-    double[] birthRates, deathRates, crossBirthRates, samplingRates, removalProbs, rhoValues;
-    double[] storedBirthRates, storedDeathRates, storedCrossBirthRates,
+    double[] migRates, birthRates, deathRates, crossBirthRates, samplingRates, removalProbs, rhoValues;
+    double[] storedMigRates, storedBirthRates, storedDeathRates, storedCrossBirthRates,
             storedSamplingRates, storedRemovalProbs, storedRhoValues;
+
+    int nTypes;
 
     @Override
     public void initAndValidate() {
+        nTypes = nTypesInput.get();
+
         dirty = true;
     }
 
@@ -32,12 +40,12 @@ public abstract class Parameterization extends CalculationNode {
     public abstract double[] getRemovalProbChangeTimes();
     public abstract double[] getRhoSamplingTimes();
 
-    public abstract double getMigRateValue(double time);
-    public abstract double getBirthRateValue(double time);
-    public abstract double getCrossBirthRateValue(double time);
-    public abstract double getDeathRateValue(double time);
-    public abstract double getSamplingRateValue(double time);
-    public abstract double getRemovalProbValue(double time);
+    public abstract double[] getMigRateValues(double time);
+    public abstract double[] getBirthRateValues(double time);
+    public abstract double[] getCrossBirthRateValues(double time);
+    public abstract double[] getDeathRateValues(double time);
+    public abstract double[] getSamplingRateValues(double time);
+    public abstract double[] getRemovalProbValues(double time);
     public abstract double getRhoValue(double time);
 
     public abstract int getMigRateChangeCount();
@@ -48,6 +56,10 @@ public abstract class Parameterization extends CalculationNode {
     public abstract int getRemovalProbChangeCount();
     public abstract int getRhoChangeCount();
 
+    public int getNTypes() {
+        return nTypes;
+    }
+
     private void update() {
         if (!dirty)
             return;
@@ -55,13 +67,25 @@ public abstract class Parameterization extends CalculationNode {
         updateModelEventTimes();
 
         if (birthRates == null) {
-            birthRates = new double[modelEventTimes.size()+1];
-            crossBirthRates = new double[modelEventTimes.size()+1];
-            deathRates = new double[modelEventTimes.size()+1];
-            samplingRates = new double[modelEventTimes.size()+1];
+
+            migRates = new double[nTypes*(nTypes-1)*(modelEventTimes.size()+1)];
+            birthRates = new double[nTypes*(modelEventTimes.size()+1)];
+            crossBirthRates = new double[nTypes*(nTypes-1)*(modelEventTimes.size()+1)];
+            deathRates = new double[nTypes*(modelEventTimes.size()+1)];
+            samplingRates = new double[nTypes*(modelEventTimes.size()+1)];
             removalProbs = new double[modelEventTimes.size()+1];
             rhoValues = new double[modelEventTimes.size()+1];
+
+            storedMigRates = new double[nTypes*(nTypes-1)*(modelEventTimes.size()+1)];
+            storedBirthRates = new double[modelEventTimes.size()+1];
+            storedCrossBirthRates = new double[nTypes*(nTypes-1)*(modelEventTimes.size()+1)];
+            storedDeathRates = new double[modelEventTimes.size()+1];
+            storedSamplingRates = new double[modelEventTimes.size()+1];
+            storedRemovalProbs = new double[modelEventTimes.size()+1];
+            rhoValues = new double[modelEventTimes.size()+1];
+
         }
+
         updateBirthDeathPsiParams();
 
         dirty = false;
@@ -101,13 +125,11 @@ public abstract class Parameterization extends CalculationNode {
 
     void updateBirthDeathPsiParams() {
 
-        if (SAModel) {
-            removalProbabilities = removalProbability.get().getValues();
-            r =  new Double[n*totalIntervals];
-        }
-
         int state;
 
+        for (int i=0; i<modelEventTimes.size()+1; i++) {
+
+        }
         for (int i = 0; i < n*totalIntervals; i++) {
 
             state =  i/totalIntervals;
@@ -124,7 +146,6 @@ public abstract class Parameterization extends CalculationNode {
         }
 
     }
-
 
     @Override
     protected boolean requiresRecalculation() {

@@ -7,7 +7,7 @@ import beast.core.parameter.RealParameter;
 
 import java.util.*;
 
-public class SkylineParameter extends CalculationNode {
+public abstract class SkylineParameter extends CalculationNode {
 
     public Input<RealParameter> changeTimesInput = new Input<>("changeTimes",
             "Parameter containing change times for skyline function.");
@@ -27,7 +27,7 @@ public class SkylineParameter extends CalculationNode {
     public Input<RealParameter> originInput = new Input<>("origin",
             "Parameter specifying origin of process.");
 
-    boolean timesAreAges, timesAreRelative, isScalar;
+    boolean timesAreAges, timesAreRelative;
 
     double[] times, storedTimes;
     double[] values, storedValues;
@@ -45,17 +45,12 @@ public class SkylineParameter extends CalculationNode {
         if (timesAreAges && originInput.get() == null)
             throw new IllegalArgumentException("Origin parameter must be supplied when times are given as ages.");
 
-        nIntervals = rateValuesInput.get().getDimension();
         int nChangeTimes = changeTimesInput.get() == null ? 0 : changeTimesInput.get().getDimension();
-
-        if (nIntervals != nChangeTimes + 1)
-            throw new IllegalArgumentException("Incorrect number of values for given number of change times.");
+        nIntervals = nChangeTimes + 1;
 
         times = new double[nIntervals-1];
-        values = new double[nIntervals];
 
         storedTimes = new double[nIntervals-1];
-        storedValues = new double[nIntervals];
 
         isDirty = true;
     }
@@ -66,45 +61,27 @@ public class SkylineParameter extends CalculationNode {
         return times;
 	}
 
-	public double[] getValues() {
-        update();
-
-        return values;
-    }
-
 	public int getChangeCount() {
         update();
 
         return changeTimesInput.get().getDimension();
     }
 
-    public double getValueAtTime(double time) {
-        update();
 
-        if (isScalar)
-            return values[0];
-
-		int idx = Arrays.binarySearch(times, time);
-
-		if (idx < 0) {
-			idx = -idx - 1;
-		}
-
-		return values[idx];
-    }
-
-	private void update() {
+	protected void update() {
 	    if (!isDirty)
 	        return;
 
-	    if (isScalar) {
-	        values[0] = rateValuesInput.get().getValue();
-	        isDirty = false;
-	        return;
-        }
+	    updateTimes();
+	    updateValues();
 
-        for (int i=0; i<nIntervals; i++)
-            values[i] = rateValuesInput.get().getValue(i);
+        isDirty = false;
+    }
+
+    protected void updateTimes() {
+
+ 	    if (nIntervals==1)
+	        return;
 
         for (int i=0; i<nIntervals-1; i++)
             times[i] = changeTimesInput.get().getValue(i);
@@ -116,13 +93,25 @@ public class SkylineParameter extends CalculationNode {
 
         if (timesAreAges) {
             Utils.reverseDoubleArray(times);
-            Utils.reverseDoubleArray(values);
 
             for (int i=0; i<times.length; i++)
                 times[i] = originInput.get().getValue()-times[i];
         }
+    }
 
-        isDirty = false;
+    protected abstract void updateValues();
+
+    protected int getIntervalIdx(double time) {
+        if (nIntervals==1)
+            return 0;
+
+		int idx = Arrays.binarySearch(times, time);
+
+		if (idx < 0) {
+			idx = -idx - 1;
+		}
+
+		return idx;
     }
 
     @Override
@@ -131,7 +120,7 @@ public class SkylineParameter extends CalculationNode {
 
         double[] tmp;
 
-        if (!isScalar) {
+        if (nIntervals>1) {
             tmp = times;
             times = storedTimes;
             storedTimes = tmp;
@@ -148,7 +137,7 @@ public class SkylineParameter extends CalculationNode {
     protected void store() {
         super.store();
 
-        if (!isScalar)
+        if (nIntervals>1)
             System.arraycopy(times, 0, storedTimes, 0, times.length);
 
         System.arraycopy(values, 0, storedValues, 0, values.length);

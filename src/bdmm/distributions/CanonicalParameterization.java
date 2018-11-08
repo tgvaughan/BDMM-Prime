@@ -4,25 +4,25 @@ import beast.core.Input;
 
 public class CanonicalParameterization extends Parameterization {
 
-    public Input<SkylineParameter> migRateInput = new Input<>("migrationRate",
+    public Input<SkylineMatrixParameter> migRateInput = new Input<>("migrationRate",
             "Migration rate skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineParameter> birthRateInput = new Input<>("birthRate",
+    public Input<SkylineVectorParameter> birthRateInput = new Input<>("birthRate",
             "Birth rate skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineParameter> crossBirthRateInput = new Input<>("birthRateAmongDemes",
+    public Input<SkylineMatrixParameter> crossBirthRateInput = new Input<>("birthRateAmongDemes",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineParameter> deathRateInput = new Input<>("deathRate",
+    public Input<SkylineVectorParameter> deathRateInput = new Input<>("deathRate",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineParameter> samplingRateInput = new Input<>("samplingRate",
+    public Input<SkylineVectorParameter> samplingRateInput = new Input<>("samplingRate",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineParameter> removalProbInput = new Input<>("removalRate",
+    public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalRate",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineParameter> rhoSamplingInput = new Input<>("rhoSampling",
+    public Input<SkylineScalarParameter> rhoSamplingInput = new Input<>("rhoSampling",
             "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
 
@@ -98,33 +98,33 @@ public class CanonicalParameterization extends Parameterization {
     }
 
     @Override
-    public double getMigRateValue(double time) {
-        return migRateInput.get().getValueAtTime(time);
+    public double[] getMigRateValues(double time) {
+        return migRateInput.get().getValuesAtTime(time);
     }
 
     @Override
-    public double getBirthRateValue(double time) {
-        return birthRateInput.get().getValueAtTime(time);
+    public double[] getBirthRateValues(double time) {
+        return birthRateInput.get().getValuesAtTime(time);
     }
 
     @Override
-    public double getCrossBirthRateValue(double time) {
-        return crossBirthRateInput.get().getValueAtTime(time);
+    public double[] getCrossBirthRateValues(double time) {
+        return crossBirthRateInput.get().getValuesAtTime(time);
     }
 
     @Override
-    public double getDeathRateValue(double time) {
-        return deathRateInput.get().getValueAtTime(time);
+    public double[] getDeathRateValues(double time) {
+        return deathRateInput.get().getValuesAtTime(time);
     }
 
     @Override
-    public double getSamplingRateValue(double time) {
-        return samplingRateInput.get().getValueAtTime(time);
+    public double[] getSamplingRateValues(double time) {
+        return samplingRateInput.get().getValuesAtTime(time);
     }
 
     @Override
-    public double getRemovalProbValue(double time) {
-        return removalProbInput.get().getValueAtTime(time);
+    public double[] getRemovalProbValues(double time) {
+        return removalProbInput.get().getValuesAtTime(time);
     }
 
     @Override
