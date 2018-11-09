@@ -5,6 +5,8 @@ import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 
+import java.util.Arrays;
+
 /**
  * Parameter in which the value of each element corresponds to a particular time.
  */
@@ -37,6 +39,7 @@ public class TimedParameter extends CalculationNode {
 
     double[] times, storedTimes;
     double[][] values, storedValues;
+    double[] valuesAtTime, zeroValuesAtTime;
     int nTimes, nTypes;
 
     boolean isDirty;
@@ -59,10 +62,47 @@ public class TimedParameter extends CalculationNode {
                     "multiple of the number of times.");
 
         nTypes = valuesInput.get().getDimension()/nTimes;
+
         values = new double[nTimes][nTypes];
         storedValues = new double[nTimes][nTypes];
 
+        valuesAtTime = new double[nTypes];
+
+        zeroValuesAtTime = new double[nTypes];
+        Arrays.fill(zeroValuesAtTime, 0.0);
+
         isDirty = true;
+    }
+
+    public double[] getTimes() {
+        update();
+
+        return times;
+    }
+
+    public int getTimeCount() {
+        update();
+
+        return times.length;
+    }
+
+    int getIntervalIdx(double time) {
+        int idx = Arrays.binarySearch(times, time);
+
+        return idx;
+    }
+
+    public double[] getValuesAtTime(double time) {
+        update();
+
+        int intervalIdx = Arrays.binarySearch(times, time);
+
+        if (intervalIdx<0)
+            return zeroValuesAtTime;
+
+        System.arraycopy(values[intervalIdx], 0, valuesAtTime, 0, nTypes);
+
+        return valuesAtTime;
     }
 
     private void update() {

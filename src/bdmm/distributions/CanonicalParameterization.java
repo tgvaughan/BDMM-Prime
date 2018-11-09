@@ -22,9 +22,8 @@ public class CanonicalParameterization extends Parameterization {
     public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalRate",
             "Removal prob skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineVectorParameter> rhoSamplingInput = new Input<>("rhoSampling",
-            "Contemporaneous sampling probabilities skyline.", Input.Validate.REQUIRED);
-
+    public Input<TimedParameter> rhoSamplingInput = new Input<>("rhoSampling",
+            "Contemporaneous sampling times and probabilities.", Input.Validate.REQUIRED);
 
     @Override
     protected double[] getMigRateChangeTimes() {
@@ -58,11 +57,11 @@ public class CanonicalParameterization extends Parameterization {
 
     @Override
     protected double[] getRhoSamplingTimes() {
-        return rhoSamplingInput.get().getChangeTimes();
+        return rhoSamplingInput.get().getTimes();
     }
 
     @Override
-    protected double[] getMigRateValues(double time) {
+    protected double[][] getMigRateValues(double time) {
         return migRateInput.get().getValuesAtTime(time);
     }
 
@@ -72,7 +71,7 @@ public class CanonicalParameterization extends Parameterization {
     }
 
     @Override
-    protected double[] getCrossBirthRateValues(double time) {
+    protected double[][] getCrossBirthRateValues(double time) {
         return crossBirthRateInput.get().getValuesAtTime(time);
     }
 

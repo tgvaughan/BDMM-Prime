@@ -13,8 +13,8 @@ import bdmm.util.Utils;
 
 public class p0_ODE implements FirstOrderDifferentialEquations {
 
-	public double[][] b, d, s;
-	public double[][] M, b_ij;
+	public double[][] b, d, s, rho;
+	public double[][][] M, b_ij;
 
 	public int nTypes;
 	public int nIntervals;
@@ -24,10 +24,12 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 	public p0_ODE(Parameterization parameterization) {
 
 		this.b = parameterization.getBirthRates();
-		this.b_ij = parameterization.getCrossBirthRates();
 		this.d = parameterization.getDeathRates();
 		this.s = parameterization.getSamplingRates();
+		this.rho = parameterization.getRhoValues();
+
 		this.M = parameterization.getMigRates();
+        this.b_ij = parameterization.getCrossBirthRates();
 
 		this.nTypes = parameterization.getNTypes();
 		this.nIntervals = parameterization.getTotalIntervalCount();
@@ -53,13 +55,11 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 			    if (j==i)
 			        continue;
 
-				int ijOffset = Utils.getArrayOffset(i, j, nTypes);
+                yDot[i] += b_ij[interval][i][j]*y[i];
+                yDot[i] -= b_ij[interval][i][j]*y[i]*y[j];
 
-                yDot[i] += b_ij[interval][ijOffset]*y[i];
-                yDot[i] -= b_ij[interval][ijOffset]*y[i]*y[j];
-
-                yDot[i] += M[interval][ijOffset] * y[i];
-                yDot[i] -= M[interval][ijOffset] * y[j];
+                yDot[i] += M[interval][i][j] * y[i];
+                yDot[i] -= M[interval][i][j] * y[j];
 			}
 		}
 

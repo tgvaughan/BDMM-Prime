@@ -176,15 +176,13 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
 
-				if (rhoChanges>0){
-					for (int i=0; i<n; i++){
-						oneMinusRho = 1-rho[i*totalIntervals + index];
-						PG0.conditionsOnP[i] *= oneMinusRho;
-						PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
-					}
+                for (int i=0; i<n; i++){
+                    oneMinusRho = 1-PG.rho[index][i];
+                    PG0.conditionsOnP[i] *= oneMinusRho;
+                    PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
 				}
 
-				to = times[index];
+				to = PG.times[index];
 
 				steps--;
 				index--;
@@ -362,7 +360,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		double t = leafHeights[indicesSortedByLeafHeight[leafCount-1]];
 
-		pInitialCondsAtLeaves[indicesSortedByLeafHeight[leafCount-1]] = PG.getP(t, rhoSampling, rho);
+		pInitialCondsAtLeaves[indicesSortedByLeafHeight[leafCount-1]] = PG.getP(t);
 		double t0 = t;
 
 		if (leafCount >1 ){
@@ -376,14 +374,14 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 					continue;
 				} else {
 					//TODO the integration performed in getP is done before all the other potentially-parallelized getG, so should not matter that it has its own integrator, but if it does (or to simplify the code), take care of passing an integrator as a local variable
-					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = PG.getP(t, pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]], t0, rhoSampling, rho);
+					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = PG.getP(t, pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]], t0);
 					t0 = t;
 				}
 
 			}
 		}
 
-		pInitialCondsAtLeaves[leafCount] = PG.getP(0, pInitialCondsAtLeaves[indicesSortedByLeafHeight[0]], t0, rhoSampling, rho);
+		pInitialCondsAtLeaves[leafCount] = PG.getP(0, pInitialCondsAtLeaves[indicesSortedByLeafHeight[0]], t0);
 
 		return pInitialCondsAtLeaves;
 	}

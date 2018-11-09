@@ -1,5 +1,7 @@
 package bdmm.distributions;
 
+import java.util.Arrays;
+
 public class SkylineMatrixParameter extends SkylineParameter {
 
     int elementsPerMatrix, nTypes;
@@ -22,6 +24,7 @@ public class SkylineMatrixParameter extends SkylineParameter {
             throw new IllegalArgumentException("Wrong number of elements in matrix parameter: shoud be nTypes*(nTypes-1).");
 
         values = new double[nIntervals][nTypes][nTypes];
+        Arrays.fill(values, 0.0);
         storedValues = new double[nIntervals][nTypes][nTypes];
 
         valuesAtTime = new double[nTypes][nTypes];
@@ -33,8 +36,10 @@ public class SkylineMatrixParameter extends SkylineParameter {
         for (int interval=0; interval<nIntervals; interval++) {
             for (int i=0; i<nTypes; i++) {
                 for (int j=0; j<nTypes; j++) {
-                    if (i==j)
+                    if (i==j) {
+                        values[interval][i][j] = 0.0;
                         continue;
+                    }
 
                     values[interval][i][j] = rateValuesInput.get().getValue(idx);
 

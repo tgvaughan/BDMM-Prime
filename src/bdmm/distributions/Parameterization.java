@@ -22,10 +22,12 @@ public abstract class Parameterization extends CalculationNode {
 
     double[] intervalStartTimes;
 
-    double[][] migRates, birthRates, deathRates, crossBirthRates,
-            samplingRates, removalProbs, rhoValues;
-    double[][] storedMigRates, storedBirthRates, storedDeathRates, storedCrossBirthRates,
-            storedSamplingRates, storedRemovalProbs, storedRhoValues;
+    double[][] birthRates, deathRates, samplingRates, removalProbs, rhoValues;
+    double[][][] migRates, crossBirthRates;
+
+    double[][] storedBirthRates, storedDeathRates, storedSamplingRates,
+            storedRemovalProbs, storedRhoValues;
+    double[][][] storedMigRates, storedCrossBirthRates;
 
     int nTypes;
 
@@ -45,8 +47,8 @@ public abstract class Parameterization extends CalculationNode {
     protected abstract double[] getRhoSamplingTimes();
 
     protected abstract double[] getBirthRateValues(double time);
-    protected abstract double[] getMigRateValues(double time);
-    protected abstract double[] getCrossBirthRateValues(double time);
+    protected abstract double[][] getMigRateValues(double time);
+    protected abstract double[][] getCrossBirthRateValues(double time);
     protected abstract double[] getDeathRateValues(double time);
     protected abstract double[] getSamplingRateValues(double time);
     protected abstract double[] getRemovalProbValues(double time);
@@ -68,16 +70,16 @@ public abstract class Parameterization extends CalculationNode {
 
         if (birthRates == null) {
             birthRates = new double[intervalStartTimes.length][nTypes];
-            migRates = new double[intervalStartTimes.length][nTypes*(nTypes-1)];
-            crossBirthRates = new double[intervalStartTimes.length][nTypes*(nTypes-1)];
+            migRates = new double[intervalStartTimes.length][nTypes][nTypes];
+            crossBirthRates = new double[intervalStartTimes.length][nTypes][nTypes];
             deathRates = new double[intervalStartTimes.length][nTypes];
             samplingRates = new double[intervalStartTimes.length][nTypes];
             removalProbs = new double[intervalStartTimes.length][nTypes];
             rhoValues = new double[intervalStartTimes.length][nTypes];
 
             storedBirthRates = new double[intervalStartTimes.length][nTypes];
-            storedMigRates = new double[intervalStartTimes.length][nTypes*(nTypes-1)];
-            storedCrossBirthRates = new double[intervalStartTimes.length][nTypes*(nTypes-1)];
+            storedMigRates = new double[intervalStartTimes.length][nTypes][nTypes];
+            storedCrossBirthRates = new double[intervalStartTimes.length][nTypes][nTypes];
             storedDeathRates = new double[intervalStartTimes.length][nTypes];
             storedSamplingRates = new double[intervalStartTimes.length][nTypes];
             storedRemovalProbs = new double[intervalStartTimes.length][nTypes];
@@ -139,8 +141,12 @@ public abstract class Parameterization extends CalculationNode {
             System.arraycopy(getRemovalProbValues(t), 0, removalProbs[interval], 0, nTypes);
             System.arraycopy(getRhoValues(t), 0, rhoValues[interval], 0, nTypes);
 
-            System.arraycopy(getMigRateValues(t), 0, migRates[interval], 0, nTypes*(nTypes-1));
-            System.arraycopy(getCrossBirthRateValues(t), 0, crossBirthRates[interval], 0, nTypes*(nTypes-1));
+            double[][] migRateMatrix = getMigRateValues(t);
+            double[][] crossBirthRateMatrix = getCrossBirthRateValues(t);
+            for (int i=0; i<nTypes; i++) {
+                System.arraycopy(migRateMatrix[i], 0, migRates[interval][i], 0, nTypes);
+                System.arraycopy(crossBirthRateMatrix[i], 0, crossBirthRates[interval][i], 0, nTypes);
+            }
         }
     }
 
@@ -168,13 +174,19 @@ public abstract class Parameterization extends CalculationNode {
         return removalProbs;
     }
 
-    public double[][] getMigRates() {
+    public double[][] getRhoValues() {
+        updateValues();
+
+        return rhoValues;
+    }
+
+    public double[][][] getMigRates() {
         update();
 
         return migRates;
     }
 
-    public double[][] getCrossBirthRates() {
+    public double[][][] getCrossBirthRates() {
         update();
 
         return crossBirthRates;

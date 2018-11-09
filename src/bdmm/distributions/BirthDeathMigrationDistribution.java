@@ -62,7 +62,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 		for (Node tip : treeInput.get().getExternalNodes()) {
 
-			tipTime = parameterization.getMaxTime()-tip.getHeight();
+			tipTime = parameterization.getOrigin()-tip.getHeight();
 			isRhoTip[tip.getNr()] = false;
 
 			for (Double time:rhoSamplingChangeTimes){

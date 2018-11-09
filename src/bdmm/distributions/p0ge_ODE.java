@@ -19,8 +19,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	public FirstOrderIntegrator p_integrator;
     public p0_ODE P;
 
-	public double[][] b, d, s;
-	public double[][] b_ij, M;
+	public double[][] b, d, s, rho;
+	public double[][][] b_ij, M;
 
 	public double origin;
 
@@ -39,6 +39,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		this.b = parameterization.getBirthRates();
 		this.d = parameterization.getDeathRates();
 		this.s = parameterization.getSamplingRates();
+		this.rho = parameterization.getRhoValues();
 
         this.b_ij = parameterization.getCrossBirthRates();
 		this.M = parameterization.getMigRates();
@@ -76,14 +77,13 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			    if (i==j)
 			        continue;
 
-			    int ijOffset = Utils.getArrayOffset(i, j, nTypes);
 
-                gDot[i] += b_ij[interval][ijOffset]*g[i]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i];
+                gDot[i] += b_ij[interval][i][j]*g[i]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i];
 
-                gDot[i] -= b_ij[interval][ijOffset]*g[i]*g[j]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i]*g[j];
+                gDot[i] -= b_ij[interval][i][j]*g[i]*g[j]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i]*g[j];
 
-                gDot[i] += M[interval][ijOffset] * g[i];
-                gDot[i] -= M[interval][ijOffset] * g[j];
+                gDot[i] += M[interval][i][j] * g[i];
+                gDot[i] -= M[interval][i][j] * g[j];
 			}
 
 			/*  ge equations: (dim .. 2*dim-1) */
@@ -100,11 +100,11 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 			    int ijOffset = Utils.getArrayOffset(i, j, nTypes);
 
-                gDot[nTypes +i] += b_ij[interval][ijOffset]*g[nTypes+i];
-                gDot[nTypes +i] -= b_ij[interval][ijOffset]* ( g[i]*g[nTypes+j] + g[j]*g[nTypes+i]);
+                gDot[nTypes +i] += b_ij[interval][i][j]*g[nTypes+i];
+                gDot[nTypes +i] -= b_ij[interval][i][j]* ( g[i]*g[nTypes+j] + g[j]*g[nTypes+i]);
 
-                gDot[nTypes + i] += M[interval][ijOffset] * g[nTypes + i];
-                gDot[nTypes + i] -= M[interval][ijOffset] * g[nTypes + j];
+                gDot[nTypes + i] += M[interval][i][j] * g[nTypes + i];
+                gDot[nTypes + i] -= M[interval][i][j] * g[nTypes + j];
 			}
 
 		}
@@ -121,7 +121,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	 * @param rho
 	 * @return
 	 */
-	public double[] getP(double t, double[]P0, double t0, Boolean rhoSampling, Double[] rho){
+	public double[] getP(double t, double[]P0, double t0){
 
 
 		if (Math.abs(origin -t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   origin < t)
@@ -156,16 +156,10 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 				if (Math.abs(from-to)>globalPrecisionThreshold){
 					p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
 
-					if (rhoSampling){
-						for (int i = 0; i< nTypes; i++){
-							oneMinusRho = (1-rho[i* nIntervals + index]);
-							result[i] *= oneMinusRho;
-
-							/*
-							System.out.println("In getP, multiplying with oneMinusRho: " + oneMinusRho + ", from = " + from);
-							*/
-						}
-					}
+                    for (int i = 0; i< nTypes; i++){
+                        oneMinusRho = (1-rho[index][i]);
+                        result[i] *= oneMinusRho;
+                    }
 				}
 
 				to = times[index];
@@ -180,19 +174,13 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			// check that both rateChangeTimes are really overlapping
 			// but really not sure that this is enough, i have to build appropriate tests
 			if(Math.abs(t-times[indexFrom])<globalPrecisionThreshold) {
-				if (rhoSampling){
-					for (int i = 0; i< nTypes; i++){
-						oneMinusRho = (1-rho[i* nIntervals + indexFrom]);
-						result[i] *= oneMinusRho;
-						//	System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
-
-					}
-				}
+                for (int i = 0; i< nTypes; i++){
+                    oneMinusRho = 1-rho[indexFrom][i];
+                    result[i] *= oneMinusRho;
+                }
 			}
 
-
-		}catch(Exception e){
-
+		} catch(Exception e) {
 			throw new RuntimeException("couldn't calculate p");
 		}
 
@@ -200,29 +188,20 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	}
 
 
-	public double[] getP(double t, Boolean rhoSampling, Double[] rho){
+	public double[] getP(double t){
 
 		double[] y = new double[nTypes];
 
-		if (!rhoSampling)
-			Arrays.fill(y,1.);   // initial condition: y_i[T]=1 for all i
-
-		else{
-			for (int i = 0; i< nTypes; i++) {
-				y[i] = (1 - rho[i * nIntervals + Utils.index(origin, times, nIntervals)]);    // initial condition: y_i[T]=1-rho_i
-
-				/*
-				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.indexTimeInterval(T, rateChangeTimes, intervals)]) + ", t = " + t + ", to = " + T);
-				*/
-			}
-		}
+		int index = Utils.index(origin, times, nIntervals);
+        for (int i = 0; i< nTypes; i++) {
+            y[i] = (1 - rho[index][i]);    // initial condition: y_i[T]=1-rho_i
+        }
 
 		if (Math.abs(origin -t)<globalPrecisionThreshold ||  origin < t) {
 			return y;
 		}
 
-		return getP(t, y, origin, rhoSampling, rho);
-
+		return getP(t, y, origin);
 	}
 
 }
