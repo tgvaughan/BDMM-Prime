@@ -35,7 +35,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 
-    public Input<Parameterization> bdmmParameterizationInput =
+    public Input<Parameterization> parameterizationInput =
             new Input<>("parameterization", "BDMM parameterization", Input.Validate.REQUIRED);
 
 	public Input<RealParameter> frequencies =
@@ -61,7 +61,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	//If a large number a cores is available (more than 8 or 10) the calculation speed can be increased by diminishing the parallelization factor
 	//On the contrary, if only 2-4 cores are available, a slightly higher value (1/5 to 1/8) can be beneficial to the calculation speed.
 	public Input<Double> minimalProportionForParallelizationInput = new Input<>("parallelizationFactor", "the minimal relative size the two children subtrees of a node" +
-			" must have to start parallel calculations on the children. (default: 1/10). ", new Double(1/10));
+			" must have to start parallel calculations on the children. (default: 1/10). ", 1.0/10);
 
 	Parameterization parameterization;
 
@@ -102,7 +102,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 	@Override
 	public void initAndValidate() {
-	    parameterization = bdmmParameterizationInput.get();
+	    parameterization = parameterizationInput.get();
 
 		tree = treeInput.get();
 
@@ -204,8 +204,6 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 		return PG0;
 	}
-
-	abstract void computeRhoTips();
 
 	/**
 	 * Perform an initial traversal of the tree to get the 'weights' (sum of all its edges lengths) of all sub-trees

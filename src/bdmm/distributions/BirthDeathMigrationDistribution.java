@@ -56,24 +56,6 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
         storedRootTypeProbs = new double[n];
 	}
 
-	void computeRhoTips(){
-
-		double tipTime;
-
-		for (Node tip : treeInput.get().getExternalNodes()) {
-
-			tipTime = parameterization.getOrigin()-tip.getHeight();
-			isRhoTip[tip.getNr()] = false;
-
-			for (Double time:rhoSamplingChangeTimes){
-
-				// TODO: make a warning that rho sampling precision is with 1e-10. Maybe do a threshold to the type of dating associated with the data?
-				if (Math.abs(time-tipTime) <  globalPrecisionThreshold && rho[getNodeState(tip,false)*totalIntervals + Utils.index(time, times, totalIntervals)]>0) isRhoTip[tip.getNr()] = true;
-
-			}
-		}
-	}
-
 	/**
 	 *
 	 * @param t
@@ -97,12 +79,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 		Node root = tree.getRoot();
 
-		collectTimes();
-		setRho();
-
-		if (parameterization.getRootEdgeLength(tree) < 0.0
-                || updateRates() < 0
-                || (times[totalIntervals-1] > parameterization.getMaxTime())) {
+		if (parameterization.getOrigin() < tree.getRoot().getHeight()) {
 			logP =  Double.NEGATIVE_INFINITY;
 			return logP;
 		}
@@ -139,22 +116,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 			//if(isParallelizedCalculation) {executorBootUp();}
 
-			if (parameterization.hasOrigin()) {
-				pSN = calculateSubtreeLikelihood(root,0, parameterization.getRootEdgeLength(tree), PG);
-			} else {
-
-				int childIndex = 0;
-				if (root.getChild(1).getNr() > root.getChild(0).getNr()) childIndex = 1; // always start with the same child to avoid numerical differences
-
-				pSN = calculateSubtreeLikelihood(root.getChild(childIndex),0., parameterization.getMaxTime() - root.getChild(childIndex).getHeight(), PG);
-				childIndex = Math.abs(childIndex-1);
-
-				p0ge_InitialConditions p1SN;
-				p1SN = calculateSubtreeLikelihood(root.getChild(childIndex),0., parameterization.getMaxTime() - root.getChild(childIndex).getHeight(), PG);
-
-				for (int i =0; i<pSN.conditionsOnG.length; i++) pSN.conditionsOnG[i] = SmallNumber.multiply(pSN.conditionsOnG[i], p1SN.conditionsOnG[i]);
-
-			}
+            pSN = calculateSubtreeLikelihood(root,0, parameterization.getOrigin() - tree.getRoot().getHeight(), PG);
 
 			if (print) System.out.print("final p per state = ");
 
@@ -195,12 +157,8 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 		if (print) System.out.println("\nlogP = " + logP);
 
+		// TGV: Why is this necessary?
 		if (Double.isInfinite(logP)) logP = Double.NEGATIVE_INFINITY;
-
-		if (SAModel && !(removalProbability.get().getDimension()==n && removalProbability.get().getValue()==1.)) {
-			int internalNodeCount = tree.getLeafNodeCount() - ((Tree)tree).getDirectAncestorNodeCount()- 1;
-			logP +=  Math.log(2)*internalNodeCount;
-		}
 
 		//if(isParallelizedCalculation) executorShutdown();
 		return logP;
@@ -271,7 +229,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
 
-		int index = Utils.index(to,times, totalIntervals);
+		int index = Utils.index(to, PG.times, PG.times.length);
 
 		if (node.isLeaf()){ // sampling event
 
@@ -280,24 +238,16 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 			//TODO potentially refactor to make few lines below more concise and clearer
 			if (nodestate==-1) { //unknown state
 
-				//TODO remove entirely when tested
-//				if (SAModel)
-//					throw new ConstraintViolatedException("SA model not implemented with unknown states!");
-
 				//TODO test if SA model case is properly implemented (not tested!)
 				for (int i=0; i<n; i++) {
 
 					if (!isRhoTip[node.getNr()]) {
-						init.conditionsOnG[i] = SAModel?
-								new SmallNumber((r[i * totalIntervals + index] + pInitialConditions[node.getNr()][i]*(1-r[i * totalIntervals + index]))
-										*psi[i * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
-								: new SmallNumber(psi[i * totalIntervals + index]);
+						init.conditionsOnG[i] = new SmallNumber((PG.r[index][i] + pInitialConditions[node.getNr()][i]*(1-PG.r[index][i]))
+										*PG.s[index][i]); // with SA: ψ_i(r + (1 − r)p_i(τ))
 					}
 					else {
-						init.conditionsOnG[i] = SAModel ?
-								new SmallNumber((r[i * totalIntervals + index] + pInitialConditions[node.getNr()][i] / (1 - rho[i * totalIntervals + index]) * (1 - r[i * totalIntervals + index]))
-										* rho[i * totalIntervals + index]) :
-								new SmallNumber(rho[i * totalIntervals + index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ+δ)) //the +δ is translated by dividing p_i with 1-ρ_i (otherwise there's one too many "*ρ_i" )
+						init.conditionsOnG[i] = new SmallNumber((PG.r[index][i] + pInitialConditions[node.getNr()][i] / (1 - PG.rho[index][i]) * (1 - PG.r[index][i]))
+										* PG.rho[index][i]);
 					}
 				}
 			}
@@ -335,7 +285,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
-				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), to, parameterization.getMaxTime() - node.getChild(childIndex).getHeight(), PG);
+				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), to, parameterization.getOrigin() - node.getChild(childIndex).getHeight(), PG);
 
 				int saNodeState = getNodeState(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
 
@@ -468,34 +418,6 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 			super(s);
 		}
 
-	}
-
-	@Override
-	public void init(PrintStream out){
-
-		super.init(out);
-
-		if (tipTypeArray.get()!=null) {
-			IntegerParameter types = tipTypeArray.get();
-			for (int i = 0; i < types.getDimension(); i++) {
-				out.print(tipTypeArray.get().getID() + ("_node") + (i+1) + "\t");
-			}
-
-		}
-
-	}
-
-	@Override
-	public void log(long sampleNr, PrintStream out) {
-
-		super.log(sampleNr, out);
-
-		if (tipTypeArray.get()!=null) {
-			for (int i = 0; i < tipTypeArray.get().getDimension(); i++) {
-				out.print(treeInput.get().getNode(i).getID() + "\t");
-
-			}
-		}
 	}
 
 	class TraversalServiceUncoloured extends TraversalService {

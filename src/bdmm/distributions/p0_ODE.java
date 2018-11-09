@@ -13,7 +13,7 @@ import bdmm.util.Utils;
 
 public class p0_ODE implements FirstOrderDifferentialEquations {
 
-	public double[][] b, d, s, rho;
+	public double[][] b, d, s, r,rho;
 	public double[][][] M, b_ij;
 
 	public int nTypes;
@@ -26,6 +26,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		this.b = parameterization.getBirthRates();
 		this.d = parameterization.getDeathRates();
 		this.s = parameterization.getSamplingRates();
+		this.r = parameterization.getRemovalProbs();
 		this.rho = parameterization.getRhoValues();
 
 		this.M = parameterization.getMigRates();

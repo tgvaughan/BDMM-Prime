@@ -19,7 +19,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	public FirstOrderIntegrator p_integrator;
     public p0_ODE P;
 
-	public double[][] b, d, s, rho;
+	public double[][] b, d, s, r, rho;
 	public double[][][] b_ij, M;
 
 	public double origin;
@@ -39,6 +39,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		this.b = parameterization.getBirthRates();
 		this.d = parameterization.getDeathRates();
 		this.s = parameterization.getSamplingRates();
+		this.r = parameterization.getRemovalProbs();
 		this.rho = parameterization.getRhoValues();
 
         this.b_ij = parameterization.getCrossBirthRates();
