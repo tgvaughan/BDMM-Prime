@@ -4,10 +4,6 @@ package bdmm.distributions;
 import bdmm.util.Utils;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
-import org.apache.commons.math3.ode.nonstiff.HighamHall54Integrator;
 
 import java.util.Arrays;
 
@@ -20,17 +16,17 @@ import java.util.Arrays;
 
 public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
-	p0_ODE P;
 	public FirstOrderIntegrator p_integrator;
+    public p0_ODE P;
 
-	double[][] b, d, s;
-	double[][] b_ij, M;
+	public double[][] b, d, s;
+	public double[][] b_ij, M;
 
-	public double T;
+	public double origin;
 
-	int nTypes; /* ODE numberOfDemes = stateNumber */
-	int intervals;
-	double[] times;
+	public int nTypes; /* ODE numberOfDemes = stateNumber */
+	public int nIntervals;
+	public double[] times;
 
 	int maxEvals;
 	public int maxEvalsUsed;
@@ -48,12 +44,12 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		this.M = parameterization.getMigRates();
 
 		this.nTypes = parameterization.getNTypes();
-		this.intervals = parameterization.getTotalIntervalCount();
+		this.nIntervals = parameterization.getTotalIntervalCount();
 
 		this.maxEvals = maxEvals;
 		maxEvalsUsed = 0;
 
-		this.T = parameterization.getOrigin();
+		this.origin = parameterization.getOrigin();
 		this.times= parameterization.getIntervalStartTimes();
 
 		this.P = P;
@@ -65,7 +61,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	public void computeDerivatives(double t, double[] g, double[] gDot) {
 
-		int interval = Utils.index(t, times, intervals);
+		int interval = Utils.index(t, times, nIntervals);
 
 		for (int i = 0; i<nTypes; i++){
 
@@ -128,7 +124,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	public double[] getP(double t, double[]P0, double t0, Boolean rhoSampling, Double[] rho){
 
 
-		if (Math.abs(T-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   T < t)
+		if (Math.abs(origin -t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   origin < t)
 			return P0;
 
 		double[] result = new double[P0.length];
@@ -162,7 +158,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 					if (rhoSampling){
 						for (int i = 0; i< nTypes; i++){
-							oneMinusRho = (1-rho[i*intervals + index]);
+							oneMinusRho = (1-rho[i* nIntervals + index]);
 							result[i] *= oneMinusRho;
 
 							/*
@@ -186,7 +182,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			if(Math.abs(t-times[indexFrom])<globalPrecisionThreshold) {
 				if (rhoSampling){
 					for (int i = 0; i< nTypes; i++){
-						oneMinusRho = (1-rho[i*intervals + indexFrom]);
+						oneMinusRho = (1-rho[i* nIntervals + indexFrom]);
 						result[i] *= oneMinusRho;
 						//	System.out.println("In getP, multiplying as the final step with oneMinusRho: " + oneMinusRho + ",  = " + t);
 
@@ -213,7 +209,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		else{
 			for (int i = 0; i< nTypes; i++) {
-				y[i] = (1 - rho[i * intervals + Utils.index(T, times, intervals)]);    // initial condition: y_i[T]=1-rho_i
+				y[i] = (1 - rho[i * nIntervals + Utils.index(origin, times, nIntervals)]);    // initial condition: y_i[T]=1-rho_i
 
 				/*
 				System.out.println("In getP, multiplying with oneMinusRho: " + (1 - rho[i * intervals + Utils.indexTimeInterval(T, rateChangeTimes, intervals)]) + ", t = " + t + ", to = " + T);
@@ -221,11 +217,11 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			}
 		}
 
-		if (Math.abs(T-t)<globalPrecisionThreshold ||  T < t) {
+		if (Math.abs(origin -t)<globalPrecisionThreshold ||  origin < t) {
 			return y;
 		}
 
-		return getP(t, y, T, rhoSampling, rho);
+		return getP(t, y, origin, rhoSampling, rho);
 
 	}
 

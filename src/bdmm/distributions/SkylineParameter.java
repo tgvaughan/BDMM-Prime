@@ -13,7 +13,7 @@ public abstract class SkylineParameter extends CalculationNode {
             "Parameter containing change times for skyline function.");
 
     public Input<Boolean> timesAreRelativeInput = new Input<>("timesAreRelative",
-            "True if times are relative to tree height. (Default false.)",
+            "True if times are relative to origin. (Default false.)",
             false);
 
     public Input<Boolean> timesAreAgesInput = new Input<>("timesAreAges",
@@ -30,7 +30,6 @@ public abstract class SkylineParameter extends CalculationNode {
     boolean timesAreAges, timesAreRelative;
 
     double[] times, storedTimes;
-    double[] values, storedValues;
 
 
     int nIntervals;
@@ -42,8 +41,9 @@ public abstract class SkylineParameter extends CalculationNode {
         timesAreAges = timesAreAgesInput.get();
         timesAreRelative = timesAreRelativeInput.get();
 
-        if (timesAreAges && originInput.get() == null)
-            throw new IllegalArgumentException("Origin parameter must be supplied when times are given as ages.");
+        if ((timesAreAges || timesAreRelative) && originInput.get() == null)
+            throw new IllegalArgumentException("Origin parameter must be supplied " +
+                    "when times are given as ages and/or when times are relative.");
 
         int nChangeTimes = changeTimesInput.get() == null ? 0 : changeTimesInput.get().getDimension();
         nIntervals = nChangeTimes + 1;
@@ -126,10 +126,6 @@ public abstract class SkylineParameter extends CalculationNode {
             storedTimes = tmp;
         }
 
-        tmp = values;
-        values = storedValues;
-        storedValues = tmp;
-
         isDirty = false;
     }
 
@@ -139,8 +135,6 @@ public abstract class SkylineParameter extends CalculationNode {
 
         if (nIntervals>1)
             System.arraycopy(times, 0, storedTimes, 0, times.length);
-
-        System.arraycopy(values, 0, storedValues, 0, values.length);
     }
 
     @Override

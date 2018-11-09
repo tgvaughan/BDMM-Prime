@@ -1,7 +1,6 @@
 package bdmm.distributions;
 
 import beast.core.*;
-import beast.core.parameter.BooleanParameter;
 import beast.core.parameter.RealParameter;
 import bdmm.util.Utils;
 import beast.evolution.speciation.SpeciesTreeDistribution;
@@ -9,16 +8,10 @@ import beast.evolution.tree.Node;
 import beast.evolution.tree.TreeInterface;
 import beast.util.HeapSort;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.ClassicalRungeKuttaIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Random;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -142,16 +135,16 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	/**
 	 *
 	 * @param t
-	 * @param PG0
+	 * @param PG0 initial conditions for p0 (0..n-1) and for ge (n..2n-1)
 	 * @param t0
 	 * @param PG
 	 * @return
 	 */
-	public static p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG){// PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG){
 
 		try {
 
-			if (Math.abs(PG.T-t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  PG.T < t) {
+			if (Math.abs(PG.origin -t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  PG.origin < t) {
 				return PG0;
 			}
 
@@ -159,12 +152,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			double to = t0;
 			double oneMinusRho;
 
-			int indexFrom = Utils.index(from, times, times.length);
-			int index = Utils.index(to, times, times.length);
+			int indexFrom = Utils.index(from, PG.times, PG.nIntervals);
+			int index = Utils.index(to, PG.times, PG.nIntervals);
 
 			int steps = index - indexFrom;
-			if (Math.abs(from-times[indexFrom]) < globalPrecisionThreshold ) steps--;
-			if (index>0 && Math.abs(to-times[index-1]) < globalPrecisionThreshold ) {
+			if (Math.abs(from-PG.times[indexFrom]) < globalPrecisionThreshold ) steps--;
+			if (index>0 && Math.abs(to-PG.times[index-1]) < globalPrecisionThreshold ) {
 				steps--;
 				index--;
 			}
@@ -175,7 +168,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			while (steps > 0){
 
-				from = times[index];
+				from = PG.times[index];
 
 				pgScaled = safeIntegrate(PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
 
@@ -301,7 +294,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
 
 		//TODO make threshold a class field
-		if(PG.T>0 && Math.abs(from-to)>PG.T/6 ) {
+		if(PG.origin >0 && Math.abs(from-to)>PG.origin /6 ) {
 			pgScaled = safeIntegrate(PG, to, pgScaled, from + (to-from)/2);
 			pgScaled = safeIntegrate(PG, from + (to-from)/2, pgScaled, from);
 		} else {

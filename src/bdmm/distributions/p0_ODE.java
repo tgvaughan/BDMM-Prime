@@ -1,8 +1,6 @@
 package bdmm.distributions;
 
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince853Integrator;
 
 import bdmm.util.Utils;
 
@@ -15,13 +13,13 @@ import bdmm.util.Utils;
 
 public class p0_ODE implements FirstOrderDifferentialEquations {
 
-	double[][] b, d, s;
-	double[][] M, b_ij;
+	public double[][] b, d, s;
+	public double[][] M, b_ij;
 
-	int nTypes;
-	int intervalCount;
+	public int nTypes;
+	public int nIntervals;
 
-	double[] times;
+	public double[] times;
 
 	public p0_ODE(Parameterization parameterization) {
 
@@ -32,7 +30,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 		this.M = parameterization.getMigRates();
 
 		this.nTypes = parameterization.getNTypes();
-		this.intervalCount = parameterization.getTotalIntervalCount();
+		this.nIntervals = parameterization.getTotalIntervalCount();
 
 		this.times = parameterization.getIntervalStartTimes();
 
@@ -44,7 +42,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 
 	public void computeDerivatives(double t, double[] y, double[] yDot) {
 
-		int interval = Utils.index(t, times, intervalCount); //finds the indexTimeInterval of the time interval t lies in
+		int interval = Utils.index(t, times, nIntervals); //finds the indexTimeInterval of the time interval t lies in
 
 		for (int i = 0; i< nTypes; i++){
 

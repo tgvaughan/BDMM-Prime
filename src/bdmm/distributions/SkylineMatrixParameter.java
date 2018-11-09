@@ -4,7 +4,9 @@ public class SkylineMatrixParameter extends SkylineParameter {
 
     int elementsPerMatrix, nTypes;
 
-    double[] valuesAtTime;
+
+    double[][][] values, storedValues;
+    double[][] valuesAtTime;
 
     @Override
     public void initAndValidate() {
@@ -19,36 +21,65 @@ public class SkylineMatrixParameter extends SkylineParameter {
         if (elementsPerMatrix != nTypes*(nTypes-1))
             throw new IllegalArgumentException("Wrong number of elements in matrix parameter: shoud be nTypes*(nTypes-1).");
 
-        values = new double[elementsPerMatrix*nIntervals];
-        storedValues = new double[elementsPerMatrix*nIntervals];
+        values = new double[nIntervals][nTypes][nTypes];
+        storedValues = new double[nIntervals][nTypes][nTypes];
 
-        valuesAtTime = new double[elementsPerMatrix];
+        valuesAtTime = new double[nTypes][nTypes];
     }
 
     @Override
     protected void updateValues() {
-
+        int idx=0;
         for (int interval=0; interval<nIntervals; interval++) {
-            int destOffset = interval*elementsPerMatrix;
+            for (int i=0; i<nTypes; i++) {
+                for (int j=0; j<nTypes; j++) {
+                    if (i==j)
+                        continue;
 
-            int srcOffset = timesAreAges ? (nIntervals-1-interval)*elementsPerMatrix : destOffset;
+                    values[interval][i][j] = rateValuesInput.get().getValue(idx);
 
-            for (int i=0; i<elementsPerMatrix; i++)
-                values[destOffset + i] = rateValuesInput.get().getValue(srcOffset+i);
+                    idx += 1;
+                }
+            }
         }
     }
 
-    public double[] getValuesAtTime(double time) {
+    public double[][] getValuesAtTime(double time) {
         update();
 
         int intervalIdx = getIntervalIdx(time);
 
-        System.arraycopy(values, intervalIdx*elementsPerMatrix, valuesAtTime, 0, elementsPerMatrix);
+        for (int i=0; i<nTypes; i++) {
+            System.arraycopy(values[intervalIdx][i], 0,
+                    valuesAtTime[i], 0, nTypes);
+        }
 
         return valuesAtTime;
     }
 
     public int getNTypes() {
         return nTypes;
+    }
+
+    @Override
+    protected void store() {
+        super.store();
+
+        for (int interval=0; interval<nIntervals; interval++) {
+            for (int i=0; i<nTypes; i++) {
+                System.arraycopy(values[interval][i], 0,
+                        storedValues[interval][i], 0, nTypes);
+            }
+        }
+    }
+
+    @Override
+    protected void restore() {
+        super.restore();
+
+        double[][][] tmp;
+        tmp = values;
+        values = storedValues;
+        storedValues = tmp;
     }
 }
