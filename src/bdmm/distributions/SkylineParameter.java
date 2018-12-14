@@ -122,9 +122,10 @@ public abstract class SkylineParameter extends CalculationNode {
 
 		int idx = Arrays.binarySearch(times, time);
 
-		if (idx < 0) {
+		if (idx < 0)
 			idx = -idx - 1;
-		}
+		else
+		    idx += 1;
 
 		return idx;
     }
