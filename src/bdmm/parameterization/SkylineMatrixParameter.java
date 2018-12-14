@@ -1,8 +1,6 @@
-package bdmm.distributions;
+package bdmm.parameterization;
 
 import beast.core.parameter.RealParameter;
-
-import java.util.Arrays;
 
 public class SkylineMatrixParameter extends SkylineParameter {
 

@@ -1,5 +1,6 @@
 package bdmm.distributions;
 
+import bdmm.parameterization.*;
 import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.Taxon;
 import beast.evolution.alignment.TaxonSet;
@@ -33,30 +34,71 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		// Test for uncoloured tree
 
-        String newick = "(1[&state=0] : 1.5, 2[&state=1] : 0.5)[&state=0];";
+        String newick = "(t1[&state=0] : 1.5, t2[&state=1] : 0.5)[&state=0];";
+        String locations = "t1=0, t2=1" ;
+        String frequencies = "0.5 0.5";
 
-		String orig="1.";
-		String stateNumber = "2";
-		String migrationMatrix = ".1 0.2 0.1 0.2";
-		String frequencies = "0.5 0.5";
-		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.) + " " + Double.toString(4./3.) + " " + Double.toString(4./3.);
-		String becomeUninfectiousRate = "1.5 1.5 1.5 1.5";
-		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.);
-		String locations = "1=0,2=1" ;
-		String prefixname = "";
-		boolean conditionOnSurvival = false;
-		int nrTaxa = 2;
-		String intervalTimes = "0. 1.";
+		RealParameter originParam = new RealParameter("2.0");
+
+		Parameterization parameterization = new CanonicalParameterization();
+		parameterization.initByName(
+		        "nTypes", 2,
+                "origin", originParam,
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("2.0 2.0")),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0 1.0")),
+                "birthRateAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.0 0.0")),
+                "migrationRate", new SkylineMatrixParameter(
+                        new RealParameter("1.0"),
+                        new RealParameter("0.1 0.1 0.2 0.2")),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5 0.5")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0 1.0")),
+                "rhoSampling", new TimedParameter(
+                        originParam,
+                        new RealParameter("0.0 0.0")));
 
 
-		double logL = bdm_likelihood(stateNumber,
-				migrationMatrix,
-				frequencies,
-				newick, "1.",
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"", locations, nrTaxa, intervalTimes, conditionOnSurvival);
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+
+		density.initByName(
+		        "parameterization", parameterization,
+                "frequencies", new RealParameter("0.5 0.5"),
+                "tree", new TreeParser(newick,
+                        false, false,
+                        true,0),
+                "typeLabel", "state");
+
+		double logL = density.calculateLogP();
+
+//		String orig="1.";
+//		String stateNumber = "2";
+//		String migrationMatrix = ".1 0.2 0.1 0.2";
+//		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.) + " " + Double.toString(4./3.) + " " + Double.toString(4./3.);
+//		String becomeUninfectiousRate = "1.5 1.5 1.5 1.5";
+//		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.);
+//		String prefixname = "";
+//		boolean conditionOnSurvival = false;
+//		int nrTaxa = 2;
+//		String intervalTimes = "0. 1.";
+//
+//
+//		double logL = bdm_likelihood(stateNumber,
+//				migrationMatrix,
+//				frequencies,
+//				newick, "1.",
+//				R0,null,
+//				becomeUninfectiousRate,
+//				samplingProportion, null,
+//				"", locations, nrTaxa, intervalTimes, conditionOnSurvival);
 
 		System.out.println("Birth-death result: " + logL + "\t- Test LikelihoodMigRateChange 1");
 

@@ -1,4 +1,4 @@
-package bdmm.distributions;
+package bdmm.parameterization;
 
 import beast.core.CalculationNode;
 import beast.core.Input;
@@ -38,13 +38,13 @@ public abstract class Parameterization extends CalculationNode {
         dirty = true;
     }
 
-    protected abstract double[] getBirthRateChangeTimes();
-    protected abstract double[] getMigRateChangeTimes();
-    protected abstract double[] getCrossBirthRateChangeTimes();
-    protected abstract double[] getDeathRateChangeTimes();
-    protected abstract double[] getSamplingRateChangeTimes();
-    protected abstract double[] getRemovalProbChangeTimes();
-    protected abstract double[] getRhoSamplingTimes();
+    public abstract double[] getBirthRateChangeTimes();
+    public abstract double[] getMigRateChangeTimes();
+    public abstract double[] getCrossBirthRateChangeTimes();
+    public abstract double[] getDeathRateChangeTimes();
+    public abstract double[] getSamplingRateChangeTimes();
+    public abstract double[] getRemovalProbChangeTimes();
+    public abstract double[] getRhoSamplingTimes();
 
     protected abstract double[] getBirthRateValues(double time);
     protected abstract double[][] getMigRateValues(double time);
@@ -198,7 +198,6 @@ public abstract class Parameterization extends CalculationNode {
 
         return crossBirthRates;
     }
-
 
     @Override
     protected boolean requiresRecalculation() {

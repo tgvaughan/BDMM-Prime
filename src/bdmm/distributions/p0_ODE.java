@@ -1,5 +1,6 @@
 package bdmm.distributions;
 
+import bdmm.parameterization.Parameterization;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 
 import bdmm.util.Utils;

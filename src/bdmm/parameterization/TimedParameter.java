@@ -1,4 +1,4 @@
-package bdmm.distributions;
+package bdmm.parameterization;
 
 import bdmm.util.Utils;
 import beast.core.CalculationNode;

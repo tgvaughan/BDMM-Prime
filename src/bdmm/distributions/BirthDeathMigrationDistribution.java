@@ -21,11 +21,15 @@ import java.util.concurrent.*;
 public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigrationDistribution implements Loggable {
 
 
-	public Input<TraitSet> tiptypes = new Input<>("tiptypes", "trait information for initializing traits (like node types/locations) in the tree");
-	public Input<String> typeLabel = new Input<>("typeLabel", "type label in tree for initializing traits (like node types/locations) in the tree");
-	public Input<IntegerParameter> tipTypeArray = new Input<IntegerParameter>("tipTypeArray", "integer array of traits (like node types/locations) in the tree, index corresponds to node number in tree");
+	public Input<TraitSet> tiptypes = new Input<>("tiptypes",
+            "trait information for initializing traits (like node types/locations) in the tree");
+	public Input<String> typeLabel = new Input<>("typeLabel",
+            "type label in tree for initializing traits (like node types/locations) in the tree");
+	public Input<IntegerParameter> tipTypeArray = new Input<>("tipTypeArray",
+            "integer array of traits (like node types/locations) in the tree, index corresponds to node number in tree");
 
-	public Input<Boolean> storeNodeTypes = new Input<>("storeNodeTypes", "store tip node types? this assumes that tip types cannot change (default false)", false);
+	public Input<Boolean> storeNodeTypes = new Input<>("storeNodeTypes",
+            "store tip node types? this assumes that tip types cannot change (default false)", false);
 
 	private int[] nodeStates;
 
@@ -108,65 +112,66 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 		SmallNumber PrSN = new SmallNumber(0);
 		double nosample = 0;
 
-		try{  // start calculation
+//		try{  // start calculation
 
-			pInitialConditions = getAllInitialConditionsForP(tree);
+        pInitialConditions = getAllInitialConditionsForP(tree);
 
-			if (conditionOnSurvival.get()) {
+        if (conditionOnSurvival.get()) {
 
-				noSampleExistsProp = pInitialConditions[pInitialConditions.length-1];
+            noSampleExistsProp = pInitialConditions[pInitialConditions.length-1];
 
-				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
+            if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 
-				for (int root_state = 0; root_state< nStates; root_state++){
-					nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
-				}
-
-				if (nosample<0 || nosample>1)
-					return Double.NEGATIVE_INFINITY;
-
-			}
-
-			p0ge_InitialConditions pSN;
-
-			//if(isParallelizedCalculation) {executorBootUp();}
-
-            pSN = calculateSubtreeLikelihood(root,0, parameterization.getOrigin() - tree.getRoot().getHeight(), PG);
-
-			if (print) System.out.print("final p per state = ");
-
-			for (int root_state = 0; root_state< nStates; root_state++){
-
-                SmallNumber jointProb = pSN.conditionsOnG[root_state].scalarMultiply(freq[root_state]);
-				if (jointProb.getMantissa()>0 ) {
-				    rootTypeProbs[root_state] = jointProb.log();
-                    PrSN = SmallNumber.add(PrSN, jointProb);
-                } else {
-                    rootTypeProbs[root_state] = Double.NEGATIVE_INFINITY;
-                }
-
-				if (print) System.out.print(pSN.conditionsOnP[root_state] + "\t" + pSN.conditionsOnG[root_state] + "\t");
-			}
-
-			// Normalize root type probs:
-            for (int root_state = 0; root_state< nStates; root_state++) {
-                rootTypeProbs[root_state] -= PrSN.log();
-                rootTypeProbs[root_state] = Math.exp(rootTypeProbs[root_state]);
+            for (int root_state = 0; root_state< nStates; root_state++){
+                nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
             }
 
-			if (conditionOnSurvival.get()){
-				PrSN = PrSN.scalarMultiply(1/(1-nosample));
-			}
+            if (nosample<0 || nosample>1)
+                return Double.NEGATIVE_INFINITY;
 
-		}catch(Exception e){
+        }
 
-			if (e instanceof ConstraintViolatedException){throw e;}
+        p0ge_InitialConditions pSN;
 
-			logP =  Double.NEGATIVE_INFINITY;
+        //if(isParallelizedCalculation) {executorBootUp();}
 
-			//if(isParallelizedCalculation) executorShutdown();
-			return logP;
-		}
+        pSN = calculateSubtreeLikelihood(root,0, parameterization.getOrigin() - tree.getRoot().getHeight(), PG);
+
+        if (print) System.out.print("final p per state = ");
+
+        for (int root_state = 0; root_state< nStates; root_state++){
+
+            SmallNumber jointProb = pSN.conditionsOnG[root_state].scalarMultiply(freq[root_state]);
+            if (jointProb.getMantissa()>0 ) {
+                rootTypeProbs[root_state] = jointProb.log();
+                PrSN = SmallNumber.add(PrSN, jointProb);
+            } else {
+                rootTypeProbs[root_state] = Double.NEGATIVE_INFINITY;
+            }
+
+            if (print) System.out.print(pSN.conditionsOnP[root_state] + "\t" + pSN.conditionsOnG[root_state] + "\t");
+        }
+
+        // Normalize root type probs:
+        for (int root_state = 0; root_state< nStates; root_state++) {
+            rootTypeProbs[root_state] -= PrSN.log();
+            rootTypeProbs[root_state] = Math.exp(rootTypeProbs[root_state]);
+        }
+
+        if (conditionOnSurvival.get()){
+            PrSN = PrSN.scalarMultiply(1/(1-nosample));
+        }
+
+//		}
+//		catch(Exception e){
+//
+//			if (e instanceof ConstraintViolatedException){throw e;}
+//
+//			logP =  Double.NEGATIVE_INFINITY;
+//
+//			//if(isParallelizedCalculation) executorShutdown();
+//			return logP;
+//		}
 
 		logP = PrSN.log();
 

@@ -1,5 +1,6 @@
 package bdmm.distributions;
 
+import bdmm.parameterization.Parameterization;
 import beast.core.*;
 import beast.core.parameter.RealParameter;
 import bdmm.util.Utils;
@@ -342,28 +343,28 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	public double[][] getAllInitialConditionsForP(TreeInterface tree){
 
 		int leafCount = tree.getLeafNodeCount();
-		double[] leafHeights = new double[leafCount];
+		double[] leafTimes = new double[leafCount];
 		int[] indicesSortedByLeafHeight  =new int[leafCount];
 
 		for (int i=0; i<leafCount; i++){ // get all leaf heights
-			leafHeights[i] = parameterization.getOrigin() - tree.getNode(i).getHeight();
+			leafTimes[i] = parameterization.getOrigin() - tree.getNode(i).getHeight();
 			// System.out.println(nodeHeight[i]);
 			indicesSortedByLeafHeight[i] = i;
 		}
 
-		HeapSort.sort(leafHeights, indicesSortedByLeafHeight); // sort leafs in order their height in the tree
-		//"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
+		HeapSort.sort(leafTimes, indicesSortedByLeafHeight); // sort leafs in order their time in the tree
+		//"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at time T and goes up to the root at time 0 (or >0)
 
 		double[][] pInitialCondsAtLeaves = new double[leafCount + 1][nStates];
 
-		double t = leafHeights[indicesSortedByLeafHeight[leafCount-1]];
+		double t = leafTimes[indicesSortedByLeafHeight[leafCount-1]];
 
 		pInitialCondsAtLeaves[indicesSortedByLeafHeight[leafCount-1]] = PG.getP(t);
 		double t0 = t;
 
 		if (leafCount >1 ){
 			for (int i = leafCount-2; i>-1; i--){
-				t = leafHeights[indicesSortedByLeafHeight[i]];
+				t = leafTimes[indicesSortedByLeafHeight[i]];
 
 				//If the next higher leaf is actually at the same height, store previous results and skip iteration
 				if (Math.abs(t-t0) < globalPrecisionThreshold) {

@@ -1,4 +1,4 @@
-package bdmm.distributions;
+package bdmm.parameterization;
 
 import beast.core.Input;
 
@@ -26,37 +26,37 @@ public class CanonicalParameterization extends Parameterization {
             "Contemporaneous sampling times and probabilities.", Input.Validate.REQUIRED);
 
     @Override
-    protected double[] getMigRateChangeTimes() {
+    public double[] getMigRateChangeTimes() {
         return migRateInput.get().getChangeTimes();
     }
 
     @Override
-    protected double[] getBirthRateChangeTimes() {
+    public double[] getBirthRateChangeTimes() {
         return birthRateInput.get().getChangeTimes();
     }
 
     @Override
-    protected double[] getCrossBirthRateChangeTimes() {
+    public double[] getCrossBirthRateChangeTimes() {
         return crossBirthRateInput.get().getChangeTimes();
     }
 
     @Override
-    protected double[] getDeathRateChangeTimes() {
+    public double[] getDeathRateChangeTimes() {
         return deathRateInput.get().getChangeTimes();
     }
 
     @Override
-    protected double[] getSamplingRateChangeTimes() {
+    public double[] getSamplingRateChangeTimes() {
         return samplingRateInput.get().getChangeTimes();
     }
 
     @Override
-    protected double[] getRemovalProbChangeTimes() {
+    public double[] getRemovalProbChangeTimes() {
         return removalProbInput.get().getChangeTimes();
     }
 
     @Override
-    protected double[] getRhoSamplingTimes() {
+    public double[] getRhoSamplingTimes() {
         return rhoSamplingInput.get().getTimes();
     }
 
