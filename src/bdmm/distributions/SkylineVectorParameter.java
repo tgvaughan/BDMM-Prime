@@ -1,6 +1,7 @@
 package bdmm.distributions;
 
 import bdmm.util.Utils;
+import beast.core.parameter.RealParameter;
 
 public class SkylineVectorParameter extends SkylineParameter {
 
@@ -8,6 +9,15 @@ public class SkylineVectorParameter extends SkylineParameter {
 
     double[][] values, storedValues;
     double[] valuesAtTime;
+
+
+    public SkylineVectorParameter() { }
+
+    public SkylineVectorParameter(RealParameter changeTimesParam,
+                                  RealParameter rateValuesParam) {
+        super(changeTimesParam, rateValuesParam);
+    }
+
 
     @Override
     public void initAndValidate() {

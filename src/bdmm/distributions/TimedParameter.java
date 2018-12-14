@@ -44,6 +44,14 @@ public class TimedParameter extends CalculationNode {
 
     boolean isDirty;
 
+    public TimedParameter() { }
+
+    public TimedParameter(RealParameter timesParam, RealParameter valuesParam) {
+        timesInput.setValue(timesParam, this);
+        valuesInput.setValue(valuesParam, this);
+        initAndValidate();
+    }
+
     @Override
     public void initAndValidate() {
         timesAreAges = timesAreAgesInput.get();
@@ -74,22 +82,16 @@ public class TimedParameter extends CalculationNode {
         isDirty = true;
     }
 
+    public int getNTypes() {
+        update();
+
+        return nTypes;
+    }
+
     public double[] getTimes() {
         update();
 
         return times;
-    }
-
-    public int getTimeCount() {
-        update();
-
-        return times.length;
-    }
-
-    int getIntervalIdx(double time) {
-        int idx = Arrays.binarySearch(times, time);
-
-        return idx;
     }
 
     public double[] getValuesAtTime(double time) {

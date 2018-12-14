@@ -19,7 +19,7 @@ public class CanonicalParameterization extends Parameterization {
     public Input<SkylineVectorParameter> samplingRateInput = new Input<>("samplingRate",
             "Sampling rate skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalRate",
+    public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalProb",
             "Removal prob skyline.", Input.Validate.REQUIRED);
 
     public Input<TimedParameter> rhoSamplingInput = new Input<>("rhoSampling",
@@ -93,5 +93,29 @@ public class CanonicalParameterization extends Parameterization {
     @Override
     protected double[] getRhoValues(double time) {
         return rhoSamplingInput.get().getValuesAtTime(time);
+    }
+
+    @Override
+    protected void validateParameterTypeCounts() {
+        if (birthRateInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Birth rate skyline type count does not match type count of model.");
+
+        if (deathRateInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Death rate skyline type count does not match type count of model.");
+
+        if (samplingRateInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Sampling rate skyline type count does not match type count of model.");
+
+        if (migRateInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Migration rate skyline type count does not match type count of model.");
+
+        if (crossBirthRateInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Birth rate among demes skyline type count does not match type count of model.");
+
+        if (removalProbInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Removal prob skyline type count does not match type count of model.");
+
+        if (rhoSamplingInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Rho sampling type count does not match type count of model.");
     }
 }

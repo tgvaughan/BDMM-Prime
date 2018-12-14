@@ -32,9 +32,18 @@ public abstract class SkylineParameter extends CalculationNode {
     double[] times, storedTimes;
 
 
-    int nIntervals;
+    int nIntervals, nTypes;
 
     boolean isDirty;
+
+    public SkylineParameter() { }
+
+    public SkylineParameter(RealParameter changeTimesParam,
+                            RealParameter rateValuesParam) {
+        changeTimesInput.setValue(changeTimesParam, this);
+        rateValuesInput.setValue(rateValuesParam, this);
+        initAndValidate();
+    }
 
     @Override
     public void initAndValidate() {
@@ -53,6 +62,12 @@ public abstract class SkylineParameter extends CalculationNode {
         storedTimes = new double[nIntervals-1];
 
         isDirty = true;
+    }
+
+    public int getNTypes() {
+        update();
+
+        return nTypes;
     }
 
     public double[] getChangeTimes() {

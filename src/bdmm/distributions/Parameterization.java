@@ -54,6 +54,8 @@ public abstract class Parameterization extends CalculationNode {
     protected abstract double[] getRemovalProbValues(double time);
     protected abstract double[] getRhoValues(double time);
 
+    protected abstract void validateParameterTypeCounts();
+
     public int getNTypes() {
         return nTypes;
     }
@@ -69,6 +71,8 @@ public abstract class Parameterization extends CalculationNode {
         updateModelEventTimes();
 
         if (birthRates == null) {
+            validateParameterTypeCounts();
+
             birthRates = new double[intervalStartTimes.length][nTypes];
             migRates = new double[intervalStartTimes.length][nTypes][nTypes];
             crossBirthRates = new double[intervalStartTimes.length][nTypes][nTypes];
@@ -92,6 +96,9 @@ public abstract class Parameterization extends CalculationNode {
     }
 
     private void addTimes(double[] times) {
+        if (times == null)
+            return;
+
         for (double time : times)
             intervalStartTimesSet.add(time);
     }

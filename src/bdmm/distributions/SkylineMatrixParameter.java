@@ -1,14 +1,23 @@
 package bdmm.distributions;
 
+import beast.core.parameter.RealParameter;
+
 import java.util.Arrays;
 
 public class SkylineMatrixParameter extends SkylineParameter {
 
-    int elementsPerMatrix, nTypes;
+    int elementsPerMatrix;
 
 
     double[][][] values, storedValues;
     double[][] valuesAtTime;
+
+    public SkylineMatrixParameter() { }
+
+    public SkylineMatrixParameter(RealParameter changeTimesParam,
+                                  RealParameter rateValuesParam) {
+        super(changeTimesParam, rateValuesParam);
+    }
 
     @Override
     public void initAndValidate() {
@@ -24,7 +33,6 @@ public class SkylineMatrixParameter extends SkylineParameter {
             throw new IllegalArgumentException("Wrong number of elements in matrix parameter: shoud be nTypes*(nTypes-1).");
 
         values = new double[nIntervals][nTypes][nTypes];
-        Arrays.fill(values, 0.0);
         storedValues = new double[nIntervals][nTypes][nTypes];
 
         valuesAtTime = new double[nTypes][nTypes];
