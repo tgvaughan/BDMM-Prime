@@ -84,7 +84,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 	/**
 	 * Total interval count
 	 */
-	static int n;  // number of states / locations
+	static int nStates;  // number of states / locations
 
 	Double[] freq;
 
@@ -152,12 +152,12 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			double to = t0;
 			double oneMinusRho;
 
-			int indexFrom = Utils.index(from, PG.times, PG.nIntervals);
-			int index = Utils.index(to, PG.times, PG.nIntervals);
+			int indexFrom = Utils.index(from, PG.intervalStartTimes);
+			int index = Utils.index(to, PG.intervalStartTimes);
 
 			int steps = index - indexFrom;
-			if (Math.abs(from-PG.times[indexFrom]) < globalPrecisionThreshold ) steps--;
-			if (index>0 && Math.abs(to-PG.times[index-1]) < globalPrecisionThreshold ) {
+			if (Math.abs(from-PG.intervalStartTimes[indexFrom]) < globalPrecisionThreshold ) steps--;
+			if (index>0 && Math.abs(to-PG.intervalStartTimes[index-1]) < globalPrecisionThreshold ) {
 				steps--;
 				index--;
 			}
@@ -168,7 +168,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 
 			while (steps > 0){
 
-				from = PG.times[index];
+				from = PG.intervalStartTimes[index];
 
 				pgScaled = safeIntegrate(PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
 
@@ -176,13 +176,13 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 				PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
 
-                for (int i=0; i<n; i++){
+                for (int i = 0; i< nStates; i++){
                     oneMinusRho = 1-PG.rho[index][i];
                     PG0.conditionsOnP[i] *= oneMinusRho;
                     PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
 				}
 
-				to = PG.times[index];
+				to = PG.intervalStartTimes[index];
 
 				steps--;
 				index--;
@@ -299,18 +299,18 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			//TODO set these two as class fields
 			double relativeToleranceConstant = 1e-7;
 			double absoluteToleranceConstant = 1e-100;
-			double[] absoluteToleranceVector = new double [2*n];
-			double[] relativeToleranceVector = new double [2*n];
+			double[] absoluteToleranceVector = new double [2* nStates];
+			double[] relativeToleranceVector = new double [2* nStates];
 
-			for(int i = 0; i<n; i++) {
+			for(int i = 0; i< nStates; i++) {
 				absoluteToleranceVector[i] = absoluteToleranceConstant;
-				if(pgScaled.getEquation()[i+n] > 0) { // adapt absoluteTolerance to the values stored in pgScaled
-					absoluteToleranceVector[i+n] = Math.max(1e-310, pgScaled.getEquation()[i+n]*absoluteToleranceConstant);
+				if(pgScaled.getEquation()[i+ nStates] > 0) { // adapt absoluteTolerance to the values stored in pgScaled
+					absoluteToleranceVector[i+ nStates] = Math.max(1e-310, pgScaled.getEquation()[i+ nStates]*absoluteToleranceConstant);
 				} else {
-					absoluteToleranceVector[i+n] = absoluteToleranceConstant;
+					absoluteToleranceVector[i+ nStates] = absoluteToleranceConstant;
 				}
 				relativeToleranceVector[i] = relativeToleranceConstant;
-				relativeToleranceVector[i+n] = relativeToleranceConstant;
+				relativeToleranceVector[i+ nStates] = relativeToleranceConstant;
 			}
 
 			double[] integrationResults = new double[pgScaled.getEquation().length];
@@ -354,7 +354,7 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 		HeapSort.sort(leafHeights, indicesSortedByLeafHeight); // sort leafs in order their height in the tree
 		//"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at height T and goes up to the root at height 0 (or >0)
 
-		double[][] pInitialCondsAtLeaves = new double[leafCount + 1][n];
+		double[][] pInitialCondsAtLeaves = new double[leafCount + 1][nStates];
 
 		double t = leafHeights[indicesSortedByLeafHeight[leafCount-1]];
 

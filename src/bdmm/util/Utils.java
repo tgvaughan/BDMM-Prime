@@ -11,12 +11,11 @@ public class Utils {
 
     /**
      * Finds the index of the time interval t lies in
-     * @param t
-     * @param times
-     * @param m the total number of time intervals + 1 (the total number of time change events)
+     * @param t time for which to identify interval
+     * @param times interval start times
      * @return
      */
-    public static int index(double t, double[] times, int m) {
+    public static int index(double t, double[] times) {
 
         int epoch = Arrays.binarySearch(times, t);
 

@@ -5,8 +5,6 @@ import bdmm.util.Utils;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 
-import java.util.Arrays;
-
 /**
  * User: Denise
  * Date: Jul 11, 2013
@@ -26,7 +24,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	public int nTypes; /* ODE numberOfDemes = stateNumber */
 	public int nIntervals;
-	public double[] times;
+	public double[] intervalStartTimes;
 
 	int maxEvals;
 	public int maxEvalsUsed;
@@ -52,7 +50,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 		maxEvalsUsed = 0;
 
 		this.origin = parameterization.getOrigin();
-		this.times= parameterization.getIntervalStartTimes();
+		this.intervalStartTimes = parameterization.getIntervalStartTimes();
 
 		this.P = P;
 	}
@@ -63,7 +61,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	public void computeDerivatives(double t, double[] g, double[] gDot) {
 
-		int interval = Utils.index(t, times, nIntervals);
+		int interval = Utils.index(t, intervalStartTimes);
 
 		for (int i = 0; i<nTypes; i++){
 
@@ -118,11 +116,9 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	/**
 	 * Perform integration on differential equations p
 	 * @param t
-	 * @param rhoSampling
-	 * @param rho
 	 * @return
 	 */
-	public double[] getP(double t, double[]P0, double t0){
+	public double[] getP(double t, double[] P0, double t0){
 
 
 		if (Math.abs(origin -t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   origin < t)
@@ -137,21 +133,21 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			double to = t0;
 			double oneMinusRho;
 
-			int indexFrom = Utils.index(from, times, times.length);
-			int index = Utils.index(to, times, times.length);
+			int indexFrom = Utils.index(from, intervalStartTimes);
+			int index = Utils.index(to, intervalStartTimes);
 
 			int steps = index - indexFrom;
 
 			index--;
-			if (Math.abs(from-times[indexFrom])<globalPrecisionThreshold) steps--;
-			if (index>0 && Math.abs(to-times[index-1])<globalPrecisionThreshold) {
+			if (Math.abs(from- intervalStartTimes[indexFrom])<globalPrecisionThreshold) steps--;
+			if (index>0 && Math.abs(to- intervalStartTimes[index-1])<globalPrecisionThreshold) {
 				steps--;
 				index--;
 			}
 
 			while (steps > 0){
 
-				from = times[index];
+				from = intervalStartTimes[index];
 
 				// TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
 				if (Math.abs(from-to)>globalPrecisionThreshold){
@@ -163,7 +159,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
                     }
 				}
 
-				to = times[index];
+				to = intervalStartTimes[index];
 
 				steps--;
 				index--;
@@ -174,7 +170,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			// TO DO
 			// check that both rateChangeTimes are really overlapping
 			// but really not sure that this is enough, i have to build appropriate tests
-			if(Math.abs(t-times[indexFrom])<globalPrecisionThreshold) {
+			if(Math.abs(t- intervalStartTimes[indexFrom])<globalPrecisionThreshold) {
                 for (int i = 0; i< nTypes; i++){
                     oneMinusRho = 1-rho[indexFrom][i];
                     result[i] *= oneMinusRho;
@@ -193,7 +189,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		double[] y = new double[nTypes];
 
-		int index = Utils.index(origin, times, nIntervals);
+		int index = Utils.index(origin, intervalStartTimes);
         for (int i = 0; i< nTypes; i++) {
             y[i] = (1 - rho[index][i]);    // initial condition: y_i[T]=1-rho_i
         }

@@ -7,7 +7,6 @@ import beast.core.Input;
 import beast.core.Description;
 import bdmm.util.Utils;
 
-import java.io.PrintStream;
 import java.util.concurrent.*;
 
 /**
@@ -34,6 +33,8 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 	double[] rootTypeProbs, storedRootTypeProbs;
 
+	boolean[] isRhoTip;
+
 	@Override
 	public void initAndValidate() {
 
@@ -52,8 +53,22 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 			}
 		}
 
-		rootTypeProbs = new double[n];
-        storedRootTypeProbs = new double[n];
+		rootTypeProbs = new double[nStates];
+        storedRootTypeProbs = new double[nStates];
+
+        // Determine which, if any, of the leaf ages correspond exactly to
+        // rho sampling times.
+        isRhoTip = new boolean[tree.getLeafNodeCount()];
+        for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++) {
+            isRhoTip[nodeNr] = false;
+            double nodeTime = parameterization.getOrigin()-tree.getNode(nodeNr).getHeight();
+            for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
+                if (rhoSampTime == nodeTime) {
+                    isRhoTip[nodeNr] = true;
+                    break;
+                }
+            }
+        }
 	}
 
 	/**
@@ -68,7 +83,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		if (node.isLeaf()) {
-			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, n);
+			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, nStates);
 		}
 
 		return getG(t,  PG0,  t0, PG);
@@ -103,7 +118,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 				if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 
-				for (int root_state=0; root_state<n; root_state++){
+				for (int root_state = 0; root_state< nStates; root_state++){
 					nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
 				}
 
@@ -120,7 +135,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 			if (print) System.out.print("final p per state = ");
 
-			for (int root_state=0; root_state<n; root_state++){
+			for (int root_state = 0; root_state< nStates; root_state++){
 
                 SmallNumber jointProb = pSN.conditionsOnG[root_state].scalarMultiply(freq[root_state]);
 				if (jointProb.getMantissa()>0 ) {
@@ -134,7 +149,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 			}
 
 			// Normalize root type probs:
-            for (int root_state=0; root_state<n; root_state++) {
+            for (int root_state = 0; root_state< nStates; root_state++) {
                 rootTypeProbs[root_state] -= PrSN.log();
                 rootTypeProbs[root_state] = Math.exp(rootTypeProbs[root_state]);
             }
@@ -200,7 +215,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 			}
 			else return nodeStates[node.getNr()];
 
-		}catch(Exception e){
+		} catch(Exception e){
 			throw new ConstraintViolatedException("Something went wrong with the assignment of types to the nodes (node ID="+node.getID()+"). Please check your XML file!");
 		}
 	}
@@ -215,21 +230,22 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 	/**
 	 *
-	 * @param node
-	 * @param from
-	 * @param to
-	 * @param PG
-	 * @return
+	 * @param node Node below edge.
+	 * @param tStart Time of start (top) of edge.
+	 * @param tEnd Time of end (bottom) of edge.
+	 * @param PG Object describing ODEs to integrate.
+     *
+	 * @return State at top of edge.
 	 */
-	p0ge_InitialConditions calculateSubtreeLikelihood(Node node, double from, double to, p0ge_ODE PG) {
+	p0ge_InitialConditions calculateSubtreeLikelihood(Node node, double tStart, double tEnd, p0ge_ODE PG) {
 
-		double[] pconditions = new double[n];
-		SmallNumber[] gconditions = new SmallNumber[n];
-		for (int i=0; i<n; i++) gconditions[i] = new SmallNumber();
+		double[] pconditions = new double[nStates];
+		SmallNumber[] gconditions = new SmallNumber[nStates];
+		for (int i = 0; i< nStates; i++) gconditions[i] = new SmallNumber();
 
 		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
 
-		int index = Utils.index(to, PG.times, PG.times.length);
+		int index = Utils.index(tEnd, PG.intervalStartTimes);
 
 		if (node.isLeaf()){ // sampling event
 
@@ -239,38 +255,39 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 			if (nodestate==-1) { //unknown state
 
 				//TODO test if SA model case is properly implemented (not tested!)
-				for (int i=0; i<n; i++) {
+				for (int state = 0; state< nStates; state++) {
 
 					if (!isRhoTip[node.getNr()]) {
-						init.conditionsOnG[i] = new SmallNumber((PG.r[index][i] + pInitialConditions[node.getNr()][i]*(1-PG.r[index][i]))
-										*PG.s[index][i]); // with SA: ψ_i(r + (1 − r)p_i(τ))
+						init.conditionsOnG[state] = new SmallNumber(
+						        (PG.r[index][state] + pInitialConditions[node.getNr()][state]*(1-PG.r[index][state]))
+										* PG.s[index][state]); // with SA: ψ_i(r + (1 − r)p_i(τ))
 					}
 					else {
-						init.conditionsOnG[i] = new SmallNumber((PG.r[index][i] + pInitialConditions[node.getNr()][i] / (1 - PG.rho[index][i]) * (1 - PG.r[index][i]))
-										* PG.rho[index][i]);
+						init.conditionsOnG[state] = new SmallNumber(
+						        (PG.r[index][state] + pInitialConditions[node.getNr()][state]
+                                        / (1 - PG.rho[index][state]) * (1 - PG.r[index][state]))
+										* PG.rho[index][state]);
 					}
 				}
 			}
 			else {
 
 				if (!isRhoTip[node.getNr()]) {
-
-					init.conditionsOnG[nodestate] = SAModel?
-							new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]*(1-r[nodestate * totalIntervals + index]))
-									*psi[nodestate * totalIntervals + index]) // with SA: ψ_i(r + (1 − r)p_i(τ))
-							: new SmallNumber(psi[nodestate * totalIntervals + index]);
-
+					init.conditionsOnG[nodestate] = new SmallNumber(
+					        (r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]
+                                    *(1-r[nodestate * totalIntervals + index]))
+                                    *psi[nodestate * totalIntervals + index]); // with SA: ψ_i(r + (1 − r)p_i(τ))
 				}	else {
-					init.conditionsOnG[nodestate] = SAModel?
-							new SmallNumber((r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]/(1-rho[nodestate*totalIntervals+index])*(1-r[nodestate * totalIntervals + index]))
-									*rho[nodestate*totalIntervals+index])  :
-							new SmallNumber(rho[nodestate*totalIntervals+index]); // rho-sampled leaf in the past: ρ_i(τ)(r + (1 − r)p_i(τ+δ)) //the +δ is translated by dividing p_i with 1-ρ_i (otherwise there's one too many "*ρ_i" )
+					init.conditionsOnG[nodestate] = new SmallNumber(
+					        (r[nodestate * totalIntervals + index] + pInitialConditions[node.getNr()][nodestate]
+                                    /(1-rho[nodestate*totalIntervals+index])*(1-r[nodestate * totalIntervals + index]))
+									*rho[nodestate*totalIntervals+index]);
 				}
 
 			}
-			if (print) System.out.println("Sampling at time " + (parameterization.getMaxTime()-to));
+			if (print) System.out.println("Sampling at time " + (parameterization.getMaxTime()-tEnd));
 
-			return getG(from, init, to, PG, node);
+			return getG(tStart, init, tEnd, PG, node);
 		}
 
 
@@ -285,13 +302,13 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
-				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), to, parameterization.getOrigin() - node.getChild(childIndex).getHeight(), PG);
+				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), tEnd, parameterization.getOrigin() - node.getChild(childIndex).getHeight(), PG);
 
 				int saNodeState = getNodeState(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
 
 				//TODO test if properly implemented (not tested!)
 				if (saNodeState == -1) { // unknown state
-					for (int i = 0; i < n; i++) {
+					for (int i = 0; i < nStates; i++) {
 						if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
 							init.conditionsOnP[i] = g.conditionsOnP[i];
@@ -347,9 +364,9 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 					try {
 						// start a new thread to take care of the second subtree
 						Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
-								new TraversalServiceUncoloured(node.getChild(indexSecondChild), to, parameterization.getMaxTime() - node.getChild(indexSecondChild).getHeight()));
+								new TraversalServiceUncoloured(node.getChild(indexSecondChild), tEnd, parameterization.getMaxTime() - node.getChild(indexSecondChild).getHeight()));
 
-						g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), to, parameterization.getMaxTime() - node.getChild(indexFirstChild).getHeight(), PG);
+						g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), tEnd, parameterization.getMaxTime() - node.getChild(indexFirstChild).getHeight(), PG);
 						g1 = secondChildTraversal.get();
 
 					} catch (Exception e) {
@@ -357,16 +374,16 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 						//TODO deal with exceptions properly, maybe do the traversal serially if something failed.
 					}
 				} else {
-					g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), to, parameterization.getMaxTime() - node.getChild(indexFirstChild).getHeight(), PG);
-					g1 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), to, parameterization.getMaxTime() - node.getChild(indexSecondChild).getHeight(), PG);
+					g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), tEnd, parameterization.getMaxTime() - node.getChild(indexFirstChild).getHeight(), PG);
+					g1 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), tEnd, parameterization.getMaxTime() - node.getChild(indexSecondChild).getHeight(), PG);
 				}
 
 
 				if (print)
-					System.out.println("Infection at time " + (parameterization.getMaxTime() - to));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
+					System.out.println("Infection at time " + (parameterization.getMaxTime() - tEnd));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
 
 
-				for (int childstate = 0; childstate < n; childstate++) {
+				for (int childstate = 0; childstate < nStates; childstate++) {
 
 					if (print) {
 						System.out.println("state " + childstate + "\t p0 = " + g0.conditionsOnP[childstate] + "\t p1 = " + g1.conditionsOnP[childstate]);
@@ -377,10 +394,10 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 					init.conditionsOnG[childstate] = SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[childstate]).scalarMultiply(birth[childstate * totalIntervals + index]);
 
 					if (birthAmongDemes) {
-						for (int j = 0; j < n; j++) {
+						for (int j = 0; j < nStates; j++) {
 							if (childstate != j) {
 								init.conditionsOnG[childstate] = SmallNumber.add(init.conditionsOnG[childstate], SmallNumber.add(SmallNumber.multiply(g0.conditionsOnG[childstate], g1.conditionsOnG[j]) , SmallNumber.multiply(g0.conditionsOnG[j], g1.conditionsOnG[childstate]))
-										.scalarMultiply(0.5 * b_ij[totalIntervals * (childstate * (n - 1) + (j < childstate ? j : j - 1)) + index]));
+										.scalarMultiply(0.5 * b_ij[totalIntervals * (childstate * (nStates - 1) + (j < childstate ? j : j - 1)) + index]));
 							}
 						}
 
@@ -401,12 +418,12 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
 
 		if (print){
 			System.out.print("p after subtree merge = ");
-			for (int i=0;i<n;i++) System.out.print(init.conditionsOnP[i] + "\t");
-			for (int i=0;i<n;i++) System.out.print(init.conditionsOnG[i] + "\t");
+			for (int i = 0; i< nStates; i++) System.out.print(init.conditionsOnP[i] + "\t");
+			for (int i = 0; i< nStates; i++) System.out.print(init.conditionsOnG[i] + "\t");
 			System.out.println();
 		}
 
-		return getG(from, init, to, PG, node);
+		return getG(tStart, init, tEnd, PG, node);
 	}
 
 
@@ -446,7 +463,7 @@ public class BirthDeathMigrationDistribution extends PiecewiseBirthDeathMigratio
     public void store() {
         super.store();
 
-        for (int i=0; i<n; i++)
+        for (int i = 0; i< nStates; i++)
             storedRootTypeProbs[i] = rootTypeProbs[i];
     }
 
