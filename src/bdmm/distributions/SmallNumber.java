@@ -123,6 +123,17 @@ public class SmallNumber {
 		result.update();
 		return result;
 	}
+
+    /**
+     * Return a new SmallNumber which is the result of multiplying this number
+     * by multiplicand.
+     *
+     * @param multiplicand number to multiply this number by.
+     * @return result of multiplication.
+     */
+	public SmallNumber multiplyBy(SmallNumber multiplicand) {
+	    return multiply(this, multiplicand);
+    }
 	
 	/**
 	 * Multiply a SmallNumber with a double
@@ -176,6 +187,17 @@ public class SmallNumber {
 			return c;
 		}
 	}
+
+    /**
+     * Return a new SmallNumber which is the result of adding this
+     * small number to otherNumber.
+     *
+     * @param otherNumber number to add to this one.
+     * @return result of addition.
+     */
+	public SmallNumber addTo(SmallNumber otherNumber) {
+	    return SmallNumber.add(this, otherNumber);
+    }
 
 	/**
 	 * If possible, return the number of interest in a 'double'
