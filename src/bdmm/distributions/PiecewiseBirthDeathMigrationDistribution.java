@@ -152,8 +152,8 @@ public abstract class PiecewiseBirthDeathMigrationDistribution extends SpeciesTr
 			double to = t0;
 			double oneMinusRho;
 
-			int indexFrom = Utils.index(from, PG.intervalStartTimes);
-			int index = Utils.index(to, PG.intervalStartTimes);
+			int indexFrom = Utils.getIntervalIndex(from, PG.intervalStartTimes);
+			int index = Utils.getIntervalIndex(to, PG.intervalStartTimes);
 
 			int steps = index - indexFrom;
 			if (Math.abs(from-PG.intervalStartTimes[indexFrom]) < globalPrecisionThreshold ) steps--;

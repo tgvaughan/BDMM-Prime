@@ -45,7 +45,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 
 	public void computeDerivatives(double t, double[] y, double[] yDot) {
 
-		int interval = Utils.index(t, times, nIntervals); //finds the indexTimeInterval of the time interval t lies in
+		int interval = Utils.getIntervalIndex(t, times); //finds the indexTimeInterval of the time interval t lies in
 
 		for (int i = 0; i< nTypes; i++){
 

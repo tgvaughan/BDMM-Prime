@@ -15,18 +15,18 @@ public class Utils {
      * @param times interval start times
      * @return
      */
-    public static int index(double t, double[] times) {
+    public static int getIntervalIndex(double t, double[] times) {
 
-        int epoch = Arrays.binarySearch(times, t);
+        int index = Arrays.binarySearch(times, t);
 
-        // If t was not found in array times by binarySearch, then epoch is negative and binarySearch returns (-(insertion point) - 1).
-        // The insertion point is the point at which t would be inserted into the array times
-        if (epoch < 0) {
-            epoch = -epoch - 1;
-        }
+        // If t was not found in array times by binarySearch,
+        // then epoch is negative and binarySearch returns
+        // (-(insertion point) - 1).
+        if (index < 0)
+            index = -index - 2;
 
         // return at most the index of the last interval (m-1)
-        return Math.min(epoch, m-1);
+        return Math.min(index, times.length-1);
     }
 
     public static void reverseDoubleArray(double[] array) {

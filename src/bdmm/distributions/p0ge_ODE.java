@@ -61,7 +61,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 	public void computeDerivatives(double t, double[] g, double[] gDot) {
 
-		int interval = Utils.index(t, intervalStartTimes);
+		int interval = Utils.getIntervalIndex(t, intervalStartTimes);
 
 		for (int i = 0; i<nTypes; i++){
 
@@ -133,8 +133,8 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 			double to = t0;
 			double oneMinusRho;
 
-			int indexFrom = Utils.index(from, intervalStartTimes);
-			int index = Utils.index(to, intervalStartTimes);
+			int indexFrom = Utils.getIntervalIndex(from, intervalStartTimes);
+			int index = Utils.getIntervalIndex(to, intervalStartTimes);
 
 			int steps = index - indexFrom;
 
@@ -189,7 +189,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 
 		double[] y = new double[nTypes];
 
-		int index = Utils.index(origin, intervalStartTimes);
+		int index = Utils.getIntervalIndex(origin, intervalStartTimes);
         for (int i = 0; i< nTypes; i++) {
             y[i] = (1 - rho[index][i]);    // initial condition: y_i[T]=1-rho_i
         }
