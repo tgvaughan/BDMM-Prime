@@ -34,46 +34,67 @@ import java.util.concurrent.*;
         "This implementation also works with sampled ancestor trees.")
 public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
-    public Input<Parameterization> parameterizationInput =
-            new Input<>("parameterization", "BDMM parameterization", Input.Validate.REQUIRED);
+    public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
+            "BDMM parameterization",
+            Input.Validate.REQUIRED);
 
-	public Input<RealParameter> frequencies =
-			new Input<>("frequencies", "The frequencies for each type",  Input.Validate.REQUIRED);
+	public Input<RealParameter> frequencies = new Input<>("frequencies",
+            "The frequencies for each type",
+            Input.Validate.REQUIRED);
 
 	public Input<TraitSet> tiptypes = new Input<>("tiptypes",
-            "trait information for initializing traits (like node types/locations) in the tree");
+            "trait information for initializing traits " +
+                    "(like node types/locations) in the tree");
 
 	public Input<String> typeLabel = new Input<>("typeLabel",
-            "type label in tree for initializing traits (like node types/locations) in the tree");
+            "type label in tree for initializing traits " +
+                    "(like node types/locations) in the tree");
 
 	public Input<IntegerParameter> tipTypeArray = new Input<>("tipTypeArray",
-            "integer array of traits (like node types/locations) in the tree, index corresponds to node number in tree");
+            "integer array of traits (like node types/locations) " +
+                    "in the tree, index corresponds to node number in tree");
 
-	public Input<Integer> maxEvaluations =
-			new Input<>("maxEvaluations", "The maximum number of evaluations for ODE solver", 1000000);
+	public Input<Integer> maxEvaluations = new Input<>("maxEvaluations",
+            "The maximum number of evaluations for ODE solver",
+            1000000);
 
-	public Input<Boolean> conditionOnSurvival =
-			new Input<>("conditionOnSurvival", "condition on at least one survival? Default true.", true);
+	public Input<Boolean> conditionOnSurvival = new Input<>("conditionOnSurvival",
+            "condition on at least one survival? Default true.",
+            true);
 
-	public Input<Double> relativeTolerance =
-			new Input<>("relTolerance", "relative tolerance for numerical integration", 1e-7);
+	public Input<Double> relativeTolerance = new Input<>("relTolerance",
+            "relative tolerance for numerical integration",
+            1e-7);
 
-	public Input<Double> absoluteTolerance =
-			new Input<>("absTolerance", "absolute tolerance for numerical integration", 1e-100 /*Double.MIN_VALUE*/);
+	public Input<Double> absoluteTolerance = new Input<>("absTolerance",
+            "absolute tolerance for numerical integration",
+            1e-100 /*Double.MIN_VALUE*/);
 
-	public Input<Boolean> checkRho = new Input<>("checkRho", "check if rho is set if multiple tips are given at present (default true)", true);
+	public Input<Boolean> checkRho = new Input<>("checkRho",
+            "check if rho is set if multiple tips are " +
+                    "given at present (default true)",
+            true);
 
-	public Input<Boolean> isParallelizedCalculationInput = new Input<>("parallelize", "is the calculation parallelized on sibling subtrees or not (default true)", true);
+	public Input<Boolean> isParallelizedCalculationInput = new Input<>(
+	        "parallelize",
+            "is the calculation parallelized on sibling subtrees " +
+                    "or not (default true)",
+            true);
 
-	//If a large number a cores is available (more than 8 or 10) the calculation speed can be increased by diminishing the parallelization factor
-	//On the contrary, if only 2-4 cores are available, a slightly higher value (1/5 to 1/8) can be beneficial to the calculation speed.
-	public Input<Double> minimalProportionForParallelizationInput = new Input<>("parallelizationFactor", "the minimal relative size the two children subtrees of a node" +
-			" must have to start parallel calculations on the children. (default: 1/10). ", 1.0/10);
-
-
+	/* If a large number a cores is available (more than 8 or 10) the
+	calculation speed can be increased by diminishing the parallelization
+	factor. On the contrary, if only 2-4 cores are available, a slightly
+	higher value (1/5 to 1/8) can be beneficial to the calculation speed. */
+	public Input<Double> minimalProportionForParallelizationInput = new Input<>(
+	        "parallelizationFactor",
+            "the minimal relative size the two children " +
+                    "subtrees of a node must have to start parallel " +
+                    "calculations on the children. (default: 1/10). ",
+            1.0/10);
 
 	public Input<Boolean> storeNodeTypes = new Input<>("storeNodeTypes",
-            "store tip node types? this assumes that tip types cannot change (default false)", false);
+            "store tip node types? this assumes that tip types cannot " +
+                    "change (default false)", false);
 
 	private int[] nodeStates;
 
@@ -215,8 +236,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		SmallNumber PrSN = new SmallNumber(0);
 		double nosample = 0;
 
-//		try{  // start calculation
-
         pInitialConditions = getAllInitialConditionsForP(tree);
 
         if (conditionOnSurvival.get()) {
@@ -235,8 +254,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         p0ge_InitialConditions pSN;
-
-        //if(isParallelizedCalculation) {executorBootUp();}
 
         pSN = calculateSubtreeLikelihood(root,0, parameterization.getOrigin() - tree.getRoot().getHeight(), PG);
 
@@ -265,17 +282,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             PrSN = PrSN.scalarMultiply(1/(1-nosample));
         }
 
-//		}
-//		catch(Exception e){
-//
-//			if (e instanceof ConstraintViolatedException){throw e;}
-//
-//			logP =  Double.NEGATIVE_INFINITY;
-//
-//			//if(isParallelizedCalculation) executorShutdown();
-//			return logP;
-//		}
-
 		logP = PrSN.log();
 
 		if (print) System.out.println("\nlogP = " + logP);
@@ -283,7 +289,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		// TGV: Why is this necessary?
 		if (Double.isInfinite(logP)) logP = Double.NEGATIVE_INFINITY;
 
-		//if(isParallelizedCalculation) executorShutdown();
 		return logP;
 	}
 
