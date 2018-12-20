@@ -1,39 +1,39 @@
 package bdmm.distributions;
 
-import beast.core.Description;
-
 /**
  * Created by Jeremie Scire (jscire)
  */
 
-@Description("This type contains both sets of initial conditions for both equation types: p and ge")
+/**
+ * Class containing the values of P0 and Ge.
+ */
 public class P0GeState {
 	
 	int dimension;
-	public SmallNumber[] conditionsOnG;
-	public double[] conditionsOnP;
+	public SmallNumber[] ge;
+	public double[] p0;
+
+	public P0GeState(int nTypes) {
+	    dimension = nTypes;
+        p0 = new double[nTypes];
+		ge = new SmallNumber[nTypes];
+		for (int i = 0; i<nTypes; i++)
+		    ge[i] = new SmallNumber();
+
+    }
 	
-	public P0GeState(double[] pcond, SmallNumber[] gcond) {
-		if(pcond.length != gcond.length) {
-			throw new RuntimeException("Incorrect initialization: difference of size between conditionsOnG and conditionsOnP");
+	public P0GeState(double[] p0, SmallNumber[] ge) {
+		if(p0.length != ge.length) {
+			throw new RuntimeException("Incorrect initialization: difference of size between ge and p0");
 		}
-		dimension = pcond.length;
-		conditionsOnP = pcond;
-		conditionsOnG = gcond;
+		dimension = p0.length;
+		this.p0 = p0;
+		this.ge = ge;
 	}
 	
 	public P0GeState() {
 		dimension = 1;
-		conditionsOnP = new double[] {0};
-		conditionsOnG = new SmallNumber[] {new SmallNumber()};
+		p0 = new double[] {0};
+		ge = new SmallNumber[] {new SmallNumber()};
 	}
-	
-	public double[] getConditionsOnP(){
-		return this.conditionsOnP;
-	}
-	
-	public SmallNumber[] getConditionsOnG(){
-		return this.conditionsOnG;
-	}
-
 }

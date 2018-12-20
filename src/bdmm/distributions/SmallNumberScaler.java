@@ -36,8 +36,8 @@ public class SmallNumberScaler {
 		if (conditions == null)
 			throw new RuntimeException("Incorrect input (null) in method scale");
 
-		int n = conditions.getConditionsOnP().length;
-		SmallNumber[] geConditions = conditions.getConditionsOnG();
+		int n = conditions.p0.length;
+		SmallNumber[] geConditions = conditions.ge;
 
 		// scalingFactors will store the scaling factor chosen for the ge equations in the array 'geConditions'.
 		int scalingFactor = 0;
@@ -45,7 +45,7 @@ public class SmallNumberScaler {
 
 		// the first half of 'scaledEquations' contains the initial conditions for p equations, no scaling process is needed there
 		for (int i=0; i<n; i++){
-			scaledEquation[i] = conditions.getConditionsOnP()[i];
+			scaledEquation[i] = conditions.p0[i];
 		}
 
 		if (geConditions.length > 0) {

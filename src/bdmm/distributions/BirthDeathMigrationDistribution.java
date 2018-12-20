@@ -98,8 +98,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 	private int[] nodeStates;
 
-//	private final boolean print = false;
-    private final boolean print = true;
+//	private final boolean debug = false;
+    private final boolean debug = true;
 
 	private double[] rootTypeProbs, storedRootTypeProbs;
 	private boolean[] isRhoTip;
@@ -203,7 +203,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (conditionOnSurvival.get()) {
 
             double[] noSampleExistsProp = pInitialConditions[pInitialConditions.length-1];
-            if (print) System.out.println("\nnoSampleExistsProp = "
+            if (debug) System.out.println("\nnoSampleExistsProp = "
                     + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 
             for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++){
@@ -218,13 +218,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         P0GeState finalP0Ge = calculateSubtreeLikelihood(root,0,
                 parameterization.getOrigin() - tree.getRoot().getHeight(), PG);
 
-        if (print) System.out.print("final p per state = ");
+        if (debug) System.out.print("final p per state = ");
 
         SmallNumber PrSN = new SmallNumber(0);
         for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++){
 
             SmallNumber jointProb = finalP0Ge
-                    .conditionsOnG[rootType]
+                    .ge[rootType]
                     .scalarMultiply(frequenciesInput.get().getArrayValue(rootType));
             if (jointProb.getMantissa()>0 ) {
                 rootTypeProbs[rootType] = jointProb.log();
@@ -233,8 +233,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 rootTypeProbs[rootType] = Double.NEGATIVE_INFINITY;
             }
 
-            if (print) System.out.print(finalP0Ge.conditionsOnP[rootType] + "\t"
-                    + finalP0Ge.conditionsOnG[rootType] + "\t");
+            if (debug) System.out.print(finalP0Ge.p0[rootType] + "\t"
+                    + finalP0Ge.ge[rootType] + "\t");
         }
 
         // Normalize root type probs:
@@ -249,7 +249,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 		logP = PrSN.log();
 
-		if (print) System.out.println("\nlogP = " + logP);
+		if (debug) System.out.println("\nlogP = " + logP);
 
 		// TGV: Why is this necessary?
 		if (Double.isInfinite(logP)) logP = Double.NEGATIVE_INFINITY;
@@ -311,20 +311,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	 * @param node Node below edge.
 	 * @param tStart Time of start (top) of edge.
 	 * @param tEnd Time of end (bottom) of edge.
-	 * @param PG Object describing ODEs to integrate.
+	 * @param system Object describing ODEs to integrate.
      *
 	 * @return State at top of edge.
 	 */
-    private P0GeState calculateSubtreeLikelihood(Node node, double tStart, double tEnd, P0GeSystem PG) {
+    private P0GeState calculateSubtreeLikelihood(Node node, double tStart, double tEnd, P0GeSystem system) {
 
-		double[] pconditions = new double[parameterization.getNTypes()];
-		SmallNumber[] gconditions = new SmallNumber[parameterization.getNTypes()];
-		for (int i = 0; i<parameterization.getNTypes(); i++)
-		    gconditions[i] = new SmallNumber();
+		P0GeState state = new P0GeState(parameterization.getNTypes());
 
-		P0GeState init = new P0GeState(pconditions, gconditions);
-
-		int intervalIdx = Utils.getIntervalIndex(tEnd, PG.intervalStartTimes);
+		int intervalIdx = Utils.getIntervalIndex(tEnd, system.intervalStartTimes);
 
 		if (node.isLeaf()){ // sampling event
 
@@ -336,36 +331,36 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				for (int type = 0; type < parameterization.getNTypes(); type++) {
 
 					if (!isRhoTip[node.getNr()]) {
-						init.conditionsOnG[type] = new SmallNumber(
-						        (PG.r[intervalIdx][type] + pInitialConditions[node.getNr()][type]*(1-PG.r[intervalIdx][type]))
-										* PG.s[intervalIdx][type]); // with SA: ψ_i(r + (1 − r)p_i(τ))
+						state.ge[type] = new SmallNumber(
+						        (system.r[intervalIdx][type] + pInitialConditions[node.getNr()][type]*(1-system.r[intervalIdx][type]))
+										* system.s[intervalIdx][type]); // with SA: ψ_i(r + (1 − r)p_i(τ))
 					}
 					else {
-						init.conditionsOnG[type] = new SmallNumber(
-						        (PG.r[intervalIdx][type] + pInitialConditions[node.getNr()][type]
-                                        / (1 - PG.rho[intervalIdx][type]) * (1 - PG.r[intervalIdx][type]))
-										* PG.rho[intervalIdx][type]);
+						state.ge[type] = new SmallNumber(
+						        (system.r[intervalIdx][type] + pInitialConditions[node.getNr()][type]
+                                        / (1 - system.rho[intervalIdx][type]) * (1 - system.r[intervalIdx][type]))
+										* system.rho[intervalIdx][type]);
 					}
 				}
 			}
 			else {
 
 				if (!isRhoTip[node.getNr()]) {
-					init.conditionsOnG[nodeType] = new SmallNumber(
-					        (PG.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
-                                    * (1-PG.r[intervalIdx][nodeType]))
-                                    * PG.s[intervalIdx][nodeType]); // with SA: ψ_i(r + (1 − r)p_i(τ))
+					state.ge[nodeType] = new SmallNumber(
+					        (system.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
+                                    * (1-system.r[intervalIdx][nodeType]))
+                                    * system.s[intervalIdx][nodeType]); // with SA: ψ_i(r + (1 − r)p_i(τ))
 				} else {
-					init.conditionsOnG[nodeType] = new SmallNumber(
-					        (PG.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
-                                    /(1-PG.rho[intervalIdx][nodeType])*(1-PG.r[intervalIdx][nodeType]))
-									*PG.rho[intervalIdx][nodeType]);
+					state.ge[nodeType] = new SmallNumber(
+					        (system.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
+                                    /(1-system.rho[intervalIdx][nodeType])*(1-system.r[intervalIdx][nodeType]))
+									*system.rho[intervalIdx][nodeType]);
 				}
 
 			}
-			if (print) System.out.println("Sampling at time " + (parameterization.getOrigin()-tEnd));
+			if (debug) System.out.println("Sampling at time " + (parameterization.getOrigin()-tEnd));
 
-			return getG(tStart, init, tEnd, PG, node);
+			return getG(tStart, state, tEnd, system, node);
 		}
 
 
@@ -377,7 +372,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
-				P0GeState g = calculateSubtreeLikelihood(node.getChild(childIndex), tEnd, parameterization.getOrigin() - node.getChild(childIndex).getHeight(), PG);
+				P0GeState g = calculateSubtreeLikelihood(node.getChild(childIndex), tEnd, parameterization.getOrigin() - node.getChild(childIndex).getHeight(), system);
 
 				int saNodeType = getNodeType(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
 
@@ -386,15 +381,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 					for (int type = 0; type < parameterization.getNTypes(); type++) {
 						if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
-							init.conditionsOnP[type] = g.conditionsOnP[type];
-							init.conditionsOnG[type] = g.conditionsOnG[type].scalarMultiply(PG.s[intervalIdx][type]
-									* (1 - PG.r[intervalIdx][type]));
+							state.p0[type] = g.p0[type];
+							state.ge[type] = g.ge[type].scalarMultiply(system.s[intervalIdx][type]
+									* (1 - system.r[intervalIdx][type]));
 
 						} else {
 							// TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
-							init.conditionsOnP[type] = g.conditionsOnP[type] * (1 - PG.rho[intervalIdx][type]);
-							init.conditionsOnG[type] = g.conditionsOnG[type].scalarMultiply(PG.rho[intervalIdx][type]
-									* (1 - PG.r[intervalIdx][type]));
+							state.p0[type] = g.p0[type] * (1 - system.rho[intervalIdx][type]);
+							state.ge[type] = g.ge[type].scalarMultiply(system.rho[intervalIdx][type]
+									* (1 - system.r[intervalIdx][type]));
 
 						}
 					}
@@ -402,20 +397,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				else {
 					if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
-						init.conditionsOnP[saNodeType] = g.conditionsOnP[saNodeType];
-						init.conditionsOnG[saNodeType] = g.conditionsOnG[saNodeType]
-                                .scalarMultiply(PG.s[intervalIdx][saNodeType]
-								* (1 - PG.r[intervalIdx][saNodeType]));
+						state.p0[saNodeType] = g.p0[saNodeType];
+						state.ge[saNodeType] = g.ge[saNodeType]
+                                .scalarMultiply(system.s[intervalIdx][saNodeType]
+								* (1 - system.r[intervalIdx][saNodeType]));
 
 //					System.out.println("SA but not rho sampled");
 
 					} else {
 						// TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
-						init.conditionsOnP[saNodeType] = g.conditionsOnP[saNodeType]
-                                * (1 - PG.rho[intervalIdx][saNodeType]);
-						init.conditionsOnG[saNodeType] = g.conditionsOnG[saNodeType]
-                                .scalarMultiply(PG.rho[intervalIdx][saNodeType]
-								* (1 - PG.r[intervalIdx][saNodeType]));
+						state.p0[saNodeType] = g.p0[saNodeType]
+                                * (1 - system.rho[intervalIdx][saNodeType]);
+						state.ge[saNodeType] = g.ge[saNodeType]
+                                .scalarMultiply(system.rho[intervalIdx][saNodeType]
+								* (1 - system.r[intervalIdx][saNodeType]));
 
 					}
 				}
@@ -446,7 +441,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                                         parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight()));
 
                         g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), tEnd,
-                                parameterization.getOrigin() - node.getChild(indexFirstChild).getHeight(), PG);
+                                parameterization.getOrigin() - node.getChild(indexFirstChild).getHeight(), system);
                         g1 = secondChildTraversal.get();
                     } catch (InterruptedException | ExecutionException e) {
                         e.printStackTrace();
@@ -456,42 +451,42 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 } else {
 					g0 = calculateSubtreeLikelihood(node.getChild(indexFirstChild), tEnd,
-                            parameterization.getOrigin() - node.getChild(indexFirstChild).getHeight(), PG);
+                            parameterization.getOrigin() - node.getChild(indexFirstChild).getHeight(), system);
 					g1 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), tEnd,
-                            parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight(), PG);
+                            parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight(), system);
 				}
 
 
-				if (print)
+				if (debug)
 					System.out.println("Infection at time " + (parameterization.getOrigin() - tEnd));//+ " with p = " + p + "\tg0 = " + g0 + "\tg1 = " + g1);
 
 
 				for (int childType = 0; childType < parameterization.getNTypes(); childType++) {
 
-					if (print) {
-						System.out.println("state " + childType + "\t p0 = " + g0.conditionsOnP[childType] + "\t p1 = " + g1.conditionsOnP[childType]);
-						System.out.println("\t\t g0 = " + g0.conditionsOnG[childType] + "\t g1 = " + g1.conditionsOnG[childType]);
+					if (debug) {
+						System.out.println("state " + childType + "\t p0 = " + g0.p0[childType] + "\t p1 = " + g1.p0[childType]);
+						System.out.println("\t\t g0 = " + g0.ge[childType] + "\t g1 = " + g1.ge[childType]);
 					}
 
-					init.conditionsOnP[childType] = g0.conditionsOnP[childType];
-					init.conditionsOnG[childType] = SmallNumber
-                            .multiply(g0.conditionsOnG[childType], g1.conditionsOnG[childType])
-                            .scalarMultiply(PG.b[intervalIdx][childType]);
+					state.p0[childType] = g0.p0[childType];
+					state.ge[childType] = SmallNumber
+                            .multiply(g0.ge[childType], g1.ge[childType])
+                            .scalarMultiply(system.b[intervalIdx][childType]);
 
                     for (int otherChildType = 0; otherChildType < parameterization.getNTypes(); otherChildType++) {
                         if (otherChildType == childType)
                             continue;
 
-                        init.conditionsOnG[childType] = SmallNumber.add(
-                                init.conditionsOnG[childType],
+                        state.ge[childType] = SmallNumber.add(
+                                state.ge[childType],
                                 SmallNumber.add(
-                                        SmallNumber.multiply(g0.conditionsOnG[childType], g1.conditionsOnG[otherChildType]),
-                                        SmallNumber.multiply(g0.conditionsOnG[otherChildType], g1.conditionsOnG[childType]))
-                                        .scalarMultiply(0.5 * PG.b_ij[intervalIdx][childType][otherChildType]));
+                                        SmallNumber.multiply(g0.ge[childType], g1.ge[otherChildType]),
+                                        SmallNumber.multiply(g0.ge[otherChildType], g1.ge[childType]))
+                                        .scalarMultiply(0.5 * system.b_ij[intervalIdx][childType][otherChildType]));
                     }
 
 
-					if (Double.isInfinite(init.conditionsOnP[childType])) {
+					if (Double.isInfinite(state.p0[childType])) {
 						throw new RuntimeException("infinite likelihood");
 					}
 				}
@@ -504,14 +499,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 			throw new RuntimeException("Error: Single child-nodes found (although not using sampled ancestors)");
 		}
 
-		if (print){
+		if (debug){
 			System.out.print("p after subtree merge = ");
-			for (int i = 0; i< parameterization.getNTypes(); i++) System.out.print(init.conditionsOnP[i] + "\t");
-			for (int i = 0; i< parameterization.getNTypes(); i++) System.out.print(init.conditionsOnG[i] + "\t");
+			for (int i = 0; i< parameterization.getNTypes(); i++) System.out.print(state.p0[i] + "\t");
+			for (int i = 0; i< parameterization.getNTypes(); i++) System.out.print(state.ge[i] + "\t");
 			System.out.println();
 		}
 
-		return getG(tStart, init, tEnd, PG, node);
+		return getG(tStart, state, tEnd, system, node);
 	}
 
 
@@ -558,7 +553,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	public P0GeState getG(double t, P0GeState PG0, double t0, P0GeSystem PG, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		if (node.isLeaf()) {
-			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, parameterization.getNTypes());
+			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.p0, 0, parameterization.getNTypes());
 		}
 
 		return getG(t,  PG0,  t0, PG);
@@ -608,8 +603,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             for (int i = 0; i< parameterization.getNTypes(); i++){
                 oneMinusRho = 1-PG.rho[index][i];
-                PG0.conditionsOnP[i] *= oneMinusRho;
-                PG0.conditionsOnG[i] = PG0.conditionsOnG[i].scalarMultiply(oneMinusRho);
+                PG0.p0[i] *= oneMinusRho;
+                PG0.ge[i] = PG0.ge[i].scalarMultiply(oneMinusRho);
             }
 
             to = PG.intervalStartTimes[index];

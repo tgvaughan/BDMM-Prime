@@ -67,6 +67,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		density.initByName(
 		        "parameterization", parameterization,
                 "frequencies", new RealParameter("0.5 0.5"),
+                "conditionOnSurvival", false,
                 "tree", new TreeParser(newick,
                         false, false,
                         true,0),
