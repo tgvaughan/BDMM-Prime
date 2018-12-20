@@ -75,7 +75,8 @@ public class BirthDeathMigrationLikelihoodTest {
                 "tree", new TreeParser(newick,
                         false, false,
                         true,0),
-                "typeLabel", "state");
+                "typeLabel", "state",
+                "parallelize", false);
 
 		double logL = density.calculateLogP();
 

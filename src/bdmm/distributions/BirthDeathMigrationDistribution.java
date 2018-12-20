@@ -75,7 +75,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     "given at present (default true)",
             true);
 
-	public Input<Boolean> isParallelizedCalculationInput = new Input<>(
+	public Input<Boolean> parallelizeInput = new Input<>(
 	        "parallelize",
             "is the calculation parallelized on sibling subtrees " +
                     "or not (default true)",
@@ -98,44 +98,32 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 	private int[] nodeStates;
 
-//	Boolean print = false;
-    Boolean print = true;
+//	private final boolean print = false;
+    private final boolean print = true;
 
-	double[] rootTypeProbs, storedRootTypeProbs;
+	private double[] rootTypeProbs, storedRootTypeProbs;
+	private boolean[] isRhoTip;
 
-	boolean[] isRhoTip;
+	private Parameterization parameterization;
 
-	Parameterization parameterization;
+    private p0_ODE P;
+	private p0ge_ODE PG;
+	private FirstOrderIntegrator pg_integrator;
+	private static Double minstep, maxstep;
 
-	public static boolean isParallelizedCalculation;
+	private Double[] freq;
 
-	public static double minimalProportionForParallelization;
+	private static double[][] pInitialConditions;
 
-	//  TODO check if it's possible to have 1e-20 there
-	public final static double globalPrecisionThreshold = 1e-10;
+	private static boolean isParallelizedCalculation;
+	private static double minimalProportionForParallelization;
+	private final static double globalPrecisionThreshold = 1e-10;
+    private double parallelizationThreshold;
+    private static ThreadPoolExecutor pool;
 
-	int ntaxa;
+	private double[] weightOfNodeSubTree;
 
-	p0_ODE P;
-	p0ge_ODE PG;
-
-	FirstOrderIntegrator pg_integrator;
-	public static Double minstep;
-	public static Double maxstep;
-
-	Double[] freq;
-
-	static double[][] pInitialConditions;
-
-	public double[] weightOfNodeSubTree;
-
-	double parallelizationThreshold;
-
-	static ExecutorService executor;
-	static ThreadPoolExecutor pool;
-
-
-	TreeInterface tree;
+	private TreeInterface tree;
 
 	@Override
 	public void initAndValidate() {
@@ -156,16 +144,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 			throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
 
 
-		ntaxa = tree.getLeafNodeCount();
+        int nLeaves = tree.getLeafNodeCount();
 
 		int contempCount = 0;
 		for (Node node : tree.getExternalNodes())
 			if (node.getHeight()==0.)
 				contempCount++;
 
-		weightOfNodeSubTree = new double[ntaxa * 2];
+		weightOfNodeSubTree = new double[nLeaves * 2];
 
-		isParallelizedCalculation = isParallelizedCalculationInput.get();
+		isParallelizedCalculation = parallelizeInput.get();
 		minimalProportionForParallelization = minimalProportionForParallelizationInput.get();
 
 		if(isParallelizedCalculation) executorBootUp();
@@ -174,7 +162,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 				if (storeNodeTypes.get()) {
 
-			nodeStates = new int[ntaxa];
+			nodeStates = new int[nLeaves];
 
 			for (Node node : tree.getExternalNodes()){
 				nodeStates[node.getNr()] = getNodeType(node, true);
@@ -197,24 +185,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 }
             }
         }
-	}
-
-		/**
-	 *
-	 * @param t
-	 * @param PG0
-	 * @param t0
-	 * @param PG
-	 * @param node
-	 * @return
-	 */
-	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
-
-		if (node.isLeaf()) {
-			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, parameterization.getNTypes());
-		}
-
-		return getG(t,  PG0,  t0, PG);
 	}
 
 	@Override
@@ -364,7 +334,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 			int nodeType = getNodeType(node, false);
 
-			//TODO potentially refactor to make few lines below more concise and clearer
 			if (nodeType==-1) { //unknown state
 
 				//TODO test if SA model case is properly implemented (not tested!)
@@ -550,10 +519,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	}
 
 
-	// used to indicate that the state assignment went wrong
+    /**
+     * Used to indicate that the state assignment went wrong.
+     */
 	protected class ConstraintViolatedException extends RuntimeException {
-		private static final long serialVersionUID = 1L;
-
 		public ConstraintViolatedException(String s) {
 			super(s);
 		}
@@ -580,6 +549,24 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	    return rootTypeProbs;
     }
 
+
+    /**
+	 *
+	 * @param t
+	 * @param PG0
+	 * @param t0
+	 * @param PG
+	 * @param node
+	 * @return
+	 */
+	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+
+		if (node.isLeaf()) {
+			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, parameterization.getNTypes());
+		}
+
+		return getG(t,  PG0,  t0, PG);
+	}
 
 	/**
 	 *
@@ -690,7 +677,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	}
 
 
-	void updateParallelizationThreshold(){
+	private void updateParallelizationThreshold(){
 		if(isParallelizedCalculation) {
 			getAllSubTreesWeights(tree);
 			// set 'parallelizationThreshold' to a fraction of the whole tree weight.
@@ -700,7 +687,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	}
 
 
-	void setupIntegrators(){   // set up ODE's and integrators
+	private void setupIntegrators(){   // set up ODE's and integrators
 
 		//TODO set these minstep and maxstep to be a class field
 		if (minstep == null) minstep = parameterization.getOrigin()*1e-100;
@@ -724,9 +711,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	 * @param to
 	 * @param pgScaled
 	 * @param from
-	 * @return
+	 * @return result of integration
 	 */
-	public static ScaledNumbers safeIntegrate(p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
+	private static ScaledNumbers safeIntegrate(p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
 
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
 		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
@@ -832,7 +819,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	}
 
 	static void executorBootUp(){
-		executor = Executors.newCachedThreadPool();
+        ExecutorService executor = Executors.newCachedThreadPool();
 		pool = (ThreadPoolExecutor) executor;
 	}
 
