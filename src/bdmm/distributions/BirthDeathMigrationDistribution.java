@@ -38,7 +38,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "BDMM parameterization",
             Input.Validate.REQUIRED);
 
-	public Input<RealParameter> frequencies = new Input<>("frequencies",
+	public Input<RealParameter> frequenciesInput = new Input<>("frequencies",
             "The frequencies for each type",
             Input.Validate.REQUIRED);
 
@@ -104,14 +104,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	private double[] rootTypeProbs, storedRootTypeProbs;
 	private boolean[] isRhoTip;
 
-	private Parameterization parameterization;
+    private Parameterization parameterization;
 
-    private p0_ODE P;
-	private p0ge_ODE PG;
-	private FirstOrderIntegrator pg_integrator;
-	private static Double minstep, maxstep;
+    private P0System P;
+	private P0GeSystem PG;
+    private static Double minstep, maxstep;
 
-	private Double[] freq;
 
 	private static double[][] pInitialConditions;
 
@@ -136,10 +134,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 		Double factor;
 
-		freq = frequencies.get().getValues();
-
 		double freqSum = 0;
-		for (double f : freq) freqSum+= f;
+		for (double f : frequenciesInput.get().getValues()) freqSum+= f;
 		if (Math.abs(1.0-freqSum)>1e-10)
 			throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
 
@@ -201,55 +197,54 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		//TODO only do it if tree shape changed
 		updateParallelizationThreshold();
 
-		double[] noSampleExistsProp ;
-
-		SmallNumber PrSN = new SmallNumber(0);
-		double nosample = 0;
-
         pInitialConditions = getAllInitialConditionsForP(tree);
 
+        double probNoSample = 0;
         if (conditionOnSurvival.get()) {
 
-            noSampleExistsProp = pInitialConditions[pInitialConditions.length-1];
+            double[] noSampleExistsProp = pInitialConditions[pInitialConditions.length-1];
+            if (print) System.out.println("\nnoSampleExistsProp = "
+                    + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
 
-            if (print) System.out.println("\nnoSampleExistsProp = " + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
-
-            for (int root_state = 0; root_state<parameterization.getNTypes(); root_state++){
-                nosample += freq[root_state] *  noSampleExistsProp[root_state] ;
+            for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++){
+                probNoSample += frequenciesInput.get().getArrayValue(rootType) *  noSampleExistsProp[rootType] ;
             }
 
-            if (nosample<0 || nosample>1)
+            if (probNoSample<0 || probNoSample>1)
                 return Double.NEGATIVE_INFINITY;
 
         }
 
-        p0ge_InitialConditions pSN;
-
-        pSN = calculateSubtreeLikelihood(root,0, parameterization.getOrigin() - tree.getRoot().getHeight(), PG);
+        P0GeState finalP0Ge = calculateSubtreeLikelihood(root,0,
+                parameterization.getOrigin() - tree.getRoot().getHeight(), PG);
 
         if (print) System.out.print("final p per state = ");
 
-        for (int root_state = 0; root_state<parameterization.getNTypes(); root_state++){
+        SmallNumber PrSN = new SmallNumber(0);
+        for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++){
 
-            SmallNumber jointProb = pSN.conditionsOnG[root_state].scalarMultiply(freq[root_state]);
+            SmallNumber jointProb = finalP0Ge
+                    .conditionsOnG[rootType]
+                    .scalarMultiply(frequenciesInput.get().getArrayValue(rootType));
             if (jointProb.getMantissa()>0 ) {
-                rootTypeProbs[root_state] = jointProb.log();
+                rootTypeProbs[rootType] = jointProb.log();
                 PrSN = SmallNumber.add(PrSN, jointProb);
             } else {
-                rootTypeProbs[root_state] = Double.NEGATIVE_INFINITY;
+                rootTypeProbs[rootType] = Double.NEGATIVE_INFINITY;
             }
 
-            if (print) System.out.print(pSN.conditionsOnP[root_state] + "\t" + pSN.conditionsOnG[root_state] + "\t");
+            if (print) System.out.print(finalP0Ge.conditionsOnP[rootType] + "\t"
+                    + finalP0Ge.conditionsOnG[rootType] + "\t");
         }
 
         // Normalize root type probs:
-        for (int root_state = 0; root_state<parameterization.getNTypes(); root_state++) {
-            rootTypeProbs[root_state] -= PrSN.log();
-            rootTypeProbs[root_state] = Math.exp(rootTypeProbs[root_state]);
+        for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++) {
+            rootTypeProbs[rootType] -= PrSN.log();
+            rootTypeProbs[rootType] = Math.exp(rootTypeProbs[rootType]);
         }
 
         if (conditionOnSurvival.get()){
-            PrSN = PrSN.scalarMultiply(1/(1-nosample));
+            PrSN = PrSN.scalarMultiply(1/(1-probNoSample));
         }
 
 		logP = PrSN.log();
@@ -320,13 +315,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      *
 	 * @return State at top of edge.
 	 */
-    private p0ge_InitialConditions calculateSubtreeLikelihood(Node node, double tStart, double tEnd, p0ge_ODE PG) {
+    private P0GeState calculateSubtreeLikelihood(Node node, double tStart, double tEnd, P0GeSystem PG) {
 
 		double[] pconditions = new double[parameterization.getNTypes()];
 		SmallNumber[] gconditions = new SmallNumber[parameterization.getNTypes()];
-		for (int i = 0; i<parameterization.getNTypes(); i++) gconditions[i] = new SmallNumber();
+		for (int i = 0; i<parameterization.getNTypes(); i++)
+		    gconditions[i] = new SmallNumber();
 
-		p0ge_InitialConditions init = new p0ge_InitialConditions(pconditions, gconditions);
+		P0GeState init = new P0GeState(pconditions, gconditions);
 
 		int intervalIdx = Utils.getIntervalIndex(tEnd, PG.intervalStartTimes);
 
@@ -381,7 +377,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
-				p0ge_InitialConditions g = calculateSubtreeLikelihood(node.getChild(childIndex), tEnd, parameterization.getOrigin() - node.getChild(childIndex).getHeight(), PG);
+				P0GeState g = calculateSubtreeLikelihood(node.getChild(childIndex), tEnd, parameterization.getOrigin() - node.getChild(childIndex).getHeight(), PG);
 
 				int saNodeType = getNodeType(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
 
@@ -434,8 +430,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				int indexSecondChild = Math.abs(indexFirstChild-1);
 
 				//TODO refactor with more explicit names
-				p0ge_InitialConditions g0 = new p0ge_InitialConditions();
-				p0ge_InitialConditions g1 = new p0ge_InitialConditions();
+				P0GeState g0 = new P0GeState();
+				P0GeState g1 = new P0GeState();
 
 				// evaluate if the next step in the traversal should be split between one new thread and the currrent thread and run in parallel.
 
@@ -445,7 +441,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 				    try {
                         // start a new thread to take care of the second subtree
-                        Future<p0ge_InitialConditions> secondChildTraversal = pool.submit(
+                        Future<P0GeState> secondChildTraversal = pool.submit(
                                 new TraversalServiceUncoloured(node.getChild(indexSecondChild), tEnd,
                                         parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight()));
 
@@ -536,7 +532,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		}
 
 		@Override
-		protected p0ge_InitialConditions calculateSubtreeLikelihoodInThread() {
+		protected P0GeState calculateSubtreeLikelihoodInThread() {
 			return calculateSubtreeLikelihood(rootSubtree, from, to, PG);
 		}
 
@@ -559,7 +555,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	 * @param node
 	 * @return
 	 */
-	public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+	public P0GeState getG(double t, P0GeState PG0, double t0, P0GeSystem PG, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		if (node.isLeaf()) {
 			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.conditionsOnP, 0, parameterization.getNTypes());
@@ -576,7 +572,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	 * @param PG
 	 * @return
 	 */
-    public p0ge_InitialConditions getG(double t, p0ge_InitialConditions PG0, double t0, p0ge_ODE PG){
+    public P0GeState getG(double t, P0GeState PG0, double t0, P0GeSystem PG){
 
         if (Math.abs(PG.origin -t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  PG.origin < t) {
             return PG0;
@@ -693,12 +689,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		if (minstep == null) minstep = parameterization.getOrigin()*1e-100;
 		if (maxstep == null) maxstep = parameterization.getOrigin()/10;
 
-		P = new p0_ODE(parameterization);
-		PG = new p0ge_ODE(parameterization, P, maxEvaluations.get());
+		P = new P0System(parameterization);
+		PG = new P0GeSystem(parameterization, P, maxEvaluations.get());
 
-		p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
+		P0GeSystem.globalPrecisionThreshold = globalPrecisionThreshold;
 
-        pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
+        FirstOrderIntegrator pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
         PG.p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 	}
 
@@ -713,7 +709,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	 * @param from
 	 * @return result of integration
 	 */
-	private static ScaledNumbers safeIntegrate(p0ge_ODE PG, double to, ScaledNumbers pgScaled, double from){
+	private static ScaledNumbers safeIntegrate(P0GeSystem PG, double to, ScaledNumbers pgScaled, double from){
 
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
 		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
@@ -756,7 +752,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				pConditions[i] = integrationResults[i];
 				geConditions[i] = new SmallNumber(integrationResults[i+n]);
 			}
-			pgScaled = SmallNumberScaler.scale(new p0ge_InitialConditions(pConditions, geConditions));
+			pgScaled = SmallNumberScaler.scale(new P0GeState(pConditions, geConditions));
 			pgScaled.augmentFactor(a);
 		}
 
@@ -827,12 +823,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		pool.shutdown();
 	}
 
-	abstract class TraversalService implements Callable<p0ge_InitialConditions> {
+	abstract class TraversalService implements Callable<P0GeState> {
 
 		protected Node rootSubtree;
 		protected double from;
 		protected double to;
-		protected p0ge_ODE PG;
+		protected P0GeSystem PG;
 		protected FirstOrderIntegrator pg_integrator;
 
 		public TraversalService(Node root, double from, double to) {
@@ -848,17 +844,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 			if (minstep == null) minstep = parameterization.getOrigin()*1e-100;
 			if (maxstep == null) maxstep = parameterization.getOrigin()/10;
 
-			PG = new p0ge_ODE(parameterization, P, maxEvaluations.get());
+			PG = new P0GeSystem(parameterization, P, maxEvaluations.get());
 
-			p0ge_ODE.globalPrecisionThreshold = globalPrecisionThreshold;
+			P0GeSystem.globalPrecisionThreshold = globalPrecisionThreshold;
 
 			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 		}
 
-		abstract protected p0ge_InitialConditions calculateSubtreeLikelihoodInThread();
+		abstract protected P0GeState calculateSubtreeLikelihoodInThread();
 
 		@Override
-		public p0ge_InitialConditions call() throws Exception {
+		public P0GeState call() throws Exception {
 			// traverse the tree in a potentially-parallelized way
 			return calculateSubtreeLikelihoodInThread();
 		}

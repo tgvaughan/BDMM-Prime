@@ -7,13 +7,13 @@ import beast.core.Description;
  */
 
 @Description("This type contains both sets of initial conditions for both equation types: p and ge")
-public class p0ge_InitialConditions {
+public class P0GeState {
 	
 	int dimension;
 	public SmallNumber[] conditionsOnG;
 	public double[] conditionsOnP;
 	
-	public p0ge_InitialConditions(double[] pcond, SmallNumber[] gcond) {
+	public P0GeState(double[] pcond, SmallNumber[] gcond) {
 		if(pcond.length != gcond.length) {
 			throw new RuntimeException("Incorrect initialization: difference of size between conditionsOnG and conditionsOnP");
 		}
@@ -22,7 +22,7 @@ public class p0ge_InitialConditions {
 		conditionsOnG = gcond;
 	}
 	
-	public p0ge_InitialConditions() {		
+	public P0GeState() {
 		dimension = 1;
 		conditionsOnP = new double[] {0};
 		conditionsOnG = new SmallNumber[] {new SmallNumber()};

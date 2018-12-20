@@ -32,7 +32,7 @@ public class SmallNumberScaler {
 	 * @param conditions
 	 * @return
 	 */
-	public static ScaledNumbers scale(p0ge_InitialConditions conditions) {
+	public static ScaledNumbers scale(P0GeState conditions) {
 		if (conditions == null)
 			throw new RuntimeException("Incorrect input (null) in method scale");
 
@@ -151,7 +151,7 @@ public class SmallNumberScaler {
 	 * @param factor
 	 * @return an instance of p0ge_InitialConditions containing an array of SmallNumbers (ge equations) and an array of doubles (p equations)
 	 */
-	public static p0ge_InitialConditions unscale(double[] numbers, int factor){
+	public static P0GeState unscale(double[] numbers, int factor){
 
 		if (numbers.length % 2 == 1 )
 			throw new RuntimeException("input should be of even length");
@@ -169,7 +169,7 @@ public class SmallNumberScaler {
 			unscaledGe[i].addExponent(-factor);
 		}
 
-		return new p0ge_InitialConditions(pConditions, unscaledGe);
+		return new P0GeState(pConditions, unscaledGe);
 	}
 
 	/**

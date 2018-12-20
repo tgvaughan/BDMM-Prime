@@ -23,7 +23,7 @@ public class CanonicalParameterization extends Parameterization {
             "Removal prob skyline.", Input.Validate.REQUIRED);
 
     public Input<TimedParameter> rhoSamplingInput = new Input<>("rhoSampling",
-            "Contemporaneous sampling times and probabilities.", Input.Validate.REQUIRED);
+            "Contemporaneous sampling times and probabilities.");
 
     @Override
     public double[] getMigRateChangeTimes() {
@@ -57,7 +57,10 @@ public class CanonicalParameterization extends Parameterization {
 
     @Override
     public double[] getRhoSamplingTimes() {
-        return rhoSamplingInput.get().getTimes();
+        if (rhoSamplingInput.get() != null)
+            return rhoSamplingInput.get().getTimes();
+        else
+            return EMPTY_TIME_ARRAY;
     }
 
     @Override
@@ -92,7 +95,10 @@ public class CanonicalParameterization extends Parameterization {
 
     @Override
     protected double[] getRhoValues(double time) {
-        return rhoSamplingInput.get().getValuesAtTime(time);
+        if (rhoSamplingInput.get() != null)
+            return rhoSamplingInput.get().getValuesAtTime(time);
+        else
+            return ZERO_VALUE_ARRAY;
     }
 
     @Override
@@ -115,7 +121,8 @@ public class CanonicalParameterization extends Parameterization {
         if (removalProbInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Removal prob skyline type count does not match type count of model.");
 
-        if (rhoSamplingInput.get().getNTypes() != getNTypes())
+        if (rhoSamplingInput.get() != null
+                && rhoSamplingInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Rho sampling type count does not match type count of model.");
     }
 }

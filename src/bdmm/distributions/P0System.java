@@ -12,7 +12,7 @@ import bdmm.util.Utils;
  *         Time: 6:42:00 PM
  */
 
-public class p0_ODE implements FirstOrderDifferentialEquations {
+public class P0System implements FirstOrderDifferentialEquations {
 
 	public double[][] b, d, s, r,rho;
 	public double[][][] M, b_ij;
@@ -22,7 +22,7 @@ public class p0_ODE implements FirstOrderDifferentialEquations {
 
 	public double[] times;
 
-	public p0_ODE(Parameterization parameterization) {
+	public P0System(Parameterization parameterization) {
 
 		this.b = parameterization.getBirthRates();
 		this.d = parameterization.getDeathRates();

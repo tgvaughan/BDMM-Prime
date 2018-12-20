@@ -13,10 +13,10 @@ import org.apache.commons.math3.ode.FirstOrderIntegrator;
  */
 
 
-public class p0ge_ODE implements FirstOrderDifferentialEquations {
+public class P0GeSystem implements FirstOrderDifferentialEquations {
 
 	public FirstOrderIntegrator p_integrator;
-    public p0_ODE P;
+    public P0System P;
 
 	public double[][] b, d, s, r, rho;
 	public double[][][] b_ij, M;
@@ -32,7 +32,7 @@ public class p0ge_ODE implements FirstOrderDifferentialEquations {
 	public static double globalPrecisionThreshold;
 
 
-	public p0ge_ODE(Parameterization parameterization, p0_ODE P, int maxEvals){
+	public P0GeSystem(Parameterization parameterization, P0System P, int maxEvals){
 
 
 		this.b = parameterization.getBirthRates();

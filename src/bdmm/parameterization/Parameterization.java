@@ -20,20 +20,24 @@ public abstract class Parameterization extends CalculationNode {
 
     SortedSet<Double> intervalStartTimesSet = new TreeSet<>();
 
-    double[] intervalStartTimes;
+    private double[] intervalStartTimes;
 
-    double[][] birthRates, deathRates, samplingRates, removalProbs, rhoValues;
-    double[][][] migRates, crossBirthRates;
+    private double[][] birthRates, deathRates, samplingRates, removalProbs, rhoValues;
+    private double[][][] migRates, crossBirthRates;
 
-    double[][] storedBirthRates, storedDeathRates, storedSamplingRates,
+    private double[][] storedBirthRates, storedDeathRates, storedSamplingRates,
             storedRemovalProbs, storedRhoValues;
-    double[][][] storedMigRates, storedCrossBirthRates;
+    private double[][][] storedMigRates, storedCrossBirthRates;
+
+    final static double[] EMPTY_TIME_ARRAY = new double[0];
+    double[] ZERO_VALUE_ARRAY;
 
     int nTypes;
 
     @Override
     public void initAndValidate() {
         nTypes = nTypesInput.get();
+        ZERO_VALUE_ARRAY = new double[nTypes];
 
         dirty = true;
     }

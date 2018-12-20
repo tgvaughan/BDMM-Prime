@@ -35,8 +35,6 @@ public class BirthDeathMigrationLikelihoodTest {
 		// Test for uncoloured tree
 
         String newick = "(t1[&state=0] : 1.5, t2[&state=1] : 0.5)[&state=0];";
-        String locations = "t1=0, t2=1" ;
-        String frequencies = "0.5 0.5";
 
 		RealParameter originParam = new RealParameter("2.0");
 
@@ -61,10 +59,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealParameter("0.5 0.5")),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0 1.0")),
-                "rhoSampling", new TimedParameter(
-                        originParam,
-                        new RealParameter("0.0 0.0")));
+                        new RealParameter("1.0 1.0")));
 
 
 		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
