@@ -121,9 +121,9 @@ public class BirthDeathMigrationLikelihoodTest {
 		String stateNumber = "1";
 		String migrationMatrix = "0. 0.";
 		String frequencies = "1";
-		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.);
+		String R0 = 4./3. + " " + 4./3.;
 		String becomeUninfectiousRate = "1.5 1.5";
-		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.);
+		String samplingProportion = 1.0/3.0 + " " + 1.0/3.0;
 		String removalProbability = "0.3 0.7";
 		boolean conditionOnSurvival = false;
 		String intervalTimes = "0. 1.";
