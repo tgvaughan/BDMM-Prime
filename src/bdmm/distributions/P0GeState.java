@@ -36,4 +36,19 @@ public class P0GeState {
 		p0 = new double[] {0};
 		ge = new SmallNumber[] {new SmallNumber()};
 	}
+
+    @Override
+    public String toString() {
+	    StringBuilder sb = new StringBuilder();
+
+        for (int type=0; type<dimension; type++) {
+            if (type>0)
+                sb.append(" ");
+
+            sb.append("p0[").append(type).append("]=").append(p0[type]);
+            sb.append(" ge[").append(type).append("]=").append(ge[type]);
+        }
+
+        return sb.toString();
+    }
 }

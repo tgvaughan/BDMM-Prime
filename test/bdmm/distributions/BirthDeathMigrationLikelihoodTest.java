@@ -34,9 +34,9 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		// Test for uncoloured tree
 
-        String newick = "(t1[&state=0] : 1.5, t2[&state=1] : 0.5)[&state=0];";
+        String newick = "(t1[&state=0] : 1.5, t2[&state=1] : 0.5);";
 
-		RealParameter originParam = new RealParameter("2.0");
+		RealParameter originParam = new RealParameter("2.5");
 
 		Parameterization parameterization = new CanonicalParameterization();
 		parameterization.initByName(
