@@ -203,6 +203,33 @@ public abstract class Parameterization extends CalculationNode {
         return crossBirthRates;
     }
 
+
+    protected SortedSet<Double> changeTimeSet = new TreeSet<>();
+
+    /**
+     * Combine times from individual time arrays, removing duplicates.
+     *
+     * @param changeTimeArrays One or more arrays to combine.
+     * @return combined time array
+     */
+    protected double[] combineAndSortTimes(double[] destArray, double[] ... changeTimeArrays) {
+        changeTimeSet.clear();
+
+        for (double[] changeTimeArray : changeTimeArrays) {
+            for (double t : changeTimeArray)
+                changeTimeSet.add(t);
+        }
+
+        if (destArray.length != changeTimeSet.size())
+            destArray = new double[changeTimeSet.size()];
+
+        int i=0;
+        for (double changeTime : changeTimeSet)
+            destArray[i++] = changeTime;
+
+        return destArray;
+    }
+
     @Override
     protected boolean requiresRecalculation() {
         dirty = true;
