@@ -220,7 +220,7 @@ public abstract class Parameterization extends CalculationNode {
                 changeTimeSet.add(t);
         }
 
-        if (destArray.length != changeTimeSet.size())
+        if (destArray == null || destArray.length != changeTimeSet.size())
             destArray = new double[changeTimeSet.size()];
 
         int i=0;

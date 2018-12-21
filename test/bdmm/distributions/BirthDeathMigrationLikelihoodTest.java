@@ -27,10 +27,9 @@ public class BirthDeathMigrationLikelihoodTest {
 	 * Basic test for migration rate change 
 	 * Coloured and uncoloured trees 
 	 * Reference from BDMM itself
-	 * @throws Exception
 	 */
 	@Test 
-	public void testLikelihoodMigRateChangeBasic() throws Exception{
+	public void testLikelihoodMigRateChangeBasic() {
 
 		// Test for uncoloured tree
 
@@ -72,35 +71,71 @@ public class BirthDeathMigrationLikelihoodTest {
                         false, false,
                         true,0),
                 "typeLabel", "state",
-                "parallelize", false);
+                "parallelize", true);
 
 		double logL = density.calculateLogP();
-
-//		String orig="1.";
-//		String stateNumber = "2";
-//		String migrationMatrix = ".1 0.2 0.1 0.2";
-//		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.) + " " + Double.toString(4./3.) + " " + Double.toString(4./3.);
-//		String becomeUninfectiousRate = "1.5 1.5 1.5 1.5";
-//		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.);
-//		String prefixname = "";
-//		boolean conditionOnSurvival = false;
-//		int nrTaxa = 2;
-//		String intervalTimes = "0. 1.";
-//
-//
-//		double logL = bdm_likelihood(stateNumber,
-//				migrationMatrix,
-//				frequencies,
-//				newick, "1.",
-//				R0,null,
-//				becomeUninfectiousRate,
-//				samplingProportion, null,
-//				"", locations, nrTaxa, intervalTimes, conditionOnSurvival);
 
 		System.out.println("Birth-death result: " + logL + "\t- Test LikelihoodMigRateChange 1");
 
 		assertEquals(-6.7022069383966025, logL, 1e-5);   // Reference BDMM (version 	0.2.0) 22/06/2017	
+	}
 
+    /**
+	 * Basic test for migration rate change
+	 * Coloured and uncoloured trees
+	 * Reference from BDMM itself
+     * Uses epi parameterization
+	 */
+	@Test
+	public void testLikelihoodMigRateChangeBasicEpi() {
+
+		// Test for uncoloured tree
+
+        String newick = "(t1[&state=0] : 1.5, t2[&state=1] : 0.5);";
+
+		RealParameter originParam = new RealParameter("2.5");
+
+		Parameterization parameterization = new EpiParameterization();
+		parameterization.initByName(
+		        "nTypes", 2,
+                "origin", originParam,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter(4.0/3.0 + " " + 4.0/3.0)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5 1.5")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.0 0.0")),
+                "migrationRate", new SkylineMatrixParameter(
+                        new RealParameter("1.0"),
+                        new RealParameter("0.1 0.1 0.2 0.2")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter(1.0/3.0 + " " + 1.0/3.0)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0 1.0")));
+
+
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+
+		density.initByName(
+		        "parameterization", parameterization,
+                "frequencies", new RealParameter("0.5 0.5"),
+                "conditionOnSurvival", false,
+                "tree", new TreeParser(newick,
+                        false, false,
+                        true,0),
+                "typeLabel", "state",
+                "parallelize", true);
+
+		double logL = density.calculateLogP();
+
+		System.out.println("Birth-death result: " + logL + "\t- Test LikelihoodMigRateChange 1");
+
+		assertEquals(-6.7022069383966025, logL, 1e-5);   // Reference BDMM (version 	0.2.0) 22/06/2017
 	}
 
 	/**
