@@ -27,9 +27,10 @@ public class BirthDeathMigrationLikelihoodTest {
 	 * Basic test for migration rate change 
 	 * Coloured and uncoloured trees 
 	 * Reference from BDMM itself
+     * Canonical parameterization
 	 */
 	@Test 
-	public void testLikelihoodMigRateChangeBasic() {
+	public void testLikelihoodMigRateChangeBasicCanonical() {
 
 		// Test for uncoloured tree
 
@@ -84,7 +85,7 @@ public class BirthDeathMigrationLikelihoodTest {
 	 * Basic test for migration rate change
 	 * Coloured and uncoloured trees
 	 * Reference from BDMM itself
-     * Uses epi parameterization
+     * Epi parameterization
 	 */
 	@Test
 	public void testLikelihoodMigRateChangeBasicEpi() {
@@ -145,43 +146,41 @@ public class BirthDeathMigrationLikelihoodTest {
 	 * @throws Exception
 	 */
 	@Test 
-	public void testLikelihoodRemovalProbChangeBasic() throws Exception{
+	public void testLikelihoodRemovalProbChangeBasic() {
 
 		String newick = "((1[&type=0]: 1.5, 2[&type=0]: 0)3[&type=0]: 3.5, 4[&type=0]: 4) ;";
 
-		String orig="6.";
-		String stateNumber = "1";
-		String migrationMatrix = "0. 0.";
-		String frequencies = "1";
-		String R0 = 4./3. + " " + 4./3.;
-		String becomeUninfectiousRate = "1.5 1.5";
-		String samplingProportion = 1.0/3.0 + " " + 1.0/3.0;
-		String removalProbability = "0.3 0.7";
-		boolean conditionOnSurvival = false;
-		String intervalTimes = "0. 1.";
+		Parameterization parameterization = new EpiParameterization();
+		parameterization.initByName(
+		        "nTypes", 1,
+                "origin", new RealParameter("6.0"),
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter(String.valueOf(4.0/3.0))),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "R0AmongDemes", new SkylineMatrixParameter(null, null),
+                "migrationRate", new SkylineMatrixParameter(null, null),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter(String.valueOf(1.0/3.0))),
+                "removalProb", new SkylineVectorParameter(
+                        new RealParameter("1.0"),
+                        new RealParameter("0.3 0.7")));
 
-		//uncoloured tree
-		Tree tree = new TreeParser(newick ,false);
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName(
+		        "parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", false,
+                "tree", new TreeParser(newick, false, false, true,0),
+                "typeLabel", "type",
+                "parallelize", false);
 
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
+		double logL = density.calculateLogP();
 
-		bdm.setInputValue("tree", tree);
-		bdm.setInputValue("typeLabel", "type");
-
-
-		double logL2 = bdm_likelihood(stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, "type",
-				"1.", // origin is defined at 1. instead of 6. because bdm_likelihood adds the height of the root of the tree to that value (here 5.)
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion,  removalProbability,
-				intervalTimes, conditionOnSurvival);
-
-		// System.out.println("Birth-death result 2: " +logL2 + "\t- Test LikelihoodRemovalProbChangeBasic 2");
-
-		assertEquals(-21.25413884159791, logL2, 1e-5); // Reference BDMM (version 	0.2.0) 22/06/2017
+		assertEquals(-21.25413884159791, logL, 1e-5); // Reference BDMM (version 	0.2.0) 22/06/2017
 	}
 
 	/**

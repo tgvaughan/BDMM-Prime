@@ -133,7 +133,8 @@ public class EpiParameterization extends Parameterization {
         double[] removalProb = removalProbInput.get().getValuesAtTime(time);
 
         for (int type=0; type<nTypes; type++)
-            res[type] *= 1 - samplingProp[type]*removalProb[type];
+            res[type] *= (1 - samplingProp[type])
+                    / (1.0 - (1.0-removalProb[type])*samplingProp[type]);
 
         return res;
     }
@@ -142,9 +143,10 @@ public class EpiParameterization extends Parameterization {
     protected double[] getSamplingRateValues(double time) {
         double[] res = samplingProportionInput.get().getValuesAtTime(time);
         double[] buRate  = becomeUninfectiousRateInput.get().getValuesAtTime(time);
+        double[] removalProb  = removalProbInput.get().getValuesAtTime(time);
 
         for (int type=0; type<nTypes; type++)
-            res[type] *= buRate[type];
+            res[type] = res[type]*buRate[type]/(1 - (1-removalProb[type])*res[type]);
 
         return res;
     }

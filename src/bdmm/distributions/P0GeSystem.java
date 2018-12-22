@@ -98,8 +98,6 @@ public class P0GeSystem implements FirstOrderDifferentialEquations {
                 if (i==j)
 			        continue;
 
-			    int ijOffset = Utils.getArrayOffset(i, j, nTypes);
-
                 gDot[nTypes +i] += b_ij[interval][i][j]*g[nTypes+i];
                 gDot[nTypes +i] -= b_ij[interval][i][j]* ( g[i]*g[nTypes+j] + g[j]*g[nTypes+i]);
 

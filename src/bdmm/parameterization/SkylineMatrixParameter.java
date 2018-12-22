@@ -21,14 +21,18 @@ public class SkylineMatrixParameter extends SkylineParameter {
     public void initAndValidate() {
         super.initAndValidate();
 
-        if (rateValuesInput.get().getDimension() % nIntervals != 0)
+        int totalElementCount = rateValuesInput.get() != null
+                ? rateValuesInput.get().getDimension()
+                : 0;
+
+        if (totalElementCount % nIntervals != 0)
             throw new IllegalArgumentException("Value parameter dimension must be a multiple of the number of intervals.");
 
-        elementsPerMatrix = rateValuesInput.get().getDimension()/nIntervals;
+        elementsPerMatrix = totalElementCount/nIntervals;
         nTypes = (int)Math.round((1 + Math.sqrt(1 + 4*elementsPerMatrix))/2);
 
         if (elementsPerMatrix != nTypes*(nTypes-1))
-            throw new IllegalArgumentException("Wrong number of elements in matrix parameter: shoud be nTypes*(nTypes-1).");
+            throw new IllegalArgumentException("Wrong number of elements in matrix parameter: should be nTypes*(nTypes-1).");
 
         values = new double[nIntervals][nTypes][nTypes];
         storedValues = new double[nIntervals][nTypes][nTypes];
