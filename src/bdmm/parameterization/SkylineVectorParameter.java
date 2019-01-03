@@ -46,6 +46,12 @@ public class SkylineVectorParameter extends SkylineParameter {
             Utils.reverseArray(values);
     }
 
+    /**
+     * Retrieve value of vector at a chosen time (not age).
+     *
+     * @param time when to evaluate the skyline parameter.
+     * @return value of the vector at the chosen time.
+     */
     protected double[] getValuesAtTime(double time) {
         update();
 

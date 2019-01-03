@@ -70,6 +70,9 @@ public abstract class SkylineParameter extends CalculationNode {
         return nTypes;
     }
 
+    /**
+     * @return times (not ages) when parameter changes.
+     */
     public double[] getChangeTimes() {
         update();
 

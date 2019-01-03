@@ -307,23 +307,23 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	/**
 	 *
 	 * @param node Node below edge.
-	 * @param tStart Time of start (top) of edge.
-	 * @param tEnd Time of end (bottom) of edge.
+	 * @param tTop Time of start (top) of edge.
+	 * @param tBottom Time of end (bottom) of edge.
 	 * @param system Object describing ODEs to integrate.
      *
 	 * @return State at top of edge.
 	 */
-    private P0GeState calculateSubtreeLikelihood(Node node, double tStart, double tEnd, P0GeSystem system, int depth) {
+    private P0GeState calculateSubtreeLikelihood(Node node, double tTop, double tBottom, P0GeSystem system, int depth) {
 
         if (debug) {
             debugMessage("*** Evaluating subtree for node " + node +
-                            " and edge between times " + tStart + " and " + tEnd + " ...",
+                            " and edge between times " + tTop + " and " + tBottom + " ...",
                     depth);
         }
 
         P0GeState state = new P0GeState(parameterization.getNTypes());
 
-		int intervalIdx = Utils.getIntervalIndex(tEnd, system.intervalStartTimes);
+		int intervalIdx = Utils.getIntervalIndex(tBottom, system.intervalStartTimes);
 
 		if (node.isLeaf()){ // sampling event
 
@@ -364,7 +364,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				}
 
 			}
-			if (debug) debugMessage("Sampling at time " + tEnd, depth);
+			if (debug) debugMessage("Sampling at time " + tBottom, depth);
 
 		} else if (node.getChildCount()==2){  // birth / infection event or sampled ancestor
 
@@ -375,7 +375,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				if (node.getChild(childIndex).isDirectAncestor()) childIndex = 1;
 
 				P0GeState g = calculateSubtreeLikelihood(
-				        node.getChild(childIndex), tEnd,
+				        node.getChild(childIndex), tBottom,
                         parameterization.getOrigin() - node.getChild(childIndex).getHeight(),
                         system, depth+1);
 
@@ -441,12 +441,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				    try {
                         // start a new thread to take care of the second subtree
                         Future<P0GeState> secondChildTraversal = pool.submit(
-                                new TraversalServiceUncoloured(node.getChild(indexSecondChild), tEnd,
+                                new TraversalServiceUncoloured(node.getChild(indexSecondChild), tBottom,
                                         parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight(),
                                         depth+1));
 
                         childState1 = calculateSubtreeLikelihood(
-                                node.getChild(indexFirstChild), tEnd,
+                                node.getChild(indexFirstChild), tBottom,
                                 parameterization.getOrigin() - node.getChild(indexFirstChild).getHeight(),
                                 system, depth+1);
                         childState2 = secondChildTraversal.get();
@@ -458,16 +458,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 } else {
 					childState1 = calculateSubtreeLikelihood(node.getChild(
-					        indexFirstChild), tEnd,
+					        indexFirstChild), tBottom,
                             parameterization.getOrigin() - node.getChild(indexFirstChild).getHeight(),
                             system, depth+1);
-					childState2 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), tEnd,
+					childState2 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), tBottom,
                             parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight(),
                             system, depth+1);
 				}
 
 
-				if (debug) debugMessage("Infection at time " + tEnd, depth);
+				if (debug) debugMessage("Infection at time " + tBottom, depth);
 
 				for (int childType = 0; childType < parameterization.getNTypes(); childType++) {
 
@@ -499,7 +499,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 		if (debug) debugMessage("State at base of edge: " + state, depth);
 
-		P0GeState statePrime = getG(tStart, state, tEnd, system, node);
+		P0GeState statePrime = getG(tTop, state, tBottom, system, node);
 
         if (debug) debugMessage("State at top of edge: " + statePrime + "\n", depth);
 
@@ -555,86 +555,75 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     /**
 	 *
-	 * @param t
-	 * @param PG0
-	 * @param t0
-	 * @param PG
+	 * @param tTop
+	 * @param state
+	 * @param tBottom
+	 * @param system
 	 * @param node
 	 * @return
 	 */
-	public P0GeState getG(double t, P0GeState PG0, double t0, P0GeSystem PG, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
+	public P0GeState getG(double tTop, P0GeState state, double tBottom, P0GeSystem system, Node node){ // PG0 contains initial condition for p0 (0..n-1) and for ge (n..2n-1)
 
 		if (node.isLeaf()) {
-			System.arraycopy(pInitialConditions[node.getNr()], 0, PG0.p0, 0, parameterization.getNTypes());
+			System.arraycopy(pInitialConditions[node.getNr()], 0, state.p0, 0, parameterization.getNTypes());
 		}
 
-		return getG(t,  PG0,  t0, PG);
+		return getG(tTop,  state,  tBottom, system);
 	}
 
 	/**
 	 *
-	 * @param t
-	 * @param PG0 initial conditions for p0 (0..n-1) and for ge (n..2n-1)
-	 * @param t0
-	 * @param PG
+	 * @param tTop
+	 * @param state initial conditions for p0 (0..n-1) and for ge (n..2n-1)
+	 * @param tBottom
+	 * @param system
 	 * @return
 	 */
-    public P0GeState getG(double t, P0GeState PG0, double t0, P0GeSystem PG){
+    public P0GeState getG(double tTop, P0GeState state, double tBottom, P0GeSystem system){
 
-        if (Math.abs(PG.origin -t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  PG.origin < t) {
-            return PG0;
-        }
+//        if (Math.abs(PG.origin -t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  PG.origin < t) {
+//            return PG0;
+//        }
 
-        double from = t;
-        double to = t0;
+        // pgScaled contains the set of initial conditions scaled made to fit
+        // the requirements on the values 'double' can represent. It also
+        // contains the factor by which the numbers were multiplied.
+        ScaledNumbers pgScaled = SmallNumberScaler.scale(state);
+
+        double thisTime = tBottom;
+        int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalStartTimes);
+        int endInterval = Utils.getIntervalIndex(tTop, system.intervalStartTimes);
         double oneMinusRho;
 
-        int indexFrom = Utils.getIntervalIndex(from, PG.intervalStartTimes);
-        int index = Utils.getIntervalIndex(to, PG.intervalStartTimes);
+        while (thisInterval > endInterval) {
+            double nextTime = system.intervalStartTimes[thisInterval];
 
-        int steps = index - indexFrom;
-        if (Math.abs(from-PG.intervalStartTimes[indexFrom]) < globalPrecisionThreshold ) steps--;
-        if (index>0 && Math.abs(to-PG.intervalStartTimes[index-1]) < globalPrecisionThreshold ) {
-            steps--;
-            index--;
-        }
-        index--;
+            if (nextTime < thisTime) {
+                pgScaled = safeIntegrate(system, nextTime, pgScaled, thisTime);
 
-        // pgScaled contains the set of initial conditions scaled made to fit the requirements on the values 'double' can represent. It also contains the factor by which the numbers were multiplied
-        ScaledNumbers pgScaled = SmallNumberScaler.scale(PG0);
+                state = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
-        while (steps > 0){
+                for (int i = 0; i < parameterization.getNTypes(); i++) {
+                    oneMinusRho = 1 - system.rho[thisInterval][i];
+                    state.p0[i] *= oneMinusRho;
+                    state.ge[i] = state.ge[i].scalarMultiply(oneMinusRho);
+                }
 
-            from = PG.intervalStartTimes[index];
-
-            pgScaled = safeIntegrate(PG, to, pgScaled, from); // solve PG , store solution temporarily integrationResults
-
-            // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-            PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
-
-
-            for (int i = 0; i< parameterization.getNTypes(); i++){
-                oneMinusRho = 1-PG.rho[index][i];
-                PG0.p0[i] *= oneMinusRho;
-                PG0.ge[i] = PG0.ge[i].scalarMultiply(oneMinusRho);
+                // 'rescale' the results of the last integration to prepare for the next integration step
+                pgScaled = SmallNumberScaler.scale(state);
             }
 
-            to = PG.intervalStartTimes[index];
-
-            steps--;
-            index--;
-
-            // 'rescale' the results of the last integration to prepare for the next integration step
-            pgScaled = SmallNumberScaler.scale(PG0);
+            thisTime = nextTime;
+            thisInterval -= 1;
         }
 
-        pgScaled = safeIntegrate(PG, to, pgScaled, t); // solve PG , store solution temporarily integrationResults
+        pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop); // solve PG , store solution temporarily integrationResults
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-        PG0 = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
+        state = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
 
-        return PG0;
+        return state;
     }
 
 	/**
@@ -711,20 +700,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	 * "Safe" because it divides the integration interval in two
 	 * if the interval is (arbitrarily) judged to be too big to give reliable results
 	 * @param PG
-	 * @param to
+	 * @param tStart
 	 * @param pgScaled
-	 * @param from
+	 * @param tEnd
 	 * @return result of integration
 	 */
-	private static ScaledNumbers safeIntegrate(P0GeSystem PG, double to, ScaledNumbers pgScaled, double from){
+	private static ScaledNumbers safeIntegrate(P0GeSystem PG, double tStart, ScaledNumbers pgScaled, double tEnd){
 
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
-		if(Math.abs(from-to) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
+		if(Math.abs(tEnd-tStart) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
 
 		//TODO make threshold a class field
-		if(PG.origin >0 && Math.abs(from-to)>PG.origin /6 ) {
-			pgScaled = safeIntegrate(PG, to, pgScaled, from + (to-from)/2);
-			pgScaled = safeIntegrate(PG, from + (to-from)/2, pgScaled, from);
+		if(PG.origin >0 && Math.abs(tEnd-tStart)>PG.origin /6 ) {
+			pgScaled = safeIntegrate(PG, tStart, pgScaled, tEnd + (tStart-tEnd)/2);
+			pgScaled = safeIntegrate(PG, tEnd + (tStart-tEnd)/2, pgScaled, tEnd);
 		} else {
 
 			//setup of the relativeTolerance and absoluteTolerance input of the adaptive integrator
@@ -751,7 +740,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 
 			FirstOrderIntegrator integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
-			integrator.integrate(PG, to, pgScaled.getEquation(), from, integrationResults); // perform the integration step
+			integrator.integrate(PG, tStart, pgScaled.getEquation(), tEnd, integrationResults); // perform the integration step
 
 			double[] pConditions = new double[n];
 			SmallNumber[] geConditions = new SmallNumber[n];

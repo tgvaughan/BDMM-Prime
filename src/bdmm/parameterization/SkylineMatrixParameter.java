@@ -59,7 +59,13 @@ public class SkylineMatrixParameter extends SkylineParameter {
         }
     }
 
-    public double[][] getValuesAtTime(double time) {
+    /**
+     * Retrieve value of matrix parameter at particular time (not age).
+     *
+     * @param time when to evaluate the parameter.
+     * @return the matrix value at the chosen time.
+     */
+    protected double[][] getValuesAtTime(double time) {
         update();
 
         int intervalIdx = getIntervalIdx(time);
