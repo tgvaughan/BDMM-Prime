@@ -581,10 +581,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	 */
     public P0GeState getG(double tTop, P0GeState state, double tBottom, P0GeSystem system){
 
-//        if (Math.abs(PG.origin -t) < globalPrecisionThreshold|| Math.abs(t0-t) < globalPrecisionThreshold ||  PG.origin < t) {
-//            return PG0;
-//        }
-
         // pgScaled contains the set of initial conditions scaled made to fit
         // the requirements on the values 'double' can represent. It also
         // contains the factor by which the numbers were multiplied.
@@ -678,6 +674,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		}
 	}
 
+	private FirstOrderIntegrator p_integrator;
 
 	private void setupIntegrators(){   // set up ODE's and integrators
 
@@ -686,12 +683,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		if (maxstep == null) maxstep = parameterization.getOrigin()/10;
 
 		P = new P0System(parameterization);
-		PG = new P0GeSystem(parameterization, P, maxEvaluations.get());
+		PG = new P0GeSystem(parameterization, maxEvaluations.get());
 
 		P0GeSystem.globalPrecisionThreshold = globalPrecisionThreshold;
 
         FirstOrderIntegrator pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
-        PG.p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
+        p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 	}
 
 	/**
@@ -755,6 +752,98 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		return pgScaled;
 	}
 
+
+	// TODO Merge with p0ge integration code
+	/**
+	 * Perform integration on differential equations p
+	 * @param t
+	 * @return
+	 */
+    private double[] getP(double t, double[] P0, double t0){
+
+
+		if (Math.abs(parameterization.getOrigin()-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||  parameterization.getOrigin() < t)
+			return P0;
+
+		double[] result = new double[P0.length];
+
+		try {
+
+			System.arraycopy(P0, 0, result, 0, P0.length);
+			double from = t;
+			double to = t0;
+			double oneMinusRho;
+
+			int indexFrom = Utils.getIntervalIndex(from, parameterization.getIntervalStartTimes());
+			int index = Utils.getIntervalIndex(to, parameterization.getIntervalStartTimes());
+
+			int steps = index - indexFrom;
+
+			index--;
+			if (Math.abs(from- parameterization.getIntervalStartTimes()[indexFrom])<globalPrecisionThreshold) steps--;
+			if (index>0 && Math.abs(to- parameterization.getIntervalStartTimes()[index-1])<globalPrecisionThreshold) {
+				steps--;
+				index--;
+			}
+
+			while (steps > 0){
+
+				from = parameterization.getIntervalStartTimes()[index];
+
+				// TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
+				if (Math.abs(from-to)>globalPrecisionThreshold){
+					p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
+
+                    for (int i = 0; i< parameterization.getNTypes(); i++){
+                        oneMinusRho = (1-parameterization.getRhoValues()[index][i]);
+                        result[i] *= oneMinusRho;
+                    }
+				}
+
+				to = parameterization.getIntervalStartTimes()[index];
+
+				steps--;
+				index--;
+			}
+
+			p_integrator.integrate(P, to, result, t, result); // solve diffEquationOnP, store solution in y
+
+			// TO DO
+			// check that both rateChangeTimes are really overlapping
+			// but really not sure that this is enough, i have to build appropriate tests
+			if(Math.abs(t- parameterization.getIntervalStartTimes()[indexFrom])<globalPrecisionThreshold) {
+                for (int i = 0; i<parameterization.getNTypes(); i++){
+                    oneMinusRho = 1-parameterization.getRhoValues()[indexFrom][i];
+                    result[i] *= oneMinusRho;
+                }
+			}
+
+		} catch(Exception e) {
+			throw new RuntimeException("couldn't calculate p");
+		}
+
+		return result;
+	}
+
+
+	private double[] getP(double t){
+
+		double[] y = new double[parameterization.getNTypes()];
+
+		int index = Utils.getIntervalIndex(parameterization.getOrigin(), parameterization.getIntervalStartTimes());
+        for (int i = 0; i< parameterization.getNTypes(); i++) {
+            y[i] = (1 - parameterization.getRhoValues()[index][i]);    // initial condition: y_i[T]=1-rho_i
+        }
+
+		if (Math.abs(parameterization.getOrigin()-t)<globalPrecisionThreshold ||  parameterization.getOrigin() < t) {
+			return y;
+		}
+
+		return getP(t, y, parameterization.getOrigin());
+	}
+
+
+
 	/**
 	 * Find all initial conditions for all future integrations on p0 equations
 	 * @param tree
@@ -779,7 +868,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 		double t = leafTimes[indicesSortedByLeafHeight[leafCount-1]];
 
-		pInitialCondsAtLeaves[indicesSortedByLeafHeight[leafCount-1]] = PG.getP(t);
+		pInitialCondsAtLeaves[indicesSortedByLeafHeight[leafCount-1]] = getP(t);
 		double t0 = t;
 
 		if (leafCount >1 ){
@@ -798,14 +887,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                        (or to simplify the code), take care of passing an integrator
                        as a local variable. */
 					pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] =
-                            PG.getP(t, pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]], t0);
+                            getP(t, pInitialCondsAtLeaves[indicesSortedByLeafHeight[i+1]], t0);
 					t0 = t;
 				}
 
 			}
 		}
 
-		pInitialCondsAtLeaves[leafCount] = PG.getP(0, pInitialCondsAtLeaves[indicesSortedByLeafHeight[0]], t0);
+		pInitialCondsAtLeaves[leafCount] = getP(0, pInitialCondsAtLeaves[indicesSortedByLeafHeight[0]], t0);
 
 		return pInitialCondsAtLeaves;
 	}
@@ -840,7 +929,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 			if (minstep == null) minstep = parameterization.getOrigin()*1e-100;
 			if (maxstep == null) maxstep = parameterization.getOrigin()/10;
 
-			PG = new P0GeSystem(parameterization, P, maxEvaluations.get());
+			PG = new P0GeSystem(parameterization, maxEvaluations.get());
 
 			P0GeSystem.globalPrecisionThreshold = globalPrecisionThreshold;
 

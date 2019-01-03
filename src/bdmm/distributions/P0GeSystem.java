@@ -15,9 +15,6 @@ import org.apache.commons.math3.ode.FirstOrderIntegrator;
 
 public class P0GeSystem implements FirstOrderDifferentialEquations {
 
-	public FirstOrderIntegrator p_integrator;
-    public P0System P;
-
 	public double[][] b, d, s, r, rho;
 	public double[][][] b_ij, M;
 
@@ -32,7 +29,7 @@ public class P0GeSystem implements FirstOrderDifferentialEquations {
 	public static double globalPrecisionThreshold;
 
 
-	public P0GeSystem(Parameterization parameterization, P0System P, int maxEvals){
+	public P0GeSystem(Parameterization parameterization, int maxEvals){
 
 
 		this.b = parameterization.getBirthRates();
@@ -52,8 +49,6 @@ public class P0GeSystem implements FirstOrderDifferentialEquations {
 
 		this.origin = parameterization.getOrigin();
 		this.intervalStartTimes = parameterization.getIntervalStartTimes();
-
-		this.P = P;
 	}
 
 	public int getDimension() {
@@ -107,98 +102,6 @@ public class P0GeSystem implements FirstOrderDifferentialEquations {
 
 		}
 
-		//        gDot[2] = -(-(birth[0]+birthAmongDemes_ij[0]+death[0]+sampling[0])*g[2] + 2*birth[0]*g[0]*g[2] + birthAmongDemes_ij[0]*g[0]*g[3] + birthAmongDemes_ij[0]*g[1]*g[2]);
-		//        gDot[3] = -(-(birth[1]+birthAmongDemes_ij[1]+death[1]+sampling[1])*g[3] + 2*birth[1]*g[1]*g[3] + birthAmongDemes_ij[1]*g[1]*g[2] + birthAmongDemes_ij[1]*g[0]*g[3]);
-
 	}
-
-	/**
-	 * Perform integration on differential equations p
-	 * @param t
-	 * @return
-	 */
-	public double[] getP(double t, double[] P0, double t0){
-
-
-		if (Math.abs(origin -t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||   origin < t)
-			return P0;
-
-		double[] result = new double[P0.length];
-
-		try {
-
-			System.arraycopy(P0, 0, result, 0, P0.length);
-			double from = t;
-			double to = t0;
-			double oneMinusRho;
-
-			int indexFrom = Utils.getIntervalIndex(from, intervalStartTimes);
-			int index = Utils.getIntervalIndex(to, intervalStartTimes);
-
-			int steps = index - indexFrom;
-
-			index--;
-			if (Math.abs(from- intervalStartTimes[indexFrom])<globalPrecisionThreshold) steps--;
-			if (index>0 && Math.abs(to- intervalStartTimes[index-1])<globalPrecisionThreshold) {
-				steps--;
-				index--;
-			}
-
-			while (steps > 0){
-
-				from = intervalStartTimes[index];
-
-				// TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
-				if (Math.abs(from-to)>globalPrecisionThreshold){
-					p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
-
-                    for (int i = 0; i< nTypes; i++){
-                        oneMinusRho = (1-rho[index][i]);
-                        result[i] *= oneMinusRho;
-                    }
-				}
-
-				to = intervalStartTimes[index];
-
-				steps--;
-				index--;
-			}
-
-			p_integrator.integrate(P, to, result, t, result); // solve diffEquationOnP, store solution in y
-
-			// TO DO
-			// check that both rateChangeTimes are really overlapping
-			// but really not sure that this is enough, i have to build appropriate tests
-			if(Math.abs(t- intervalStartTimes[indexFrom])<globalPrecisionThreshold) {
-                for (int i = 0; i< nTypes; i++){
-                    oneMinusRho = 1-rho[indexFrom][i];
-                    result[i] *= oneMinusRho;
-                }
-			}
-
-		} catch(Exception e) {
-			throw new RuntimeException("couldn't calculate p");
-		}
-
-		return result;
-	}
-
-
-	public double[] getP(double t){
-
-		double[] y = new double[nTypes];
-
-		int index = Utils.getIntervalIndex(origin, intervalStartTimes);
-        for (int i = 0; i< nTypes; i++) {
-            y[i] = (1 - rho[index][i]);    // initial condition: y_i[T]=1-rho_i
-        }
-
-		if (Math.abs(origin -t)<globalPrecisionThreshold ||  origin < t) {
-			return y;
-		}
-
-		return getP(t, y, origin);
-	}
-
 }
 
