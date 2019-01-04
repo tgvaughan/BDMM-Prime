@@ -357,16 +357,14 @@ public class BirthDeathMigrationLikelihoodTest {
 		bdssm.setInputValue("reverseTimeArrays","false false false false");
 		bdssm.initAndValidate();
 
-		// this result is from BEAST, not double checked in R
-		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);
+		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);     // this result is from BEAST, not double checked in R
 
 		// same with reverse rhoSamplingTimes
 		bdssm.setInputValue("rhoSamplingTimes","0. 0.5 1.");
 		bdssm.setInputValue("reverseTimeArrays","false false false true");
 		bdssm.initAndValidate();
 
-        // this result is from BEAST, not double checked in R
-		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);
+		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);     // this result is from BEAST, not double checked in R
 	}
 
 	/**

@@ -132,8 +132,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 		tree = treeInput.get();
 
-		Double factor;
-
 		double freqSum = 0;
 		for (double f : frequenciesInput.get().getValues()) freqSum+= f;
 		if (Math.abs(1.0-freqSum)>1e-10)
@@ -141,11 +139,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 
         int nLeaves = tree.getLeafNodeCount();
-
-		int contempCount = 0;
-		for (Node node : tree.getExternalNodes())
-			if (node.getHeight()==0.)
-				contempCount++;
 
 		weightOfNodeSubTree = new double[nLeaves * 2];
 

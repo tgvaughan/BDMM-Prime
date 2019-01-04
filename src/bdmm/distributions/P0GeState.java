@@ -7,15 +7,14 @@ package bdmm.distributions;
 /**
  * Class containing the values of P0 and Ge.
  */
-public class P0GeState {
+public class P0GeState extends P0State {
 	
 	int dimension;
 	public SmallNumber[] ge;
 	public double[] p0;
 
 	public P0GeState(int nTypes) {
-	    dimension = nTypes;
-        p0 = new double[nTypes];
+	    super(nTypes);
 		ge = new SmallNumber[nTypes];
 		for (int i = 0; i<nTypes; i++)
 		    ge[i] = new SmallNumber();
@@ -23,17 +22,15 @@ public class P0GeState {
     }
 	
 	public P0GeState(double[] p0, SmallNumber[] ge) {
+        super(p0);
 		if(p0.length != ge.length) {
 			throw new RuntimeException("Incorrect initialization: difference of size between ge and p0");
 		}
-		dimension = p0.length;
-		this.p0 = p0;
 		this.ge = ge;
 	}
 	
 	public P0GeState() {
-		dimension = 1;
-		p0 = new double[] {0};
+	    super();
 		ge = new SmallNumber[] {new SmallNumber()};
 	}
 
