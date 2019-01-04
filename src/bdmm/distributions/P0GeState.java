@@ -198,7 +198,7 @@ public class P0GeState {
 
 		for (int i = 0; i < p0.length; i++){
 			ge[i] = new SmallNumber(numbers[i+p0.length]);
-			ge[i].addExponent(-factor);
+			ge[i].incrementExponent(-factor);
 		}
 	}
 

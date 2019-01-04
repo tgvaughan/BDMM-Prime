@@ -78,7 +78,8 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		System.out.println("Birth-death result: " + logL + "\t- Test LikelihoodMigRateChange 1");
 
-		assertEquals(-6.7022069383966025, logL, 1e-5);   // Reference BDMM (version 	0.2.0) 22/06/2017	
+		// Reference BDMM (version 0.2.0) 22/06/2017
+		assertEquals(-6.7022069383966025, logL, 1e-5);
 	}
 
     /**
@@ -136,7 +137,8 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		System.out.println("Birth-death result: " + logL + "\t- Test LikelihoodMigRateChange 1");
 
-		assertEquals(-6.7022069383966025, logL, 1e-5);   // Reference BDMM (version 	0.2.0) 22/06/2017
+		// Reference BDMM (version 0.2.0) 22/06/2017
+		assertEquals(-6.7022069383966025, logL, 1e-5);
 	}
 
 	/**
@@ -180,7 +182,8 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		double logL = density.calculateLogP();
 
-		assertEquals(-21.25413884159791, logL, 1e-5); // Reference BDMM (version 	0.2.0) 22/06/2017
+        // Reference BDMM (version 0.2.0) 22/06/2017
+		assertEquals(-21.25413884159791, logL, 1e-5);
 	}
 
 	/**
@@ -226,7 +229,8 @@ public class BirthDeathMigrationLikelihoodTest {
 
 	//	System.out.println("Birth-death result 2: " +logL2 + "\t- Test LikelihoodRemovalProbChangeTwoState 2");
 
-		assertEquals(-21.185194919464568, logL2, 1e-5); // Reference BDMM (version 	0.2.0) 29/03/2018
+        // Reference BDMM (version 0.2.0) 29/03/2018
+		assertEquals(-21.185194919464568, logL2, 1e-5);
 	}
 
 
@@ -262,7 +266,8 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		bdm.initAndValidate();
 
-		assertEquals(-6.761909, bdm.calculateLogP(), 1e-4);   // this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=0)
+		// this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=0)
+		assertEquals(-6.761909, bdm.calculateLogP(), 1e-4);
 
 		// test with conditioned-on-survival tree
 		bdm.setInputValue("conditionOnSurvival", true);
@@ -270,7 +275,8 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		bdm.initAndValidate();
 
-		assertEquals(-7.404227, bdm.calculateLogP(), 1e-4);   // this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5,5.5+1e-100),root=0,survival=1)
+        // this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5,5.5+1e-100),root=0,survival=1)
+		assertEquals(-7.404227, bdm.calculateLogP(), 1e-4);
 	}
 
 	/**
@@ -308,14 +314,16 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		bdm.initAndValidate();
 
-		assertEquals(-10.569863754307026, bdm.calculateLogP(), 1e-4);   // this result is from BEAST: BDSKY, not double checked in R
+		// this result is from BEAST: BDSKY, not double checked in R
+		assertEquals(-10.569863754307026, bdm.calculateLogP(), 1e-4);
 
 		// tips sampled at two different times
 		tree = new TreeParser("(3[&type=0]: 1.5, 4[&type=0]: 4) ;",false);
 		bdm.setInputValue("tree", tree);
 		bdm.initAndValidate();
 
-		assertEquals(-8.099631076932816, bdm.calculateLogP(), 1e-4);   // this result is from BEAST: BDSKY, not double checked in R
+		// this result is from BEAST: BDSKY, not double checked in R
+		assertEquals(-8.099631076932816, bdm.calculateLogP(), 1e-4);
 	}
 
 	/**
@@ -349,14 +357,16 @@ public class BirthDeathMigrationLikelihoodTest {
 		bdssm.setInputValue("reverseTimeArrays","false false false false");
 		bdssm.initAndValidate();
 
-		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);     // this result is from BEAST, not double checked in R
+		// this result is from BEAST, not double checked in R
+		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);
 
 		// same with reverse rhoSamplingTimes
 		bdssm.setInputValue("rhoSamplingTimes","0. 0.5 1.");
 		bdssm.setInputValue("reverseTimeArrays","false false false true");
 		bdssm.initAndValidate();
 
-		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);     // this result is from BEAST, not double checked in R
+        // this result is from BEAST, not double checked in R
+		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);
 	}
 
 	/**

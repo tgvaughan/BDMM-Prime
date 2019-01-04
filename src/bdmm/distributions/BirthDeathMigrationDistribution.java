@@ -225,11 +225,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             SmallNumber jointProb = finalP0Ge
                     .ge[rootType]
-                    .scalarMultiply(frequenciesInput.get().getArrayValue(rootType));
+                    .scalarMultiplyBy(frequenciesInput.get().getArrayValue(rootType));
 
             if (jointProb.getMantissa()>0 ) {
                 rootTypeProbs[rootType] = jointProb.log();
-                PrSN = SmallNumber.add(PrSN, jointProb);
+                PrSN = PrSN.addTo(jointProb);
             } else {
                 rootTypeProbs[rootType] = Double.NEGATIVE_INFINITY;
             }
@@ -242,7 +242,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         if (conditionOnSurvival.get()){
-            PrSN = PrSN.scalarMultiply(1/(1-probNoSample));
+            PrSN = PrSN.scalarMultiplyBy(1/(1-probNoSample));
         }
 
 		logP = PrSN.log();
@@ -387,13 +387,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 						if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
 							state.p0[type] = g.p0[type];
-							state.ge[type] = g.ge[type].scalarMultiply(system.s[intervalIdx][type]
+							state.ge[type] = g.ge[type].scalarMultiplyBy(system.s[intervalIdx][type]
 									* (1 - system.r[intervalIdx][type]));
 
 						} else {
 							// TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
 							state.p0[type] = g.p0[type] * (1 - system.rho[intervalIdx][type]);
-							state.ge[type] = g.ge[type].scalarMultiply(system.rho[intervalIdx][type]
+							state.ge[type] = g.ge[type].scalarMultiplyBy(system.rho[intervalIdx][type]
 									* (1 - system.r[intervalIdx][type]));
 
 						}
@@ -404,7 +404,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 						state.p0[saNodeType] = g.p0[saNodeType];
 						state.ge[saNodeType] = g.ge[saNodeType]
-                                .scalarMultiply(system.s[intervalIdx][saNodeType]
+                                .scalarMultiplyBy(system.s[intervalIdx][saNodeType]
 								* (1 - system.r[intervalIdx][saNodeType]));
 
 //					System.out.println("SA but not rho sampled");
@@ -414,7 +414,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 						state.p0[saNodeType] = g.p0[saNodeType]
                                 * (1 - system.rho[intervalIdx][saNodeType]);
 						state.ge[saNodeType] = g.ge[saNodeType]
-                                .scalarMultiply(system.rho[intervalIdx][saNodeType]
+                                .scalarMultiplyBy(system.rho[intervalIdx][saNodeType]
 								* (1 - system.r[intervalIdx][saNodeType]));
 
 					}
@@ -472,20 +472,18 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				for (int childType = 0; childType < parameterization.getNTypes(); childType++) {
 
 					state.p0[childType] = childState1.p0[childType];
-					state.ge[childType] = SmallNumber
-                            .multiply(childState1.ge[childType], childState2.ge[childType])
-                            .scalarMultiply(system.b[intervalIdx][childType]);
+                    state.ge[childType] = childState1.ge[childType]
+                            .multiplyBy(childState2.ge[childType])
+                            .scalarMultiplyBy(system.b[intervalIdx][childType]);
 
                     for (int otherChildType = 0; otherChildType < parameterization.getNTypes(); otherChildType++) {
                         if (otherChildType == childType)
                             continue;
 
-                        state.ge[childType] = SmallNumber.add(
-                                state.ge[childType],
-                                SmallNumber.add(
-                                        SmallNumber.multiply(childState1.ge[childType], childState2.ge[otherChildType]),
-                                        SmallNumber.multiply(childState1.ge[otherChildType], childState2.ge[childType]))
-                                        .scalarMultiply(0.5 * system.b_ij[intervalIdx][childType][otherChildType]));
+                        state.ge[childType] = state.ge[childType]
+                                .addTo((childState1.ge[childType].multiplyBy(childState2.ge[otherChildType]))
+                                        .addTo((childState1.ge[otherChildType].multiplyBy(childState2.ge[childType])))
+                                        .scalarMultiplyBy(0.5 * system.b_ij[intervalIdx][childType][otherChildType]));
                     }
 
 
@@ -684,7 +682,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 for (int i = 0; i < parameterization.getNTypes(); i++) {
                     oneMinusRho = 1 - system.rho[thisInterval][i];
                     state.p0[i] *= oneMinusRho;
-                    state.ge[i] = state.ge[i].scalarMultiply(oneMinusRho);
+                    state.ge[i] = state.ge[i].scalarMultiplyBy(oneMinusRho);
                 }
 
                 // 'rescale' the results of the last integration to prepare for the next integration step

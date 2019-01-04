@@ -8,7 +8,8 @@ import beast.core.Description;
  * Created by Jeremie Scire (jscire) on 24.06.16.
  */
 
-@Description("This class contains the tools needed to represent and do basic calculations with numbers in extended floating point representation (EPFP).")
+@Description("This class contains the tools needed to represent and do basic " +
+        "calculations with numbers in extended floating point representation (EPFP).")
 public class SmallNumber {
 
 	private double mantissa;
@@ -107,43 +108,33 @@ public class SmallNumber {
 		return this.mantissa;
 	}
 
-	/**
-	 * Multiply two SmallNumbers
-	 * @param a
-	 * @param b
-	 * @return a new SmallNumber
-	 */
-	public static SmallNumber multiply(SmallNumber a, SmallNumber b){
-		if (a.mantissa == 0 || b.mantissa == 0){
+    /**
+     * Return a new SmallNumber which is the result of multiplying this number
+     * by multiplicand.
+     *
+     * @param other number to multiply this number by.
+     * @return result of multiplication.
+     */
+	public SmallNumber multiplyBy(SmallNumber other){
+		if (mantissa == 0 || other.mantissa == 0){
 			return new SmallNumber(0);
 		}
-		SmallNumber result = new SmallNumber(a.mantissa * b.mantissa, a.exponent + b.exponent);
+		SmallNumber result = new SmallNumber(mantissa * other.mantissa, exponent + other.exponent);
 
 		// use update to make sure the result is in the correct representation
 		result.update();
 		return result;
 	}
-
-    /**
-     * Return a new SmallNumber which is the result of multiplying this number
-     * by multiplicand.
-     *
-     * @param multiplicand number to multiply this number by.
-     * @return result of multiplication.
-     */
-	public SmallNumber multiplyBy(SmallNumber multiplicand) {
-	    return multiply(this, multiplicand);
-    }
 	
 	/**
 	 * Multiply a SmallNumber with a double
 	 * @param lambda
 	 * @return a new SmallNumber
 	 */
-	public SmallNumber scalarMultiply(double lambda){
+	public SmallNumber scalarMultiplyBy(double lambda){
 		if (Double.isInfinite(lambda))
 			throw new RuntimeException("Unauthorized number (Infinity) used for multiplication with a SmallNumber");
-		SmallNumber res = new SmallNumber(this.mantissa * lambda, this.exponent);
+		SmallNumber res = new SmallNumber(mantissa * lambda, exponent);
 		res.update();
 		return res;
 	}
@@ -152,7 +143,7 @@ public class SmallNumber {
 	 * Increase the value of a SmallNumber by 'exp' orders of magnitude (in base 2)
 	 * @param exp
 	 */
-	public void addExponent(int exp){
+	public void incrementExponent(int exp){
 		this.exponent += exp;
 		this.update();
 	}
@@ -165,39 +156,27 @@ public class SmallNumber {
 		return new SmallNumber(-this.mantissa, this.exponent);
 	}
 
-	/**
-	 * Add two SmallNumbers
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public static SmallNumber add(SmallNumber a, SmallNumber b){
-
-		if (a.mantissa == 0 || ((b.exponent - a.exponent)> approximationThreshold && b.mantissa !=0)) {
-			return b;
-		} else if (b.mantissa == 0 || (a.exponent - b.exponent) > approximationThreshold) {
-			return a;
-		} else {
-			SmallNumber c = new SmallNumber(0);
-			if (a.exponent > b.exponent) {
-				c = new SmallNumber(a.mantissa + b.mantissa * Math.pow(2, b.exponent-a.exponent), a.exponent);
-			} else {
-				c = new SmallNumber(b.mantissa + a.mantissa * Math.pow(2, a.exponent-b.exponent), b.exponent);
-			}	
-			return c;
-		}
-	}
-
     /**
      * Return a new SmallNumber which is the result of adding this
      * small number to otherNumber.
      *
-     * @param otherNumber number to add to this one.
+     * @param other number to add to this one.
      * @return result of addition.
      */
-	public SmallNumber addTo(SmallNumber otherNumber) {
-	    return SmallNumber.add(this, otherNumber);
-    }
+	public SmallNumber addTo(SmallNumber other){
+
+		if (mantissa == 0 || ((other.exponent - exponent)> approximationThreshold && other.mantissa !=0)) {
+			return other;
+		} else if (other.mantissa == 0 || (exponent - other.exponent) > approximationThreshold) {
+			return this;
+		} else {
+			if (exponent > other.exponent) {
+				return new SmallNumber(mantissa + other.mantissa * Math.pow(2, other.exponent-exponent), exponent);
+			} else {
+				return new SmallNumber(other.mantissa + mantissa * Math.pow(2, exponent-other.exponent), other.exponent);
+			}	
+		}
+	}
 
 	/**
 	 * If possible, return the number of interest in a 'double'
@@ -211,20 +190,20 @@ public class SmallNumber {
 		return this.mantissa*Math.pow(2, this.exponent);
 	}
 
-	public static SmallNumber convertToScientificRepresentation(SmallNumber a){
+	public SmallNumber getScientificRepresentation() {
 
-		if (a.mantissa == 0) {
-			return a;
+		if (mantissa == 0) {
+			return this;
 		}
 		SmallNumber a10 = new SmallNumber(0);
 		// Transformation of a * 2^(birth) in alpha * c * 10^(beta+z) where a = c * 10^z and 2^birth = alpha * 10^beta
-		double exponentBase10  = a.exponent * Math.log(2)/Math.log(10);
+		double exponentBase10  = exponent * Math.log(2)/Math.log(10);
 
 		int beta = (int) Math.floor(exponentBase10);
 		double alpha = Math.pow(10, exponentBase10 - beta);
 
-		double sign = Math.signum(a.mantissa);
-		double log = Math.log10(Math.abs(a.mantissa));
+		double sign = Math.signum(mantissa);
+		double log = Math.log10(Math.abs(mantissa));
 		int z = (int)Math.floor(log);
 		double c = sign * Math.pow(10, log - z);
 
@@ -233,16 +212,6 @@ public class SmallNumber {
 		return a10;
 	}
 
-	public String toString(){
-
-		SmallNumber num10 = SmallNumber.convertToScientificRepresentation(this);
-		String pattern = "0.";
-		for (int i=1; i<numbersPrinted; i++) {
-			pattern += "#";
-		}
-		DecimalFormat dF  = new DecimalFormat(pattern);
-		return "" + dF.format(num10.mantissa) + "E" + num10.exponent;
-	}
 
 	/**
 	 * Convert an array of doubles into an array of SmallNumbers 
@@ -255,6 +224,17 @@ public class SmallNumber {
 			smallNums[i] = new SmallNumber(numbers[i]);
 		}
 		return smallNums;
+	}
+
+	public String toString() {
+
+		SmallNumber num10 = getScientificRepresentation();
+		String pattern = "0.";
+		for (int i=1; i<numbersPrinted; i++) {
+			pattern += "#";
+		}
+		DecimalFormat dF  = new DecimalFormat(pattern);
+		return "" + dF.format(num10.mantissa) + "E" + num10.exponent;
 	}
 
 	/**
@@ -331,11 +311,11 @@ public class SmallNumber {
 
 		//Simple test 
 		
-		double testedA =  2.2914985084252684E90;
+		double testedA =  2.2914985084252684e90;
 		SmallNumber snA = new SmallNumber(testedA);
 		System.out.println(snA);
 
-		double aOld = 0.00000000000000000000000000000000000000000000000000000000000000000000000000123645445640000;
+		double aOld = 1.2364544564e-75;
 		SmallNumber a = new SmallNumber(aOld);
 		System.out.println("The value of a is " + a.toString());
 		SmallNumber f = new SmallNumber(Math.pow(Math.E, -50));
@@ -344,7 +324,14 @@ public class SmallNumber {
 		double abis = a.getMantissa()*Math.pow(2, a.getExponent());
 		System.out.println("The value of a is " + a.toString() + "\t vs 1,2364544564E-75");
 		System.out.println("The value of c is " + c.toString());
-		SmallNumber b = SmallNumber.multiply(SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)),SmallNumber.multiply(SmallNumber.multiply(a, a), SmallNumber.multiply(a, a)));
+		SmallNumber b = a
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a);
 		double bOld = aOld*aOld*aOld*aOld*aOld*aOld*aOld*aOld;
 		System.out.println("The value of birth is " + b.toString());
 		System.out.println("The value of birth using double would have been " + bOld);
