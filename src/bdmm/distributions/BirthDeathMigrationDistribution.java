@@ -192,7 +192,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         //TODO only do it if tree shape changed
         updateParallelizationThreshold();
 
-        pInitialConditions = getAllInitialConditionsForP(tree);
+        updateInitialConditionsForP(tree);
 
         double probNoSample = 0;
         if (conditionOnSurvival.get()) {
@@ -545,24 +545,21 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     /**
      * Perform integration on differential equations p
      *
-     * @param tTop
+     * @param tEnd
      * @return
      */
-    private double[] getP(double tTop, double[] P0, double tBottom) {
+    private P0State getP(double tStart, double tEnd, P0State state, P0System system) {
 
-        if (Math.abs(parameterization.getOrigin() - tTop) < globalPrecisionThreshold
-                || Math.abs(tBottom - tTop) < globalPrecisionThreshold)
-            return P0;
+        if (Math.abs(system.origin - tEnd) < globalPrecisionThreshold
+                || Math.abs(tStart - tEnd) < globalPrecisionThreshold)
+            return state;
 
-        double[] result = new double[P0.length];
-
-        System.arraycopy(P0, 0, result, 0, P0.length);
-        double from = tTop;
-        double to = tBottom;
+        double from = tEnd;
+        double to = tStart;
         double oneMinusRho;
 
-        int indexFrom = Utils.getIntervalIndex(from, parameterization.getIntervalStartTimes());
-        int index = Utils.getIntervalIndex(to, parameterization.getIntervalStartTimes());
+        int indexFrom = Utils.getIntervalIndex(from, system.intervalStartTimes);
+        int index = Utils.getIntervalIndex(to, system.intervalStartTimes);
 
         int steps = index - indexFrom;
 
@@ -580,11 +577,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             // TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
             if (Math.abs(from - to) > globalPrecisionThreshold) {
-                p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
+                p_integrator.integrate(system, to, state.p0, from, state.p0); // solve diffEquationOnP , store solution in y
 
                 for (int i = 0; i < parameterization.getNTypes(); i++) {
                     oneMinusRho = (1 - parameterization.getRhoValues()[index][i]);
-                    result[i] *= oneMinusRho;
+                    state.p0[i] *= oneMinusRho;
                 }
             }
 
@@ -594,36 +591,19 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             index--;
         }
 
-        p_integrator.integrate(P, to, result, tTop, result); // solve diffEquationOnP, store solution in y
+        p_integrator.integrate(P, to, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
 
         // TO DO
         // check that both rateChangeTimes are really overlapping
         // but really not sure that this is enough, i have to build appropriate tests
-        if (Math.abs(tTop - parameterization.getIntervalStartTimes()[indexFrom]) < globalPrecisionThreshold) {
+        if (Math.abs(tEnd - parameterization.getIntervalStartTimes()[indexFrom]) < globalPrecisionThreshold) {
             for (int i = 0; i < parameterization.getNTypes(); i++) {
                 oneMinusRho = 1 - parameterization.getRhoValues()[indexFrom][i];
-                result[i] *= oneMinusRho;
+                state.p0[i] *= oneMinusRho;
             }
         }
 
-        return result;
-    }
-
-
-    private double[] getP(double t) {
-
-        double[] y = new double[parameterization.getNTypes()];
-
-        int index = Utils.getIntervalIndex(parameterization.getOrigin(), parameterization.getIntervalStartTimes());
-        for (int i = 0; i < parameterization.getNTypes(); i++) {
-            y[i] = (1 - parameterization.getRhoValues()[index][i]);    // initial condition: y_i[T]=1-rho_i
-        }
-
-        if (Math.abs(parameterization.getOrigin() - t) < globalPrecisionThreshold || parameterization.getOrigin() < t) {
-            return y;
-        }
-
-        return getP(t, y, parameterization.getOrigin());
+        return state;
     }
 
     /**
@@ -815,12 +795,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 
     /**
-     * Find all initial conditions for all future integrations on p0 equations
+     * Compute all initial conditions for all future integrations on p0 equations.
      *
      * @param tree
-     * @return an array of arrays storing the initial conditions values
      */
-    public double[][] getAllInitialConditionsForP(TreeInterface tree) {
+    public void updateInitialConditionsForP(TreeInterface tree) {
 
         int leafCount = tree.getLeafNodeCount();
         double[] leafTimes = new double[leafCount];
@@ -832,24 +811,35 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             indicesSortedByLeafHeight[i] = i;
         }
 
-        HeapSort.sort(leafTimes, indicesSortedByLeafHeight); // sort leafs in order their time in the tree
-        //"sort" sorts in ascending order, so we have to be careful since the integration starts from the leaves at time T and goes up to the root at time 0 (or >0)
+        HeapSort.sort(leafTimes, indicesSortedByLeafHeight);
+        //"sort" sorts in ascending order, so we have to be careful since the
+        // integration starts from the leaves at time T and goes up to the
+        // root at time 0 (or >0)
 
-        double[][] pInitialCondsAtLeaves = new double[leafCount + 1][PG.nTypes];
 
         double t = leafTimes[indicesSortedByLeafHeight[leafCount - 1]];
 
-        pInitialCondsAtLeaves[indicesSortedByLeafHeight[leafCount - 1]] = getP(t);
-        double t0 = t;
+        P0State p0State = new P0State(PG.nTypes);
+
+        int startIndex = Utils.getIntervalIndex(parameterization.getOrigin(),
+                parameterization.getIntervalStartTimes());
+        for (int i = 0; i < parameterization.getNTypes(); i++) {
+            p0State.p0[i] = (1 - parameterization.getRhoValues()[startIndex][i]);    // initial condition: y_i[T]=1-rho_i
+        }
+
+        pInitialConditions = new double[leafCount + 1][P.nTypes];
+        System.arraycopy(getP(P.origin, t, p0State, P).p0, 0,
+                pInitialConditions[indicesSortedByLeafHeight[leafCount-1]], 0, P.nTypes);
+        double tprev = t;
 
         if (leafCount > 1) {
             for (int i = leafCount - 2; i > -1; i--) {
                 t = leafTimes[indicesSortedByLeafHeight[i]];
 
                 //If the next higher leaf is actually at the same height, store previous results and skip iteration
-                if (Math.abs(t - t0) < globalPrecisionThreshold) {
-                    t0 = t;
-                    pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] = pInitialCondsAtLeaves[indicesSortedByLeafHeight[i + 1]];
+                if (Math.abs(t - tprev) < globalPrecisionThreshold) {
+                    tprev = t;
+                    pInitialConditions[indicesSortedByLeafHeight[i]] = pInitialConditions[indicesSortedByLeafHeight[i + 1]];
                     continue;
                 } else {
 					/* TODO the integration performed in getP is done before all
@@ -857,17 +847,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                        matter that it has its own integrator, but if it does
                        (or to simplify the code), take care of passing an integrator
                        as a local variable. */
-                    pInitialCondsAtLeaves[indicesSortedByLeafHeight[i]] =
-                            getP(t, pInitialCondsAtLeaves[indicesSortedByLeafHeight[i + 1]], t0);
-                    t0 = t;
+                    System.arraycopy(getP(tprev, t, p0State, P).p0, 0,
+                            pInitialConditions[indicesSortedByLeafHeight[i]], 0, P.nTypes);
+                    tprev = t;
                 }
 
             }
         }
 
-        pInitialCondsAtLeaves[leafCount] = getP(0, pInitialCondsAtLeaves[indicesSortedByLeafHeight[0]], t0);
-
-        return pInitialCondsAtLeaves;
+        System.arraycopy(getP(tprev, 0, p0State, P).p0, 0,
+                pInitialConditions[leafCount], 0, P.nTypes);
     }
 
     static void executorBootUp() {

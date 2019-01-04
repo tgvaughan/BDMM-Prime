@@ -47,11 +47,6 @@ public class P0GeState extends P0State {
         return sb.toString();
     }
 
-    /**
-	 * TODO: change the comments here
-	 * The maximal value a double can take is 1.80E308, the minimal value is 4.9E-324.
-	 * With a safety margin, two doubles can be dealt with by Java when there is 630 orders of magnitude (2040 in base 2) between them.
-	 */
 	final static int exponentMaxValueDouble = 1023;
 	final static int exponentMinValueDouble = -1022;
 	final static int safeGapMinMaxDouble = 2040;
