@@ -554,53 +554,33 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 || Math.abs(tStart - tEnd) < globalPrecisionThreshold)
             return state;
 
-        double from = tEnd;
-        double to = tStart;
-        double oneMinusRho;
+        double thisTime = tStart;
+        int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalStartTimes);
+        int endInterval = Utils.getIntervalIndex(tEnd, system.intervalStartTimes);
 
-        int indexFrom = Utils.getIntervalIndex(from, system.intervalStartTimes);
-        int index = Utils.getIntervalIndex(to, system.intervalStartTimes);
+        while (thisInterval > endInterval) {
 
-        int steps = index - indexFrom;
+            double nextTime = parameterization.getIntervalStartTimes()[thisInterval];
 
-        index--;
-        if (Math.abs(from - parameterization.getIntervalStartTimes()[indexFrom]) < globalPrecisionThreshold)
-            steps--;
-        if (index > 0 && Math.abs(to - parameterization.getIntervalStartTimes()[index - 1]) < globalPrecisionThreshold) {
-            steps--;
-            index--;
-        }
+            if (nextTime < thisTime) {
+                p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
 
-        while (steps > 0) {
-
-            from = parameterization.getIntervalStartTimes()[index];
-
-            // TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
-            if (Math.abs(from - to) > globalPrecisionThreshold) {
-                p_integrator.integrate(system, to, state.p0, from, state.p0); // solve diffEquationOnP , store solution in y
-
-                for (int i = 0; i < parameterization.getNTypes(); i++) {
-                    oneMinusRho = (1 - parameterization.getRhoValues()[index][i]);
-                    state.p0[i] *= oneMinusRho;
-                }
+                for (int i = 0; i < parameterization.getNTypes(); i++)
+                    state.p0[i] *= (1 - parameterization.getRhoValues()[thisInterval][i]);
             }
 
-            to = parameterization.getIntervalStartTimes()[index];
-
-            steps--;
-            index--;
+            thisTime = nextTime;
+            thisInterval -= 1;
         }
 
-        p_integrator.integrate(P, to, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
+        p_integrator.integrate(P, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
 
         // TO DO
         // check that both rateChangeTimes are really overlapping
         // but really not sure that this is enough, i have to build appropriate tests
-        if (Math.abs(tEnd - parameterization.getIntervalStartTimes()[indexFrom]) < globalPrecisionThreshold) {
-            for (int i = 0; i < parameterization.getNTypes(); i++) {
-                oneMinusRho = 1 - parameterization.getRhoValues()[indexFrom][i];
-                state.p0[i] *= oneMinusRho;
-            }
+        if (Math.abs(tEnd - parameterization.getIntervalStartTimes()[endInterval]) < globalPrecisionThreshold) {
+            for (int i = 0; i < parameterization.getNTypes(); i++)
+                state.p0[i] = 1 - parameterization.getRhoValues()[endInterval][i];
         }
 
         return state;
@@ -803,21 +783,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         int leafCount = tree.getLeafNodeCount();
         double[] leafTimes = new double[leafCount];
-        int[] indicesSortedByLeafHeight = new int[leafCount];
+        int[] indicesSortedByLeafTime = new int[leafCount];
 
-        for (int i = 0; i < leafCount; i++) { // get all leaf heights
+        for (int i = 0; i < leafCount; i++) { // get all leaf times
             leafTimes[i] = parameterization.getOrigin() - tree.getNode(i).getHeight();
-            // System.out.println(nodeHeight[i]);
-            indicesSortedByLeafHeight[i] = i;
+            indicesSortedByLeafTime[i] = i;
         }
 
-        HeapSort.sort(leafTimes, indicesSortedByLeafHeight);
+        HeapSort.sort(leafTimes, indicesSortedByLeafTime);
         //"sort" sorts in ascending order, so we have to be careful since the
         // integration starts from the leaves at time T and goes up to the
         // root at time 0 (or >0)
 
 
-        double t = leafTimes[indicesSortedByLeafHeight[leafCount - 1]];
+        double t = leafTimes[indicesSortedByLeafTime[leafCount - 1]];
 
         P0State p0State = new P0State(PG.nTypes);
 
@@ -829,17 +808,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         pInitialConditions = new double[leafCount + 1][P.nTypes];
         System.arraycopy(getP(P.origin, t, p0State, P).p0, 0,
-                pInitialConditions[indicesSortedByLeafHeight[leafCount-1]], 0, P.nTypes);
+                pInitialConditions[indicesSortedByLeafTime[leafCount-1]], 0, P.nTypes);
         double tprev = t;
 
         if (leafCount > 1) {
             for (int i = leafCount - 2; i > -1; i--) {
-                t = leafTimes[indicesSortedByLeafHeight[i]];
+                t = leafTimes[indicesSortedByLeafTime[i]];
 
                 //If the next higher leaf is actually at the same height, store previous results and skip iteration
                 if (Math.abs(t - tprev) < globalPrecisionThreshold) {
                     tprev = t;
-                    pInitialConditions[indicesSortedByLeafHeight[i]] = pInitialConditions[indicesSortedByLeafHeight[i + 1]];
+                    pInitialConditions[indicesSortedByLeafTime[i]] = pInitialConditions[indicesSortedByLeafTime[i + 1]];
                     continue;
                 } else {
 					/* TODO the integration performed in getP is done before all
@@ -848,7 +827,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                        (or to simplify the code), take care of passing an integrator
                        as a local variable. */
                     System.arraycopy(getP(tprev, t, p0State, P).p0, 0,
-                            pInitialConditions[indicesSortedByLeafHeight[i]], 0, P.nTypes);
+                            pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
                     tprev = t;
                 }
 
