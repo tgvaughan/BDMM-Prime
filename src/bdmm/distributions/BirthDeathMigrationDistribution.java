@@ -560,13 +560,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         while (thisInterval > endInterval) {
 
-            double nextTime = parameterization.getIntervalStartTimes()[thisInterval];
+            double nextTime = system.intervalStartTimes[thisInterval];
 
             if (nextTime < thisTime) {
                 p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
 
-                for (int i = 0; i < parameterization.getNTypes(); i++)
-                    state.p0[i] *= (1 - parameterization.getRhoValues()[thisInterval][i]);
+                for (int i = 0; i < system.nTypes; i++)
+                    state.p0[i] *= (1 - system.rho[thisInterval][i]);
             }
 
             thisTime = nextTime;
@@ -578,9 +578,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // TO DO
         // check that both rateChangeTimes are really overlapping
         // but really not sure that this is enough, i have to build appropriate tests
-        if (Math.abs(tEnd - parameterization.getIntervalStartTimes()[endInterval]) < globalPrecisionThreshold) {
-            for (int i = 0; i < parameterization.getNTypes(); i++)
-                state.p0[i] = 1 - parameterization.getRhoValues()[endInterval][i];
+        if (Math.abs(tEnd - system.intervalStartTimes[endInterval]) < globalPrecisionThreshold) {
+            for (int i = 0; i < system.nTypes; i++)
+                state.p0[i] = 1 - system.rho[endInterval][i];
         }
 
         return state;

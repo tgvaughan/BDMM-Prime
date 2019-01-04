@@ -17,6 +17,9 @@ public class Utils {
      */
     public static int getIntervalIndex(double t, double[] times) {
 
+        if (t<0.0)
+            return 0;
+
         int index = Arrays.binarySearch(times, t);
 
         // If t was not found in array times by binarySearch,
