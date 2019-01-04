@@ -563,7 +563,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double nextTime = system.intervalStartTimes[thisInterval];
 
             if (nextTime < thisTime) {
-                p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
+                p_integrator.integrate(system, thisTime, state.p0, nextTime+globalPrecisionThreshold, state.p0);
 
                 for (int i = 0; i < system.nTypes; i++)
                     state.p0[i] *= (1 - system.rho[thisInterval][i]);
@@ -573,7 +573,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             thisInterval -= 1;
         }
 
-        p_integrator.integrate(P, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
+        p_integrator.integrate(P, thisTime, state.p0, tEnd+globalPrecisionThreshold, state.p0); // solve diffEquationOnP, store solution in y
 
         // TO DO
         // check that both rateChangeTimes are really overlapping
@@ -615,7 +615,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double nextTime = system.intervalStartTimes[thisInterval];
 
             if (nextTime < thisTime) {
-                pgScaled = safeIntegrate(system, nextTime, pgScaled, thisTime);
+                pgScaled = safeIntegrate(system, thisTime, pgScaled, nextTime+globalPrecisionThreshold);
 
                 state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
@@ -633,7 +633,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             thisInterval -= 1;
         }
 
-        pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop); // solve PG , store solution temporarily integrationResults
+         // solve PG , store solution temporarily integrationResults
+        pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop+globalPrecisionThreshold);
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
