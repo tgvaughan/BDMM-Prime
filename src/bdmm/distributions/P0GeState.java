@@ -9,9 +9,7 @@ package bdmm.distributions;
  */
 public class P0GeState extends P0State {
 	
-	int dimension;
 	public SmallNumber[] ge;
-	public double[] p0;
 
 	public P0GeState(int nTypes) {
 	    super(nTypes);
