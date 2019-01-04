@@ -86,7 +86,7 @@ public class SmallNumberTest {
                 new SmallNumber(1., -1000)};
 		double m = SmallNumber.averageExponent(eq);
 
-		ScaledNumbers scaeq = SmallNumberScaler.scale(new P0GeState(eqp, eq));
+		ScaledNumbers scaeq = (new P0GeState(eqp, eq)).getScaledState();
 		System.out.println(SmallNumber.toString(eq) +  "with an average exponent of: " + m + "\t and minimal exponent compared to the set threshold of: " + SmallNumber.compareExponent(eq));
 		System.out.println(scaeq.getScalingFactor());
 		System.out.println("\n"

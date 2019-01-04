@@ -553,6 +553,88 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     }
 
 
+	/**
+	 * Perform integration on differential equations p
+	 * @param tTop
+	 * @return
+	 */
+    private double[] getP(double tTop, double[] P0, double tBottom) {
+
+        if (Math.abs(parameterization.getOrigin()-tTop)<globalPrecisionThreshold
+                || Math.abs(tBottom-tTop)<globalPrecisionThreshold)
+            return P0;
+
+        double[] result = new double[P0.length];
+
+        System.arraycopy(P0, 0, result, 0, P0.length);
+        double from = tTop;
+        double to = tBottom;
+        double oneMinusRho;
+
+        int indexFrom = Utils.getIntervalIndex(from, parameterization.getIntervalStartTimes());
+        int index = Utils.getIntervalIndex(to, parameterization.getIntervalStartTimes());
+
+        int steps = index - indexFrom;
+
+        index--;
+        if (Math.abs(from- parameterization.getIntervalStartTimes()[indexFrom])<globalPrecisionThreshold) steps--;
+        if (index>0 && Math.abs(to- parameterization.getIntervalStartTimes()[index-1])<globalPrecisionThreshold) {
+            steps--;
+            index--;
+        }
+
+        while (steps > 0){
+
+            from = parameterization.getIntervalStartTimes()[index];
+
+            // TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
+            if (Math.abs(from-to)>globalPrecisionThreshold){
+                p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
+
+                for (int i = 0; i< parameterization.getNTypes(); i++){
+                    oneMinusRho = (1-parameterization.getRhoValues()[index][i]);
+                    result[i] *= oneMinusRho;
+                }
+            }
+
+            to = parameterization.getIntervalStartTimes()[index];
+
+            steps--;
+            index--;
+        }
+
+        p_integrator.integrate(P, to, result, tTop, result); // solve diffEquationOnP, store solution in y
+
+        // TO DO
+        // check that both rateChangeTimes are really overlapping
+        // but really not sure that this is enough, i have to build appropriate tests
+        if(Math.abs(tTop- parameterization.getIntervalStartTimes()[indexFrom])<globalPrecisionThreshold) {
+            for (int i = 0; i<parameterization.getNTypes(); i++){
+                oneMinusRho = 1-parameterization.getRhoValues()[indexFrom][i];
+                result[i] *= oneMinusRho;
+            }
+        }
+
+        return result;
+    }
+
+
+	private double[] getP(double t){
+
+		double[] y = new double[parameterization.getNTypes()];
+
+		int index = Utils.getIntervalIndex(parameterization.getOrigin(), parameterization.getIntervalStartTimes());
+        for (int i = 0; i< parameterization.getNTypes(); i++) {
+            y[i] = (1 - parameterization.getRhoValues()[index][i]);    // initial condition: y_i[T]=1-rho_i
+        }
+
+		if (Math.abs(parameterization.getOrigin()-t)<globalPrecisionThreshold ||  parameterization.getOrigin() < t) {
+			return y;
+		}
+
+		return getP(t, y, parameterization.getOrigin());
+	}
+
     /**
 	 *
 	 * @param tTop
@@ -573,10 +655,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 	/**
 	 *
-	 * @param tTop
-	 * @param state initial conditions for p0 (0..n-1) and for ge (n..2n-1)
-	 * @param tBottom
-	 * @param system
+	 * @param tTop time at top of edge
+	 * @param state ODE variables at bottom of edge
+	 * @param tBottom time at bottom of edge
+	 * @param system ODE system to integrate
 	 * @return
 	 */
     public P0GeState getG(double tTop, P0GeState state, double tBottom, P0GeSystem system){
@@ -584,7 +666,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // pgScaled contains the set of initial conditions scaled made to fit
         // the requirements on the values 'double' can represent. It also
         // contains the factor by which the numbers were multiplied.
-        ScaledNumbers pgScaled = SmallNumberScaler.scale(state);
+        ScaledNumbers pgScaled = state.getScaledState();
 
         double thisTime = tBottom;
         int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalStartTimes);
@@ -597,7 +679,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             if (nextTime < thisTime) {
                 pgScaled = safeIntegrate(system, nextTime, pgScaled, thisTime);
 
-                state = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
+                state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
                 for (int i = 0; i < parameterization.getNTypes(); i++) {
                     oneMinusRho = 1 - system.rho[thisInterval][i];
@@ -606,7 +688,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 }
 
                 // 'rescale' the results of the last integration to prepare for the next integration step
-                pgScaled = SmallNumberScaler.scale(state);
+                pgScaled = state.getScaledState();
             }
 
             thisTime = nextTime;
@@ -616,11 +698,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop); // solve PG , store solution temporarily integrationResults
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
-        state = SmallNumberScaler.unscale(pgScaled.getEquation(), pgScaled.getScalingFactor());
-
+        state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
         return state;
     }
+
+
 
 	/**
 	 * Perform an initial traversal of the tree to get the 'weights' (sum of all its edges lengths) of all sub-trees
@@ -685,7 +768,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		P = new P0System(parameterization);
 		PG = new P0GeSystem(parameterization);
 
-        FirstOrderIntegrator pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
         p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 	}
 
@@ -700,7 +782,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 	 * @param tEnd
 	 * @return result of integration
 	 */
-	private static ScaledNumbers safeIntegrate(P0GeSystem PG, double tStart, ScaledNumbers pgScaled, double tEnd){
+	private ScaledNumbers safeIntegrate(P0GeSystem PG, double tStart, ScaledNumbers pgScaled, double tEnd){
 
 		// if the integration interval is too small, nothing is done (to prevent infinite looping)
 		if(Math.abs(tEnd-tStart) < globalPrecisionThreshold /*(T * 1e-20)*/) return pgScaled;
@@ -743,102 +825,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 				pConditions[i] = integrationResults[i];
 				geConditions[i] = new SmallNumber(integrationResults[i+n]);
 			}
-			pgScaled = SmallNumberScaler.scale(new P0GeState(pConditions, geConditions));
+			pgScaled = (new P0GeState(pConditions, geConditions)).getScaledState();
 			pgScaled.augmentFactor(a);
 		}
 
 		return pgScaled;
 	}
 
-
-	// TODO Merge with p0ge integration code
-	/**
-	 * Perform integration on differential equations p
-	 * @param t
-	 * @return
-	 */
-    private double[] getP(double t, double[] P0, double t0){
-
-
-		if (Math.abs(parameterization.getOrigin()-t)<globalPrecisionThreshold || Math.abs(t0-t)<globalPrecisionThreshold ||  parameterization.getOrigin() < t)
-			return P0;
-
-		double[] result = new double[P0.length];
-
-		try {
-
-			System.arraycopy(P0, 0, result, 0, P0.length);
-			double from = t;
-			double to = t0;
-			double oneMinusRho;
-
-			int indexFrom = Utils.getIntervalIndex(from, parameterization.getIntervalStartTimes());
-			int index = Utils.getIntervalIndex(to, parameterization.getIntervalStartTimes());
-
-			int steps = index - indexFrom;
-
-			index--;
-			if (Math.abs(from- parameterization.getIntervalStartTimes()[indexFrom])<globalPrecisionThreshold) steps--;
-			if (index>0 && Math.abs(to- parameterization.getIntervalStartTimes()[index-1])<globalPrecisionThreshold) {
-				steps--;
-				index--;
-			}
-
-			while (steps > 0){
-
-				from = parameterization.getIntervalStartTimes()[index];
-
-				// TODO: putting the if(rhosampling) in there also means the 1-rho may never be actually used so a workaround is potentially needed
-				if (Math.abs(from-to)>globalPrecisionThreshold){
-					p_integrator.integrate(P, to, result, from, result); // solve diffEquationOnP , store solution in y
-
-                    for (int i = 0; i< parameterization.getNTypes(); i++){
-                        oneMinusRho = (1-parameterization.getRhoValues()[index][i]);
-                        result[i] *= oneMinusRho;
-                    }
-				}
-
-				to = parameterization.getIntervalStartTimes()[index];
-
-				steps--;
-				index--;
-			}
-
-			p_integrator.integrate(P, to, result, t, result); // solve diffEquationOnP, store solution in y
-
-			// TO DO
-			// check that both rateChangeTimes are really overlapping
-			// but really not sure that this is enough, i have to build appropriate tests
-			if(Math.abs(t- parameterization.getIntervalStartTimes()[indexFrom])<globalPrecisionThreshold) {
-                for (int i = 0; i<parameterization.getNTypes(); i++){
-                    oneMinusRho = 1-parameterization.getRhoValues()[indexFrom][i];
-                    result[i] *= oneMinusRho;
-                }
-			}
-
-		} catch(Exception e) {
-			throw new RuntimeException("couldn't calculate p");
-		}
-
-		return result;
-	}
-
-
-	private double[] getP(double t){
-
-		double[] y = new double[parameterization.getNTypes()];
-
-		int index = Utils.getIntervalIndex(parameterization.getOrigin(), parameterization.getIntervalStartTimes());
-        for (int i = 0; i< parameterization.getNTypes(); i++) {
-            y[i] = (1 - parameterization.getRhoValues()[index][i]);    // initial condition: y_i[T]=1-rho_i
-        }
-
-		if (Math.abs(parameterization.getOrigin()-t)<globalPrecisionThreshold ||  parameterization.getOrigin() < t) {
-			return y;
-		}
-
-		return getP(t, y, parameterization.getOrigin());
-	}
 
 
 
