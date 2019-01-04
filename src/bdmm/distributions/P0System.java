@@ -17,10 +17,12 @@ public class P0System implements FirstOrderDifferentialEquations {
 	public double[][] b, d, s, r,rho;
 	public double[][][] M, b_ij;
 
+    public double origin;
+
 	public int nTypes;
 	public int nIntervals;
+    public double[] intervalStartTimes;
 
-	public double[] times;
 
 	public P0System(Parameterization parameterization) {
 
@@ -33,10 +35,12 @@ public class P0System implements FirstOrderDifferentialEquations {
 		this.M = parameterization.getMigRates();
         this.b_ij = parameterization.getCrossBirthRates();
 
+        this.origin = parameterization.getOrigin();
+
 		this.nTypes = parameterization.getNTypes();
 		this.nIntervals = parameterization.getTotalIntervalCount();
 
-		this.times = parameterization.getIntervalStartTimes();
+        this.intervalStartTimes = parameterization.getIntervalStartTimes();
 
 	}
 
@@ -46,7 +50,7 @@ public class P0System implements FirstOrderDifferentialEquations {
 
 	public void computeDerivatives(double t, double[] y, double[] yDot) {
 
-		int interval = Utils.getIntervalIndex(t, times); //finds the indexTimeInterval of the time interval t lies in
+		int interval = Utils.getIntervalIndex(t, intervalStartTimes); //finds the indexTimeInterval of the time interval t lies in
 
 		for (int i = 0; i< nTypes; i++){
 

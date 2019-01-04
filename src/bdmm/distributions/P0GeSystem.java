@@ -3,8 +3,6 @@ package bdmm.distributions;
 
 import bdmm.parameterization.Parameterization;
 import bdmm.util.Utils;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
 
 /**
  * User: Denise
@@ -13,48 +11,18 @@ import org.apache.commons.math3.ode.FirstOrderIntegrator;
  */
 
 
-public class P0GeSystem implements FirstOrderDifferentialEquations {
+public class P0GeSystem extends P0System {
 
-	public double[][] b, d, s, r, rho;
-	public double[][][] b_ij, M;
-
-	public double origin;
-
-	public int nTypes; /* ODE numberOfDemes = stateNumber */
-	public int nIntervals;
-	public double[] intervalStartTimes;
-
-	int maxEvals;
-	public int maxEvalsUsed;
-	public static double globalPrecisionThreshold;
-
-
-	public P0GeSystem(Parameterization parameterization, int maxEvals){
-
-
-		this.b = parameterization.getBirthRates();
-		this.d = parameterization.getDeathRates();
-		this.s = parameterization.getSamplingRates();
-		this.r = parameterization.getRemovalProbs();
-		this.rho = parameterization.getRhoValues();
-
-        this.b_ij = parameterization.getCrossBirthRates();
-		this.M = parameterization.getMigRates();
-
-		this.nTypes = parameterization.getNTypes();
-		this.nIntervals = parameterization.getTotalIntervalCount();
-
-		this.maxEvals = maxEvals;
-		maxEvalsUsed = 0;
-
-		this.origin = parameterization.getOrigin();
-		this.intervalStartTimes = parameterization.getIntervalStartTimes();
+	public P0GeSystem(Parameterization parameterization) {
+	    super(parameterization);
 	}
 
+	@Override
 	public int getDimension() {
 		return 2*this.nTypes;
 	}
 
+	@Override
 	public void computeDerivatives(double t, double[] g, double[] gDot) {
 
 		int interval = Utils.getIntervalIndex(t, intervalStartTimes);

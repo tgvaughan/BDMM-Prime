@@ -683,9 +683,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 		if (maxstep == null) maxstep = parameterization.getOrigin()/10;
 
 		P = new P0System(parameterization);
-		PG = new P0GeSystem(parameterization, maxEvaluations.get());
-
-		P0GeSystem.globalPrecisionThreshold = globalPrecisionThreshold;
+		PG = new P0GeSystem(parameterization);
 
         FirstOrderIntegrator pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
         p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
@@ -929,9 +927,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 			if (minstep == null) minstep = parameterization.getOrigin()*1e-100;
 			if (maxstep == null) maxstep = parameterization.getOrigin()/10;
 
-			PG = new P0GeSystem(parameterization, maxEvaluations.get());
-
-			P0GeSystem.globalPrecisionThreshold = globalPrecisionThreshold;
+			PG = new P0GeSystem(parameterization);
 
 			pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
 		}
