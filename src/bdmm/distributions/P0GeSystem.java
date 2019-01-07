@@ -41,9 +41,8 @@ public class P0GeSystem extends P0System {
 			        continue;
 
 
-                gDot[i] += b_ij[interval][i][j]*g[i]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i];
-
-                gDot[i] -= b_ij[interval][i][j]*g[i]*g[j]; // birthAmongDemes_ij[intervals*i*(numberOfDemes-1)+(j<i?j:j-1)+indexTimeInterval]*g[i]*g[j];
+                gDot[i] += b_ij[interval][i][j]*g[i];
+                gDot[i] -= b_ij[interval][i][j]*g[i]*g[j];
 
                 gDot[i] += M[interval][i][j] * g[i];
                 gDot[i] -= M[interval][i][j] * g[j];

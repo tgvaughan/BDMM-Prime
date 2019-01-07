@@ -624,7 +624,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double nextTime = system.intervalStartTimes[thisInterval];
 
             if (nextTime < thisTime) {
-                pgScaled = safeIntegrate(system, thisTime, pgScaled, nextTime);
+                pgScaled = safeIntegrate(system, thisTime-1e-10, pgScaled, nextTime+1e-10);
 
                 state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
@@ -643,7 +643,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
          // solve PG , store solution temporarily integrationResults
-        pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop);
+        pgScaled = safeIntegrate(system, thisTime-1e-10, pgScaled, tTop+1e-10);
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
