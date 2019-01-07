@@ -4,11 +4,13 @@ import beast.core.parameter.RealParameter;
 
 public class SkylineMatrixParameter extends SkylineParameter {
 
-    int elementsPerMatrix;
+    int nTypes;
 
 
     double[][][] values, storedValues;
     double[][] valuesAtTime;
+
+    boolean inputIsScalar;
 
     public SkylineMatrixParameter() { }
 
@@ -26,13 +28,22 @@ public class SkylineMatrixParameter extends SkylineParameter {
                 : 0;
 
         if (totalElementCount % nIntervals != 0)
-            throw new IllegalArgumentException("Value parameter dimension must be a multiple of the number of intervals.");
+            throw new IllegalArgumentException("Value parameter dimension must " +
+                    "be a multiple of the number of intervals.");
 
-        elementsPerMatrix = totalElementCount/nIntervals;
-        nTypes = (int)Math.round((1 + Math.sqrt(1 + 4*elementsPerMatrix))/2);
+        int elementsPerMatrix = totalElementCount/nIntervals;
+        inputIsScalar = elementsPerMatrix == 1;
 
-        if (elementsPerMatrix != nTypes*(nTypes-1))
-            throw new IllegalArgumentException("Wrong number of elements in matrix parameter: should be nTypes*(nTypes-1).");
+        if (nTypesInput.get() != null) {
+            nTypes = nTypesInput.get();
+
+            if (!inputIsScalar && elementsPerMatrix != nTypes*(nTypes-1)) {
+                throw new IllegalArgumentException("SkylineMatrix parameter has " +
+                        "an incorrect number of elements.");
+            }
+        } else {
+            nTypes = (int) Math.round((1 + Math.sqrt(1 + 4 * elementsPerMatrix)) / 2);
+        }
 
         values = new double[nIntervals][nTypes][nTypes];
         storedValues = new double[nIntervals][nTypes][nTypes];
@@ -51,7 +62,10 @@ public class SkylineMatrixParameter extends SkylineParameter {
                         continue;
                     }
 
-                    values[interval][i][j] = rateValuesInput.get().getValue(idx);
+                    if (inputIsScalar)
+                        values[interval][i][j] = rateValuesInput.get().getValue(interval);
+                    else
+                        values[interval][i][j] = rateValuesInput.get().getValue(idx);
 
                     idx += 1;
                 }

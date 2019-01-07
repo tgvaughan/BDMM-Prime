@@ -27,6 +27,11 @@ public abstract class SkylineParameter extends CalculationNode {
     public Input<RealParameter> originInput = new Input<>("origin",
             "Parameter specifying origin of process.");
 
+    public Input<Integer> nTypesInput = new Input<>("nTypes",
+            "Number of distinct types in model.  If unspecified, inferred" +
+                    "from length of other parameter inputs.  Use this when a " +
+                    "single parameter value is shared among all types.");
+
     boolean timesAreAges, timesAreRelative;
 
     double[] times, storedTimes;

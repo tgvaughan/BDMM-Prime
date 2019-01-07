@@ -10,6 +10,7 @@ public class SkylineVectorParameter extends SkylineParameter {
     double[][] values, storedValues;
     double[] valuesAtTime;
 
+    boolean inputIsScalar;
 
     public SkylineVectorParameter() { }
 
@@ -24,9 +25,21 @@ public class SkylineVectorParameter extends SkylineParameter {
         super.initAndValidate();
 
         if (rateValuesInput.get().getDimension() % nIntervals != 0)
-            throw new IllegalArgumentException("Value parameter dimension must be a multiple of the number of intervals.");
+            throw new IllegalArgumentException("Value parameter dimension must " +
+                    "be a multiple of the number of intervals.");
 
-        nTypes = rateValuesInput.get().getDimension()/nIntervals;
+        int valsPerInterval = rateValuesInput.get().getDimension()/nIntervals;
+        inputIsScalar = valsPerInterval==1;
+
+        if (nTypesInput.get() != null) {
+            nTypes = nTypesInput.get();
+
+            if (!inputIsScalar && nTypes != valsPerInterval)
+                throw new IllegalArgumentException("SkylineVector has an incorrect " +
+                        "number of elements.");
+        } else {
+            nTypes = valsPerInterval;
+        }
 
         values = new double[nIntervals][nTypes];
         storedValues = new double[nIntervals][nTypes];
@@ -38,8 +51,12 @@ public class SkylineVectorParameter extends SkylineParameter {
     protected void updateValues() {
 
         for (int interval=0; interval<nIntervals; interval++) {
-            for (int i=0; i<nTypes; i++)
-                values[interval][i] = rateValuesInput.get().getValue(interval*nTypes + i);
+            for (int i=0; i<nTypes; i++) {
+                if (inputIsScalar)
+                    values[interval][i] = rateValuesInput.get().getValue(interval);
+                else
+                    values[interval][i] = rateValuesInput.get().getValue(interval * nTypes + i);
+            }
         }
 
         if (timesAreAges)
