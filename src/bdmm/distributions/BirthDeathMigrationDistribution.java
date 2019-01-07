@@ -570,6 +570,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalStartTimes);
         int endInterval = Utils.getIntervalIndex(tEnd, system.intervalStartTimes);
 
+        system.setInterval(thisInterval);
+
         while (thisInterval > endInterval) {
 
             double nextTime = system.intervalStartTimes[thisInterval];
@@ -583,6 +585,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             thisTime = nextTime;
             thisInterval -= 1;
+
+            system.setInterval(thisInterval);
         }
 
         p_integrator.integrate(P, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
@@ -620,11 +624,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         int endInterval = Utils.getIntervalIndex(tTop, system.intervalStartTimes);
         double oneMinusRho;
 
+        system.setInterval(thisInterval);
+
         while (thisInterval > endInterval) {
             double nextTime = system.intervalStartTimes[thisInterval];
 
             if (nextTime < thisTime) {
-                pgScaled = safeIntegrate(system, thisTime-1e-10, pgScaled, nextTime+1e-10);
+                pgScaled = safeIntegrate(system, thisTime, pgScaled, nextTime);
 
                 state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
@@ -640,10 +646,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             thisTime = nextTime;
             thisInterval -= 1;
+
+            system.setInterval(thisInterval);
         }
 
          // solve PG , store solution temporarily integrationResults
-        pgScaled = safeIntegrate(system, thisTime-1e-10, pgScaled, tTop+1e-10);
+        pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop);
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());

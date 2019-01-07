@@ -3,8 +3,6 @@ package bdmm.distributions;
 import bdmm.parameterization.Parameterization;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 
-import bdmm.util.Utils;
-
 
 /**
  * @author dkuh004
@@ -22,6 +20,8 @@ public class P0System implements FirstOrderDifferentialEquations {
 	public int nTypes;
 	public int nIntervals;
     public double[] intervalStartTimes;
+
+    protected int interval;
 
 
 	public P0System(Parameterization parameterization) {
@@ -44,13 +44,15 @@ public class P0System implements FirstOrderDifferentialEquations {
 
 	}
 
+	public void setInterval(int interval) {
+	    this.interval = interval;
+    }
+
 	public int getDimension() {
 		return this.nTypes;
 	}
 
 	public void computeDerivatives(double t, double[] y, double[] yDot) {
-
-		int interval = Utils.getIntervalIndex(t, intervalStartTimes); //finds the indexTimeInterval of the time interval t lies in
 
 		for (int i = 0; i< nTypes; i++){
 
