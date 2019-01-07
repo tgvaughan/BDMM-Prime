@@ -22,4 +22,18 @@ public class P0State {
         dimension = 1;
         p0 = new double[] {0};
     }
+
+    @Override
+    public String toString() {
+	    StringBuilder sb = new StringBuilder();
+
+        for (int type=0; type<dimension; type++) {
+            if (type>0)
+                sb.append(" ");
+
+            sb.append("p0[").append(type).append("]=").append(p0[type]);
+        }
+
+        return sb.toString();
+    }
 }

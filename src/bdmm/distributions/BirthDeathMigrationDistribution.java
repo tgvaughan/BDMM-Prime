@@ -11,6 +11,7 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
+import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
 import beast.util.HeapSort;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
@@ -247,6 +248,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // TGV: Why is this necessary?
         if (Double.isInfinite(logP)) logP = Double.NEGATIVE_INFINITY;
 
+        // Weird correction:
+        // TGV: Why is this only applied when the removal prob is less than 1??
+        if (parameterization.getRemovalProbs()[0][0] != 1.0) {
+            int internalNodeCount = tree.getLeafNodeCount() - ((Tree) tree).getDirectAncestorNodeCount() - 1;
+            logP += Math.log(2) * internalNodeCount;
+        }
+
         return logP;
     }
 
@@ -356,6 +364,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 }
 
             }
+
+            // Incorporate pre-evaluated p0 values into state
+            System.arraycopy(pInitialConditions[node.getNr()], 0, state.p0, 0, system.nTypes);
+
             if (debug) debugMessage("Sampling at time " + tBottom, depth);
 
         } else if (node.getChildCount() == 2) {  // birth / infection event or sampled ancestor
@@ -563,7 +575,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double nextTime = system.intervalStartTimes[thisInterval];
 
             if (nextTime < thisTime) {
-                p_integrator.integrate(system, thisTime, state.p0, nextTime+globalPrecisionThreshold, state.p0);
+                p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
 
                 for (int i = 0; i < system.nTypes; i++)
                     state.p0[i] *= (1 - system.rho[thisInterval][i]);
@@ -573,7 +585,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             thisInterval -= 1;
         }
 
-        p_integrator.integrate(P, thisTime, state.p0, tEnd+globalPrecisionThreshold, state.p0); // solve diffEquationOnP, store solution in y
+        p_integrator.integrate(P, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
 
         // TO DO
         // check that both rateChangeTimes are really overlapping
@@ -597,9 +609,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      */
     public P0GeState getG(Node baseNode, double tTop, P0GeState state, P0GeSystem system) {
 
-        if (baseNode.isLeaf()) {
-            System.arraycopy(pInitialConditions[baseNode.getNr()], 0, state.p0, 0, system.nTypes);
-        }
 
         // pgScaled contains the set of initial conditions scaled made to fit
         // the requirements on the values 'double' can represent. It also
@@ -615,7 +624,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double nextTime = system.intervalStartTimes[thisInterval];
 
             if (nextTime < thisTime) {
-                pgScaled = safeIntegrate(system, thisTime, pgScaled, nextTime+globalPrecisionThreshold);
+                pgScaled = safeIntegrate(system, thisTime, pgScaled, nextTime);
 
                 state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
@@ -634,7 +643,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
          // solve PG , store solution temporarily integrationResults
-        pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop+globalPrecisionThreshold);
+        pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop);
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
