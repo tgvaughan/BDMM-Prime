@@ -149,10 +149,10 @@ public class SmallNumber {
 	}
 
 	/**
-	 * Return the opposite of a SmallNumber
+	 * Return the negative of a SmallNumber
 	 * @return a new SmallNumber
 	 */
-	public SmallNumber opposite(){
+	public SmallNumber negate(){
 		return new SmallNumber(-this.mantissa, this.exponent);
 	}
 

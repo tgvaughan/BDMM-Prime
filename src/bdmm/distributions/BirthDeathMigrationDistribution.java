@@ -57,10 +57,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "integer array of traits (like node types/locations) " +
                     "in the tree, index corresponds to node number in tree");
 
-    public Input<Integer> maxEvaluations = new Input<>("maxEvaluations",
-            "The maximum number of evaluations for ODE solver",
-            1000000);
-
     public Input<Boolean> conditionOnSurvival = new Input<>("conditionOnSurvival",
             "condition on at least one survival? Default true.",
             true);
@@ -72,11 +68,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public Input<Double> absoluteTolerance = new Input<>("absTolerance",
             "absolute tolerance for numerical integration",
             1e-100 /*Double.MIN_VALUE*/);
-
-    public Input<Boolean> checkRho = new Input<>("checkRho",
-            "check if rho is set if multiple tips are " +
-                    "given at present (default true)",
-            true);
 
     public Input<Boolean> parallelizeInput = new Input<>(
             "parallelize",
@@ -169,7 +160,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         isRhoTip = new boolean[tree.getLeafNodeCount()];
         for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++) {
             isRhoTip[nodeNr] = false;
-            double nodeTime = parameterization.getOrigin() - tree.getNode(nodeNr).getHeight();
+            double nodeTime = parameterization.getTotalProcessLength() - tree.getNode(nodeNr).getHeight();
             for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
                 if (rhoSampTime == nodeTime) {
                     isRhoTip[nodeNr] = true;
@@ -184,7 +175,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         Node root = tree.getRoot();
 
-        if (parameterization.getOrigin() < tree.getRoot().getHeight()) {
+        if (tree.getRoot().getHeight() > parameterization.getTotalProcessLength()) {
             logP = Double.NEGATIVE_INFINITY;
             return logP;
         }
@@ -211,8 +202,28 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        P0GeState finalP0Ge = calculateSubtreeLikelihood(root, 0,
-                parameterization.getOrigin() - tree.getRoot().getHeight(), PG, 0);
+        P0GeState finalP0Ge;
+        if (parameterization.conditionedOnRoot()) {
+            finalP0Ge = new P0GeState();
+
+            Node child0 = root.getChild(0);
+            Node child1 = root.getChild(1);
+
+            P0GeState child1state = calculateSubtreeLikelihood(child0, 0,
+                    parameterization.getTotalProcessLength() - child0.getHeight(), PG, 0);
+            P0GeState child2state = calculateSubtreeLikelihood(child1, 0,
+                    parameterization.getTotalProcessLength() - child1.getHeight(), PG, 0);
+
+            for (int type=0; type<parameterization.getNTypes(); type++) {
+                finalP0Ge.ge[type] = child1state.ge[type].multiplyBy(child2state.ge[type]);
+                finalP0Ge.p0[type] = child1state.p0[type];
+            }
+
+        } else {
+
+            finalP0Ge = calculateSubtreeLikelihood(root, 0,
+                    parameterization.getTotalProcessLength() - tree.getRoot().getHeight(), PG, 0);
+        }
 
         if (debug) System.out.print("Final state: " + finalP0Ge);
 
@@ -237,6 +248,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             rootTypeProbs[rootType] = Math.exp(rootTypeProbs[rootType]);
         }
 
+        // TGV: Why is there not one of these factors per subtree when conditioning
+        // on root?
         if (conditionOnSurvival.get()) {
             PrSN = PrSN.scalarMultiplyBy(1 / (1 - probNoSample));
         }
@@ -246,7 +259,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (debug) System.out.println("\nlogP = " + logP);
 
         // TGV: Why is this necessary?
-        if (Double.isInfinite(logP)) logP = Double.NEGATIVE_INFINITY;
+        if (Double.isInfinite(logP))
+            logP = Double.NEGATIVE_INFINITY;
 
         // Weird correction:
         // TGV: Why is this only applied when the removal prob is less than 1??
@@ -381,7 +395,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 P0GeState g = calculateSubtreeLikelihood(
                         node.getChild(childIndex), tBottom,
-                        parameterization.getOrigin() - node.getChild(childIndex).getHeight(),
+                        parameterization.getTotalProcessLength() - node.getChild(childIndex).getHeight(),
                         system, depth + 1);
 
                 int saNodeType = getNodeType(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
@@ -443,12 +457,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                         // start a new thread to take care of the second subtree
                         Future<P0GeState> secondChildTraversal = pool.submit(
                                 new TraversalService(node.getChild(indexSecondChild), tBottom,
-                                        parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight(),
+                                        parameterization.getTotalProcessLength() - node.getChild(indexSecondChild).getHeight(),
                                         depth + 1));
 
                         childState1 = calculateSubtreeLikelihood(
                                 node.getChild(indexFirstChild), tBottom,
-                                parameterization.getOrigin() - node.getChild(indexFirstChild).getHeight(),
+                                parameterization.getTotalProcessLength() - node.getChild(indexFirstChild).getHeight(),
                                 system, depth + 1);
                         childState2 = secondChildTraversal.get();
                     } catch (InterruptedException | ExecutionException e) {
@@ -460,10 +474,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 } else {
                     childState1 = calculateSubtreeLikelihood(node.getChild(
                             indexFirstChild), tBottom,
-                            parameterization.getOrigin() - node.getChild(indexFirstChild).getHeight(),
+                            parameterization.getTotalProcessLength() - node.getChild(indexFirstChild).getHeight(),
                             system, depth + 1);
                     childState2 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), tBottom,
-                            parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight(),
+                            parameterization.getTotalProcessLength() - node.getChild(indexSecondChild).getHeight(),
                             system, depth + 1);
                 }
 
@@ -702,8 +716,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private void setupIntegrators() {   // set up ODE's and integrators
 
         //TODO set these minstep and maxstep to be a class field
-        if (minstep == null) minstep = parameterization.getOrigin() * 1e-100;
-        if (maxstep == null) maxstep = parameterization.getOrigin() / 10;
+        if (minstep == null) minstep = parameterization.getTotalProcessLength() * 1e-100;
+        if (maxstep == null) maxstep = parameterization.getTotalProcessLength() / 10;
 
         P = new P0System(parameterization);
         PG = new P0GeSystem(parameterization);
@@ -787,7 +801,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         int[] indicesSortedByLeafTime = new int[leafCount];
 
         for (int i = 0; i < leafCount; i++) { // get all leaf times
-            leafTimes[i] = parameterization.getOrigin() - tree.getNode(i).getHeight();
+            leafTimes[i] = parameterization.getTotalProcessLength() - tree.getNode(i).getHeight();
             indicesSortedByLeafTime[i] = i;
         }
 
@@ -801,7 +815,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         P0State p0State = new P0State(PG.nTypes);
 
-        int startIndex = Utils.getIntervalIndex(parameterization.getOrigin(),
+        int startIndex = Utils.getIntervalIndex(parameterization.getTotalProcessLength(),
                 parameterization.getIntervalStartTimes());
         for (int i = 0; i < parameterization.getNTypes(); i++) {
             p0State.p0[i] = (1 - parameterization.getRhoValues()[startIndex][i]);    // initial condition: y_i[T]=1-rho_i
@@ -863,8 +877,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             //TODO set minstep and maxstep to be PiecewiseBDDistr fields
             if (minstep == null)
-                minstep = parameterization.getOrigin() * 1e-100;
-            if (maxstep == null) maxstep = parameterization.getOrigin() / 10;
+                minstep = parameterization.getTotalProcessLength() * 1e-100;
+            if (maxstep == null) maxstep = parameterization.getTotalProcessLength() / 10;
 
             PG = new P0GeSystem(parameterization);
 

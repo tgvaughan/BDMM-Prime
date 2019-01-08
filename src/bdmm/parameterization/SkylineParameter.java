@@ -4,6 +4,7 @@ import bdmm.util.Utils;
 import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.Tree;
 
 import java.util.*;
 
@@ -17,7 +18,8 @@ public abstract class SkylineParameter extends CalculationNode {
             false);
 
     public Input<Boolean> timesAreAgesInput = new Input<>("timesAreAges",
-            "True if times are ages (before most recent sample) instead of times after origin.",
+            "True if times are ages (before most recent sample) instead " +
+                    "of times after birth-death process start.",
             false);
 
     public Input<RealParameter> rateValuesInput = new Input<>("rateValues",
@@ -26,6 +28,9 @@ public abstract class SkylineParameter extends CalculationNode {
 
     public Input<RealParameter> originInput = new Input<>("origin",
             "Parameter specifying origin of process.");
+
+    public Input<Tree> treeInput = new Input<>("tree",
+            "Tree when root time is used to identify the start of the process.");
 
     public Input<Integer> nTypesInput = new Input<>("nTypes",
             "Number of distinct types in model.  If unspecified, inferred" +
@@ -64,9 +69,13 @@ public abstract class SkylineParameter extends CalculationNode {
         timesAreAges = timesAreAgesInput.get();
         timesAreRelative = timesAreRelativeInput.get();
 
-        if ((timesAreAges || timesAreRelative) && originInput.get() == null)
-            throw new IllegalArgumentException("Origin parameter must be supplied " +
+        if ((timesAreAges || timesAreRelative) && (originInput.get() == null && treeInput.get() == null))
+            throw new IllegalArgumentException("Origin parameter or tree must be supplied " +
                     "when times are given as ages and/or when times are relative.");
+
+        if (originInput.get() != null && treeInput.get() != null)
+            throw new IllegalArgumentException("Only one of origin or tree " +
+                    "should be specified.");
 
         int nChangeTimes = changeTimesInput.get() == null ? 0 : changeTimesInput.get().getDimension();
         nIntervals = nChangeTimes + 1;
@@ -119,15 +128,24 @@ public abstract class SkylineParameter extends CalculationNode {
             times[i] = changeTimesInput.get().getValue(i);
 
         if (timesAreRelative) {
+
+            double startAge = originInput.get() != null
+                    ? originInput.get().getValue()
+                    : treeInput.get().getRoot().getHeight();
+
             for (int i=0; i<times.length; i++)
-                times[i] *= originInput.get().getValue();
+                times[i] *= startAge;
         }
 
         if (timesAreAges) {
             Utils.reverseDoubleArray(times);
 
+            double startAge = originInput.get() != null
+                    ? originInput.get().getValue()
+                    : treeInput.get().getRoot().getHeight();
+
             for (int i=0; i<times.length; i++)
-                times[i] = originInput.get().getValue()-times[i];
+                times[i] = startAge-times[i];
         }
     }
 

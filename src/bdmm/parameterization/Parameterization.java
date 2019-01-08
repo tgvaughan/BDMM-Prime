@@ -3,6 +3,8 @@ package bdmm.parameterization;
 import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.Tree;
+import beast.evolution.tree.TreeInterface;
 
 import java.util.*;
 
@@ -13,8 +15,11 @@ public abstract class Parameterization extends CalculationNode {
             Input.Validate.REQUIRED);
 
     public Input<RealParameter> originInput = new Input<>("origin",
-            "Time between start of process and most recent sample.",
-            Input.Validate.REQUIRED);
+            "Time between start of process and most recent sample.");
+
+    public Input<Tree> treeInput = new Input("tree",
+            "If specified, condition on root time rather than origin time.",
+            Input.Validate.XOR, originInput);
 
     private boolean dirty;
 
@@ -64,8 +69,15 @@ public abstract class Parameterization extends CalculationNode {
         return nTypes;
     }
 
-    public double getOrigin() {
-        return originInput.get().getValue();
+    public double getTotalProcessLength() {
+        if (originInput.get() != null)
+            return originInput.get().getValue();
+        else
+            return treeInput.get().getRoot().getHeight();
+    }
+
+    public boolean conditionedOnRoot() {
+        return originInput.get() == null;
     }
 
     private void update() {

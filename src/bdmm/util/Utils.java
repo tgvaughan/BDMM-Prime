@@ -10,10 +10,13 @@ import java.util.Arrays;
 public class Utils {
 
     /**
-     * Finds the index of the time interval t lies in
+     * Finds the index of the time interval t lies in.  Note that if t
+     * lies on a boundary between intervals, the interval returned will be
+     * the _earlier_ of these two intervals.
+     *
      * @param t time for which to identify interval
      * @param times interval start times
-     * @return
+     * @return index identifying interval.
      */
     public static int getIntervalIndex(double t, double[] times) {
 

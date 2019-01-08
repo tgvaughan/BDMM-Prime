@@ -255,35 +255,55 @@ public class BirthDeathMigrationLikelihoodTest {
 		// Uncoloured-tree test cases
 		Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=0]: 4.5):1,3[&type=0]:5.5);",false);
 
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
+        Parameterization parameterization = new EpiParameterization();
+		parameterization.initByName(
+		        "nTypes", 1,
+                "tree", tree,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.0")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("5.5"),
+                        new RealParameter("0.01")));
 
-		bdm.setInputValue("tree", tree);
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName(
+		        "parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-		bdm.setInputValue("typeLabel", "type");
-		bdm.setInputValue("stateNumber", "1");
-		bdm.setInputValue("migrationMatrix", "0.");
-		bdm.setInputValue("frequencies", "1");
-
-		bdm.setInputValue("R0", new RealParameter("1.5"));
-		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
-		bdm.setInputValue("samplingProportion", new RealParameter("0.") );
-
-		bdm.setInputValue("rho", new RealParameter("0.01") );
-		bdm.setInputValue("conditionOnSurvival", false);
-
-		bdm.initAndValidate();
+		double logL = density.calculateLogP();
 
 		// this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=0)
-		assertEquals(-6.761909, bdm.calculateLogP(), 1e-4);
+		assertEquals(-6.761909, logL, 1e-4);
 
 		// test with conditioned-on-survival tree
-		bdm.setInputValue("conditionOnSurvival", true);
-		bdm.setInputValue("origin", "10");
+		density.setInputValue("conditionOnSurvival", true);
+		density.setInputValue("origin", "10");
+		density.initAndValidate();
 
-		bdm.initAndValidate();
+		double logL2 = density.calculateLogP();
 
         // this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5,5.5+1e-100),root=0,survival=1)
-		assertEquals(-7.404227, bdm.calculateLogP(), 1e-4);
+		assertEquals(-7.404227, logL2, 1e-4);
 	}
 
 	/**
