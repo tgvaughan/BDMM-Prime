@@ -232,16 +232,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "typeLabel", "type",
-                "parallelize", false);
-
-		//uncoloured tree
-		Tree tree = new TreeParser(newick ,false);
-
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
-
-		bdm.setInputValue("tree", tree);
-		bdm.setInputValue("typeLabel", "type");
-
+                "parallelize", true);
 
 		double logL = density.calculateLogP();
 

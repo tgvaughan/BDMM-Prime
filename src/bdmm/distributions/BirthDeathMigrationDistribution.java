@@ -431,8 +431,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 int indexSecondChild = Math.abs(indexFirstChild - 1);
 
-                P0GeState childState1 = new P0GeState();
-                P0GeState childState2 = new P0GeState();
+                P0GeState childState1 = null, childState2 = null;
 
                 // evaluate if the next step in the traversal should be split between one new thread and the currrent thread and run in parallel.
 

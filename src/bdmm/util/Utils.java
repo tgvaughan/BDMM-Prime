@@ -17,9 +17,6 @@ public class Utils {
      */
     public static int getIntervalIndex(double t, double[] times) {
 
-        if (t<0.0)
-            return 0;
-
         int index = Arrays.binarySearch(times, t);
 
         // If t was not found in array times by binarySearch,
@@ -27,9 +24,11 @@ public class Utils {
         // (-(insertion point) - 1).
         if (index < 0)
             index = -index - 2;
+        else
+            index -= 1;
 
         // return at most the index of the last interval (m-1)
-        return Math.min(index, times.length-1);
+        return Math.max(0, Math.min(index, times.length-1));
     }
 
     public static void reverseDoubleArray(double[] array) {
