@@ -197,16 +197,42 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		String newick = "((1[&type=0]: 1.5, 2[&type=1]: 0)3[&type=0]: 3.5, 4[&type=1]: 4) ;";
 
-		String orig="6.";
-		String stateNumber = "2";
-		String migrationMatrix = "0.2 0.3 0.2 0.3";
-		String frequencies = "0.5 0.5";
-		String R0 = Double.toString(4./3.) +  " 1.1 " + Double.toString(4./3.) + " 1.1";
-		String becomeUninfectiousRate = "1.5 1.4 1.5 1.4";
-		String samplingProportion = "0.33 0.33 0.33 0.33";
-		String removalProbability = "0.3 0.7 0.4 0.6";
-		boolean conditionOnSurvival = false;
-		String intervalTimes = "0. 1.";
+        Parameterization parameterization = new EpiParameterization();
+		parameterization.initByName(
+		        "nTypes", 2,
+                "origin", new RealParameter("6.0"),
+                "R0", new SkylineVectorParameter(
+                        new RealParameter("1.0"),
+                        new RealParameter((4.0/3.0) + " 1.1"),
+                        2),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealParameter("1.0"),
+                        new RealParameter("1.5 1.4"),
+                        2),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.0"),
+                        2),
+                "migrationRate", new SkylineMatrixParameter(
+                        new RealParameter("1.0"),
+                        new RealParameter("0.2 0.3"),
+                        2),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.33"),
+                        2),
+                "removalProb", new SkylineVectorParameter(
+                        new RealParameter("1.0"),
+                        new RealParameter("0.3 0.4 0.7 0.6")));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName(
+		        "parameterization", parameterization,
+                "frequencies", new RealParameter("0.5 0.5"),
+                "conditionOnSurvival", false,
+                "tree", new TreeParser(newick, false, false, true,0),
+                "typeLabel", "type",
+                "parallelize", false);
 
 		//uncoloured tree
 		Tree tree = new TreeParser(newick ,false);
@@ -217,20 +243,10 @@ public class BirthDeathMigrationLikelihoodTest {
 		bdm.setInputValue("typeLabel", "type");
 
 
-		double logL2 = bdm_likelihood(stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, "type",
-				"1.", // origin is defined at 1. instead of 6. because bdm_likelihood adds the height of the root of the tree to that value (here 5.)
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion,  removalProbability,
-				intervalTimes, conditionOnSurvival);
-
-	//	System.out.println("Birth-death result 2: " +logL2 + "\t- Test LikelihoodRemovalProbChangeTwoState 2");
+		double logL = density.calculateLogP();
 
         // Reference BDMM (version 0.2.0) 29/03/2018
-		assertEquals(-21.185194919464568, logL2, 1e-5);
+		assertEquals(-21.185194919464568, logL, 1e-5);
 	}
 
 
