@@ -829,27 +829,25 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 pInitialConditions[indicesSortedByLeafTime[leafCount-1]], 0, P.nTypes);
         double tprev = t;
 
-        if (leafCount > 1) {
-            for (int i = leafCount - 2; i > -1; i--) {
-                t = leafTimes[indicesSortedByLeafTime[i]];
+        for (int i = leafCount - 2; i >= 0; i--) {
+            t = leafTimes[indicesSortedByLeafTime[i]];
 
-                //If the next higher leaf is actually at the same height, store previous results and skip iteration
-                if (Math.abs(t - tprev) < globalPrecisionThreshold) {
-                    tprev = t;
-                    pInitialConditions[indicesSortedByLeafTime[i]] = pInitialConditions[indicesSortedByLeafTime[i + 1]];
-                    continue;
-                } else {
+            //If the next higher leaf is actually at the same height, store previous results and skip iteration
+            if (Math.abs(t - tprev) < globalPrecisionThreshold) {
+                tprev = t;
+                pInitialConditions[indicesSortedByLeafTime[i]] = pInitialConditions[indicesSortedByLeafTime[i + 1]];
+                continue;
+            } else {
 					/* TODO the integration performed in getP is done before all
                        the other potentially-parallelized getG, so should not
                        matter that it has its own integrator, but if it does
                        (or to simplify the code), take care of passing an integrator
                        as a local variable. */
-                    System.arraycopy(getP(tprev, t, p0State, P).p0, 0,
-                            pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
-                    tprev = t;
-                }
-
+                System.arraycopy(getP(tprev, t, p0State, P).p0, 0,
+                        pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
+                tprev = t;
             }
+
         }
 
         System.arraycopy(getP(tprev, 0, p0State, P).p0, 0,
