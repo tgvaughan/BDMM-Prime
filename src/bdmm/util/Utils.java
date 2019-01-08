@@ -22,9 +22,6 @@ public class Utils {
 
         int index = Arrays.binarySearch(times, t);
 
-        // If t was not found in array times by binarySearch,
-        // then epoch is negative and binarySearch returns
-        // (-(insertion point) - 1).
         if (index < 0)
             index = -index - 2;
         else
@@ -34,6 +31,10 @@ public class Utils {
         return Math.max(0, Math.min(index, times.length-1));
     }
 
+    /**
+     * In-place reversal of array of (little d) doubles.
+     * @param array array to reverse
+     */
     public static void reverseDoubleArray(double[] array) {
         double tmp;
         for (int i=0; i<array.length/2; i++) {
@@ -43,6 +44,11 @@ public class Utils {
         }
     }
 
+    /**
+     * In-place reversal of an array.
+     * @param array array to reverse.
+     * @param <T> type of elements in array
+     */
     public static <T> void reverseArray(T[] array) {
         T tmp;
         for (int i=0; i<array.length/2; i++) {
