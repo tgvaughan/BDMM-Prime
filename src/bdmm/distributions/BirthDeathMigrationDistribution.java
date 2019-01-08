@@ -443,7 +443,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     try {
                         // start a new thread to take care of the second subtree
                         Future<P0GeState> secondChildTraversal = pool.submit(
-                                new TraversalServiceUncoloured(node.getChild(indexSecondChild), tBottom,
+                                new TraversalService(node.getChild(indexSecondChild), tBottom,
                                         parameterization.getOrigin() - node.getChild(indexSecondChild).getHeight(),
                                         depth + 1));
 
@@ -526,22 +526,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     protected class ConstraintViolatedException extends RuntimeException {
         public ConstraintViolatedException(String s) {
             super(s);
-        }
-
-    }
-
-    class TraversalServiceUncoloured extends TraversalService {
-
-        int depth;
-
-        public TraversalServiceUncoloured(Node root, double from, double to, int depth) {
-            super(root, from, to);
-            this.depth = depth;
-        }
-
-        @Override
-        protected P0GeState calculateSubtreeLikelihoodInThread() {
-            return calculateSubtreeLikelihood(rootSubtree, from, to, PG, depth);
         }
 
     }
@@ -859,22 +843,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         pool = (ThreadPoolExecutor) executor;
     }
 
-    static void executorShutdown() {
-        pool.shutdown();
-    }
+    class TraversalService implements Callable<P0GeState> {
 
-    abstract class TraversalService implements Callable<P0GeState> {
-
+        int depth;
         protected Node rootSubtree;
         protected double from;
         protected double to;
         protected P0GeSystem PG;
         protected FirstOrderIntegrator pg_integrator;
 
-        public TraversalService(Node root, double from, double to) {
+        public TraversalService(Node root, double from, double to, int depth) {
             this.rootSubtree = root;
             this.from = from;
             this.to = to;
+            this.depth = depth;
             this.setupODEs();
         }
 
@@ -890,7 +872,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
         }
 
-        abstract protected P0GeState calculateSubtreeLikelihoodInThread();
+        protected P0GeState calculateSubtreeLikelihoodInThread() {
+            return calculateSubtreeLikelihood(rootSubtree, from, to, PG, depth);
+        }
 
         @Override
         public P0GeState call() throws Exception {
