@@ -50,6 +50,15 @@ public abstract class SkylineParameter extends CalculationNode {
         initAndValidate();
     }
 
+    public SkylineParameter(RealParameter changeTimesParam,
+                            RealParameter rateValuesParam,
+                            int nTypes) {
+        changeTimesInput.setValue(changeTimesParam, this);
+        rateValuesInput.setValue(rateValuesParam, this);
+        nTypesInput.setValue(nTypes, this);
+        initAndValidate();
+    }
+
     @Override
     public void initAndValidate() {
         timesAreAges = timesAreAgesInput.get();

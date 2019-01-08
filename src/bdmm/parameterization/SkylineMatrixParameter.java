@@ -19,6 +19,12 @@ public class SkylineMatrixParameter extends SkylineParameter {
         super(changeTimesParam, rateValuesParam);
     }
 
+    public SkylineMatrixParameter(RealParameter changeTimesParam,
+                                  RealParameter rateValuesParam,
+                                  int nTypes) {
+        super(changeTimesParam, rateValuesParam, nTypes);
+    }
+
     @Override
     public void initAndValidate() {
         super.initAndValidate();

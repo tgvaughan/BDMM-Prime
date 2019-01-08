@@ -19,6 +19,12 @@ public class SkylineVectorParameter extends SkylineParameter {
         super(changeTimesParam, rateValuesParam);
     }
 
+    public SkylineVectorParameter(RealParameter changeTimesParam,
+                                  RealParameter rateValuesParam,
+                                  int nTypes) {
+        super(changeTimesParam, rateValuesParam, nTypes);
+    }
+
 
     @Override
     public void initAndValidate() {
