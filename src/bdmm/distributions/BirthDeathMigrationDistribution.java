@@ -190,8 +190,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (conditionOnSurvival.get()) {
 
             double[] noSampleExistsProp = pInitialConditions[pInitialConditions.length - 1];
-            if (debug) System.out.println("\nnoSampleExistsProp = "
-                    + noSampleExistsProp[0] + ", " + noSampleExistsProp[1]);
+            if (debug) {
+                System.out.print("\nnoSampleExistsProp = ");
+                for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++) {
+                        System.out.print(noSampleExistsProp[rootType] + " ");
+                }
+            }
 
             for (int rootType = 0; rootType < parameterization.getNTypes(); rootType++) {
                 probNoSample += frequenciesInput.get().getArrayValue(rootType) * noSampleExistsProp[rootType];

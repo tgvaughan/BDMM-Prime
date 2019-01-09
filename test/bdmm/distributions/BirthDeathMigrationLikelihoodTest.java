@@ -296,8 +296,14 @@ public class BirthDeathMigrationLikelihoodTest {
 		assertEquals(-6.761909, logL, 1e-4);
 
 		// test with conditioned-on-survival tree
-		density.setInputValue("conditionOnSurvival", true);
 		parameterization.setInputValue("origin", "10");
+        parameterization.setInputValue("tree", null);
+        parameterization.setInputValue("rhoSampling",
+                new TimedParameter(new RealParameter("10"),
+                        new RealParameter("0.01")));
+        parameterization.initAndValidate();
+
+        density.setInputValue("conditionOnSurvival", true);
 		density.initAndValidate();
 
 		double logL2 = density.calculateLogP();
