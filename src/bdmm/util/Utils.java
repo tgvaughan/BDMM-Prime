@@ -29,6 +29,12 @@ public class Utils {
         return Math.max(0, Math.min(index, endTimes.length-1));
     }
 
+    private final static double globalPrecisionThreshold = 1e-10;
+
+    public static boolean equalWithPrecision(double a, double b) {
+        return Math.abs(a-b) < globalPrecisionThreshold;
+    }
+
     /**
      * In-place reversal of array of (little d) doubles.
      * @param array array to reverse

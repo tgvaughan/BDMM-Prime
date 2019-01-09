@@ -327,7 +327,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		TimedParameter rhoSamplingParam = new TimedParameter();
 		rhoSamplingParam.initByName(
 		        "times", new RealParameter("0.0 2.5"),
-                "values", new RealParameter("0.2 1.0"),
+                "values", new RealParameter("1.0 0.2"),
                 "timesAreAges", true,
                 "origin", originParam);
 
@@ -366,27 +366,6 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parallelize", false);
 
 		double logL = density.calculateLogP();
-
-//		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
-//
-//		bdm.setInputValue("tree", tree);
-//		bdm.setInputValue("typeLabel", "type");
-//
-//		bdm.setInputValue("stateNumber", "1");
-//		bdm.setInputValue("migrationMatrix", "0.");
-//		bdm.setInputValue("frequencies", "1");
-//
-//		bdm.setInputValue("R0", new RealParameter("1.5"));
-//		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
-//		bdm.setInputValue("samplingProportion", new RealParameter("0.") );
-//
-//		bdm.setInputValue("rho", new RealParameter("0.2 1.") );
-//		bdm.setInputValue("rhoSamplingTimes", new RealParameter("0. 2.5") );
-//		bdm.setInputValue("reverseTimeArrays", "false false false true");
-//		bdm.setInputValue("conditionOnSurvival", true);
-//		bdm.setInputValue("origin", "5.");
-//
-//		bdm.initAndValidate();
 
 		// this result is from BEAST: BDSKY, not double checked in R
 		assertEquals(-10.569863754307026, logL, 1e-4);

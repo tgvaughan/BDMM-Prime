@@ -105,11 +105,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private static Double minstep, maxstep;
 
 
-    private static double[][] pInitialConditions;
+    private double[][] pInitialConditions;
 
     private static boolean isParallelizedCalculation;
     private static double minimalProportionForParallelization;
-    private final static double globalPrecisionThreshold = 1e-10;
     private double parallelizationThreshold;
     private static ThreadPoolExecutor pool;
 
@@ -195,6 +194,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++) {
                         System.out.print(noSampleExistsProp[rootType] + " ");
                 }
+                System.out.println();
             }
 
             for (int rootType = 0; rootType < parameterization.getNTypes(); rootType++) {
@@ -359,31 +359,31 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 //TODO test if SA model case is properly implemented (not tested!)
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
 
-                    if (!isRhoTip[node.getNr()]) {
+                    if (isRhoTip[node.getNr()]) {
+                        state.ge[type] = new SmallNumber(
+                                (system.r[intervalIdx][type] + pInitialConditions[node.getNr()][type]
+                                        * (1 - system.r[intervalIdx][type]))
+                                        * system.rho[intervalIdx][type]);
+                    } else {
                         state.ge[type] = new SmallNumber(
                                 (system.r[intervalIdx][type] + pInitialConditions[node.getNr()][type] * (1 - system.r[intervalIdx][type]))
                                         * system.s[intervalIdx][type]);
                         // with SA: ψ_i(r + (1 − r)p_i(τ))
-                    } else {
-                        state.ge[type] = new SmallNumber(
-                                (system.r[intervalIdx][type] + pInitialConditions[node.getNr()][type]
-                                        / (1 - system.rho[intervalIdx][type]) * (1 - system.r[intervalIdx][type]))
-                                        * system.rho[intervalIdx][type]);
                     }
                 }
             } else {
 
-                if (!isRhoTip[node.getNr()]) {
+                if (isRhoTip[node.getNr()]) {
+                    state.ge[nodeType] = new SmallNumber(
+                            (system.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
+                                    * (1 - system.r[intervalIdx][nodeType]))
+                                    * system.rho[intervalIdx][nodeType]);
+                } else {
                     state.ge[nodeType] = new SmallNumber(
                             (system.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
                                     * (1 - system.r[intervalIdx][nodeType]))
                                     * system.s[intervalIdx][nodeType]);
                     // with SA: ψ_i(r + (1 − r)p_i(τ))
-                } else {
-                    state.ge[nodeType] = new SmallNumber(
-                            (system.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
-                                    / (1 - system.rho[intervalIdx][nodeType]) * (1 - system.r[intervalIdx][nodeType]))
-                                    * system.rho[intervalIdx][nodeType]);
                 }
 
             }
@@ -568,42 +568,40 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      */
     private void integrateP0(double tStart, double tEnd, P0State state, P0System system) {
 
-        if (Math.abs(system.totalProcessLength - tEnd) < globalPrecisionThreshold
-                || Math.abs(tStart - tEnd) < globalPrecisionThreshold)
-            return;
-
         double thisTime = tStart;
         int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalEndTimes);
         int endInterval = Utils.getIntervalIndex(tEnd, system.intervalEndTimes);
 
-        system.setInterval(thisInterval);
-
         while (thisInterval > endInterval) {
+
+            if (Utils.equalWithPrecision(thisTime, system.intervalEndTimes[thisInterval])) {
+                for (int i = 0; i < system.nTypes; i++)
+                    state.p0[i] *= (1 - system.rho[thisInterval - 1][i]);
+            }
 
             double nextTime = system.intervalEndTimes[thisInterval-1];
 
             if (nextTime < thisTime) {
+                system.setInterval(thisInterval);
                 p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
-
-                for (int i = 0; i < system.nTypes; i++)
-                    state.p0[i] *= (1 - system.rho[thisInterval][i]);
             }
 
             thisTime = nextTime;
             thisInterval -= 1;
 
-            system.setInterval(thisInterval);
         }
 
-        p_integrator.integrate(system, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
-
-        // TO DO
-        // check that both rateChangeTimes are really overlapping
-        // but really not sure that this is enough, i have to build appropriate tests
-        if (Math.abs(tEnd - system.intervalEndTimes[endInterval]) < globalPrecisionThreshold) {
+        if (Utils.equalWithPrecision(thisTime,  system.intervalEndTimes[thisInterval])) {
             for (int i = 0; i < system.nTypes; i++)
-                state.p0[i] *= 1 - system.rho[endInterval][i];
+                state.p0[i] *= 1 - system.rho[thisInterval][i];
         }
+
+        if (tEnd<thisTime) {
+            system.setInterval(thisInterval);
+            p_integrator.integrate(system, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
+        }
+
+
     }
 
     /**
@@ -638,7 +636,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
                 for (int i = 0; i < parameterization.getNTypes(); i++) {
-                    oneMinusRho = 1 - system.rho[thisInterval][i];
+                    oneMinusRho = 1 - system.rho[thisInterval-1][i];
                     state.p0[i] *= oneMinusRho;
                     state.ge[i] = state.ge[i].scalarMultiplyBy(oneMinusRho);
                 }
@@ -744,7 +742,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private ScaledNumbers safeIntegrate(P0GeSystem PG, double tStart, ScaledNumbers pgScaled, double tEnd) {
 
         // if the integration interval is too small, nothing is done (to prevent infinite looping)
-        if (Math.abs(tEnd - tStart) < globalPrecisionThreshold /*(T * 1e-20)*/)
+        if (Utils.equalWithPrecision(tEnd, tStart))
             return pgScaled;
 
         //TODO make threshold a class field
@@ -835,22 +833,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             t = leafTimes[indicesSortedByLeafTime[i]];
 
             //If the next higher leaf is actually at the same height, store previous results and skip iteration
-            if (Math.abs(t - tprev) < globalPrecisionThreshold) {
+            if (Utils.equalWithPrecision(t, tprev)) {
                 tprev = t;
                 pInitialConditions[indicesSortedByLeafTime[i]] = pInitialConditions[indicesSortedByLeafTime[i + 1]];
                 continue;
-            } else {
-					/* TODO the integration performed in getP is done before all
-                       the other potentially-parallelized getG, so should not
-                       matter that it has its own integrator, but if it does
-                       (or to simplify the code), take care of passing an integrator
-                       as a local variable. */
-                integrateP0(tprev, t, p0State, P);
-                System.arraycopy(p0State.p0, 0,
-                        pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
-                tprev = t;
             }
-
+			/* TODO the integration performed in getP is done before all
+               the other potentially-parallelized getG, so should not
+               matter that it has its own integrator, but if it does
+               (or to simplify the code), take care of passing an integrator
+               as a local variable. */
+            integrateP0(tprev, t, p0State, P);
+            System.arraycopy(p0State.p0, 0,
+                    pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
+            tprev = t;
         }
 
         integrateP0(tprev, 0, p0State, P);
