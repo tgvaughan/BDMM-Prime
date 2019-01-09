@@ -44,22 +44,22 @@ public class BirthDeathMigrationLikelihoodTest {
                 "origin", originParam,
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0 2.0")),
+                        new RealParameter("2.0"), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0 1.0")),
+                        new RealParameter("1.0"), 2),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.0 0.0")),
+                        new RealParameter("0.0"), 2),
                 "migrationRate", new SkylineMatrixParameter(
                         new RealParameter("1.0"),
-                        new RealParameter("0.1 0.1 0.2 0.2")),
+                        new RealParameter("0.1 0.2"), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5 0.5")),
+                        new RealParameter("0.5"), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0 1.0")));
+                        new RealParameter("1.0"), 2));
 
 
 		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
@@ -72,7 +72,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         false, false,
                         true,0),
                 "typeLabel", "state",
-                "parallelize", true);
+                "parallelize", false);
 
 		double logL = density.calculateLogP();
 

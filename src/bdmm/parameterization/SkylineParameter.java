@@ -151,6 +151,14 @@ public abstract class SkylineParameter extends CalculationNode {
 
     protected abstract void updateValues();
 
+    /**
+     * Retrieve index of interval containing time.  Note that
+     * index returned by the the time at a boundary between two intervals
+     * is the index of the earlier interval.
+     *
+     * @param time time at which to determine index
+     * @return index
+     */
     protected int getIntervalIdx(double time) {
         if (nIntervals==1)
             return 0;
@@ -159,8 +167,6 @@ public abstract class SkylineParameter extends CalculationNode {
 
 		if (idx < 0)
 			idx = -idx - 1;
-		else
-		    idx += 1;
 
 		return idx;
     }

@@ -15,20 +15,18 @@ public class Utils {
      * the _earlier_ of these two intervals.
      *
      * @param t time for which to identify interval
-     * @param times interval start times
+     * @param endTimes interval end times
      * @return index identifying interval.
      */
-    public static int getIntervalIndex(double t, double[] times) {
+    public static int getIntervalIndex(double t, double[] endTimes) {
 
-        int index = Arrays.binarySearch(times, t);
+        int index = Arrays.binarySearch(endTimes, t);
 
         if (index < 0)
-            index = -index - 2;
-        else
-            index -= 1;
+            index = -index - 1;
 
         // return at most the index of the last interval (m-1)
-        return Math.max(0, Math.min(index, times.length-1));
+        return Math.max(0, Math.min(index, endTimes.length-1));
     }
 
     /**

@@ -4,7 +4,6 @@ import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeInterface;
 
 import java.util.*;
 
@@ -23,9 +22,9 @@ public abstract class Parameterization extends CalculationNode {
 
     private boolean dirty;
 
-    SortedSet<Double> intervalStartTimesSet = new TreeSet<>();
+    SortedSet<Double> intervalEndTimesSet = new TreeSet<>();
 
-    private double[] intervalStartTimes;
+    private double[] intervalEndTimes;
 
     private double[][] birthRates, deathRates, samplingRates, removalProbs, rhoValues;
     private double[][][] migRates, crossBirthRates;
@@ -89,21 +88,21 @@ public abstract class Parameterization extends CalculationNode {
         if (birthRates == null) {
             validateParameterTypeCounts();
 
-            birthRates = new double[intervalStartTimes.length][nTypes];
-            migRates = new double[intervalStartTimes.length][nTypes][nTypes];
-            crossBirthRates = new double[intervalStartTimes.length][nTypes][nTypes];
-            deathRates = new double[intervalStartTimes.length][nTypes];
-            samplingRates = new double[intervalStartTimes.length][nTypes];
-            removalProbs = new double[intervalStartTimes.length][nTypes];
-            rhoValues = new double[intervalStartTimes.length][nTypes];
+            birthRates = new double[intervalEndTimes.length][nTypes];
+            migRates = new double[intervalEndTimes.length][nTypes][nTypes];
+            crossBirthRates = new double[intervalEndTimes.length][nTypes][nTypes];
+            deathRates = new double[intervalEndTimes.length][nTypes];
+            samplingRates = new double[intervalEndTimes.length][nTypes];
+            removalProbs = new double[intervalEndTimes.length][nTypes];
+            rhoValues = new double[intervalEndTimes.length][nTypes];
 
-            storedBirthRates = new double[intervalStartTimes.length][nTypes];
-            storedMigRates = new double[intervalStartTimes.length][nTypes][nTypes];
-            storedCrossBirthRates = new double[intervalStartTimes.length][nTypes][nTypes];
-            storedDeathRates = new double[intervalStartTimes.length][nTypes];
-            storedSamplingRates = new double[intervalStartTimes.length][nTypes];
-            storedRemovalProbs = new double[intervalStartTimes.length][nTypes];
-            storedRhoValues = new double[intervalStartTimes.length][nTypes];
+            storedBirthRates = new double[intervalEndTimes.length][nTypes];
+            storedMigRates = new double[intervalEndTimes.length][nTypes][nTypes];
+            storedCrossBirthRates = new double[intervalEndTimes.length][nTypes][nTypes];
+            storedDeathRates = new double[intervalEndTimes.length][nTypes];
+            storedSamplingRates = new double[intervalEndTimes.length][nTypes];
+            storedRemovalProbs = new double[intervalEndTimes.length][nTypes];
+            storedRhoValues = new double[intervalEndTimes.length][nTypes];
         }
 
         updateValues();
@@ -116,14 +115,12 @@ public abstract class Parameterization extends CalculationNode {
             return;
 
         for (double time : times)
-            intervalStartTimesSet.add(time);
+            intervalEndTimesSet.add(time);
     }
 
     private void updateModelEventTimes() {
 
-        intervalStartTimesSet.clear();
-
-        intervalStartTimesSet.add(0.0); // Start time of first interval
+        intervalEndTimesSet.clear();
 
         addTimes(getMigRateChangeTimes());
         addTimes(getBirthRateChangeTimes());
@@ -133,31 +130,33 @@ public abstract class Parameterization extends CalculationNode {
         addTimes(getRemovalProbChangeTimes());
         addTimes(getRhoSamplingTimes());
 
-        if (intervalStartTimes == null)
-            intervalStartTimes = new double[intervalStartTimesSet.size()];
+        intervalEndTimesSet.add(getTotalProcessLength()); // End time of final interval
 
-        List<Double> timeList = new ArrayList<>(intervalStartTimesSet);
-        for (int i=0; i<intervalStartTimesSet.size(); i++)
-            intervalStartTimes[i] = timeList.get(i);
+        if (intervalEndTimes == null)
+            intervalEndTimes = new double[intervalEndTimesSet.size()];
+
+        List<Double> timeList = new ArrayList<>(intervalEndTimesSet);
+        for (int i = 0; i< intervalEndTimesSet.size(); i++)
+            intervalEndTimes[i] = timeList.get(i);
     }
 
-    public double[] getIntervalStartTimes() {
+    public double[] getIntervalEndTimes() {
         update();
 
-        return intervalStartTimes;
+        return intervalEndTimes;
     }
 
     public int getTotalIntervalCount() {
         update();
 
-        return intervalStartTimes.length;
+        return intervalEndTimes.length;
     }
 
     void updateValues() {
 
-        for (int interval = 0; interval< intervalStartTimes.length; interval++) {
+        for (int interval = 0; interval < intervalEndTimes.length; interval++) {
 
-            double t = intervalStartTimes[interval];
+            double t = intervalEndTimes[interval];
             System.arraycopy(getBirthRateValues(t), 0, birthRates[interval], 0, nTypes);
             System.arraycopy(getDeathRateValues(t), 0, deathRates[interval], 0, nTypes);
             System.arraycopy(getSamplingRateValues(t), 0, samplingRates[interval], 0, nTypes);

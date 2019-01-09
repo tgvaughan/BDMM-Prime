@@ -15,11 +15,11 @@ public class P0System implements FirstOrderDifferentialEquations {
 	public double[][] b, d, s, r,rho;
 	public double[][][] M, b_ij;
 
-    public double origin;
+    public double totalProcessLength;
 
 	public int nTypes;
 	public int nIntervals;
-    public double[] intervalStartTimes;
+    public double[] intervalEndTimes;
 
     protected int interval;
 
@@ -35,12 +35,12 @@ public class P0System implements FirstOrderDifferentialEquations {
 		this.M = parameterization.getMigRates();
         this.b_ij = parameterization.getCrossBirthRates();
 
-        this.origin = parameterization.getTotalProcessLength();
+        this.totalProcessLength = parameterization.getTotalProcessLength();
 
 		this.nTypes = parameterization.getNTypes();
 		this.nIntervals = parameterization.getTotalIntervalCount();
 
-        this.intervalStartTimes = parameterization.getIntervalStartTimes();
+        this.intervalEndTimes = parameterization.getIntervalEndTimes();
 
 	}
 

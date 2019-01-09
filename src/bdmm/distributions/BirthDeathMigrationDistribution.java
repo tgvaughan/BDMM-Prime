@@ -204,6 +204,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         P0GeState finalP0Ge;
         if (parameterization.conditionedOnRoot()) {
+
+            // Condition on a known root time:
+
             finalP0Ge = new P0GeState();
 
             Node child0 = root.getChild(0);
@@ -220,6 +223,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             }
 
         } else {
+
+            // Condition on origin time, as usual:
 
             finalP0Ge = calculateSubtreeLikelihood(root, 0,
                     parameterization.getTotalProcessLength() - tree.getRoot().getHeight(), PG, 0);
@@ -339,7 +344,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         P0GeState state = new P0GeState(parameterization.getNTypes());
 
-        int intervalIdx = Utils.getIntervalIndex(tBottom, system.intervalStartTimes);
+        int intervalIdx = Utils.getIntervalIndex(tBottom, system.intervalEndTimes);
 
         if (node.isLeaf()) { // sampling event
 
@@ -512,12 +517,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (debug) debugMessage("State at base of edge: " + state, depth);
 
-        P0GeState statePrime = getG(node, tTop, state, system);
+        integrateP0Ge(node, tTop, state, system);
 
         if (debug)
-            debugMessage("State at top of edge: " + statePrime + "\n", depth);
+            debugMessage("State at top of edge: " + state + "\n", depth);
 
-        return statePrime;
+        return state;
     }
 
     /**
@@ -557,21 +562,21 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * @param tEnd
      * @return
      */
-    private P0State getP(double tStart, double tEnd, P0State state, P0System system) {
+    private void integrateP0(double tStart, double tEnd, P0State state, P0System system) {
 
-        if (Math.abs(system.origin - tEnd) < globalPrecisionThreshold
+        if (Math.abs(system.totalProcessLength - tEnd) < globalPrecisionThreshold
                 || Math.abs(tStart - tEnd) < globalPrecisionThreshold)
-            return state;
+            return;
 
         double thisTime = tStart;
-        int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalStartTimes);
-        int endInterval = Utils.getIntervalIndex(tEnd, system.intervalStartTimes);
+        int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalEndTimes);
+        int endInterval = Utils.getIntervalIndex(tEnd, system.intervalEndTimes);
 
         system.setInterval(thisInterval);
 
         while (thisInterval > endInterval) {
 
-            double nextTime = system.intervalStartTimes[thisInterval];
+            double nextTime = system.intervalEndTimes[thisInterval-1];
 
             if (nextTime < thisTime) {
                 p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
@@ -591,12 +596,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // TO DO
         // check that both rateChangeTimes are really overlapping
         // but really not sure that this is enough, i have to build appropriate tests
-        if (Math.abs(tEnd - system.intervalStartTimes[endInterval]) < globalPrecisionThreshold) {
+        if (Math.abs(tEnd - system.intervalEndTimes[endInterval]) < globalPrecisionThreshold) {
             for (int i = 0; i < system.nTypes; i++)
                 state.p0[i] *= 1 - system.rho[endInterval][i];
         }
-
-        return state;
     }
 
     /**
@@ -606,9 +609,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * @param tTop     time at top of edge
      * @param state    ODE variables at bottom of edge
      * @param system   ODE system to integrate
-     * @return
      */
-    public P0GeState getG(Node baseNode, double tTop, P0GeState state, P0GeSystem system) {
+    public void integrateP0Ge(Node baseNode, double tTop, P0GeState state, P0GeSystem system) {
 
 
         // pgScaled contains the set of initial conditions scaled made to fit
@@ -616,15 +618,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // contains the factor by which the numbers were multiplied.
         ScaledNumbers pgScaled = state.getScaledState();
 
-        double thisTime = system.origin - baseNode.getHeight();
-        int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalStartTimes);
-        int endInterval = Utils.getIntervalIndex(tTop, system.intervalStartTimes);
+        double thisTime = system.totalProcessLength - baseNode.getHeight();
+        int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalEndTimes);
+        int endInterval = Utils.getIntervalIndex(tTop, system.intervalEndTimes);
         double oneMinusRho;
 
         system.setInterval(thisInterval);
 
         while (thisInterval > endInterval) {
-            double nextTime = system.intervalStartTimes[thisInterval];
+            double nextTime = system.intervalEndTimes[thisInterval-1];
 
             if (nextTime < thisTime) {
                 pgScaled = safeIntegrate(system, thisTime, pgScaled, nextTime);
@@ -652,8 +654,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
-
-        return state;
     }
 
 
@@ -744,7 +744,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             return pgScaled;
 
         //TODO make threshold a class field
-        if (PG.origin > 0 && Math.abs(tEnd - tStart) > PG.origin / 6) {
+        if (PG.totalProcessLength > 0 && Math.abs(tEnd - tStart) > PG.totalProcessLength / 6) {
             pgScaled = safeIntegrate(PG, tStart, pgScaled, tEnd + (tStart - tEnd) / 2);
             pgScaled = safeIntegrate(PG, tEnd + (tStart - tEnd) / 2, pgScaled, tEnd);
         } else {
@@ -816,13 +816,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         P0State p0State = new P0State(PG.nTypes);
 
         int startIndex = Utils.getIntervalIndex(parameterization.getTotalProcessLength(),
-                parameterization.getIntervalStartTimes());
+                parameterization.getIntervalEndTimes());
         for (int i = 0; i < parameterization.getNTypes(); i++) {
             p0State.p0[i] = (1 - parameterization.getRhoValues()[startIndex][i]);    // initial condition: y_i[T]=1-rho_i
         }
 
         pInitialConditions = new double[leafCount + 1][P.nTypes];
-        System.arraycopy(getP(P.origin, t, p0State, P).p0, 0,
+        integrateP0(P.totalProcessLength, t, p0State, P);
+        System.arraycopy(p0State.p0, 0,
                 pInitialConditions[indicesSortedByLeafTime[leafCount-1]], 0, P.nTypes);
         double tprev = t;
 
@@ -840,14 +841,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                        matter that it has its own integrator, but if it does
                        (or to simplify the code), take care of passing an integrator
                        as a local variable. */
-                System.arraycopy(getP(tprev, t, p0State, P).p0, 0,
+                integrateP0(tprev, t, p0State, P);
+                System.arraycopy(p0State.p0, 0,
                         pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
                 tprev = t;
             }
 
         }
 
-        System.arraycopy(getP(tprev, 0, p0State, P).p0, 0,
+        integrateP0(tprev, 0, p0State, P);
+        System.arraycopy(p0State.p0, 0,
                 pInitialConditions[leafCount], 0, P.nTypes);
     }
 
