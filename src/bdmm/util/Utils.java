@@ -31,6 +31,13 @@ public class Utils {
 
     private final static double globalPrecisionThreshold = 1e-10;
 
+    /**
+     * Determine whether a and b are equal to within a precision threshold.
+     *
+     * @param a first number
+     * @param b second number
+     * @return true if a and b can be considered equal.
+     */
     public static boolean equalWithPrecision(double a, double b) {
         return Math.abs(a-b) < globalPrecisionThreshold;
     }
