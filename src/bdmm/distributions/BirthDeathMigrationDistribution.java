@@ -104,7 +104,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private P0GeSystem PG;
     private static Double minstep, maxstep;
 
-
     private double[][] pInitialConditions;
 
     private static boolean isParallelizedCalculation;
@@ -352,6 +351,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (node.isLeaf()) { // sampling event
 
+            // Incorporate pre-evaluated p0 values into state
+            System.arraycopy(pInitialConditions[node.getNr()], 0, state.p0, 0, system.nTypes);
+
             int nodeType = getNodeType(node, false);
 
             if (nodeType == -1) { //unknown state
@@ -361,12 +363,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                     if (isRhoTip[node.getNr()]) {
                         state.ge[type] = new SmallNumber(
-                                (system.r[intervalIdx][type] + pInitialConditions[node.getNr()][type]
+                                (system.r[intervalIdx][type] + state.p0[type]
                                         * (1 - system.r[intervalIdx][type]))
                                         * system.rho[intervalIdx][type]);
                     } else {
                         state.ge[type] = new SmallNumber(
-                                (system.r[intervalIdx][type] + pInitialConditions[node.getNr()][type] * (1 - system.r[intervalIdx][type]))
+                                (system.r[intervalIdx][type] + state.p0[type] * (1 - system.r[intervalIdx][type]))
                                         * system.s[intervalIdx][type]);
                         // with SA: ψ_i(r + (1 − r)p_i(τ))
                     }
@@ -374,13 +376,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             } else {
 
                 if (isRhoTip[node.getNr()]) {
+
                     state.ge[nodeType] = new SmallNumber(
-                            (system.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
+                            (system.r[intervalIdx][nodeType] + state.p0[nodeType]
                                     * (1 - system.r[intervalIdx][nodeType]))
                                     * system.rho[intervalIdx][nodeType]);
                 } else {
                     state.ge[nodeType] = new SmallNumber(
-                            (system.r[intervalIdx][nodeType] + pInitialConditions[node.getNr()][nodeType]
+                            (system.r[intervalIdx][nodeType] + state.p0[nodeType]
                                     * (1 - system.r[intervalIdx][nodeType]))
                                     * system.s[intervalIdx][nodeType]);
                     // with SA: ψ_i(r + (1 − r)p_i(τ))
@@ -388,8 +391,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             }
 
-            // Incorporate pre-evaluated p0 values into state
-            System.arraycopy(pInitialConditions[node.getNr()], 0, state.p0, 0, system.nTypes);
+            // Incorporate rho sampling if we're on a boundary:
+            for (int type=0; type<parameterization.getNTypes(); type++) {
+                state.p0[type] *= (1-system.rho[intervalIdx][type]);
+            }
 
             if (debug) debugMessage("Sampling at time " + tBottom, depth);
 
@@ -559,6 +564,91 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         return rootTypeProbs;
     }
 
+    /**
+     * Compute all initial conditions for all future integrations on p0 equations.
+     *
+     * @param tree
+     */
+    public void updateInitialConditionsForP(TreeInterface tree) {
+
+        int leafCount = tree.getLeafNodeCount();
+        double[] leafTimes = new double[leafCount];
+        int[] indicesSortedByLeafTime = new int[leafCount];
+
+        for (int i = 0; i < leafCount; i++) { // get all leaf times
+            leafTimes[i] = parameterization.getTotalProcessLength() - tree.getNode(i).getHeight();
+            indicesSortedByLeafTime[i] = i;
+        }
+
+        HeapSort.sort(leafTimes, indicesSortedByLeafTime);
+        //"sort" sorts in ascending order, so we have to be careful since the
+        // integration starts from the leaves at time T and goes up to the
+        // root at time 0 (or >0)
+
+
+        // The initial value is zero, so that all modifications can be expressed
+        // as products.
+        P0State p0State = new P0State(P.nTypes);
+        for (int type=0; type<P.nTypes; type++)
+            p0State.p0[type] = 1.0;
+
+        pInitialConditions = new double[leafCount + 1][P.nTypes];
+
+        double tprev = P.totalProcessLength;
+
+        for (int i = leafCount - 1; i >= 0; i--) {
+            double t = leafTimes[indicesSortedByLeafTime[i]];
+
+            //If the next higher leaf is actually at the same height, store previous results and skip iteration
+            if (Utils.equalWithPrecision(t, tprev)) {
+                tprev = t;
+                if (i < leafCount-1) {
+                    pInitialConditions[indicesSortedByLeafTime[i]] =
+                            pInitialConditions[indicesSortedByLeafTime[i + 1]];
+                } else {
+                    System.arraycopy(p0State.p0, 0,
+                            pInitialConditions[indicesSortedByLeafTime[i]], 0,
+                            P.nTypes);
+                }
+                continue;
+            }
+
+            // Only include rho contribution when starting integral to earlier times.
+            // This means that the value of pInitialConditions will always require the
+            // inclusion of a (1-rho) factor if it lies on an interval boundary, just
+            // as for the Ge calculation.
+            int prevIndex = Utils.getIntervalIndex(tprev, parameterization.getIntervalEndTimes());
+            if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
+                for (int type = 0; type < parameterization.getNTypes(); type++) {
+                    p0State.p0[type] *= (1 - parameterization.getRhoValues()[prevIndex][type]);
+                }
+            }
+
+			/* TODO the integration performed in getP is done before all
+               the other potentially-parallelized getG, so should not
+               matter that it has its own integrator, but if it does
+               (or to simplify the code), take care of passing an integrator
+               as a local variable. */
+            integrateP0(tprev, t, p0State, P);
+
+            System.arraycopy(p0State.p0, 0,
+                    pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
+            tprev = t;
+        }
+
+        if (tprev > 0.0) {
+            int prevIndex = Utils.getIntervalIndex(tprev, parameterization.getIntervalEndTimes());
+            if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
+                for (int type = 0; type < parameterization.getNTypes(); type++) {
+                    p0State.p0[type] *= (1 - parameterization.getRhoValues()[prevIndex][type]);
+                }
+            }
+        }
+
+        integrateP0(tprev, 0, p0State, P);
+        System.arraycopy(p0State.p0, 0,
+                pInitialConditions[leafCount], 0, P.nTypes);
+    }
 
     /**
      * Perform integration on differential equations p
@@ -574,11 +664,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         while (thisInterval > endInterval) {
 
-            if (Utils.equalWithPrecision(thisTime, system.intervalEndTimes[thisInterval])) {
-                for (int i = 0; i < system.nTypes; i++)
-                    state.p0[i] *= (1 - system.rho[thisInterval - 1][i]);
-            }
-
             double nextTime = system.intervalEndTimes[thisInterval-1];
 
             if (nextTime < thisTime) {
@@ -586,22 +671,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
             }
 
+            if (nextTime > tEnd) {
+                for (int i = 0; i < system.nTypes; i++)
+                    state.p0[i] *= (1 - system.rho[thisInterval - 1][i]);
+            }
+
             thisTime = nextTime;
             thisInterval -= 1;
 
-        }
-
-        if (Utils.equalWithPrecision(thisTime,  system.intervalEndTimes[thisInterval])) {
-            for (int i = 0; i < system.nTypes; i++)
-                state.p0[i] *= 1 - system.rho[thisInterval][i];
         }
 
         if (tEnd<thisTime) {
             system.setInterval(thisInterval);
             p_integrator.integrate(system, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
         }
-
-
     }
 
     /**
@@ -635,10 +718,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
-                for (int i = 0; i < parameterization.getNTypes(); i++) {
-                    oneMinusRho = 1 - system.rho[thisInterval-1][i];
-                    state.p0[i] *= oneMinusRho;
-                    state.ge[i] = state.ge[i].scalarMultiplyBy(oneMinusRho);
+                if (nextTime > tTop) {
+                    for (int i = 0; i < parameterization.getNTypes(); i++) {
+                        oneMinusRho = 1 - system.rho[thisInterval - 1][i];
+                        state.p0[i] *= oneMinusRho;
+                        state.ge[i] = state.ge[i].scalarMultiplyBy(oneMinusRho);
+                    }
                 }
 
                 // 'rescale' the results of the last integration to prepare for the next integration step
@@ -702,7 +787,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         return weight;
     }
-
 
     private void updateParallelizationThreshold() {
         if (isParallelizedCalculation) {
@@ -790,70 +874,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         return pgScaled;
     }
 
-
-    /**
-     * Compute all initial conditions for all future integrations on p0 equations.
-     *
-     * @param tree
-     */
-    public void updateInitialConditionsForP(TreeInterface tree) {
-
-        int leafCount = tree.getLeafNodeCount();
-        double[] leafTimes = new double[leafCount];
-        int[] indicesSortedByLeafTime = new int[leafCount];
-
-        for (int i = 0; i < leafCount; i++) { // get all leaf times
-            leafTimes[i] = parameterization.getTotalProcessLength() - tree.getNode(i).getHeight();
-            indicesSortedByLeafTime[i] = i;
-        }
-
-        HeapSort.sort(leafTimes, indicesSortedByLeafTime);
-        //"sort" sorts in ascending order, so we have to be careful since the
-        // integration starts from the leaves at time T and goes up to the
-        // root at time 0 (or >0)
-
-
-        double t = leafTimes[indicesSortedByLeafTime[leafCount - 1]];
-
-        P0State p0State = new P0State(PG.nTypes);
-
-        int startIndex = Utils.getIntervalIndex(parameterization.getTotalProcessLength(),
-                parameterization.getIntervalEndTimes());
-        for (int i = 0; i < parameterization.getNTypes(); i++) {
-            p0State.p0[i] = (1 - parameterization.getRhoValues()[startIndex][i]);    // initial condition: y_i[T]=1-rho_i
-        }
-
-        pInitialConditions = new double[leafCount + 1][P.nTypes];
-        integrateP0(P.totalProcessLength, t, p0State, P);
-        System.arraycopy(p0State.p0, 0,
-                pInitialConditions[indicesSortedByLeafTime[leafCount-1]], 0, P.nTypes);
-        double tprev = t;
-
-        for (int i = leafCount - 2; i >= 0; i--) {
-            t = leafTimes[indicesSortedByLeafTime[i]];
-
-            //If the next higher leaf is actually at the same height, store previous results and skip iteration
-            if (Utils.equalWithPrecision(t, tprev)) {
-                tprev = t;
-                pInitialConditions[indicesSortedByLeafTime[i]] = pInitialConditions[indicesSortedByLeafTime[i + 1]];
-                continue;
-            }
-			/* TODO the integration performed in getP is done before all
-               the other potentially-parallelized getG, so should not
-               matter that it has its own integrator, but if it does
-               (or to simplify the code), take care of passing an integrator
-               as a local variable. */
-            integrateP0(tprev, t, p0State, P);
-            System.arraycopy(p0State.p0, 0,
-                    pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
-            tprev = t;
-        }
-
-        integrateP0(tprev, 0, p0State, P);
-        System.arraycopy(p0State.p0, 0,
-                pInitialConditions[leafCount], 0, P.nTypes);
-    }
-
     static void executorBootUp() {
         ExecutorService executor = Executors.newCachedThreadPool();
         pool = (ThreadPoolExecutor) executor;
@@ -937,6 +957,4 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         rootTypeProbs = storedRootTypeProbs;
         storedRootTypeProbs = tmp;
     }
-
-
 }
