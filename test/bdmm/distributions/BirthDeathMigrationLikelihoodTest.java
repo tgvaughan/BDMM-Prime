@@ -892,6 +892,7 @@ public class BirthDeathMigrationLikelihoodTest {
 	 * reference from R
 	 * @throws Exception
 	 */
+	@Test
 	public void testLikelihoodCalculationInfAmongDemes() throws Exception{
 
 		// uncoloured, symmetric tree
