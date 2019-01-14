@@ -1,6 +1,5 @@
 package bdmm.parameterization;
 
-import bdmm.parameterization.*;
 import beast.core.parameter.RealParameter;
 import org.junit.Assert;
 import org.junit.Test;
@@ -20,35 +19,35 @@ public class ParameterizationTest {
                 "origin", originParam,
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("4.0 4.0")),
+                        new RealParameter("4.0"), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("3.0 3.0")),
+                        new RealParameter("3.0"), 2),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.0 0.0")),
+                        new RealParameter("0.0"), 2),
                 "migrationRate", new SkylineMatrixParameter(
                         new RealParameter("1.0"),
-                        new RealParameter("0.1 0.1 0.2 0.2")),
+                        new RealParameter("0.1 0.2"), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.5")),
+                        new RealParameter("1.5"), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0 1.0")),
+                        new RealParameter("1.0"), 2),
                 "rhoSampling", new TimedParameter(
                         originParam,
                         new RealParameter("0.0 0.0")));
 
 		System.out.println("Number of intervals: " + parameterization.getTotalIntervalCount());
 
-        Assert.assertEquals(3, parameterization.getBirthRates().length);
-        Assert.assertEquals(3, parameterization.getDeathRates().length);
-        Assert.assertEquals(3, parameterization.getSamplingRates().length);
-        Assert.assertEquals(3, parameterization.getRemovalProbs().length);
-        Assert.assertEquals(3, parameterization.getRhoValues().length);
+        Assert.assertEquals(2, parameterization.getBirthRates().length);
+        Assert.assertEquals(2, parameterization.getDeathRates().length);
+        Assert.assertEquals(2, parameterization.getSamplingRates().length);
+        Assert.assertEquals(2, parameterization.getRemovalProbs().length);
+        Assert.assertEquals(2, parameterization.getRhoValues().length);
 
-        for (int interval=0; interval<3; interval++) {
+        for (int interval=0; interval<2; interval++) {
             double migRate = interval < 1 ? 0.1 : 0.2;
 
             for (int state1 = 0; state1 < 2; state1++) {
