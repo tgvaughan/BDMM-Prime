@@ -392,34 +392,60 @@ public class BirthDeathMigrationLikelihoodTest {
 	@Test
 	public void testMultiRhoSampling() throws Exception {
 		// Uncoloured tree
-		Tree treeU = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
+		Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
 
-		BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
-		bdssm.setInputValue("typeLabel", "type");
-		bdssm.setInputValue("frequencies", "1");
-		bdssm.setInputValue("migrationMatrix", "0.");
-		bdssm.setInputValue("stateNumber", 1);
+        RealParameter originParam = new RealParameter("2.0");
 
-		bdssm.setInputValue("tree", treeU);
-		bdssm.setInputValue("origin", new RealParameter("2."));
-		bdssm.setInputValue("conditionOnSurvival", false);
+		TimedParameter rhoSamplingParam = new TimedParameter();
+		rhoSamplingParam.initByName(
+		        "times", new RealParameter("1.0 1.5 2.0"),
+                "values", new RealParameter("0.0 0.05 0.01"));
 
-		bdssm.setInputValue("R0", new RealParameter(new Double[]{3./4.5}));
-		bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("4.5"));
-		bdssm.setInputValue("samplingProportion", new RealParameter(new Double[]{2./4.5}));
-		bdssm.setInputValue("rho", new RealParameter("0.0 0.05 0.01"));
-		bdssm.setInputValue("rhoSamplingTimes","0. 1. 1.5");
-		bdssm.setInputValue("reverseTimeArrays","false false false false");
-		bdssm.initAndValidate();
+        Parameterization parameterization = new EpiParameterization();
+		parameterization.initByName(
+		        "nTypes", 1,
+                "origin", originParam,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter(new Double[]{3.0/4.5})),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("4.5")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter(new Double[]{2.0/4.5})),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")),
+                "rhoSampling", rhoSamplingParam);
 
-		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);     // this result is from BEAST, not double checked in R
 
-		// same with reverse rhoSamplingTimes
-		bdssm.setInputValue("rhoSamplingTimes","0. 0.5 1.");
-		bdssm.setInputValue("reverseTimeArrays","false false false true");
-		bdssm.initAndValidate();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName(
+		        "parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-		assertEquals(-124.96086690757612, bdssm.calculateTreeLogLikelihood(treeU), 1e-2);     // this result is from BEAST, not double checked in R
+		assertEquals(-124.96086690757612, density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
+
+        rhoSamplingParam.initByName(
+                "times", new RealParameter("0.0 0.5 1.0"),
+                "values", new RealParameter("0.01 0.05 0.0"),
+                "timesAreAges", true,
+                "origin", originParam);
+        parameterization.initAndValidate();
+        density.initAndValidate();
+
+        assertEquals(-124.96086690757612, density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
 	}
 
 	/**

@@ -160,7 +160,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             isRhoTip[nodeNr] = false;
             double nodeTime = parameterization.getTotalProcessLength() - tree.getNode(nodeNr).getHeight();
             for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
-                if (rhoSampTime == nodeTime) {
+                if (Utils.equalWithPrecision(rhoSampTime, nodeTime)) {
                     isRhoTip[nodeNr] = true;
                     break;
                 }
@@ -392,8 +392,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             }
 
             // Incorporate rho sampling if we're on a boundary:
-            for (int type=0; type<parameterization.getNTypes(); type++) {
-                state.p0[type] *= (1-system.rho[intervalIdx][type]);
+            if (isRhoTip[node.getNr()]) {
+                for (int type = 0; type < parameterization.getNTypes(); type++) {
+                    state.p0[type] *= (1 - system.rho[intervalIdx][type]);
+                }
             }
 
             if (debug) debugMessage("Sampling at time " + tBottom, depth);
@@ -636,7 +638,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             tprev = t;
         }
 
-        if (tprev > 0.0) {
+        if (Utils.greaterThanWithPrecision(tprev , 0.0)) {
             int prevIndex = Utils.getIntervalIndex(tprev, parameterization.getIntervalEndTimes());
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
@@ -666,12 +668,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             double nextTime = system.intervalEndTimes[thisInterval-1];
 
-            if (nextTime < thisTime) {
+            if (Utils.lessThanWithPrecision(nextTime , thisTime)) {
                 system.setInterval(thisInterval);
                 p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
             }
 
-            if (nextTime > tEnd) {
+            if (Utils.greaterThanWithPrecision(nextTime, tEnd)) {
                 for (int i = 0; i < system.nTypes; i++)
                     state.p0[i] *= (1 - system.rho[thisInterval - 1][i]);
             }
@@ -681,7 +683,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        if (tEnd<thisTime) {
+        if (Utils.lessThanWithPrecision(tEnd,thisTime)) {
             system.setInterval(thisInterval);
             p_integrator.integrate(system, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
         }
@@ -713,12 +715,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         while (thisInterval > endInterval) {
             double nextTime = system.intervalEndTimes[thisInterval-1];
 
-            if (nextTime < thisTime) {
+            if (Utils.lessThanWithPrecision(nextTime, thisTime)) {
                 pgScaled = safeIntegrate(system, thisTime, pgScaled, nextTime);
 
                 state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
-                if (nextTime > tTop) {
+                if (Utils.greaterThanWithPrecision(nextTime, tTop)) {
                     for (int i = 0; i < parameterization.getNTypes(); i++) {
                         oneMinusRho = 1 - system.rho[thisInterval - 1][i];
                         state.p0[i] *= oneMinusRho;
@@ -737,7 +739,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
          // solve PG , store solution temporarily integrationResults
-        pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop);
+        if (Utils.greaterThanWithPrecision(thisTime, tTop))
+            pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop);
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());

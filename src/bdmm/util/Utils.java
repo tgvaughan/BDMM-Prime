@@ -43,6 +43,28 @@ public class Utils {
     }
 
     /**
+     * Returns true when a-b exceeds epsilon.
+     *
+     * @param a first number
+     * @param b second number
+     * @return true if a > b + epsilon
+     */
+    public static boolean greaterThanWithPrecision(double a, double b) {
+        return a > b + globalPrecisionThreshold;
+    }
+
+    /**
+     * Returns true when b-a exceeds epsilon.
+     *
+     * @param a first number
+     * @param b second number
+     * @return true if a < b - epsilon
+     */
+    public static boolean lessThanWithPrecision(double a, double b) {
+        return greaterThanWithPrecision(b, a);
+    }
+
+    /**
      * In-place reversal of array of (little d) doubles.
      * @param array array to reverse
      */
