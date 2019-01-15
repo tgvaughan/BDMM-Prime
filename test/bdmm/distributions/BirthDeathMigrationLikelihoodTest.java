@@ -25,7 +25,6 @@ public class BirthDeathMigrationLikelihoodTest {
 
 	/**
 	 * Basic test for migration rate change 
-	 * Coloured and uncoloured trees 
 	 * Reference from BDMM itself
      * Canonical parameterization
 	 */
@@ -84,7 +83,6 @@ public class BirthDeathMigrationLikelihoodTest {
 
     /**
 	 * Basic test for migration rate change
-	 * Coloured and uncoloured trees
 	 * Reference from BDMM itself
      * Epi parameterization
 	 */
@@ -143,7 +141,6 @@ public class BirthDeathMigrationLikelihoodTest {
 
 	/**
 	 * Basic test for removal-probability rate change 
-	 * Coloured and uncoloured trees 
 	 * Reference from BDMM itself
 	 * @throws Exception
 	 */
@@ -188,7 +185,6 @@ public class BirthDeathMigrationLikelihoodTest {
 
 	/**
 	 * Two-state test for removal-probability rate change
-	 * Coloured and uncoloured trees
 	 * Reference from BDMM itself
      */
 	@Test
@@ -241,8 +237,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 
 	/**
-	 * Test simple configuration with one rho-sampling event for
-	 * coloured and uncoloured trees.
+	 * Test simple configuration with one rho-sampling event.
 	 * One type, no psi-sampling, no sampled-ancestor
 	 * No rate-changes
 	 * Reference: R
@@ -311,7 +306,6 @@ public class BirthDeathMigrationLikelihoodTest {
 
 	/**
 	 * Basic test for rho-sampling in the past
-	 * Coloured and Uncoloured trees
 	 * One type, 2 tips, one state
 	 * No rate changes
 	 * @throws Exception
@@ -323,13 +317,6 @@ public class BirthDeathMigrationLikelihoodTest {
 		Tree tree = new TreeParser("(3[&type=0]: 4, 4[&type=0]: 4) ;",false);
 
 		RealParameter originParam = new RealParameter("5.0");
-
-		TimedParameter rhoSamplingParam = new TimedParameter();
-		rhoSamplingParam.initByName(
-		        "times", new RealParameter("0.0 2.5"),
-                "values", new RealParameter("1.0 0.2"),
-                "timesAreAges", true,
-                "origin", originParam);
 
         Parameterization parameterization = new EpiParameterization();
 		parameterization.initByName(
@@ -353,7 +340,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "removalProb", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.0")),
-                "rhoSampling", rhoSamplingParam);
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("0.0 2.5"),
+                        new RealParameter("1.0 0.2"),
+                        originParam));
 
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
@@ -384,7 +374,6 @@ public class BirthDeathMigrationLikelihoodTest {
 	/**
 	 * Test with combined multiple-rho-sampling events in the past and psi-sampling
 	 * was "TestRhoSasha"
-	 * Coloured and Uncoloured trees
 	 * One type, no rate-changes, no sampled-ancestors
 	 * 26 tips
 	 * @throws Exception
@@ -395,11 +384,6 @@ public class BirthDeathMigrationLikelihoodTest {
 		Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
 
         RealParameter originParam = new RealParameter("2.0");
-
-		TimedParameter rhoSamplingParam = new TimedParameter();
-		rhoSamplingParam.initByName(
-		        "times", new RealParameter("1.0 1.5 2.0"),
-                "values", new RealParameter("0.0 0.05 0.01"));
 
         Parameterization parameterization = new EpiParameterization();
 		parameterization.initByName(
@@ -423,7 +407,9 @@ public class BirthDeathMigrationLikelihoodTest {
                 "removalProb", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.0")),
-                "rhoSampling", rhoSamplingParam);
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("1.0 1.5 2.0"),
+                        new RealParameter("0.0 0.05 0.01")));
 
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
@@ -437,11 +423,10 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		assertEquals(-124.96086690757612, density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
 
-        rhoSamplingParam.initByName(
-                "times", new RealParameter("0.0 0.5 1.0"),
-                "values", new RealParameter("0.01 0.05 0.0"),
-                "timesAreAges", true,
-                "origin", originParam);
+        parameterization.setInputValue("rhoSampling",
+                new TimedParameter(new RealParameter("0.0 0.5 1.0"),
+                        new RealParameter("0.01 0.05 0.0"),
+                        originParam));
         parameterization.initAndValidate();
         density.initAndValidate();
 
@@ -450,117 +435,186 @@ public class BirthDeathMigrationLikelihoodTest {
 
 	/**
 	 * Test with multiple cases for rho-sampling in the past combined with rate changes
-	 * Coloured and Uncoloured trees
 	 * 1 state, no sampled ancestors
 	 * 26 tips
-	 * @throws Exception
-	 */
+     */
 	@Test
-	public void testMultiRhoWithRateChanges() throws Exception {
+	public void testMultiRhoWithRateChanges1() {
 
-		// uncoloured trees
-		Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
+        Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
-		for (int i = 0; i<4; i++){
+        // no rate-change, rho-sampling at present
+        RealParameter originParam = new RealParameter("2.0");
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "nTypes", 1,
+                "origin", originParam,
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("2.0")),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5")),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")),
+                "birthRateAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("0.0"),
+                        new RealParameter("1.0"),
+                        originParam));
 
-			switch (i){
-			case 0:{ // no rate-change, rho-sampling at present
-				BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
-				bdssm.setInputValue("typeLabel", "type");
-				bdssm.setInputValue("frequencies", "1");
-				bdssm.setInputValue("migrationMatrix", "0.");
-				bdssm.setInputValue("stateNumber", 1);
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-				bdssm.setInputValue("tree", new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false));
-				bdssm.setInputValue("origin", "2.");
-				bdssm.setInputValue("conditionOnSurvival", true);
-				bdssm.setInputValue("birthRate", new RealParameter("2."));
-				bdssm.setInputValue("deathRate", new RealParameter("0.5"));
-				bdssm.setInputValue("samplingRate", new RealParameter("0.5"));
-
-				bdssm.setInputValue("rho", new RealParameter("1."));
-				bdssm.initAndValidate();
-
-
-				//		System.out.println("\na) Likelihood: " + bdssm.calculateTreeLogLikelihood(tree));
-				assertEquals(-21.42666177086957, bdssm.calculateTreeLogLikelihood(tree), 1e-5);
-
-			}
-			case 1:{ // rate-changes, rho-sampling in the past
-				BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
-				bdssm.setInputValue("typeLabel", "type");
-				bdssm.setInputValue("frequencies", "1");
-				bdssm.setInputValue("migrationMatrix", "0.");
-				bdssm.setInputValue("stateNumber", 1);
-
-				bdssm.setInputValue("tree", tree);
-				bdssm.setInputValue("origin", new RealParameter("2."));
-				bdssm.setInputValue("conditionOnSurvival", false);
-
-				bdssm.setInputValue("R0", new RealParameter(new Double[]{3./4.5, 2./1.5, 4./1.5}));   // birthRate = "3. 2. 4."
-				bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("4.5 1.5 1.5"));      // deathRate = "2.5 1. .5"
-				bdssm.setInputValue("samplingProportion", new RealParameter(new Double[]{2./4.5, .5/1.5, 1./1.5}));                  // samplingRate = "2. 0.5 1."
-				bdssm.setInputValue("rho", new RealParameter("0. 0. 0.01"));
-				bdssm.setInputValue("birthRateChangeTimes", new RealParameter("0. 1. 1.5"));
-				bdssm.setInputValue("deathRateChangeTimes", new RealParameter("0. 1. 1.5"));
-				bdssm.setInputValue("samplingRateChangeTimes", new RealParameter("0. 1. 1.5"));
-				bdssm.setInputValue("rhoSamplingTimes", new RealParameter("0. 1. 1.5"));
-
-				bdssm.initAndValidate();
+        //		System.out.println("\na) Likelihood: " + bdssm.calculateTreeLogLikelihood(tree));
+        assertEquals(-21.42666177086957, density.calculateLogP(), 1e-5);
+    }
 
 
-				assertEquals(-87.59718586549747, bdssm.calculateTreeLogLikelihood(tree), 1e-1);
+    @Test
+    public void testMultiRhoWithRateChanges2() {
 
-			}
-			case 2:{ // rate-changes, rho-sampling in the past and present
-				BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
-				bdssm.setInputValue("typeLabel", "type");
-				bdssm.setInputValue("frequencies", "1");
-				bdssm.setInputValue("migrationMatrix", "0.");
-				bdssm.setInputValue("stateNumber", 1);
+        Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
-				bdssm.setInputValue("tree", tree);
-				bdssm.setInputValue("origin", new RealParameter("2."));
-				bdssm.setInputValue("conditionOnSurvival", false);
+        // rate-changes, rho-sampling in the past
+        RealParameter originParam = new RealParameter("2.0");
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "nTypes", 1,
+                "origin", originParam,
+                "R0", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5})),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter("4.5 1.5 1.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter(new Double[]{2.0/4.5, 0.5/1.5, 1.0/1.5})),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("2.0"),
+                        new RealParameter("0.01")));
 
-				bdssm.setInputValue("R0", new RealParameter(new Double[]{3./4.5, 2./1.5, 4./1.5}));   // birthRate = "3. 2. 4."
-				bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("4.5 1.5 1.5"));      // deathRate = "2.5 1. .5"
-				bdssm.setInputValue("samplingProportion", new RealParameter(new Double[]{2./4.5, .5/1.5, 1./1.5}));                  // samplingRate = "2. 0.5 1."
-				bdssm.setInputValue("birthRateChangeTimes", new RealParameter("0. 1. 1.5"));
-				bdssm.setInputValue("deathRateChangeTimes", new RealParameter("0. 1. 1.5"));
-				bdssm.setInputValue("samplingRateChangeTimes", new RealParameter("0. 1. 1.5"));
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-				bdssm.setInputValue("rho", new RealParameter("0.05 0.01"));
-				bdssm.setInputValue("rhoSamplingTimes","0. 1.");
-				bdssm.initAndValidate();
+        assertEquals(-87.59718586549747, density.calculateLogP(), 1e-5);
+    }
 
+    @Test
+    public void testMultiRhoWithRateChanges3() {
 
-				assertEquals(-87.96488, bdssm.calculateTreeLogLikelihood(tree), 1e-1);
-			}
+        Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
-			case 3:{ // rate-changes, rho-sampling in the past and present, with reversed times
-				BirthDeathMigrationDistribution bdssm =  new BirthDeathMigrationDistribution();
-				bdssm.setInputValue("typeLabel", "type");
-				bdssm.setInputValue("frequencies", "1");
-				bdssm.setInputValue("migrationMatrix", "0.");
-				bdssm.setInputValue("stateNumber", 1);
+        // rate-changes, rho-sampling in the past and present
+        RealParameter originParam = new RealParameter("2.0");
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "nTypes", 1,
+                "origin", originParam,
+                "R0", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5})),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter("4.5 1.5 1.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter(new Double[]{2.0/4.5, 0.5/1.5, 1.0/1.5})),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("1.0 2.0"),
+                        new RealParameter("0.05 0.01")));
 
-				bdssm.setInputValue("tree", tree);
-				bdssm.setInputValue("conditionOnSurvival", false);
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-				bdssm.setInputValue("R0", new RealParameter(new Double[]{3./4.5, 2./1.5, 4./1.5, 4./2.5}));   // birthRate = "3. 2. 4. 4."
-				bdssm.setInputValue("becomeUninfectiousRate", new RealParameter("4.5 1.5 1.5 2.5"));      // deathRate = "2.5 1. .5 .5"
-				bdssm.setInputValue("samplingProportion", new RealParameter(new Double[]{2./4.5, .5/1.5, 1./1.5, 2./2.5}));                  // samplingRate = "2. 0.5 1. 2."
-				bdssm.setInputValue("rho", new RealParameter("0.05 0.01"));
-				bdssm.setInputValue("rhoSamplingTimes","0. 1.");
-				bdssm.setInputValue("intervalTimes", new RealParameter("0. 0.5 1. 1.1"));
-				bdssm.initAndValidate();
+        assertEquals(-87.96488, density.calculateLogP(), 1e-1);
+    }
 
+    @Test
+    public void testMultiRhoWithRateChanges4() {
 
-				assertEquals(-100.15682190617582, bdssm.calculateTreeLogLikelihood(tree), 1e-1);
-			}
-			}
-		}
+        Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
+
+        // rate-changes, rho-sampling in the past and present, with reversed times
+        RealParameter originParam = new RealParameter("2.0");
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "nTypes", 1,
+                "origin", originParam,
+                "R0", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5})),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter("4.5 1.5 1.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealParameter("1.0 1.5"),
+                        new RealParameter(new Double[]{2.0/4.5, 0.5/1.5, 1.0/1.5})),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        null),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("1.0 2.0"),
+                        new RealParameter("0.05 0.01")));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
+
+        assertEquals(-100.15682190617582, density.calculateLogP(), 1e-1);
 	}
 
 	/**
