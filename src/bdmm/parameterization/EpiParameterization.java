@@ -16,17 +16,17 @@ public class EpiParameterization extends Parameterization {
     public Input<SkylineVectorParameter> samplingProportionInput = new Input<>("samplingProportion",
             "Sampling proportion skyline.", Input.Validate.REQUIRED);
 
+    public Input<TimedParameter> rhoSamplingInput = new Input<>("rhoSampling",
+            "Contemporaneous sampling times and probabilities.");
+
+    public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalProb",
+            "Removal prob skyline.", Input.Validate.REQUIRED);
+
     public Input<SkylineMatrixParameter> migRateInput = new Input<>("migrationRate",
             "Migration rate skyline.");
 
     public Input<SkylineMatrixParameter> R0AmongDemesInput = new Input<>("R0AmongDemes",
             "Basic reproduction number among demes skyline.");
-
-    public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalProb",
-            "Removal prob skyline.", Input.Validate.REQUIRED);
-
-    public Input<TimedParameter> rhoSamplingInput = new Input<>("rhoSampling",
-            "Contemporaneous sampling times and probabilities.");
 
     @Override
     public double[] getMigRateChangeTimes() {

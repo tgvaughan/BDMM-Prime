@@ -4,14 +4,9 @@ import beast.core.Input;
 
 public class CanonicalParameterization extends Parameterization {
 
-    public Input<SkylineMatrixParameter> migRateInput = new Input<>("migrationRate",
-            "Migration rate skyline.", Input.Validate.REQUIRED);
 
     public Input<SkylineVectorParameter> birthRateInput = new Input<>("birthRate",
             "Birth rate skyline.", Input.Validate.REQUIRED);
-
-    public Input<SkylineMatrixParameter> crossBirthRateInput = new Input<>("birthRateAmongDemes",
-            "Birth rate among demes skyline.", Input.Validate.REQUIRED);
 
     public Input<SkylineVectorParameter> deathRateInput = new Input<>("deathRate",
             "Death rate skyline.", Input.Validate.REQUIRED);
@@ -19,14 +14,23 @@ public class CanonicalParameterization extends Parameterization {
     public Input<SkylineVectorParameter> samplingRateInput = new Input<>("samplingRate",
             "Sampling rate skyline.", Input.Validate.REQUIRED);
 
-    public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalProb",
-            "Removal prob skyline.", Input.Validate.REQUIRED);
-
     public Input<TimedParameter> rhoSamplingInput = new Input<>("rhoSampling",
             "Contemporaneous sampling times and probabilities.");
 
+    public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalProb",
+            "Removal prob skyline.", Input.Validate.REQUIRED);
+
+    public Input<SkylineMatrixParameter> migRateInput = new Input<>("migrationRate",
+            "Migration rate skyline.");
+
+    public Input<SkylineMatrixParameter> crossBirthRateInput = new Input<>("birthRateAmongDemes",
+            "Birth rate among demes skyline.");
+
     @Override
     public double[] getMigRateChangeTimes() {
+        if (migRateInput.get() == null)
+            return EMPTY_TIME_ARRAY;
+
         return migRateInput.get().getChangeTimes();
     }
 
@@ -37,6 +41,9 @@ public class CanonicalParameterization extends Parameterization {
 
     @Override
     public double[] getCrossBirthRateChangeTimes() {
+        if (crossBirthRateInput.get() == null)
+            return EMPTY_TIME_ARRAY;
+
         return crossBirthRateInput.get().getChangeTimes();
     }
 
@@ -65,6 +72,9 @@ public class CanonicalParameterization extends Parameterization {
 
     @Override
     protected double[][] getMigRateValues(double time) {
+        if (migRateInput.get() == null)
+            return ZERO_VALUE_MATRIX;
+
         return migRateInput.get().getValuesAtTime(time);
     }
 
@@ -75,6 +85,9 @@ public class CanonicalParameterization extends Parameterization {
 
     @Override
     protected double[][] getCrossBirthRateValues(double time) {
+        if (crossBirthRateInput.get() == null)
+            return ZERO_VALUE_MATRIX;
+
         return crossBirthRateInput.get().getValuesAtTime(time);
     }
 
@@ -112,10 +125,12 @@ public class CanonicalParameterization extends Parameterization {
         if (samplingRateInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Sampling rate skyline type count does not match type count of model.");
 
-        if (migRateInput.get().getNTypes() != getNTypes())
+        if (migRateInput.get() != null
+                && migRateInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Migration rate skyline type count does not match type count of model.");
 
-        if (crossBirthRateInput.get().getNTypes() != getNTypes())
+        if (crossBirthRateInput.get() != null
+                && crossBirthRateInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Birth rate among demes skyline type count does not match type count of model.");
 
         if (removalProbInput.get().getNTypes() != getNTypes())
