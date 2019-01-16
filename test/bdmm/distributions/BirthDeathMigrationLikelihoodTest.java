@@ -582,17 +582,17 @@ public class BirthDeathMigrationLikelihoodTest {
         RealParameter originParam = new RealParameter("2.0");
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
+                "tree", tree,
                 "nTypes", 1,
-                "origin", originParam,
                 "R0", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5})),
+                        new RealParameter("0.5 1.0 1.1"),
+                        new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5, 4.0/2.5})),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter("4.5 1.5 1.5")),
+                        new RealParameter("0.5 1.0 1.1"),
+                        new RealParameter("4.5 1.5 1.5 2.5")),
                 "samplingProportion", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter(new Double[]{2.0/4.5, 0.5/1.5, 1.0/1.5})),
+                        new RealParameter("0.5 1.0 1.1"),
+                        new RealParameter(new Double[]{2.0/4.5, 0.5/1.5, 1.0/1.5, 2.0/2.5})),
                 "removalProb", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.0")),
@@ -603,7 +603,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         null,
                         null),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("1.0 2.0"),
+                        new RealParameter("1.0 " + tree.getRoot().getHeight()),
                         new RealParameter("0.05 0.01")));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
