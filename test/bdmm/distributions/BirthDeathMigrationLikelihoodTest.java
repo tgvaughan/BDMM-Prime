@@ -1078,7 +1078,6 @@ public class BirthDeathMigrationLikelihoodTest {
 	
 	/**
 	 * Test of migration with 3 types
-	 * Uncoloured tree
 	 * No rate change, no SA
 	 * Reference from BDMM itself 
 	 * @throws Exception
@@ -1086,34 +1085,38 @@ public class BirthDeathMigrationLikelihoodTest {
 	@Test
 	public void testMig3types() throws Exception {
 
-		String tree ="((3:1.5,4:0.5):1,(1:1,2:1):3);";
-		String orig=".1";
-		String stateNumber = "3";
-		String locations = "1=1,2=0,3=2,4=1" ;
-		String migrationMatrix = "0.1 0.2 0.15 0.12 0.12 0.15";
-		String frequencies = Double.toString(1./3.) + " " + Double.toString(1./3.) + " " + Double.toString(1./3.) ;
+		Tree tree = new TreeParser("((3[&type=2]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
+                false);
 
-		String R0 = "6 2 5";
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", new RealParameter("4.1"),
+                "nTypes", 3,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("6 2 5")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5 0.45 0.55")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5 0.333333 0.45")),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.1 0.2 0.15 0.12 0.12 0.15")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 3));
 
-		String becomeUninfectiousRate = "0.5 0.45 0.55";
-		String samplingProportion = "0.5 0.333333 0.45";
-	
-		boolean conditionOnSurvival = false;
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter((1.0/3.0) + " " + (1.0/3.0) + " " + (1.0/3.0)),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-		double logL = bdm_likelihood(stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, orig,
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion,
-				null,
-				"", locations, 4,
-				null, conditionOnSurvival);
-
-
-		 //System.out.println("Log-likelihood = " + logL);
-		assertEquals(-16.88601100061662, logL, 1e-4); // result from BDMM, version 0.2.0, 06/07/2017
+		assertEquals(-16.88601100061662, density.calculateLogP(), 1e-4); // result from BDMM, version 0.2.0, 06/07/2017
 	}
 
 	/**
