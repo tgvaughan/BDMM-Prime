@@ -35,6 +35,7 @@ public abstract class Parameterization extends CalculationNode {
 
     final static double[] EMPTY_TIME_ARRAY = new double[0];
     double[] ZERO_VALUE_ARRAY;
+    double[][] ZERO_VALUE_MATRIX;
 
     int nTypes;
 
@@ -42,6 +43,7 @@ public abstract class Parameterization extends CalculationNode {
     public void initAndValidate() {
         nTypes = nTypesInput.get();
         ZERO_VALUE_ARRAY = new double[nTypes];
+        ZERO_VALUE_MATRIX = new double[nTypes][nTypes];
 
         dirty = true;
     }

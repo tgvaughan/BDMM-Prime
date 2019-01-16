@@ -7,20 +7,20 @@ import java.util.TreeSet;
 
 public class EpiParameterization extends Parameterization {
 
-    public Input<SkylineMatrixParameter> migRateInput = new Input<>("migrationRate",
-            "Migration rate skyline.", Input.Validate.REQUIRED);
-
     public Input<SkylineVectorParameter> R0Input = new Input<>("R0",
             "Basic reproduction number skyline.", Input.Validate.REQUIRED);
-
-    public Input<SkylineMatrixParameter> R0AmongDemesInput = new Input<>("R0AmongDemes",
-            "Basic reproduction number among demes skyline.", Input.Validate.REQUIRED);
 
     public Input<SkylineVectorParameter> becomeUninfectiousRateInput = new Input<>("becomeUninfectiousRate",
             "Become uninfectious rate skyline.", Input.Validate.REQUIRED);
 
     public Input<SkylineVectorParameter> samplingProportionInput = new Input<>("samplingProportion",
             "Sampling proportion skyline.", Input.Validate.REQUIRED);
+
+    public Input<SkylineMatrixParameter> migRateInput = new Input<>("migrationRate",
+            "Migration rate skyline.");
+
+    public Input<SkylineMatrixParameter> R0AmongDemesInput = new Input<>("R0AmongDemes",
+            "Basic reproduction number among demes skyline.");
 
     public Input<SkylineVectorParameter> removalProbInput = new Input<>("removalProb",
             "Removal prob skyline.", Input.Validate.REQUIRED);
@@ -30,6 +30,9 @@ public class EpiParameterization extends Parameterization {
 
     @Override
     public double[] getMigRateChangeTimes() {
+        if (migRateInput.get() == null)
+            return EMPTY_TIME_ARRAY;
+
         return migRateInput.get().getChangeTimes();
     }
 
@@ -49,6 +52,9 @@ public class EpiParameterization extends Parameterization {
 
     @Override
     public double[] getCrossBirthRateChangeTimes() {
+        if (R0AmongDemesInput.get() == null)
+            return EMPTY_TIME_ARRAY;
+
         crossBirthRateChangeTimes = combineAndSortTimes(crossBirthRateChangeTimes,
                 R0AmongDemesInput.get().getChangeTimes(),
                 becomeUninfectiousRateInput.get().getChangeTimes());
@@ -87,14 +93,17 @@ public class EpiParameterization extends Parameterization {
 
     @Override
     public double[] getRhoSamplingTimes() {
-        if (rhoSamplingInput.get() != null)
-            return rhoSamplingInput.get().getTimes();
-        else
+        if (rhoSamplingInput.get() == null)
             return EMPTY_TIME_ARRAY;
+
+        return rhoSamplingInput.get().getTimes();
     }
 
     @Override
     protected double[][] getMigRateValues(double time) {
+        if (migRateInput.get() == null)
+            return ZERO_VALUE_MATRIX;
+
         return migRateInput.get().getValuesAtTime(time);
     }
 
@@ -111,6 +120,9 @@ public class EpiParameterization extends Parameterization {
 
     @Override
     protected double[][] getCrossBirthRateValues(double time) {
+        if (R0AmongDemesInput.get() == null)
+            return ZERO_VALUE_MATRIX;
+
         double[][] res = R0AmongDemesInput.get().getValuesAtTime(time);
         double[] buVals = becomeUninfectiousRateInput.get().getValuesAtTime(time);
 
@@ -175,10 +187,12 @@ public class EpiParameterization extends Parameterization {
         if (samplingProportionInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Sampling proportion skyline type count does not match type count of model.");
 
-        if (migRateInput.get().getNTypes() != getNTypes())
+        if (migRateInput.get() != null
+                && migRateInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Migration rate skyline type count does not match type count of model.");
 
-        if (R0AmongDemesInput.get().getNTypes() != getNTypes())
+        if (R0AmongDemesInput.get() != null
+                && R0AmongDemesInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("R0 among demes skyline type count does not match type count of model.");
 
         if (removalProbInput.get().getNTypes() != getNTypes())

@@ -579,7 +579,6 @@ public class BirthDeathMigrationLikelihoodTest {
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
         // rate-changes, rho-sampling in the past and present, with reversed times
-        RealParameter originParam = new RealParameter("2.0");
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "tree", tree,
@@ -620,245 +619,280 @@ public class BirthDeathMigrationLikelihoodTest {
 	/**
 	 * Basic 1-dim test
 	 * No rate change, 1 state, no rho-sampling
-	 * Coloured and Uncoloured trees
 	 * Reference from BDSKY
-	 * @throws Exception
 	 */
 	@Test
-	public void testLikelihood1dim() throws Exception {
+	public void testLikelihood1dim() {
 
-		// Test conditions:
-		// 4 tips
-		// 1 state
-		// 0 migration
-		// frequency 1 (unique state)
-		// origin at t = -6
-		// R0 = 1.33...
-		// becomeUninfectiousRate = 1.5
-		// samplingProportion (psi-sampling) = 0.333...
-		// no rho-sampling
-		// no rate changes
-		// conditionOnSurvival: false or true
+        Tree tree = new TreeParser( "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
+                false);
 
-		String tree = "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];";
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", new RealParameter("6.0"),
+                "nTypes", 1,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.3333333334")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.33333333333")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")));
 
-		int nbOfTips = 4;
-		String nbOfStates = "1";
-		String frequencies = "1.";
-		String migration = "0.";
-		String origin = "6.";
-		String R0  = "1.3333333334";
-		String becomeUninfectiousRate = "1.5";
-		String samplingProportion = "0.33333333333";
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "state",
+                "parallelize", false);
 
-		/////// Uncoloured Tree
-		String locations = "1=0,2=0,3=0,4=0" ;
-		boolean conditionOnSurvival = false;
+        assertEquals(-19.019796073623493, density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
 
-		double logL2 = bdm_likelihood( nbOfStates,
-				migration,
-				frequencies,
-				tree, "1.", // origin is defined at 1. instead of 6. because bdm_likelihood adds the height of the root of the tree to that value (here 5.)
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion,  null,
-				"", locations, nbOfTips, null, conditionOnSurvival);
+        density.setInputValue("conditionOnSurvival", true);
+        density.initAndValidate();
 
-		System.out.println("Birth-death result 2: " +logL2 + "\t- Test Likelihood1dim");
-
-		assertEquals(-19.019796073623493, logL2, 1e-5);   // Reference BDSKY (version 1.3.3)
-
-		conditionOnSurvival = true;
-
-		double logL2bis = bdm_likelihood( nbOfStates,
-				migration,
-				frequencies,
-				tree, "1.", // origin is defined at 1. instead of 6. because bdm_likelihood adds the height of the root of the tree to that value (here 5.)
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"", locations, nbOfTips, null, conditionOnSurvival);
-
-		System.out.println("Birth-death result 2 conditionned on survival: " +logL2bis + "\t- Test Likelihood1dim");
-
-		assertEquals(-18.574104140202046, logL2bis, 1e-5); // Reference BDSKY (version 1.3.3)
+		assertEquals(-18.574104140202046, density.calculateLogP(), 1e-5); // Reference BDSKY (version 1.3.3)
 	}
 
 	/**
 	 * 1-dim and 1 rate-change test
-	 * coloured and uncoloured trees
 	 * reference from BDSKY
-	 * @throws Exception
-	 */
+     */
 	@Test
-	public void testLikelihoodRateChange1dim() throws Exception {
+	public void testLikelihoodRateChange1dim() {
 
-		// Test conditions:
-		// 4 tips
-		// 1 state
-		// 0 migration
-		// frequency 1 (unique state)
-		// origin at t = 1 + rootoftree
-		// R0 = 1.33...
-		// becomeUninfectiousRate = 1.5
-		// samplingProportion (psi-sampling) = 0.44444.. / 0.33333..
-		// no rho-sampling
-		// 1 rate change
-		// conditionOnSurvival = false
+        Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
+                false);
 
-		String tree = "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];";
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", new RealParameter("6.0"),
+                "nTypes", 1,
+                "R0", new SkylineVectorParameter(
+                        new RealParameter("3.0"),
+                        new RealParameter("0.6666666667 1.3333333334")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealParameter("3.0"),
+                        new RealParameter("4.5 1.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealParameter("3.0"),
+                        new RealParameter("0.4444444444 0.33333333333")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")));
 
-		boolean conditionOnSurvival = false;
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "state",
+                "parallelize", false);
 
-		int nbOfTips = 4;
-		String nbOfStates = "1";
-		String frequencies = "1.";
-		String migration = "0.";
-		String R0  = "0.6666666667 1.3333333334";
-		String becomeUninfectiousRate = "4.5 1.5";
-		String samplingProportion = "0.4444444444 0.33333333333";
-		String locations = "1=0,2=0,3=0,4=0" ;
-		String intervalTimes = "0. 3.";
-
-		// uncoloured trees
-
-		double logL = bdm_likelihood( nbOfStates,
-				migration,
-				frequencies,
-				tree, "1.", // origin is defined at 1. instead of 6. because bdm_likelihood adds the height of the root of the tree to that value (here 5.)
-				R0,null,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"", locations, nbOfTips, intervalTimes, conditionOnSurvival);
-
-		System.out.println("Birth-death result (uncoloured tree): " + logL + "\t- Test LikelihoodRateChange1dim");
-
-		assertEquals(-33.7573, logL, 1e-4); // Reference BDSKY
-
+        assertEquals(-33.7573, density.calculateLogP(), 1e-4); // Reference BDSKY
 	}
 
 	/**
 	 * Basic tests on 2 types situations with migration or birth among demes
-	 * uncoloured trees
 	 * reference from R
 	 * @throws Exception
 	 */
 	@Test 
-	public void testLikelihoodCalculationMigTiny() throws Exception {
-
-		String tree ="(1[&state=0] : 1.5, 2[&state=1] : 0.5)[&state=0];";
-
-		String orig="1.";
-		String stateNumber = "2";
-		String migrationMatrix = ".1 .1";
-		String frequencies = "0.5 0.5";
-		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.) ;
-		String becomeUninfectiousRate = "1.5 1.5";
-		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.);
-		String locations = "1=0,2=1" ;
-		boolean conditionOnSurvival = false;
+	public void testLikelihoodCalculationMigTiny1() throws Exception {
 
 		// migration and no birth among demes
-		double logL = bdm_likelihood(stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, orig,
-				R0, null,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"",
-				locations,
-				2, null, conditionOnSurvival);
 
-		assertEquals(-7.215222, logL, 1e-6); // result from R
+		Tree tree = new TreeParser("(1[&state=0] : 1.5, 2[&state=1] : 0.5)[&state=0];", false);
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", new RealParameter("2.5"),
+                "nTypes", 2,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter(Double.toString(4.0/3.0)), 2),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5"), 2),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter(Double.toString(1.0/3.0)), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.1"), 2),
+
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("0.5 0.5"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "state",
+                "parallelize", false);
+
+//		String orig="1.";
+//		String stateNumber = "2";
+//		String migrationMatrix = ".1 .1";
+//		String frequencies = "0.5 0.5";
+//		String R0 = Double.toString(4./3.) + " " + Double.toString(4./3.) ;
+//		String becomeUninfectiousRate = "1.5 1.5";
+//		String samplingProportion = Double.toString(1./3.) + " " + Double.toString(1./3.);
+//		String locations = "1=0,2=1" ;
+//		boolean conditionOnSurvival = false;
+//
+//		double logL = bdm_likelihood(stateNumber,
+//				migrationMatrix,
+//				frequencies,
+//				tree, orig,
+//				R0, null,
+//				becomeUninfectiousRate,
+//				samplingProportion, null,
+//				"",
+//				locations,
+//				2, null, conditionOnSurvival);
+
+		assertEquals(-7.215222, density.calculateLogP(), 1e-6); // result from R
 
 		// no migration, symmetric birth among demes
-		String R0AmongDemes = "0.0666667 0.0666667" ;
 
-		logL = bdm_likelihood(stateNumber,
-				"0 0", // no migration
-				frequencies,
-				tree, orig,
-				R0, R0AmongDemes,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"",
-				locations,
-				2, null,
-				conditionOnSurvival);
+        parameterization.setInputValue("migrationRate", null);
+        parameterization.setInputValue("R0AmongDemes", new SkylineMatrixParameter(
+                null,
+                new RealParameter("0.0666667"), 2));
+        parameterization.initAndValidate();
+        density.initAndValidate();
 
-		assertEquals(-7.404888, logL, 1e-6); // result from R
+//		String R0AmongDemes = "0.0666667 0.0666667" ;
+//
+//		logL = bdm_likelihood(stateNumber,
+//				"0 0", // no migration
+//				frequencies,
+//				tree, orig,
+//				R0, R0AmongDemes,
+//				becomeUninfectiousRate,
+//				samplingProportion, null,
+//				"",
+//				locations,
+//				2, null,
+//				conditionOnSurvival);
+
+		assertEquals(-7.404888, density.calculateLogP(), 1e-6); // result from R
 
 		// no migration, asymmetric birth among demes
-		R0AmongDemes = "0.0666667 0.1" ;
-		logL = bdm_likelihood(stateNumber,
-				"0 0",
-				frequencies,
-				tree, orig,
-				R0, R0AmongDemes,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"",
-				locations,
-				2, null,
-				conditionOnSurvival);
+        parameterization.setInputValue("R0AmongDemes", new SkylineMatrixParameter(
+                null,
+                new RealParameter("0.0666667 0.1"), 2));
+        parameterization.initAndValidate();
+        density.initAndValidate();
+
+//		R0AmongDemes = "0.0666667 0.1" ;
+//		logL = bdm_likelihood(stateNumber,
+//				"0 0",
+//				frequencies,
+//				tree, orig,
+//				R0, R0AmongDemes,
+//				becomeUninfectiousRate,
+//				samplingProportion, null,
+//				"",
+//				locations,
+//				2, null,
+//				conditionOnSurvival);
 
 		//  System.out.println("Log-likelihood (not conditioned on survival) = " + logL);
 
-		assertEquals(-7.18723, logL, 1e-6); // result from R
+		assertEquals(-7.18723, density.calculateLogP(), 1e-6); // result from R
 
-		R0 = "2 1.3333333" ;
-		logL = bdm_likelihood(stateNumber,
-				"0 0",
-				frequencies,
-				tree, orig,
-				R0, R0AmongDemes,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"",
-				locations,
-				2, null,
-				conditionOnSurvival);
 
-		//         System.out.println("Log-likelihood (not conditioned on survival) = " + logL);
+        // no migration, asymmetric birth among demes
+        parameterization.setInputValue("R0AmongDemes", new SkylineMatrixParameter(
+                null,
+                new RealParameter("2 1.3333333")));
+        parameterization.initAndValidate();
+        density.initAndValidate();
 
-		assertEquals(-7.350649, logL, 1e-6); // result from R
-
-		R0 = "2 1.5" ;
-		becomeUninfectiousRate = "2 1" ;
-		samplingProportion = "0.5 0.3";
-		R0AmongDemes = "0.1 0.5" ;
-
-		logL = bdm_likelihood(stateNumber,
-				"0 0", // no migration
-				frequencies,
-				tree, orig,
-				R0, R0AmongDemes,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"",
-				locations,
-				2, null,
-				conditionOnSurvival);
+//		R0 = "2 1.3333333" ;
+//		logL = bdm_likelihood(stateNumber,
+//				"0 0",
+//				frequencies,
+//				tree, orig,
+//				R0, R0AmongDemes,
+//				becomeUninfectiousRate,
+//				samplingProportion, null,
+//				"",
+//				locations,
+//				2, null,
+//				conditionOnSurvival);
 
 		//         System.out.println("Log-likelihood (not conditioned on survival) = " + logL);
-		assertEquals(-6.504139, logL, 1e-6); // result from R
 
-		locations = "1=1,2=0";
-		logL = bdm_likelihood(stateNumber,
-				"0 0", // no migration
-				frequencies,
-				tree, orig,
-				R0, R0AmongDemes,
-				becomeUninfectiousRate,
-				samplingProportion, null,
-				"",
-				locations,
-				2, null,
-				conditionOnSurvival);
+		assertEquals(-7.350649, density.calculateLogP(), 1e-6); // result from R
+
+
+
+        // no migration, asymmetric R0, birth among demes, BU rate, samp proportion
+        parameterization.setInputValue("R0", new SkylineVectorParameter(
+                null,
+                new RealParameter("2.0 1.5")));
+        parameterization.setInputValue("becomeUninfectiousRate", new SkylineVectorParameter(
+                null,
+                new RealParameter("2.0 1.0")));
+        parameterization.setInputValue("samplingProportion", new SkylineVectorParameter(
+                null,
+                new RealParameter("0.5 0.3")));
+        parameterization.setInputValue("R0AmongDemes", new SkylineMatrixParameter(
+                null,
+                new RealParameter("0.1 0.5")));
+        parameterization.initAndValidate();
+        density.initAndValidate();
+
+//		R0 = "2 1.5" ;
+//		becomeUninfectiousRate = "2 1" ;
+//		samplingProportion = "0.5 0.3";
+//		R0AmongDemes = "0.1 0.5" ;
+//
+//		logL = bdm_likelihood(stateNumber,
+//				"0 0", // no migration
+//				frequencies,
+//				tree, orig,
+//				R0, R0AmongDemes,
+//				becomeUninfectiousRate,
+//				samplingProportion, null,
+//				"",
+//				locations,
+//				2, null,
+//				conditionOnSurvival);
 
 		//         System.out.println("Log-likelihood (not conditioned on survival) = " + logL);
-		assertEquals(-7.700916, logL, 1e-6); // result from R
+		assertEquals(-6.504139, density.calculateLogP(), 1e-6); // result from R
+
+//		locations = "1=1,2=0";
+//		logL = bdm_likelihood(stateNumber,
+//				"0 0", // no migration
+//				frequencies,
+//				tree, orig,
+//				R0, R0AmongDemes,
+//				becomeUninfectiousRate,
+//				samplingProportion, null,
+//				"",
+//				locations,
+//				2, null,
+//				conditionOnSurvival);
+
+		// Same params as last test, swapped leaf states
+        tree = new TreeParser("(1[&state=1] : 1.5, 2[&state=0] : 0.5)[&state=0];", false);
+        density.setInputValue("tree", tree);
+        density.initAndValidate();
+
+		//         System.out.println("Log-likelihood (not conditioned on survival) = " + logL);
+		assertEquals(-7.700916, density.calculateLogP(), 1e-6); // result from R
 	}
 
 	/**
