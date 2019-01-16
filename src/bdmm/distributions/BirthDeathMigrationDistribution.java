@@ -45,17 +45,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "The frequencies for each type",
             Input.Validate.REQUIRED);
 
-    public Input<TraitSet> tiptypes = new Input<>("tiptypes",
-            "trait information for initializing traits " +
+    public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
+            "Trait information for initializing traits " +
                     "(like node types/locations) in the tree");
 
     public Input<String> typeLabel = new Input<>("typeLabel",
             "type label in tree for initializing traits " +
-                    "(like node types/locations) in the tree");
-
-    public Input<IntegerParameter> tipTypeArray = new Input<>("tipTypeArray",
-            "integer array of traits (like node types/locations) " +
-                    "in the tree, index corresponds to node number in tree");
+                    "(like node types/locations) in the tree",
+            Input.Validate.XOR, typeTraitSetInput);
 
     public Input<Boolean> conditionOnSurvival = new Input<>("conditionOnSurvival",
             "condition on at least one survival? Default true.",
@@ -117,9 +114,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     @Override
     public void initAndValidate() {
-        if ((tiptypes.get() == null ? 0 : 1) + (typeLabel.get() == null ? 0 : 1) + (tipTypeArray.get() == null ? 0 : 1) != 1)
-            throw new RuntimeException("Tip types need to be specified exactly once using either tiptypes OR typeLabel OR tipTypeArray.");
-
         parameterization = parameterizationInput.get();
 
         tree = treeInput.get();
@@ -282,44 +276,34 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     private int getNodeType(Node node, Boolean init) {
 
-        try {
+        if (!storeNodeTypes.get() || init) {
 
-            if (!storeNodeTypes.get() || init) {
+            int nodestate;
 
-                int nodestate = -1;
+            if (typeTraitSetInput.get() != null) {
 
-                if (tiptypes.get() != null) {
+                nodestate = (int) typeTraitSetInput.get().getValue((node.getID()));
 
-                    nodestate = (int) tiptypes.get().getValue((node.getID()));
+            } else {
 
-                } else if (typeLabel.get() != null) {
+                Object d = node.getMetaData(typeLabel.get());
 
-                    Object d = node.getMetaData(typeLabel.get());
+                if (d instanceof Integer)
+                    nodestate = (Integer) d;
+                else if (d instanceof Double)
+                    nodestate = ((Double) d).intValue();
+                else if (d instanceof int[])
+                    nodestate = ((int[]) d)[0];
+                else if (d instanceof String)
+                    nodestate = Integer.valueOf((String) d);
+                else
+                    throw new RuntimeException("Error interpreting as type index: " + d);
 
-                    if (d instanceof Integer) nodestate = (Integer) d;
-                    else if (d instanceof Double)
-                        nodestate = ((Double) d).intValue();
-                    else if (d instanceof int[]) nodestate = ((int[]) d)[0];
-                    else if (d instanceof String)
-                        nodestate = Integer.valueOf((String) d);
-                    else
-                        throw new RuntimeException("Error interpreting as type index: " + d);
+            }
 
-                } else {
+            return nodestate;
 
-                    nodestate = (int) tipTypeArray.get().getArrayValue((node.getNr()));
-                }
-
-                if (nodestate < -1)
-                    throw new ConstraintViolatedException("State assignment failed.");
-
-                return nodestate;
-
-            } else return nodeStates[node.getNr()];
-
-        } catch (Exception e) {
-            throw new ConstraintViolatedException("Something went wrong with the assignment of types to the nodes (node ID=" + node.getID() + "). Please check your XML file!");
-        }
+        } else return nodeStates[node.getNr()];
     }
 
     public int getLeafStateForLogging(Node node, long sampleNr) {
