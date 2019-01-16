@@ -260,10 +260,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (debug) System.out.println("\nlogP = " + logP);
 
-        // TGV: Why is this necessary?
-        if (Double.isInfinite(logP))
-            logP = Double.NEGATIVE_INFINITY;
-
         // Weird correction:
         // TGV: Why is this only applied when the removal prob is less than 1??
         if (parameterization.getRemovalProbs()[0][0] != 1.0) {

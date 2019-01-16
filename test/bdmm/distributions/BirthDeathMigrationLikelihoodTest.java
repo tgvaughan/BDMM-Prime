@@ -1301,37 +1301,40 @@ public class BirthDeathMigrationLikelihoodTest {
 	/**
 	 * Basic test on sampled-ancestors lik. calculation.
 	 * 2 leaves, 1 SA. 1 type, no rho-sampling, no rate-change
-	 * Coloured and uncoloured trees
 	 * Reference value from BDSKY (23/03/2017)
-	 * @throws Exception
-	 */
+     */
 	@Test
-	public void testSALikelihoodMini() throws Exception {
+	public void testSALikelihoodMini() {
 
-		// uncoloured tree
-		Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
+		Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
+                false);
 
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", new RealParameter("6.0"),
+                "nTypes", 1,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.2")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.9")));
 
-		bdm.setInputValue("tree", tree);
-		bdm.setInputValue("typeLabel", "type");
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-		bdm.setInputValue("stateNumber", "1");
-		bdm.setInputValue("migrationMatrix", "0.");
-		bdm.setInputValue("frequencies", "1");
-
-		bdm.setInputValue("R0", new RealParameter("1.5"));
-		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
-		bdm.setInputValue("samplingProportion", new RealParameter("0.2") );
-		bdm.setInputValue("removalProbability", new RealParameter("0.9") );
-
-		bdm.setInputValue("conditionOnSurvival", true);
-		bdm.setInputValue("origin", "6.");
-
-		bdm.initAndValidate();
-
-		double logL = bdm.calculateLogP();
-		assertEquals(-18.854438107814335, logL, 1e-4); //Reference value from BDSKY (23/03/2017)
+		assertEquals(-18.854438107814335, density.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017)
 	}
 
 	/**
@@ -1344,44 +1347,44 @@ public class BirthDeathMigrationLikelihoodTest {
 	@Test
 	public void testSALikelihoodMultiRho() throws Exception {
 
-		// uncoloured tree
 		Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
 
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
+		RealParameter origin = new RealParameter("6.0");
 
-		bdm.setInputValue("tree", tree);
-		bdm.setInputValue("typeLabel", "type");
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", origin,
+                "nTypes", 1,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.2")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.9")),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("0.0 1.5"),
+                        new RealParameter("0.05 0.3"),
+                        origin));
 
-		bdm.setInputValue("stateNumber", "1");
-		bdm.setInputValue("migrationMatrix", "0.");
-		bdm.setInputValue("frequencies", "1");
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-		bdm.setInputValue("R0", new RealParameter("1.5"));
-		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
-		bdm.setInputValue("samplingProportion", new RealParameter("0.2") );
-		bdm.setInputValue("removalProbability", new RealParameter("0.9") );
-
-		bdm.setInputValue("conditionOnSurvival", true);
-		bdm.setInputValue("origin", "6.");
-
-		bdm.setInputValue("rho", new RealParameter("0.3 0.05"));
-		bdm.setInputValue("rhoSamplingTimes", new RealParameter("0 1.5") );
-
-		bdm.setInputValue("reverseTimeArrays", "false false false true");
-
-		bdm.initAndValidate();
-
-
-		//		double a = bdm.calculateLogP();	
-		//		System.out.println(a);
-
-		assertEquals(-22.348462265673483, bdm.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017)
-
+		assertEquals(-22.348462265673483, density.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017)
 	}
 
 	/**
 	 * Test on sampled-ancestors lik. calculation with no sampled ancestor
-	 * Coloured and Uncoloured
 	 * No rate-change, one state, 4 tips
 	 * This state is just there in case something is broken with sampled ancestors,
 	 * helps for debugging if combined with testSALikelihoodMini for instance
@@ -1390,163 +1393,45 @@ public class BirthDeathMigrationLikelihoodTest {
 	@Test
 	public void testSALikelihoodCalculationWithoutAncestors() throws Exception {
 
-		// uncoloured tree
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
+	    Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
+                false);
 
-		ArrayList<Taxon> taxa = new ArrayList<Taxon>();
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "tree", tree,
+                "nTypes", 1,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.3")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.9")));
 
-		for (int i=1; i<=4; i++){
-			taxa.add(new Taxon(""+i));
-		}
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("1.0"),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-		Tree tree = new TreeParser();
-		tree.setInputValue("taxonset", new TaxonSet(taxa));
-		tree.setInputValue("adjustTipHeights", "false");
-		tree.setInputValue("IsLabelledNewick", "true");
-		tree.setInputValue("newick", "((3 : 1.5, 4 : 0.5) : 1 , (1 : 2, 2 : 1) : 3);");
-		tree.initAndValidate();
+        // Conditioned on root:
 
-		TraitSet trait = new TraitSet();
-		trait.setInputValue("taxa", new TaxonSet(taxa));
-		trait.setInputValue("value", "1=0,2=0,3=0,4=0");
-		trait.setInputValue("traitname", "tiptypes");
-		trait.initAndValidate();
+		assertEquals(-15.99699690815937, density.calculateLogP(), 1e-4);
 
-		bdm.setInputValue("tree", tree);
-		bdm.setInputValue("tiptypes", trait);
+		// Conditioned on origin:
 
+		parameterization.setInputValue("tree", null);
+		parameterization.setInputValue("origin", new RealParameter("10.0"));
+		parameterization.initAndValidate();
+		density.initAndValidate();
 
-		bdm.setInputValue("stateNumber", "1");
-		bdm.setInputValue("migrationMatrix", "0.");
-		bdm.setInputValue("frequencies", "1");
-
-		bdm.setInputValue("R0", new RealParameter("1.5"));
-		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5"));
-		bdm.setInputValue("samplingProportion", new RealParameter("0.3") );
-		bdm.setInputValue("removalProbability", new RealParameter("0.9") );
-		bdm.setInputValue("conditionOnSurvival", true);
-
-
-		// without a defined origin
-		bdm.initAndValidate();
-
-		// likelihood conditioning on at least one sampled individual    - "true" result from BEAST one-deme SA model 09 June 2015 (DK)
-		assertEquals(-15.99699690815937, bdm.calculateLogP(), 1e-4);
-
-
-		// with an origin
-		bdm.setInputValue("origin", "10.");
-		bdm.initAndValidate();
-
-
-		// likelihood conditioning on at least one sampled individual    - "true" result from BEAST one-deme SA model 09 June 2015 (DK)
-		assertEquals(-25.991511346557598, bdm.calculateLogP(), 1e-4);
-
+		assertEquals(-25.991511346557598, density.calculateLogP(), 1e-4);
 	}
-
-	public double bdm_likelihood(String statenumber, String migrationMatrix,
-			String frequencies, Tree tree, String typeLabel, String origin,
-			String R0, String R0AmongDemes, String becomeUninfectiousRate, String samplingProportion, String removalProbability,
-			String intervalTimes, Boolean conditionOnSurvival) throws Exception {
-
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
-
-		bdm.setInputValue("tree", tree);
-		bdm.setInputValue("typeLabel", typeLabel);
-
-		bdm.setInputValue("origin", Double.toString(Double.parseDouble(origin)+tree.getRoot().getHeight()));
-		bdm.setInputValue("stateNumber", statenumber);
-		bdm.setInputValue("migrationMatrix", migrationMatrix);
-		bdm.setInputValue("frequencies", frequencies);
-		bdm.setInputValue("checkRho", false);
-
-		bdm.setInputValue("R0", R0);
-
-		if (R0AmongDemes != null) bdm.setInputValue("R0AmongDemes", R0AmongDemes);
-
-		if (removalProbability != null) bdm.setInputValue("removalProbability", removalProbability);
-
-		bdm.setInputValue("becomeUninfectiousRate", becomeUninfectiousRate);
-		bdm.setInputValue("samplingProportion", samplingProportion);
-		bdm.setInputValue("intervalTimes", intervalTimes);
-
-		bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
-
-		bdm.initAndValidate();
-
-		long startTime = System.currentTimeMillis();
-		double logL = bdm.calculateLogP();
-		runtime = System.currentTimeMillis() - startTime;
-
-		return logL;
-
-	}
-
-	public double bdm_likelihood(String statenumber, String migrationMatrix,
-			String frequencies, Tree tree, TraitSet trait, String origin,
-			String R0, String R0AmongDemes, String becomeUninfectiousRate, String samplingProportion, String removalProbability,
-			String intervalTimes, Boolean conditionOnSurvival) throws Exception {
-
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
-
-		bdm.setInputValue("tree", tree);
-		bdm.setInputValue("tiptypes", trait);
-
-		bdm.setInputValue("origin", Double.toString(Double.parseDouble(origin)+tree.getRoot().getHeight()));
-		bdm.setInputValue("stateNumber", statenumber);
-		bdm.setInputValue("migrationMatrix", migrationMatrix);
-		bdm.setInputValue("frequencies", frequencies);
-		bdm.setInputValue("checkRho", false);
-
-		bdm.setInputValue("R0", R0);
-
-		if (R0AmongDemes != null) bdm.setInputValue("R0AmongDemes", R0AmongDemes);
-
-		if (removalProbability != null) bdm.setInputValue("removalProbability", removalProbability);
-
-		bdm.setInputValue("becomeUninfectiousRate", becomeUninfectiousRate);
-		bdm.setInputValue("samplingProportion", samplingProportion);
-		bdm.setInputValue("intervalTimes", intervalTimes);
-
-		bdm.setInputValue("conditionOnSurvival", conditionOnSurvival);
-
-		bdm.initAndValidate();
-
-		long startTime = System.currentTimeMillis();
-		double logL = bdm.calculateLogP();
-		runtime = System.currentTimeMillis() - startTime;
-
-		return logL;
-	}
-
-	public double bdm_likelihood(String statenumber, String migrationMatrix,
-			String frequencies, String newick, String origin,
-			String R0, String R0AmongDemes, String becomeUninfectiousRate, String samplingProportion, String removalProbability,
-			String prefixname, String locations, int nrTaxa, String intervalTimes, Boolean conditionOnSurvival) throws Exception {
-
-		ArrayList<Taxon> taxa = new ArrayList<Taxon>();
-
-		for (int i=1; i<=nrTaxa; i++){
-			taxa.add(new Taxon(prefixname+i));
-		}
-
-		Tree tree = new TreeParser();
-
-		tree.setInputValue("taxonset", new TaxonSet(taxa));
-		tree.setInputValue("adjustTipHeights", "false");
-		tree.setInputValue("IsLabelledNewick", "true");
-		tree.setInputValue("newick", newick);
-		tree.initAndValidate();
-
-		TraitSet trait = new TraitSet();
-		trait.setInputValue("taxa", new TaxonSet(taxa));
-		trait.setInputValue("value", locations);
-		trait.setInputValue("traitname", "tiptypes");
-		trait.initAndValidate();
-
-		return   bdm_likelihood(statenumber, migrationMatrix, frequencies, tree, trait, origin,
-				R0, R0AmongDemes, becomeUninfectiousRate, samplingProportion, removalProbability,
-				intervalTimes, conditionOnSurvival);
-	}
-
 }
