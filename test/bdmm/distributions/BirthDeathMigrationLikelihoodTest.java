@@ -1120,84 +1120,136 @@ public class BirthDeathMigrationLikelihoodTest {
 	}
 
 	/**
-	 * Test uncoloured tree with unknown states
+	 * Test tree with unknown states
 	 * With and without migration, with and without rate changes
 	 * 2 types, assymetric
-	 * @throws Exception
-	 */
+     */
 	@Test
-	public void testUnknownStates() throws Exception {
+	public void testUnknownStatesWithoutMigrationOrRateChange() {
 
-		String tree ="((3:1.5,4:0.5):1,(1:1,2:1):3);"; //
-		String orig=".1"; //
-		String stateNumber = "2";
-		String migrationMatrix = "0. 0.";
-		String frequencies = "0.5 0.5";
+        Tree tree = new TreeParser("((3[&type=-1]:1.5,4[&type=-1]:0.5):1,(1[&type=-1]:1,2[&type=-1]:1):3);",
+                false);
 
-		// test without rate change
-		String R0 = "6 2";
-		String R0AmongDemes = "1. 1.";
-		String becomeUninfectiousRate = "0.5 1";
-		String samplingProportion = "0.5 0.333333";
-		String locations = "1=-1,2=-1,3=-1,4=-1" ;
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", new RealParameter("4.1"),
+                "nTypes", 2,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("6 2")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("1 1")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5 1.0")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5 0.333333")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2));
 
-		boolean conditionOnSurvival = false;
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("0.5 0.5"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-		double logL;
+        //	System.out.println("Log-likelihood = " + logL);
+        assertEquals(-18.82798, density.calculateLogP(), 1e-4); // tanja's result from R
+    }
 
-		logL = bdm_likelihood(stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, orig,
-				R0,R0AmongDemes,
-				becomeUninfectiousRate,
-				samplingProportion,
-				null,
-				"", locations, 4, null,
-				conditionOnSurvival);
-		
-		//	System.out.println("Log-likelihood = " + logL);
-		assertEquals(-18.82798, logL, 1e-4); // tanja's result from R
-		
-		// with migration
-		migrationMatrix = "0.3 0.4";
-		
-		logL = bdm_likelihood(stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, orig,
-				R0,R0AmongDemes,
-				becomeUninfectiousRate,
-				samplingProportion,
-				null,
-				"", locations, 4, null,
-				conditionOnSurvival);
+    /**
+	 * Test tree with unknown states
+	 * With and without migration, with and without rate changes
+	 * 2 types, assymetric
+     */
+	@Test
+	public void testUnknownStatesWithMigration() {
 
-		// System.out.println("Log-likelihood = " + logL + " - Unknow states with migration");
-		assertEquals(-18.986212857895506, logL, 1e-4); // reference from BDMM - 0.2.0 - 06/07/2017
-		
-		// with migration and rate changes
-		migrationMatrix = "0.3 0.4 0.35 0.32";
-		R0 = "6 2 5 1.5";
-		R0AmongDemes = "1. 1. 1.2 1.2";
-		becomeUninfectiousRate = "0.5 1. 1. 0.5";
-		samplingProportion = "0.5 0.333333 0.45 0.4";
-		String intervalTimes = "0. 1.5";
-		
-		logL = bdm_likelihood(stateNumber,
-				migrationMatrix,
-				frequencies,
-				tree, orig,
-				R0,R0AmongDemes,
-				becomeUninfectiousRate,
-				samplingProportion,
-				null,
-				"", locations, 4,
-				intervalTimes,
-				conditionOnSurvival);
-		
-		System.out.println("Log-likelihood = " + logL + " - Unknow states with migration and rate changes");
-		assertEquals(-17.87099909579358, logL, 1e-4); // reference from BDMM - 0.2.0 - 06/07/2017
+        Tree tree = new TreeParser("((3[&type=-1]:1.5,4[&type=-1]:0.5):1,(1[&type=-1]:1,2[&type=-1]:1):3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", new RealParameter("4.1"),
+                "nTypes", 2,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("6 2")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("1 1")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5 1.0")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5 0.333333")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.3 0.4")));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("0.5 0.5"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
+
+        assertEquals(-18.986212857895506, density.calculateLogP(), 1e-4); // reference from BDMM - 0.2.0 - 06/07/2017
+    }
+
+    /**
+	 * Test tree with unknown states
+	 * With and without migration, with and without rate changes
+	 * 2 types, assymetric
+     */
+	@Test
+	public void testUnknownStatesWithMigrationAndRateChange() {
+
+        Tree tree = new TreeParser("((3[&type=-1]:1.5,4[&type=-1]:0.5):1,(1[&type=-1]:1,2[&type=-1]:1):3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "origin", new RealParameter("4.1"),
+                "nTypes", 2,
+                "R0", new SkylineVectorParameter(
+                        new RealParameter("1.5"),
+                        new RealParameter("6 5 2 1.5")),
+                "R0AmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("1 1.2")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealParameter("1.5"),
+                        new RealParameter("0.5 1.0 1.0 0.5")),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealParameter("1.5"),
+                        new RealParameter("0.5 0.45 0.333333 0.4")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        new RealParameter("1.5"),
+                        new RealParameter("0.3 0.35 0.4 0.32")));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("0.5 0.5"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
+
+		assertEquals(-17.87099909579358, density.calculateLogP(), 1e-4); // reference from BDMM - 0.2.0 - 06/07/2017
 	}
 	
 	/**
