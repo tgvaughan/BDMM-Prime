@@ -18,11 +18,6 @@ public class P0State {
         this.p0 = p0;
     }
 
-    public P0State() {
-        dimension = 1;
-        p0 = new double[] {0};
-    }
-
     @Override
     public String toString() {
 	    StringBuilder sb = new StringBuilder();

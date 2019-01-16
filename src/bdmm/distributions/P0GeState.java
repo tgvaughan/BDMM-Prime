@@ -26,11 +26,6 @@ public class P0GeState extends P0State {
 		}
 		this.ge = ge;
 	}
-	
-	public P0GeState() {
-	    super();
-		ge = new SmallNumber[] {new SmallNumber()};
-	}
 
     @Override
     public String toString() {

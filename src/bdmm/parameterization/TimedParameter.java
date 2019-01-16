@@ -64,6 +64,14 @@ public class TimedParameter extends CalculationNode {
         initAndValidate();
     }
 
+    public TimedParameter(RealParameter timesParam, RealParameter valuesParam, Tree tree) {
+        timesInput.setValue(timesParam, this);
+        valuesInput.setValue(valuesParam, this);
+        treeInput.setValue(tree, this);
+        timesAreAgesInput.setValue(true, this);
+        initAndValidate();
+    }
+
     @Override
     public void initAndValidate() {
         timesAreAges = timesAreAgesInput.get();

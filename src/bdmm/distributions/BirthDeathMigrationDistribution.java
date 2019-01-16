@@ -204,7 +204,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             // Condition on a known root time:
 
-            finalP0Ge = new P0GeState();
+            finalP0Ge = new P0GeState(parameterization.getNTypes());
 
             Node child0 = root.getChild(0);
             Node child1 = root.getChild(1);

@@ -16,7 +16,7 @@ public abstract class Parameterization extends CalculationNode {
     public Input<RealParameter> originInput = new Input<>("origin",
             "Time between start of process and most recent sample.");
 
-    public Input<Tree> treeInput = new Input("tree",
+    public Input<Tree> treeInput = new Input<>("tree",
             "If specified, condition on root time rather than origin time.",
             Input.Validate.XOR, originInput);
 

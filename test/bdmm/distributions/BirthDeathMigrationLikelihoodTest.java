@@ -1254,41 +1254,47 @@ public class BirthDeathMigrationLikelihoodTest {
 	
 	/**
 	 * Test on combining migration with rho-sampling
-	 * Uncoloured and coloured trees
 	 * Reference from BDMM
-	 * @throws Exception
-	 */
+     */
 	@Test
-	public void testLikelihoodMigrationRhoSampling() throws Exception{
-		// Uncoloured tree
-		Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=1]: 4.5):1,3[&type=0]:5.5);",false);
+	public void testLikelihoodMigrationRhoSampling() {
 
-		BirthDeathMigrationDistribution bdm =  new BirthDeathMigrationDistribution();
+		Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=1]: 4.5):1,3[&type=0]:5.5);",
+                false);
 
-		bdm.setInputValue("tree", tree);
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "tree", tree,
+                "nTypes", 2,
+                "R0", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5 1.4")),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5 1.3")),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.0"), 2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.3 0.4")),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("0.0"),
+                        new RealParameter("0.01 0.015"),
+                        tree));
 
-		bdm.setInputValue("typeLabel", "type");
-		bdm.setInputValue("stateNumber", "2");
-		bdm.setInputValue("migrationMatrix", "0.3 0.4");
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", new RealParameter("0.6 0.4"),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
 
-		bdm.setInputValue("parallelize", false);
-		bdm.setInputValue("migrationMatrixScaleFactor", "1");
-
-
-		bdm.setInputValue("frequencies", "0.6 0.4");
-
-		bdm.setInputValue("R0", new RealParameter("1.5 1.4"));
-		bdm.setInputValue("becomeUninfectiousRate", new RealParameter("1.5 1.3"));
-		bdm.setInputValue("samplingProportion", new RealParameter("0. 0.") );
-
-		bdm.setInputValue("rho", new RealParameter("0.01 0.015") );
-		bdm.setInputValue("conditionOnSurvival", false);
-
-		bdm.initAndValidate();
-		
-//		System.out.println("Likelihood: "+  bdm.calculateLogP() + " rho-sampling with migration");
-
-		assertEquals(-8.906223150087108, bdm.calculateLogP(), 1e-4);   // Reference from BDMM - version 0.2.0 - 06/07/2017
+		assertEquals(-8.906223150087108, density.calculateLogP(), 1e-4);   // Reference from BDMM - version 0.2.0 - 06/07/2017
 
 	}
 	
