@@ -6,7 +6,6 @@ import beast.core.Citation;
 import beast.core.Description;
 import beast.core.Input;
 import beast.core.State;
-import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
@@ -89,8 +88,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     private int[] nodeStates;
 
-    //	private final boolean debug = false;
-    private final boolean debug = true;
+    private final boolean debug = false;
+//    private final boolean debug = true;
 
     private double[] rootTypeProbs, storedRootTypeProbs;
     private boolean[] isRhoTip;

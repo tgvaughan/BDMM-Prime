@@ -9,16 +9,17 @@ import java.io.PrintStream;
 
 public class RootProbLogger extends BEASTObject implements Loggable {
 
-    public Input<BirthDeathMigrationDistribution> bdmmucInput = new Input<>(
-            "bdmmuc",
-            "Instance of BirthDeathMigrationModelUncoloured which records the root state probabilities",
+    public Input<BirthDeathMigrationDistribution> treePriorInput = new Input<>(
+            "bdmmTreePrior",
+            "Instance of BirthDeathMigrationModel which records the " +
+                    "root type probabilities",
             Input.Validate.REQUIRED);
 
-    BirthDeathMigrationDistribution bdmmuc;
+    BirthDeathMigrationDistribution treePrior;
 
     @Override
     public void initAndValidate() {
-        bdmmuc = bdmmucInput.get();
+        treePrior = treePriorInput.get();
     }
 
     @Override
@@ -26,11 +27,11 @@ public class RootProbLogger extends BEASTObject implements Loggable {
         String loggerID;
         if (getID() != null)
             loggerID = getID() + ".";
-        else if (bdmmuc.getID() != null)
-            loggerID = bdmmuc.getID() + ".";
+        else if (treePrior.getID() != null)
+            loggerID = treePrior.getID() + ".";
         else loggerID = "";
 
-        double[] rootTypeProbs = bdmmuc.getRootTypeProbs();
+        double[] rootTypeProbs = treePrior.getRootTypeProbs();
 
         for (int i=0; i<rootTypeProbs.length; i++)
             out.print(loggerID + "probForRootType" + i + "\t");
@@ -38,12 +39,10 @@ public class RootProbLogger extends BEASTObject implements Loggable {
 
     @Override
     public void log(long sample, PrintStream out) {
-        for (double rootTypeProb : bdmmuc.getRootTypeProbs())
+        for (double rootTypeProb : treePrior.getRootTypeProbs())
             out.print(rootTypeProb + "\t");
     }
 
     @Override
-    public void close(PrintStream out) {
-
-    }
+    public void close(PrintStream out) { }
 }
