@@ -22,7 +22,7 @@ public abstract class Parameterization extends CalculationNode {
 
     private boolean dirty;
 
-    SortedSet<Double> intervalEndTimesSet = new TreeSet<>();
+    private SortedSet<Double> intervalEndTimesSet = new TreeSet<>();
 
     private double[] intervalEndTimes;
 
@@ -250,8 +250,57 @@ public abstract class Parameterization extends CalculationNode {
     }
 
     @Override
+    protected void store() {
+        for (int interval=0; interval<intervalEndTimes.length; interval++) {
+
+            System.arraycopy(birthRates[interval], 0, storedBirthRates[interval], 0, nTypes);
+            System.arraycopy(deathRates[interval], 0, storedDeathRates[interval], 0, nTypes);
+            System.arraycopy(samplingRates[interval], 0, storedSamplingRates[interval], 0, nTypes);
+            System.arraycopy(removalProbs[interval], 0, storedRemovalProbs[interval], 0, nTypes);
+            System.arraycopy(rhoValues[interval], 0, storedRhoValues[interval], 0, nTypes);
+
+            for (int fromType=0; fromType<nTypes; fromType++) {
+                System.arraycopy(migRates[interval][fromType], 0, storedMigRates[interval][fromType], 0, nTypes);
+                System.arraycopy(crossBirthRates[interval][fromType], 0, storedCrossBirthRates[interval][fromType], 0, nTypes);
+            }
+        }
+
+        super.store();
+    }
+
+    @Override
     protected void restore() {
-        dirty = true;
+        double[][] vectorTmp;
+        double[][][] matrixTmp;
+
+        vectorTmp = birthRates;
+        birthRates = storedBirthRates;
+        storedBirthRates = vectorTmp;
+
+        vectorTmp = deathRates;
+        deathRates = storedDeathRates;
+        storedDeathRates = vectorTmp;
+
+        vectorTmp = samplingRates;
+        samplingRates = storedSamplingRates;
+        storedSamplingRates = vectorTmp;
+
+        vectorTmp = removalProbs;
+        removalProbs = storedRemovalProbs;
+        storedRemovalProbs = vectorTmp;
+
+        vectorTmp = rhoValues;
+        rhoValues = storedRhoValues;
+        storedRhoValues = vectorTmp;
+
+        matrixTmp = migRates;
+        migRates = storedMigRates;
+        storedMigRates = matrixTmp;
+
+        matrixTmp = crossBirthRates;
+        crossBirthRates = storedCrossBirthRates;
+        storedCrossBirthRates = matrixTmp;
+
         super.restore();
     }
 }
