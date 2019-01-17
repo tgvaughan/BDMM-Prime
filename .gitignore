@@ -11,6 +11,11 @@
 /META-INF
 /bin
 
+# Ant build script
+/build
+/build-lib
+/dist
+
 # Temporary tests and BEAST log files
 /src/tempTests/
 /examples/tempExamples/
