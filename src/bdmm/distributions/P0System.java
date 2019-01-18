@@ -2,6 +2,8 @@ package bdmm.distributions;
 
 import bdmm.parameterization.Parameterization;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
 
 /**
@@ -23,8 +25,12 @@ public class P0System implements FirstOrderDifferentialEquations {
 
     protected int interval;
 
+    protected FirstOrderIntegrator integrator;
 
-	public P0System(Parameterization parameterization) {
+
+	public P0System(Parameterization parameterization,
+                    double absoluteTolerance,
+                    double relativeTolerance) {
 
 		this.b = parameterization.getBirthRates();
 		this.d = parameterization.getDeathRates();
@@ -41,6 +47,12 @@ public class P0System implements FirstOrderDifferentialEquations {
 		this.nIntervals = parameterization.getTotalIntervalCount();
 
         this.intervalEndTimes = parameterization.getIntervalEndTimes();
+
+        double minstep = parameterization.getTotalProcessLength() * 1e-100;
+        double maxstep = parameterization.getTotalProcessLength() / 10;
+
+        this.integrator = new DormandPrince54Integrator(minstep, maxstep,
+                        absoluteTolerance, relativeTolerance);
 
 	}
 
@@ -72,6 +84,10 @@ public class P0System implements FirstOrderDifferentialEquations {
 		}
 
 	}
+
+	public void integrate(P0State state, double tStart, double tEnd) {
+        integrator.integrate(this, tStart, state.p0, tEnd, state.p0);
+    }
 }
 
 

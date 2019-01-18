@@ -57,11 +57,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "condition on at least one survival? Default true.",
             true);
 
-    public Input<Double> relativeTolerance = new Input<>("relTolerance",
+    public Input<Double> relativeToleranceInput = new Input<>("relTolerance",
             "relative tolerance for numerical integration",
             1e-7);
 
-    public Input<Double> absoluteTolerance = new Input<>("absTolerance",
+    public Input<Double> absoluteToleranceInput = new Input<>("absTolerance",
             "absolute tolerance for numerical integration",
             1e-100 /*Double.MIN_VALUE*/);
 
@@ -96,10 +96,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     private Parameterization parameterization;
 
-    private P0System P;
-    private P0GeSystem PG;
-    private static Double minstep, maxstep;
-
     private double[][] pInitialConditions;
 
     private static boolean isParallelizedCalculation;
@@ -122,7 +118,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (Math.abs(1.0 - freqSum) > 1e-10)
             throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
 
-
         int nLeaves = tree.getLeafNodeCount();
 
         weightOfNodeSubTree = new double[nLeaves * 2];
@@ -131,8 +126,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         minimalProportionForParallelization = minimalProportionForParallelizationInput.get();
 
         if (isParallelizedCalculation) executorBootUp();
-
-        setupIntegrators();
 
         if (storeNodeTypes.get()) {
 
@@ -170,6 +163,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             logP = Double.NEGATIVE_INFINITY;
             return logP;
         }
+
+        setupIntegrators();
 
         // update the threshold for parallelization
         //TODO only do it if tree shape changed
@@ -316,7 +311,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * @param system  Object describing ODEs to integrate.
      * @return State at top of edge.
      */
-    private P0GeState calculateSubtreeLikelihood(Node node, double tTop, double tBottom, P0GeSystem system, int depth) {
+    private P0GeState calculateSubtreeLikelihood(Node node, double tTop, double tBottom,
+                                                 P0GeSystem system, int depth) {
 
         if (debug) {
             debugMessage("*** Evaluating subtree for node " + node +
@@ -552,6 +548,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      */
     public void updateInitialConditionsForP(TreeInterface tree) {
 
+        P0System p0System = new P0System(parameterization,
+                absoluteToleranceInput.get(), relativeToleranceInput.get());
+
         int leafCount = tree.getLeafNodeCount();
         double[] leafTimes = new double[leafCount];
         int[] indicesSortedByLeafTime = new int[leafCount];
@@ -569,13 +568,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         // The initial value is zero, so that all modifications can be expressed
         // as products.
-        P0State p0State = new P0State(P.nTypes);
-        for (int type=0; type<P.nTypes; type++)
+        P0State p0State = new P0State(p0System.nTypes);
+        for (int type=0; type<p0System.nTypes; type++)
             p0State.p0[type] = 1.0;
 
-        pInitialConditions = new double[leafCount + 1][P.nTypes];
+        pInitialConditions = new double[leafCount + 1][p0System.nTypes];
 
-        double tprev = P.totalProcessLength;
+        double tprev = p0System.totalProcessLength;
 
         for (int i = leafCount - 1; i >= 0; i--) {
             double t = leafTimes[indicesSortedByLeafTime[i]];
@@ -589,7 +588,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 } else {
                     System.arraycopy(p0State.p0, 0,
                             pInitialConditions[indicesSortedByLeafTime[i]], 0,
-                            P.nTypes);
+                            p0System.nTypes);
                 }
                 continue;
             }
@@ -610,10 +609,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                matter that it has its own integrator, but if it does
                (or to simplify the code), take care of passing an integrator
                as a local variable. */
-            integrateP0(tprev, t, p0State, P);
+            integrateP0(tprev, t, p0State, p0System);
 
             System.arraycopy(p0State.p0, 0,
-                    pInitialConditions[indicesSortedByLeafTime[i]], 0, P.nTypes);
+                    pInitialConditions[indicesSortedByLeafTime[i]], 0, p0System.nTypes);
             tprev = t;
         }
 
@@ -626,9 +625,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             }
         }
 
-        integrateP0(tprev, 0, p0State, P);
+        integrateP0(tprev, 0, p0State, p0System);
         System.arraycopy(p0State.p0, 0,
-                pInitialConditions[leafCount], 0, P.nTypes);
+                pInitialConditions[leafCount], 0, p0System.nTypes);
     }
 
     /**
@@ -649,7 +648,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             if (Utils.lessThanWithPrecision(nextTime , thisTime)) {
                 system.setInterval(thisInterval);
-                p_integrator.integrate(system, thisTime, state.p0, nextTime, state.p0);
+                system.integrate(state, thisTime, nextTime);
             }
 
             if (Utils.greaterThanWithPrecision(nextTime, tEnd)) {
@@ -662,9 +661,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        if (Utils.lessThanWithPrecision(tEnd,thisTime)) {
+        if (Utils.greaterThanWithPrecision(thisTime, tEnd)) {
             system.setInterval(thisInterval);
-            p_integrator.integrate(system, thisTime, state.p0, tEnd, state.p0); // solve diffEquationOnP, store solution in y
+            system.integrate(state, thisTime, tEnd);
         }
     }
 
@@ -779,18 +778,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
     }
 
-    private FirstOrderIntegrator p_integrator;
-
     private void setupIntegrators() {   // set up ODE's and integrators
 
         //TODO set these minstep and maxstep to be a class field
-        if (minstep == null) minstep = parameterization.getTotalProcessLength() * 1e-100;
-        if (maxstep == null) maxstep = parameterization.getTotalProcessLength() / 10;
+
 
         P = new P0System(parameterization);
         PG = new P0GeSystem(parameterization);
 
-        p_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
     }
 
     /**
@@ -887,7 +882,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             PG = new P0GeSystem(parameterization);
 
-            pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteTolerance.get(), relativeTolerance.get());
+            pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceInput.get(), relativeToleranceInput.get());
         }
 
         protected P0GeState calculateSubtreeLikelihoodInThread() {

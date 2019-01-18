@@ -333,10 +333,10 @@
         <operator id="updowntree" spec="UpDownOperator" scaleFactor=".9" weight="3">
             <up idref="tree"/>
             <up idref="origin"/>
-            <down idref="mutationRate"/>
+            <!--<down idref="mutationRate"/>-->
         </operator>
 
-        <operator id='mutationOperator' spec='ScaleOperator' scaleFactor=".75" weight="1" parameter="@mutationRate"/>
+        <!--<operator id='mutationOperator' spec='ScaleOperator' scaleFactor=".75" weight="1" parameter="@mutationRate"/>-->
         <operator id='R0Operator' spec='ScaleOperator' scaleFactor=".85" weight="2" parameter="@R0"/>
         <operator id='buOperator' spec='ScaleOperator' scaleFactor=".9" weight="2" parameter="@becomeUninfectiousRate" scaleAll="false"/>
         <operator id='migrationRateScaler' spec='ScaleOperator' scaleFactor=".75" weight="2" parameter="@migrationRate"/>
