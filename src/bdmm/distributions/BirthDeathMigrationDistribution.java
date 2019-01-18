@@ -164,7 +164,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             return logP;
         }
 
-        setupIntegrators();
+        P0GeSystem system = new P0GeSystem(parameterization,
+                absoluteToleranceInput.get(), relativeToleranceInput.get());
 
         // update the threshold for parallelization
         //TODO only do it if tree shape changed
@@ -204,9 +205,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             Node child1 = root.getChild(1);
 
             P0GeState child1state = calculateSubtreeLikelihood(child0, 0,
-                    parameterization.getTotalProcessLength() - child0.getHeight(), PG, 0);
+                    parameterization.getTotalProcessLength() - child0.getHeight(), system, 0);
             P0GeState child2state = calculateSubtreeLikelihood(child1, 0,
-                    parameterization.getTotalProcessLength() - child1.getHeight(), PG, 0);
+                    parameterization.getTotalProcessLength() - child1.getHeight(), system, 0);
 
             for (int type=0; type<parameterization.getNTypes(); type++) {
                 finalP0Ge.ge[type] = child1state.ge[type].multiplyBy(child2state.ge[type]);
@@ -218,7 +219,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             // Condition on origin time, as usual:
 
             finalP0Ge = calculateSubtreeLikelihood(root, 0,
-                    parameterization.getTotalProcessLength() - tree.getRoot().getHeight(), PG, 0);
+                    parameterization.getTotalProcessLength() - tree.getRoot().getHeight(), system, 0);
         }
 
         if (debug) System.out.print("Final state: " + finalP0Ge);
@@ -604,11 +605,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 }
             }
 
-			/* TODO the integration performed in getP is done before all
-               the other potentially-parallelized getG, so should not
-               matter that it has its own integrator, but if it does
-               (or to simplify the code), take care of passing an integrator
-               as a local variable. */
             integrateP0(tprev, t, p0State, p0System);
 
             System.arraycopy(p0State.p0, 0,
@@ -677,7 +673,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      */
     public void integrateP0Ge(Node baseNode, double tTop, P0GeState state, P0GeSystem system) {
 
-
         // pgScaled contains the set of initial conditions scaled made to fit
         // the requirements on the values 'double' can represent. It also
         // contains the factor by which the numbers were multiplied.
@@ -694,7 +689,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double nextTime = system.intervalEndTimes[thisInterval-1];
 
             if (Utils.lessThanWithPrecision(nextTime, thisTime)) {
-                pgScaled = safeIntegrate(system, thisTime, pgScaled, nextTime);
+                pgScaled = system.safeIntegrate(pgScaled, thisTime, nextTime);
 
                 state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
@@ -718,7 +713,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
          // solve PG , store solution temporarily integrationResults
         if (Utils.greaterThanWithPrecision(thisTime, tTop))
-            pgScaled = safeIntegrate(system, thisTime, pgScaled, tTop);
+            pgScaled = system.safeIntegrate(pgScaled, thisTime, tTop);
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
@@ -778,79 +773,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
     }
 
-    private void setupIntegrators() {   // set up ODE's and integrators
-
-        //TODO set these minstep and maxstep to be a class field
-
-
-        P = new P0System(parameterization);
-        PG = new P0GeSystem(parameterization);
-
-    }
-
-    /**
-     * Perform the integration of PG with initial conds in pgScaled between to and from
-     * Use an adaptive-step-size integrator
-     * "Safe" because it divides the integration interval in two
-     * if the interval is (arbitrarily) judged to be too big to give reliable results
-     *
-     * @param PG
-     * @param tStart
-     * @param pgScaled
-     * @param tEnd
-     * @return result of integration
-     */
-    private ScaledNumbers safeIntegrate(P0GeSystem PG, double tStart, ScaledNumbers pgScaled, double tEnd) {
-
-        // if the integration interval is too small, nothing is done (to prevent infinite looping)
-        if (Utils.equalWithPrecision(tEnd, tStart))
-            return pgScaled;
-
-        //TODO make threshold a class field
-        if (PG.totalProcessLength > 0 && Math.abs(tEnd - tStart) > PG.totalProcessLength / 6) {
-            pgScaled = safeIntegrate(PG, tStart, pgScaled, tEnd + (tStart - tEnd) / 2);
-            pgScaled = safeIntegrate(PG, tEnd + (tStart - tEnd) / 2, pgScaled, tEnd);
-        } else {
-
-            //setup of the relativeTolerance and absoluteTolerance input of the adaptive integrator
-            //TODO set these two as class fields
-            double relativeToleranceConstant = 1e-7;
-            double absoluteToleranceConstant = 1e-100;
-            double[] absoluteToleranceVector = new double[2 * PG.nTypes];
-            double[] relativeToleranceVector = new double[2 * PG.nTypes];
-
-            for (int i = 0; i < PG.nTypes; i++) {
-                absoluteToleranceVector[i] = absoluteToleranceConstant;
-                if (pgScaled.getEquation()[i + PG.nTypes] > 0) { // adapt absoluteTolerance to the values stored in pgScaled
-                    absoluteToleranceVector[i + PG.nTypes] = Math.max(1e-310, pgScaled.getEquation()[i + PG.nTypes] * absoluteToleranceConstant);
-                } else {
-                    absoluteToleranceVector[i + PG.nTypes] = absoluteToleranceConstant;
-                }
-                relativeToleranceVector[i] = relativeToleranceConstant;
-                relativeToleranceVector[i + PG.nTypes] = relativeToleranceConstant;
-            }
-
-            double[] integrationResults = new double[pgScaled.getEquation().length];
-            int a = pgScaled.getScalingFactor(); // store scaling factor
-            int n = pgScaled.getEquation().length / 2; // dimension of the ODE system
-
-
-            FirstOrderIntegrator integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceVector, relativeToleranceVector);
-            integrator.integrate(PG, tStart, pgScaled.getEquation(), tEnd, integrationResults); // perform the integration step
-
-            double[] pConditions = new double[n];
-            SmallNumber[] geConditions = new SmallNumber[n];
-            for (int i = 0; i < n; i++) {
-                pConditions[i] = integrationResults[i];
-                geConditions[i] = new SmallNumber(integrationResults[i + n]);
-            }
-            pgScaled = (new P0GeState(pConditions, geConditions)).getScaledState();
-            pgScaled.augmentFactor(a);
-        }
-
-        return pgScaled;
-    }
-
     static void executorBootUp() {
         ExecutorService executor = Executors.newCachedThreadPool();
         pool = (ThreadPoolExecutor) executor;
@@ -863,36 +785,22 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         protected double from;
         protected double to;
         protected P0GeSystem PG;
-        protected FirstOrderIntegrator pg_integrator;
 
         public TraversalService(Node root, double from, double to, int depth) {
             this.rootSubtree = root;
             this.from = from;
             this.to = to;
             this.depth = depth;
-            this.setupODEs();
-        }
 
-        private void setupODEs() {  // set up ODE's and integrators
-
-            //TODO set minstep and maxstep to be PiecewiseBDDistr fields
-            if (minstep == null)
-                minstep = parameterization.getTotalProcessLength() * 1e-100;
-            if (maxstep == null) maxstep = parameterization.getTotalProcessLength() / 10;
-
-            PG = new P0GeSystem(parameterization);
-
-            pg_integrator = new DormandPrince54Integrator(minstep, maxstep, absoluteToleranceInput.get(), relativeToleranceInput.get());
-        }
-
-        protected P0GeState calculateSubtreeLikelihoodInThread() {
-            return calculateSubtreeLikelihood(rootSubtree, from, to, PG, depth);
+            PG = new P0GeSystem(parameterization,
+                    absoluteToleranceInput.get(),
+                    relativeToleranceInput.get());
         }
 
         @Override
         public P0GeState call() throws Exception {
             // traverse the tree in a potentially-parallelized way
-            return calculateSubtreeLikelihoodInThread();
+            return calculateSubtreeLikelihood(rootSubtree, from, to, PG, depth);
         }
     }
 

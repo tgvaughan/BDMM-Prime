@@ -25,7 +25,9 @@ public class P0System implements FirstOrderDifferentialEquations {
 
     protected int interval;
 
-    protected FirstOrderIntegrator integrator;
+    protected FirstOrderIntegrator p0Integrator;
+
+    protected double integrationMinStep, integrationMaxStep;
 
 
 	public P0System(Parameterization parameterization,
@@ -48,12 +50,12 @@ public class P0System implements FirstOrderDifferentialEquations {
 
         this.intervalEndTimes = parameterization.getIntervalEndTimes();
 
-        double minstep = parameterization.getTotalProcessLength() * 1e-100;
-        double maxstep = parameterization.getTotalProcessLength() / 10;
+        integrationMinStep = parameterization.getTotalProcessLength() * 1e-100;
+        integrationMaxStep= parameterization.getTotalProcessLength() / 10;
 
-        this.integrator = new DormandPrince54Integrator(minstep, maxstep,
-                        absoluteTolerance, relativeTolerance);
-
+        this.p0Integrator = new DormandPrince54Integrator(
+                integrationMinStep, integrationMaxStep,
+                absoluteTolerance, relativeTolerance);
 	}
 
 	public void setInterval(int interval) {
@@ -86,7 +88,7 @@ public class P0System implements FirstOrderDifferentialEquations {
 	}
 
 	public void integrate(P0State state, double tStart, double tEnd) {
-        integrator.integrate(this, tStart, state.p0, tEnd, state.p0);
+        p0Integrator.integrate(this, tStart, state.p0, tEnd, state.p0);
     }
 }
 
