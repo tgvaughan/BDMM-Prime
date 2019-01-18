@@ -419,7 +419,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", true);
 
 		assertEquals(-124.96086690757612, density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
 
@@ -885,7 +885,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "state",
-                "parallelize", false);
+                "parallelize", true);
 
 		assertEquals(-661.9588648301033, density.calculateLogP(), 1e-5); // result from BEAST, not checked in R
 
