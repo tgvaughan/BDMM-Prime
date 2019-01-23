@@ -9,25 +9,6 @@ import java.util.Arrays;
  */
 public class Utils {
 
-    /**
-     * Finds the index of the time interval t lies in.  Note that if t
-     * lies on a boundary between intervals, the interval returned will be
-     * the _earlier_ of these two intervals.
-     *
-     * @param t time for which to identify interval
-     * @param endTimes interval end times
-     * @return index identifying interval.
-     */
-    public static int getIntervalIndex(double t, double[] endTimes) {
-
-        int index = Arrays.binarySearch(endTimes, t);
-
-        if (index < 0)
-            index = -index - 1;
-
-        // return at most the index of the last interval (m-1)
-        return Math.max(0, Math.min(index, endTimes.length-1));
-    }
 
     public final static double globalPrecisionThreshold = 1e-10;
 

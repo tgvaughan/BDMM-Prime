@@ -321,7 +321,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         P0GeState state = new P0GeState(parameterization.getNTypes());
 
-        int intervalIdx = Utils.getIntervalIndex(tBottom, system.intervalEndTimes);
+        int intervalIdx = parameterization.getIntervalIndex(tBottom);
 
         if (node.isLeaf()) { // sampling event
 
@@ -596,7 +596,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             // This means that the value of pInitialConditions will always require the
             // inclusion of a (1-rho) factor if it lies on an interval boundary, just
             // as for the Ge calculation.
-            int prevIndex = Utils.getIntervalIndex(tprev, parameterization.getIntervalEndTimes());
+            int prevIndex = parameterization.getIntervalIndex(tprev);
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
                     p0State.p0[type] *= (1 - parameterization.getRhoValues()[prevIndex][type]);
@@ -611,7 +611,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         if (Utils.greaterThanWithPrecision(tprev , 0.0)) {
-            int prevIndex = Utils.getIntervalIndex(tprev, parameterization.getIntervalEndTimes());
+            int prevIndex = parameterization.getIntervalIndex(tprev);
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
                     p0State.p0[type] *= (1 - parameterization.getRhoValues()[prevIndex][type]);
@@ -633,8 +633,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private void integrateP0(double tStart, double tEnd, P0State state, P0System system) {
 
         double thisTime = tStart;
-        int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalEndTimes);
-        int endInterval = Utils.getIntervalIndex(tEnd, system.intervalEndTimes);
+        int thisInterval = parameterization.getIntervalIndex(thisTime);
+        int endInterval = parameterization.getIntervalIndex(tEnd);
 
         while (thisInterval > endInterval) {
 
@@ -677,8 +677,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         ScaledNumbers pgScaled = state.getScaledState();
 
         double thisTime = system.totalProcessLength - baseNode.getHeight();
-        int thisInterval = Utils.getIntervalIndex(thisTime, system.intervalEndTimes);
-        int endInterval = Utils.getIntervalIndex(tTop, system.intervalEndTimes);
+        int thisInterval = parameterization.getIntervalIndex(thisTime);
+        int endInterval = parameterization.getIntervalIndex(tTop);
         double oneMinusRho;
 
         system.setInterval(thisInterval);

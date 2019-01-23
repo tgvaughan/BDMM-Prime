@@ -155,6 +155,25 @@ public abstract class Parameterization extends CalculationNode {
         return intervalEndTimes.length;
     }
 
+    /**
+     * Finds the index of the time interval t lies in.  Note that if t
+     * lies on a boundary between intervals, the interval returned will be
+     * the _earlier_ of these two intervals.
+     *
+     * @param t time for which to identify interval
+     * @return index identifying interval.
+     */
+    public int getIntervalIndex(double t) {
+
+        int index = Arrays.binarySearch(intervalEndTimes, t);
+
+        if (index < 0)
+            index = -index - 1;
+
+        // return at most the index of the last interval (m-1)
+        return Math.max(0, Math.min(index, intervalEndTimes.length-1));
+    }
+
     void updateValues() {
 
         for (int interval = 0; interval < intervalEndTimes.length; interval++) {
@@ -225,6 +244,16 @@ public abstract class Parameterization extends CalculationNode {
      */
     public double getNodeTime(Node node) {
         return getTotalProcessLength() - node.getHeight();
+    }
+
+    /**
+     * Retrieve index of interval containing node.
+     *
+     * @param node node whose interval to query.
+     * @return index of interval.
+     */
+    public int getNodeIntervalIndex(Node node) {
+        return getIntervalIndex(getNodeTime(node));
     }
 
 
