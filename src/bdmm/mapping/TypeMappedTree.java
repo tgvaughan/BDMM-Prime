@@ -7,6 +7,7 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
+import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
@@ -45,6 +46,7 @@ public class TypeMappedTree extends Tree {
     Tree untypedTree;
 
     ODESystem odeSystem;
+    ContinuousOutputModel[] integrationResults;
 
     @Override
     public void initAndValidate() {
@@ -53,7 +55,7 @@ public class TypeMappedTree extends Tree {
         untypedTree = treeInput.get();
 
         odeSystem = new ODESystem(parameterization);
-
+        integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
         backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
 //        Node typedRoot = fowardSimulation(treeInput.get().getRoot(), rootType);
@@ -82,6 +84,25 @@ public class TypeMappedTree extends Tree {
     }
 
     boolean[] rhoSampled = null;
+    int[] rhoSamplingIndex = null;
+
+    public void computeRhoSampledLeafStatus() {
+
+        rhoSampled = new boolean[untypedTree.getLeafNodeCount()];
+        rhoSamplingIndex = new int[untypedTree.getLeafNodeCount()];
+
+        for (int nodeNr=0; nodeNr < treeInput.get().getLeafNodeCount(); nodeNr++) {
+            double nodeTime = parameterization.getNodeTime(untypedTree.getNode(nodeNr));
+            rhoSampled[nodeNr] = false;
+            for (double rhoSamplingTime : parameterization.getRhoSamplingTimes()) {
+                if (Utils.equalWithPrecision(nodeTime, rhoSamplingTime)) {
+                    rhoSampled[nodeNr] = true;
+                    rhoSamplingIndex[nodeNr] = parameterization.getIntervalIndex(rhoSamplingTime);
+                    break;
+                }
+            }
+        }
+    }
 
     /**
      * Return true if node is the result of a rho sampling event.
@@ -90,19 +111,24 @@ public class TypeMappedTree extends Tree {
      * @return true if node time coincides with rho sampling time.
      */
     public boolean nodeIsRhoSampled(Node node) {
-        if (rhoSampled == null) {
-
-            rhoSampled = new boolean[untypedTree.getLeafNodeCount()];
-
-            for (int nodeNr=0; nodeNr < treeInput.get().getLeafNodeCount(); nodeNr++) {
-                double nodeTime = parameterization.getNodeTime(untypedTree.getNode(nodeNr));
-                for (double rhoSamplingTime : parameterization.getRhoSamplingTimes())
-                    if (Utils.equalWithPrecision(nodeTime, rhoSamplingTime))
-                        rhoSampled[nodeNr] = true;
-            }
-        }
+        if (rhoSampled == null)
+            computeRhoSampledLeafStatus();
 
         return rhoSampled[node.getNr()];
+    }
+
+    /**
+     * When node is rho sampled, return index of interval whose end time
+     * corresponds to this rho sampling event.
+     *
+     * @param node node about which to make query
+     * @return interval index
+     */
+    public int getRhoSamplingInterval(Node node) {
+        if (nodeIsRhoSampled(node))
+            return rhoSamplingIndex[node.getNr()];
+
+        throw new IllegalArgumentException("Node is not rho sampled.");
     }
 
     /**
@@ -126,10 +152,16 @@ public class TypeMappedTree extends Tree {
         return NodeKind.INTERNAL;
     }
 
+    FirstOrderIntegrator getNewIntegrator() {
+        return new DormandPrince54Integrator(
+                parameterization.getTotalProcessLength()/1e100,
+                parameterization.getTotalProcessLength()/10.0,
+                1e-100, 1e-7);
+    }
 
-    public void backwardsIntegrateSubtree (Node untypedSubtreeRoot,
+
+    public double[] backwardsIntegrateSubtree (Node untypedSubtreeRoot,
                                            double timeOfSubtreeRootEdgeTop) {
-
         double[] y;
 
         switch(getNodeKind(untypedSubtreeRoot)) {
@@ -149,13 +181,11 @@ public class TypeMappedTree extends Tree {
                 throw new RuntimeException("Node kind switch fell through!");
         }
 
-        double rootTime = parameterization.getNodeTime(untypedSubtreeRoot);
-        double edgeLength = timeOfSubtreeRootEdgeTop - rootTime;
 
-        FirstOrderIntegrator integrator = new DormandPrince54Integrator(
-                parameterization.getTotalProcessLength()/1e100,
-                parameterization.getTotalProcessLength()/10.0,
-                1e-100, 1e-7);
+        ContinuousOutputModel results = new ContinuousOutputModel();
+
+        FirstOrderIntegrator integrator = getNewIntegrator();
+        integrator.addStepHandler(results);
 
         double delta = 2*Utils.globalPrecisionThreshold;
 
@@ -163,13 +193,62 @@ public class TypeMappedTree extends Tree {
                 parameterization.getNodeTime(untypedSubtreeRoot) - delta, y,
                 timeOfSubtreeRootEdgeTop+delta, y);
 
+        // Save integration results
+        integrationResults[untypedSubtreeRoot.getNr()] = results;
+
+        return y;
     }
 
     double[] getLeafState(Node leaf) {
 
+        double[] y = new double[parameterization.getNTypes()*2];
+        for (int type=0; type<parameterization.getNTypes(); type++) {
+            y[type] = 1.0;
+            y[parameterization.getNTypes()+type] = 0.0;
+        }
 
+        double leafTime = parameterization.getNodeTime(leaf);
+        double T = parameterization.getTotalProcessLength();
 
-        return null;
+        if (Utils.lessThanWithPrecision(leafTime, T)) {
+
+            int finalInterval = parameterization.getIntervalIndex(T);
+            for (int type=0; type<parameterization.getNTypes(); type++) {
+                y[type] *= 1.0 - parameterization.getRhoValues()[finalInterval][type];
+            }
+
+            FirstOrderIntegrator integrator = getNewIntegrator();
+
+            double delta = 2*Utils.globalPrecisionThreshold;
+
+            odeSystem.setInterval(finalInterval);
+            integrator.integrate(odeSystem, T-delta, y, leafTime+delta, y);
+        }
+
+        if (nodeIsRhoSampled(leaf)) {
+
+            int rhoSamplingInterval = getRhoSamplingInterval(leaf);
+
+            for (int type=0; type<parameterization.getNTypes(); type++) {
+                double rho = parameterization.getRhoValues()[rhoSamplingInterval][type];
+                y[type] *= 1.0 - rho;
+                y[type + parameterization.getNTypes()] += Math.log(rho);
+            }
+
+        } else {
+
+            int nodeInterval = parameterization.getNodeIntervalIndex(leaf);
+
+            for (int type=0; type<parameterization.getNTypes(); type++) {
+                double psi = parameterization.getSamplingRates()[nodeInterval][type];
+                double r = parameterization.getRemovalProbs()[nodeInterval][type];
+
+                y[type + parameterization.getNTypes()] += Math.log(psi*(r + (1.0-r)*y[type]));
+            }
+
+        }
+
+        return y;
     }
 
     double[] getSAState(Node saNode) {
