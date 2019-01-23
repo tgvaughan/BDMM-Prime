@@ -3,6 +3,7 @@ package bdmm.parameterization;
 import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
 import java.util.*;
@@ -214,6 +215,16 @@ public abstract class Parameterization extends CalculationNode {
         update();
 
         return crossBirthRates;
+    }
+
+    /**
+     * Return time of node, i.e. T - node_age.
+     *
+     * @param node node whose time to query.
+     * @return time of node.
+     */
+    public double getNodeTime(Node node) {
+        return getTotalProcessLength() - node.getHeight();
     }
 
 

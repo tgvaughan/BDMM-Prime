@@ -1,11 +1,14 @@
 package bdmm.mapping;
 
 import bdmm.parameterization.Parameterization;
+import bdmm.util.Utils;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
+import org.apache.commons.math3.ode.FirstOrderIntegrator;
+import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
 public class TypeMappedTree extends Tree {
 
@@ -39,14 +42,19 @@ public class TypeMappedTree extends Tree {
             Input.Validate.REQUIRED);
 
     Parameterization parameterization;
+    Tree untypedTree;
+
+    ODESystem odeSystem;
 
     @Override
     public void initAndValidate() {
 
         parameterization = parameterizationInput.get();
-        Node untypedRoot = treeInput.get().getRoot();
+        untypedTree = treeInput.get();
 
-        backwardsIntegrateSubtree(untypedRoot, parameterization.getTotalProcessLength());
+        odeSystem = new ODESystem(parameterization);
+
+        backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
 //        Node typedRoot = fowardSimulation(treeInput.get().getRoot(), rootType);
 //
@@ -73,7 +81,41 @@ public class TypeMappedTree extends Tree {
         }
     }
 
+    boolean[] rhoSampled = null;
+
+    /**
+     * Return true if node is the result of a rho sampling event.
+     *
+     * @param node node about which to make query
+     * @return true if node time coincides with rho sampling time.
+     */
+    public boolean nodeIsRhoSampled(Node node) {
+        if (rhoSampled == null) {
+
+            rhoSampled = new boolean[untypedTree.getLeafNodeCount()];
+
+            for (int nodeNr=0; nodeNr < treeInput.get().getLeafNodeCount(); nodeNr++) {
+                double nodeTime = parameterization.getNodeTime(untypedTree.getNode(nodeNr));
+                for (double rhoSamplingTime : parameterization.getRhoSamplingTimes())
+                    if (Utils.equalWithPrecision(nodeTime, rhoSamplingTime))
+                        rhoSampled[nodeNr] = true;
+            }
+        }
+
+        return rhoSampled[node.getNr()];
+    }
+
+    /**
+     * Type specifying different kinds of nodes.
+     */
     enum NodeKind {LEAF, SA, INTERNAL};
+
+    /**
+     * Return "kind" of node.
+     *
+     * @param node node to classify
+     * @return node kind.
+     */
     NodeKind getNodeKind(Node node) {
         if (node.isLeaf())
             return NodeKind.LEAF;
@@ -84,26 +126,60 @@ public class TypeMappedTree extends Tree {
         return NodeKind.INTERNAL;
     }
 
-    public boolean isRhoSampled(Node node) {
-        if node.getHeight()
-    }
 
     public void backwardsIntegrateSubtree (Node untypedSubtreeRoot,
-                                           double ageOfSubtreeRootEdgeTop) {
+                                           double timeOfSubtreeRootEdgeTop) {
+
+        double[] y;
 
         switch(getNodeKind(untypedSubtreeRoot)) {
             case LEAF:
+                y = getLeafState(untypedSubtreeRoot);
+                break;
 
             case SA:
+                y = getSAState(untypedSubtreeRoot);
+                break;
 
             case INTERNAL:
+                y = getInternalState(untypedSubtreeRoot);
+                break;
 
             default:
                 throw new RuntimeException("Node kind switch fell through!");
         }
 
+        double rootTime = parameterization.getNodeTime(untypedSubtreeRoot);
+        double edgeLength = timeOfSubtreeRootEdgeTop - rootTime;
+
+        FirstOrderIntegrator integrator = new DormandPrince54Integrator(
+                parameterization.getTotalProcessLength()/1e100,
+                parameterization.getTotalProcessLength()/10.0,
+                1e-100, 1e-7);
+
+        double delta = 2*Utils.globalPrecisionThreshold;
+
+        integrator.integrate(odeSystem,
+                parameterization.getNodeTime(untypedSubtreeRoot) - delta, y,
+                timeOfSubtreeRootEdgeTop+delta, y);
 
     }
+
+    double[] getLeafState(Node leaf) {
+
+
+
+        return null;
+    }
+
+    double[] getSAState(Node saNode) {
+        return null;
+    }
+
+    double[] getInternalState(Node internalNode) {
+        return null;
+    }
+
 
     public Node fowardSimulation() {
        Node root = new Node();

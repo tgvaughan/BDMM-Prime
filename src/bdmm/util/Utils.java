@@ -29,7 +29,7 @@ public class Utils {
         return Math.max(0, Math.min(index, endTimes.length-1));
     }
 
-    private final static double globalPrecisionThreshold = 1e-10;
+    public final static double globalPrecisionThreshold = 1e-10;
 
     /**
      * Determine whether a and b are equal to within a precision threshold.
