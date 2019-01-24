@@ -199,7 +199,7 @@ public class TypeMappedTree extends Tree {
         return y;
     }
 
-    double[] getLeafState(Node leaf) {
+    double[] getLeafState(Node leafNode) {
 
         double[] y = new double[parameterization.getNTypes()*2];
         for (int type=0; type<parameterization.getNTypes(); type++) {
@@ -207,7 +207,7 @@ public class TypeMappedTree extends Tree {
             y[parameterization.getNTypes()+type] = 0.0;
         }
 
-        double leafTime = parameterization.getNodeTime(leaf);
+        double leafTime = parameterization.getNodeTime(leafNode);
         double T = parameterization.getTotalProcessLength();
 
         if (Utils.lessThanWithPrecision(leafTime, T)) {
@@ -225,34 +225,78 @@ public class TypeMappedTree extends Tree {
             integrator.integrate(odeSystem, T-delta, y, leafTime+delta, y);
         }
 
-        if (nodeIsRhoSampled(leaf)) {
+        int leafType = getLeafType(leafNode);
 
-            int rhoSamplingInterval = getRhoSamplingInterval(leaf);
+        if (nodeIsRhoSampled(leafNode)) {
+
+            int rhoSamplingInterval = getRhoSamplingInterval(leafNode);
 
             for (int type=0; type<parameterization.getNTypes(); type++) {
                 double rho = parameterization.getRhoValues()[rhoSamplingInterval][type];
                 y[type] *= 1.0 - rho;
-                y[type + parameterization.getNTypes()] += Math.log(rho);
+                y[type + parameterization.getNTypes()] =
+                        type==leafType
+                                ? Math.log(rho)
+                                : Double.NEGATIVE_INFINITY;
             }
 
         } else {
 
-            int nodeInterval = parameterization.getNodeIntervalIndex(leaf);
+            int nodeInterval = parameterization.getNodeIntervalIndex(leafNode);
 
             for (int type=0; type<parameterization.getNTypes(); type++) {
                 double psi = parameterization.getSamplingRates()[nodeInterval][type];
                 double r = parameterization.getRemovalProbs()[nodeInterval][type];
 
-                y[type + parameterization.getNTypes()] += Math.log(psi*(r + (1.0-r)*y[type]));
+                y[type + parameterization.getNTypes()] =
+                        type==leafType
+                                ? Math.log(psi*(r + (1.0-r)*y[type]))
+                                : Double.NEGATIVE_INFINITY;
             }
-
         }
 
         return y;
     }
 
     double[] getSAState(Node saNode) {
-        return null;
+
+        double saNodeTime = parameterization.getNodeTime(saNode);
+
+        double[] y = backwardsIntegrateSubtree(saNode.getNonDirectAncestorChild(), saNodeTime);
+
+        int saType = getLeafType(saNode.getDirectAncestorChild());
+
+        if (nodeIsRhoSampled(saNode)) {
+
+            int rhoSamplingInterval = getRhoSamplingInterval(saNode);
+
+            for (int type=0; type<parameterization.getNTypes(); type++) {
+                double rho = parameterization.getRhoValues()[rhoSamplingInterval][type];
+                double r = parameterization.getRemovalProbs()[rhoSamplingInterval][type];
+
+                y[type] *= 1.0 - rho;
+                y[type+parameterization.getNTypes()] +=
+                        type==saType
+                                ? Math.log(rho*(1-r))
+                                : Double.NEGATIVE_INFINITY;
+            }
+
+        } else {
+
+            int nodeInterval = parameterization.getNodeIntervalIndex(saNode);
+
+            for (int type=0; type<parameterization.getNTypes(); type++) {
+                double psi = parameterization.getSamplingRates()[nodeInterval][type];
+                double r = parameterization.getRemovalProbs()[nodeInterval][type];
+
+                y[type + parameterization.getNTypes()] +=
+                        type==saType
+                                ? Math.log(psi*(1-r))
+                                : Double.NEGATIVE_INFINITY;
+            }
+        }
+
+        return y;
     }
 
     double[] getInternalState(Node internalNode) {
