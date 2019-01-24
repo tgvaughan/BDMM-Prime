@@ -1,5 +1,6 @@
 package bdmm.mapping;
 
+import bdmm.distributions.BirthDeathMigrationDistribution;
 import bdmm.parameterization.EpiParameterization;
 import bdmm.parameterization.Parameterization;
 import bdmm.parameterization.SkylineMatrixParameter;
@@ -8,6 +9,8 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 import beast.util.TreeParser;
 import org.junit.Test;
+
+import static junit.framework.Assert.assertEquals;
 
 public class TypeMappedTreeTest {
 
@@ -39,13 +42,41 @@ public class TypeMappedTreeTest {
                         null,
                         new RealParameter("1.0"), 2));
 
+        RealParameter frequencies = new RealParameter("0.5 0.5");
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", frequencies,
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "parallelize", false);
+
+        double logProbTrue = density.calculateLogP();
+
+        System.out.println(logProbTrue);
+
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
-                "frequencies", new RealParameter("0.5 0.5"),
+                "frequencies", frequencies,
                 "untypedTree", tree,
                 "typeLabel", "type");
 
+        double[] y = typeMappedTree.backwardsIntegrateSubtree(tree.getRoot(), 0.0);
+        double logScaleFactor = typeMappedTree.geScaleFactors[tree.getRoot().getNr()];
+
+        double logProb = 0.0;
+        for (int type=0; type<parameterization.getNTypes(); type++) {
+            logProb += y[type+parameterization.getNTypes()]*Math.exp(logScaleFactor)*frequencies.getValue(type);
+        }
+
+        logProb = Math.log(logProb);
+
+        System.out.println(logProb);
+
+
+        assertEquals(logProbTrue, logProb, 1e-5);
 
     }
 }

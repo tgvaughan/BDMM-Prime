@@ -47,7 +47,7 @@ public class TypeMappedTree extends Tree {
 
     ODESystem odeSystem;
     ContinuousOutputModel[] integrationResults;
-    double[] integrationScaleFactors;
+    double[] geScaleFactors;
 
     @Override
     public void initAndValidate() {
@@ -57,8 +57,8 @@ public class TypeMappedTree extends Tree {
 
         odeSystem = new ODESystem(parameterization);
         integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
-        integrationScaleFactors = new double[untypedTree.getNodeCount()];
-        backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
+        geScaleFactors = new double[untypedTree.getNodeCount()];
+        double[] y = backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
 //        Node typedRoot = fowardSimulation(treeInput.get().getRoot(), rootType);
 //
@@ -187,7 +187,7 @@ public class TypeMappedTree extends Tree {
         ContinuousOutputModel results = new ContinuousOutputModel();
 
         FirstOrderIntegrator integrator = getNewIntegrator();
-//        integrator.addStepHandler(results);
+        integrator.addStepHandler(results);
 
         double delta = 2*Utils.globalPrecisionThreshold;
 
@@ -261,6 +261,9 @@ public class TypeMappedTree extends Tree {
             }
         }
 
+        // Scale ge and record scale factor
+        geScaleFactors[leafNode.getNr()] = rescale(y, 0.0);
+
         return y;
     }
 
@@ -302,6 +305,9 @@ public class TypeMappedTree extends Tree {
             }
         }
 
+        // Scale ge and record scale factor
+        geScaleFactors[saNode.getNr()] = rescale(y, geScaleFactors[saNode.getNonDirectAncestorChild().getNr()]);
+
         return y;
     }
 
@@ -311,6 +317,9 @@ public class TypeMappedTree extends Tree {
 
         double[] yLeft = backwardsIntegrateSubtree(internalNode.getChild(0), internalNodeTime);
         double[] yRight = backwardsIntegrateSubtree(internalNode.getChild(1), internalNodeTime);
+
+        double logFLeft = geScaleFactors[internalNode.getChild(0).getNr()];
+        double logFRight = geScaleFactors[internalNode.getChild(1).getNr()];
 
         double[] y = new double[parameterization.getNTypes()*2];
 
@@ -333,9 +342,23 @@ public class TypeMappedTree extends Tree {
             }
         }
 
+        // Scale ge and record scale factor
+        geScaleFactors[internalNode.getNr()] = rescale(y, logFLeft+logFRight);
+
         return y;
     }
 
+    double rescale(double[] y, double prevLogF) {
+
+        double C = 0.0;
+        for (int type=0; type<parameterization.getNTypes(); type++)
+            C = Math.max(C, y[type+parameterization.getNTypes()]);
+
+        for (int type=0; type<parameterization.getNTypes(); type++)
+            y[type+parameterization.getNTypes()] /= C;
+
+        return prevLogF + Math.log(C);
+    }
 
     public Node fowardSimulation() {
        Node root = new Node();
