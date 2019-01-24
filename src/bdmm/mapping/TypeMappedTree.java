@@ -47,6 +47,7 @@ public class TypeMappedTree extends Tree {
 
     ODESystem odeSystem;
     ContinuousOutputModel[] integrationResults;
+    double[] integrationScaleFactors;
 
     @Override
     public void initAndValidate() {
@@ -56,6 +57,7 @@ public class TypeMappedTree extends Tree {
 
         odeSystem = new ODESystem(parameterization);
         integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
+        integrationScaleFactors = new double[untypedTree.getNodeCount()];
         backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
 //        Node typedRoot = fowardSimulation(treeInput.get().getRoot(), rootType);
@@ -185,12 +187,16 @@ public class TypeMappedTree extends Tree {
         ContinuousOutputModel results = new ContinuousOutputModel();
 
         FirstOrderIntegrator integrator = getNewIntegrator();
-        integrator.addStepHandler(results);
+//        integrator.addStepHandler(results);
 
         double delta = 2*Utils.globalPrecisionThreshold;
 
+        double timeOfSubtreeRootEdgeBottom = parameterization.getNodeTime(untypedSubtreeRoot);
+
+        odeSystem.setInterval(parameterization.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
+
         integrator.integrate(odeSystem,
-                parameterization.getNodeTime(untypedSubtreeRoot) - delta, y,
+                timeOfSubtreeRootEdgeBottom - delta, y,
                 timeOfSubtreeRootEdgeTop+delta, y);
 
         // Save integration results
@@ -236,8 +242,8 @@ public class TypeMappedTree extends Tree {
                 y[type] *= 1.0 - rho;
                 y[type + parameterization.getNTypes()] =
                         type==leafType
-                                ? Math.log(rho)
-                                : Double.NEGATIVE_INFINITY;
+                                ? rho
+                                : 0.0;
             }
 
         } else {
@@ -250,8 +256,8 @@ public class TypeMappedTree extends Tree {
 
                 y[type + parameterization.getNTypes()] =
                         type==leafType
-                                ? Math.log(psi*(r + (1.0-r)*y[type]))
-                                : Double.NEGATIVE_INFINITY;
+                                ? psi*(r + (1.0-r)*y[type])
+                                : 0.0;
             }
         }
 
@@ -275,10 +281,10 @@ public class TypeMappedTree extends Tree {
                 double r = parameterization.getRemovalProbs()[rhoSamplingInterval][type];
 
                 y[type] *= 1.0 - rho;
-                y[type+parameterization.getNTypes()] +=
+                y[type+parameterization.getNTypes()] *=
                         type==saType
-                                ? Math.log(rho*(1-r))
-                                : Double.NEGATIVE_INFINITY;
+                                ? rho*(1-r)
+                                : 0.0;
             }
 
         } else {
@@ -289,10 +295,10 @@ public class TypeMappedTree extends Tree {
                 double psi = parameterization.getSamplingRates()[nodeInterval][type];
                 double r = parameterization.getRemovalProbs()[nodeInterval][type];
 
-                y[type + parameterization.getNTypes()] +=
+                y[type + parameterization.getNTypes()] *=
                         type==saType
-                                ? Math.log(psi*(1-r))
-                                : Double.NEGATIVE_INFINITY;
+                                ? psi*(1-r)
+                                : 0.0;
             }
         }
 
@@ -314,35 +320,17 @@ public class TypeMappedTree extends Tree {
 
         for (int type=0; type<parameterization.getNTypes(); type++) {
             y[type] = yLeft[type];
-
-
-            double scaleFactor = Double.NEGATIVE_INFINITY;
+            y[N+type] = 0.0;
 
             for (int typeOther=0; typeOther<N; typeOther++) {
                 if (typeOther == type) {
-                    scaleFactor = Math.max(scaleFactor, yLeft[type+N] + yRight[type+N]);
+                    y[N+type] += parameterization.getBirthRates()[nodeInterval][type]
+                            *yLeft[N+type]*yRight[N+type];
                 } else {
-                    scaleFactor = Math.max(scaleFactor,
-                            Math.max(yLeft[type+N] + yRight[typeOther+N],
-                                    yLeft[typeOther+N] + yRight[type+N]));
-
+                    y[N+type] += parameterization.getCrossBirthRates()[nodeInterval][type][typeOther]
+                            *(yLeft[N+type]*yRight[N+typeOther] + yLeft[N+typeOther]*yRight[N+type]);
                 }
             }
-
-            double scaledSum = 0;
-
-            for (int typeOther=0; typeOther<N; typeOther++) {
-                if (typeOther == type) {
-                    scaledSum += parameterization.getBirthRates()[nodeInterval][type]
-                            * Math.exp(yLeft[type+N] + yRight[type+N] - scaleFactor);
-                } else {
-                    scaledSum += parameterization.getCrossBirthRates()[nodeInterval][type][typeOther]
-                            * (Math.exp(yLeft[type+N] + yRight[typeOther+N] - scaleFactor)
-                            + Math.exp(yLeft[typeOther+N] + yRight[type+N] - scaleFactor));
-                }
-            }
-
-            y[type+N] = Math.log(scaledSum) + scaleFactor;
         }
 
         return y;
