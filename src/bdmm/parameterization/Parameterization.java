@@ -164,6 +164,7 @@ public abstract class Parameterization extends CalculationNode {
      * @return index identifying interval.
      */
     public int getIntervalIndex(double t) {
+        update();
 
         int index = Arrays.binarySearch(intervalEndTimes, t);
 
