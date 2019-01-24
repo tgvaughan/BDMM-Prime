@@ -67,4 +67,44 @@ public class ParameterizationTest {
             }
         }
     }
+
+
+    @Test
+    public void testGetIntervalIndex() {
+        RealParameter originParam = new RealParameter("2.0");
+
+        Parameterization parameterization = new CanonicalParameterization();
+		parameterization.initByName(
+		        "nTypes", 2,
+                "origin", originParam,
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("4.0"), 2),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("3.0"), 2),
+                "birthRateAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.0"), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        new RealParameter("1.0"),
+                        new RealParameter("0.1 0.2"), 2),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.5"), 2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "rhoSampling", new TimedParameter(
+                        originParam,
+                        new RealParameter("0.0 0.0")));
+
+        Assert.assertEquals(0, parameterization.getIntervalIndex(-3.0));
+        Assert.assertEquals(0, parameterization.getIntervalIndex(0.0));
+        Assert.assertEquals(0, parameterization.getIntervalIndex(0.1));
+        Assert.assertEquals(0, parameterization.getIntervalIndex(1.0));
+        Assert.assertEquals(1, parameterization.getIntervalIndex(1.1));
+        Assert.assertEquals(1, parameterization.getIntervalIndex(1.9));
+        Assert.assertEquals(1, parameterization.getIntervalIndex(2.0));
+    }
 }
