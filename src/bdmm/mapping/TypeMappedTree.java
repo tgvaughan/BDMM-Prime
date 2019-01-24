@@ -300,7 +300,52 @@ public class TypeMappedTree extends Tree {
     }
 
     double[] getInternalState(Node internalNode) {
-        return null;
+
+        double internalNodeTime = parameterization.getNodeTime(internalNode);
+
+        double[] yLeft = backwardsIntegrateSubtree(internalNode.getChild(0), internalNodeTime);
+        double[] yRight = backwardsIntegrateSubtree(internalNode.getChild(1), internalNodeTime);
+
+        double[] y = new double[parameterization.getNTypes()*2];
+
+        int nodeInterval = parameterization.getNodeIntervalIndex(internalNode);
+
+        int N = parameterization.getNTypes();
+
+        for (int type=0; type<parameterization.getNTypes(); type++) {
+            y[type] = yLeft[type];
+
+
+            double scaleFactor = Double.NEGATIVE_INFINITY;
+
+            for (int typeOther=0; typeOther<N; typeOther++) {
+                if (typeOther == type) {
+                    scaleFactor = Math.max(scaleFactor, yLeft[type+N] + yRight[type+N]);
+                } else {
+                    scaleFactor = Math.max(scaleFactor,
+                            Math.max(yLeft[type+N] + yRight[typeOther+N],
+                                    yLeft[typeOther+N] + yRight[type+N]));
+
+                }
+            }
+
+            double scaledSum = 0;
+
+            for (int typeOther=0; typeOther<N; typeOther++) {
+                if (typeOther == type) {
+                    scaledSum += parameterization.getBirthRates()[nodeInterval][type]
+                            * Math.exp(yLeft[type+N] + yRight[type+N] - scaleFactor);
+                } else {
+                    scaledSum += parameterization.getCrossBirthRates()[nodeInterval][type][typeOther]
+                            * (Math.exp(yLeft[type+N] + yRight[typeOther+N] - scaleFactor)
+                            + Math.exp(yLeft[typeOther+N] + yRight[type+N] - scaleFactor));
+                }
+            }
+
+            y[type+N] = Math.log(scaledSum) + scaleFactor;
+        }
+
+        return y;
     }
 
 
