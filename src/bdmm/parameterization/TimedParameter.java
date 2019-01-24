@@ -34,12 +34,17 @@ public class TimedParameter extends CalculationNode {
     public Input<Tree> treeInput = new Input<>("tree",
             "Tree when root time is used to identify the start of the process.");
 
+    public Input<Integer> nTypesInput = new Input<>("nTypes",
+            "Number of distinct types in model.  If unspecified, inferred" +
+                    "from length of other parameter inputs.  Use this when a " +
+                    "single parameter value is shared among all types.");
+
     public Input<RealParameter> valuesInput = new Input<>(
             "values",
             "Probability values associated with each time.",
             Input.Validate.REQUIRED);
 
-    boolean timesAreAges, timesAreRelative;
+    boolean timesAreAges, timesAreRelative, inputIsScalar;
 
     double[] times, storedTimes;
     double[][] values, storedValues;
@@ -89,11 +94,18 @@ public class TimedParameter extends CalculationNode {
         times = new double[nTimes];
         storedTimes = new double[nTimes];
 
-        if (valuesInput.get().getDimension() % nTimes != 0)
-            throw new IllegalArgumentException("Values parameter must be a " +
-                    "multiple of the number of times.");
+        int valsPerInterval = valuesInput.get().getDimension()/nTimes;
+        inputIsScalar = valsPerInterval==1;
 
-        nTypes = valuesInput.get().getDimension()/nTimes;
+        if (nTypesInput.get() != null) {
+            nTypes = nTypesInput.get();
+
+            if (!inputIsScalar && nTypes != valsPerInterval)
+                throw new IllegalArgumentException("TimedParameter has an incorrect " +
+                        "number of elements.");
+        } else {
+            nTypes = valsPerInterval;
+        }
 
         values = new double[nTimes][nTypes];
         storedValues = new double[nTimes][nTypes];
@@ -170,7 +182,10 @@ public class TimedParameter extends CalculationNode {
     private void updateValues() {
         for (int timeIdx=0; timeIdx<nTimes; timeIdx++) {
             for (int typeIdx=0; typeIdx<nTypes; typeIdx++) {
-                values[timeIdx][typeIdx] = valuesInput.get().getValue(timeIdx*nTypes + typeIdx);
+                if (inputIsScalar)
+                    values[timeIdx][typeIdx] = valuesInput.get().getValue(timeIdx);
+                else
+                    values[timeIdx][typeIdx] = valuesInput.get().getValue(timeIdx*nTypes + typeIdx);
             }
         }
 

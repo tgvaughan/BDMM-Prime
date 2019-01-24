@@ -5,8 +5,6 @@ import beast.core.parameter.RealParameter;
 
 public class SkylineVectorParameter extends SkylineParameter {
 
-    int nTypes;
-
     double[][] values, storedValues;
     double[] valuesAtTime;
 
