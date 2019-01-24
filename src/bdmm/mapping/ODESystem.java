@@ -96,6 +96,13 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
     @Override
     public void resetState(double t, double[] y) {
 
-        this.interval -= 1;
+        interval -= 1;
+
+        // Include effect of any rho sampling times we pass:
+
+        for (int type=0; type<param.getNTypes(); type++) {
+            y[type] *= 1.0 - param.getRhoValues()[interval][type];
+            y[type+param.getNTypes()] *= 1.0 - param.getRhoValues()[interval][type];
+        }
     }
 }

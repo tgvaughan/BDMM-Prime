@@ -193,6 +193,10 @@ public class TypeMappedTree extends Tree {
 
         double timeOfSubtreeRootEdgeBottom = parameterization.getNodeTime(untypedSubtreeRoot);
 
+        integrator.addEventHandler(odeSystem,
+                (timeOfSubtreeRootEdgeTop-timeOfSubtreeRootEdgeBottom)/100,
+                1e-5, 1000);
+
         odeSystem.setInterval(parameterization.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
 
         integrator.integrate(odeSystem,
@@ -228,6 +232,7 @@ public class TypeMappedTree extends Tree {
             double delta = 2*Utils.globalPrecisionThreshold;
 
             odeSystem.setInterval(finalInterval);
+            integrator.addEventHandler(odeSystem, (T-leafTime)/100, 1e-5, 1000);
             integrator.integrate(odeSystem, T-delta, y, leafTime+delta, y);
         }
 
