@@ -12,9 +12,6 @@ import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-
 public class TypeMappedTree extends Tree {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
@@ -46,16 +43,16 @@ public class TypeMappedTree extends Tree {
             "Tree on which to apply mapping.",
             Input.Validate.REQUIRED);
 
-    Parameterization param;
-    Tree untypedTree;
+    private Parameterization param;
+    private Tree untypedTree;
 
-    ODESystem odeSystem;
-    ContinuousOutputModel[] integrationResults;
+    private ODESystem odeSystem;
+    private ContinuousOutputModel[] integrationResults;
     double[] geScaleFactors;
 
 
-    final int MAX_INTEGRATION_STEPS = 100;
-    int nextLeafLabel, nextIntLabel;
+    private final int MAX_INTEGRATION_STEPS = 100;
+    private int nextInternalNodeLabel;
 
     @Override
     public void initAndValidate() {
@@ -78,8 +75,7 @@ public class TypeMappedTree extends Tree {
         // (startTypeProbs are unnormalized: this is okay for randomChoicePDF.)
         int startType = Randomizer.randomChoicePDF(startTypeProbs);
 
-        nextLeafLabel = 0;
-        nextIntLabel = untypedTree.getLeafNodeCount();
+        nextInternalNodeLabel = untypedTree.getLeafNodeCount();
 
         Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0 , startType);
 
@@ -88,7 +84,7 @@ public class TypeMappedTree extends Tree {
         assignFromWithoutID(new Tree(typedRoot));
     }
 
-    public int getLeafType(Node leafNode) {
+    private int getLeafType(Node leafNode) {
         if (typeTraitSetInput.get() != null)
             return (int) typeTraitSetInput.get().getValue(leafNode.getID());
         else {
@@ -106,10 +102,10 @@ public class TypeMappedTree extends Tree {
         }
     }
 
-    boolean[] rhoSampled = null;
-    int[] rhoSamplingIndex = null;
+    private boolean[] rhoSampled = null;
+    private int[] rhoSamplingIndex = null;
 
-    public void computeRhoSampledLeafStatus() {
+    private void computeRhoSampledLeafStatus() {
 
         rhoSampled = new boolean[untypedTree.getLeafNodeCount()];
         rhoSamplingIndex = new int[untypedTree.getLeafNodeCount()];
@@ -133,7 +129,7 @@ public class TypeMappedTree extends Tree {
      * @param node node about which to make query
      * @return true if node time coincides with rho sampling time.
      */
-    public boolean nodeIsRhoSampled(Node node) {
+    private boolean nodeIsRhoSampled(Node node) {
         if (rhoSampled == null)
             computeRhoSampledLeafStatus();
 
@@ -147,7 +143,7 @@ public class TypeMappedTree extends Tree {
      * @param node node about which to make query
      * @return interval index
      */
-    public int getRhoSamplingInterval(Node node) {
+    private int getRhoSamplingInterval(Node node) {
         if (nodeIsRhoSampled(node))
             return rhoSamplingIndex[node.getNr()];
 
@@ -165,7 +161,7 @@ public class TypeMappedTree extends Tree {
      * @param node node to classify
      * @return node kind.
      */
-    NodeKind getNodeKind(Node node) {
+    private NodeKind getNodeKind(Node node) {
         if (node.isLeaf())
             return NodeKind.LEAF;
 
@@ -175,7 +171,7 @@ public class TypeMappedTree extends Tree {
         return NodeKind.INTERNAL;
     }
 
-    FirstOrderIntegrator getNewIntegrator() {
+    private FirstOrderIntegrator getNewODEIntegrator() {
         return new DormandPrince54Integrator(
                 param.getTotalProcessLength()/1e100,
                 param.getTotalProcessLength()/10.0,
@@ -191,8 +187,8 @@ public class TypeMappedTree extends Tree {
      * @param timeOfSubtreeRootEdgeTop
      * @return integration state at
      */
-    public double[] backwardsIntegrateSubtree (Node untypedSubtreeRoot,
-                                           double timeOfSubtreeRootEdgeTop) {
+    double[] backwardsIntegrateSubtree(Node untypedSubtreeRoot,
+                                       double timeOfSubtreeRootEdgeTop) {
         double[] y;
 
         switch(getNodeKind(untypedSubtreeRoot)) {
@@ -215,7 +211,7 @@ public class TypeMappedTree extends Tree {
 
         ContinuousOutputModel results = new ContinuousOutputModel();
 
-        FirstOrderIntegrator integrator = getNewIntegrator();
+        FirstOrderIntegrator integrator = getNewODEIntegrator();
         integrator.addStepHandler(results);
 
         double delta = 2*Utils.globalPrecisionThreshold;
@@ -238,7 +234,7 @@ public class TypeMappedTree extends Tree {
         return y;
     }
 
-    double[] getLeafState(Node leafNode) {
+    private double[] getLeafState(Node leafNode) {
 
         double[] y = new double[param.getNTypes()*2];
         for (int type = 0; type< param.getNTypes(); type++) {
@@ -256,7 +252,7 @@ public class TypeMappedTree extends Tree {
                 y[type] *= 1.0 - param.getRhoValues()[finalInterval][type];
             }
 
-            FirstOrderIntegrator integrator = getNewIntegrator();
+            FirstOrderIntegrator integrator = getNewODEIntegrator();
 
             double delta = 2*Utils.globalPrecisionThreshold;
 
@@ -301,7 +297,7 @@ public class TypeMappedTree extends Tree {
         return y;
     }
 
-    double[] getSAState(Node saNode) {
+    private double[] getSAState(Node saNode) {
 
         double saNodeTime = param.getNodeTime(saNode);
 
@@ -345,7 +341,7 @@ public class TypeMappedTree extends Tree {
         return y;
     }
 
-    double[] getInternalState(Node internalNode) {
+    private double[] getInternalState(Node internalNode) {
 
         double internalNodeTime = param.getNodeTime(internalNode);
 
@@ -382,7 +378,7 @@ public class TypeMappedTree extends Tree {
         return y;
     }
 
-    double rescale(double[] y, double prevLogF) {
+    private double rescale(double[] y, double prevLogF) {
 
         double C = 0.0;
         for (int type = 0; type< param.getNTypes(); type++)
@@ -396,14 +392,16 @@ public class TypeMappedTree extends Tree {
 
 
     /**
+     * Use a forward-time stochastic simulation algorithm to apply type changes
+     * to a tree.  This requires that the backwards integration calculation has
+     * already been performed.
      *
-     *
-     * @param subtreeRoot
-     * @param startTime
-     * @param startType
-     * @return
+     * @param subtreeRoot root of (untyped) subtree to generate mapping for.
+     * @param startTime time above root to start the simulation.
+     * @param startType type at the start of the simulation.
+     * @return root of new tree with type changes marked.
      */
-    public Node forwardSimulateSubtree (Node subtreeRoot, double startTime, int startType) {
+    Node forwardSimulateSubtree (Node subtreeRoot, double startTime, int startType) {
 
         Node root = new Node();
         setNodeType(root, startType);
@@ -477,12 +475,12 @@ public class TypeMappedTree extends Tree {
                 break;
 
             case SA:
-                currentNode.setNr(nextIntLabel++);
+                currentNode.setNr(nextInternalNodeLabel++);
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getNonDirectAncestorChild(), endTime, currentType));
                 break;
 
             case INTERNAL:
-                currentNode.setNr(nextIntLabel++);
+                currentNode.setNr(nextInternalNodeLabel++);
 
                 // TODO Add support for birth among demes.
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(0), endTime, currentType));
