@@ -8,15 +8,12 @@ import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
-import org.apache.commons.math.ConvergenceException;
-import org.apache.commons.math.FunctionEvaluationException;
-import org.apache.commons.math.MaxIterationsExceededException;
-import org.apache.commons.math.analysis.UnivariateRealFunction;
-import org.apache.commons.math.analysis.integration.TrapezoidIntegrator;
-import org.apache.commons.math.analysis.integration.UnivariateRealIntegrator;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class TypeMappedTree extends Tree {
 
@@ -56,6 +53,10 @@ public class TypeMappedTree extends Tree {
     ContinuousOutputModel[] integrationResults;
     double[] geScaleFactors;
 
+
+    final int MAX_INTEGRATION_STEPS = 100;
+    int nextLeafLabel, nextIntLabel;
+
     @Override
     public void initAndValidate() {
 
@@ -77,12 +78,14 @@ public class TypeMappedTree extends Tree {
         // (startTypeProbs are unnormalized: this is okay for randomChoicePDF.)
         int startType = Randomizer.randomChoicePDF(startTypeProbs);
 
+        nextLeafLabel = 0;
+        nextIntLabel = untypedTree.getLeafNodeCount();
 
         Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0 , startType);
 
-//        assignFromWithoutID(new Tree(typedRoot));
+        System.out.println(typedRoot.toNewick());
 
-        super.initAndValidate();
+        assignFromWithoutID(new Tree(typedRoot));
     }
 
     public int getLeafType(Node leafNode) {
@@ -391,6 +394,7 @@ public class TypeMappedTree extends Tree {
         return prevLogF + Math.log(C);
     }
 
+
     /**
      *
      *
@@ -402,7 +406,7 @@ public class TypeMappedTree extends Tree {
     public Node forwardSimulateSubtree (Node subtreeRoot, double startTime, int startType) {
 
         Node root = new Node();
-        root.setMetaData(typeLabelInput.get(), startType);
+        setNodeType(root, startType);
 
         Node currentNode = root;
         int currentType = startType;
@@ -410,47 +414,75 @@ public class TypeMappedTree extends Tree {
 
         double endTime = param.getNodeTime(subtreeRoot);
 
-        RateFunction rateFunction = new RateFunction(integrationResults[subtreeRoot.getNr()], param);
-        rateFunction.setFromType(currentType);
-        UnivariateRealIntegrator integrator = new TrapezoidIntegrator();
+        double[] rates = new double[param.getNTypes()];
+        double[] ratesPrime = new double[param.getNTypes()];
+        double totalRate, totalRatePrime;
 
         while (true) {
 
             // Determine time of next event
 
-            double u = Randomizer.nextDouble();
+            double K = -Math.log(Randomizer.nextDouble());
+            double I = 0.0;
 
-            if (u>getProbOfNoEvent(rateFunction, integrator, currentTime, endTime))
+            double t = currentTime;
+            double dt = (endTime-currentTime)/MAX_INTEGRATION_STEPS;
+            totalRate = getTotalFowardsRate(currentType, currentTime, subtreeRoot, rates);
+
+            int integrationStep;
+            for (integrationStep=0; integrationStep<MAX_INTEGRATION_STEPS; integrationStep++) {
+                double tprime = currentTime + (endTime-currentTime)*(integrationStep+1)/MAX_INTEGRATION_STEPS;
+
+                totalRatePrime = getTotalFowardsRate(currentType, tprime, subtreeRoot, ratesPrime);
+
+                I += dt*(totalRate + totalRatePrime)/2.0;
+
+                if (I >= K) {
+                    currentTime = t + 0.5*dt;
+                    break;
+                }
+
+                totalRate = totalRatePrime;
+                double[] tmp = rates;
+                rates = ratesPrime;
+                ratesPrime = tmp;
+
+                t = tprime;
+            }
+
+            if (integrationStep == MAX_INTEGRATION_STEPS)
                 break;
 
-            currentTime = getWaitingTime(rateFunction, integrator, currentTime, u);
-            currentNode.setHeight(param.getTotalProcessLength()-currentTime);
+            currentNode.setHeight(param.getTotalProcessLength() - currentTime);
 
             // Sample event type
 
-            currentType = getNewType(rateFunction, currentTime);
-            rateFunction.setFromType(currentType);
+            currentType = Randomizer.randomChoicePDF(ratesPrime);
 
             // Implement event in tree
 
             Node newNode = new Node();
-            newNode.setMetaData(typeLabelInput.get(), currentType);
+            setNodeType(newNode, currentType);
 
             currentNode.addChild(newNode);
             currentNode = newNode;
         }
 
-        currentNode.setHeight(endTime);
+        currentNode.setHeight(param.getTotalProcessLength() - endTime);
 
         switch(getNodeKind(subtreeRoot)) {
             case LEAF:
+                currentNode.setNr(subtreeRoot.getNr());
+                currentNode.setID(subtreeRoot.getID());
                 break;
 
             case SA:
+                currentNode.setNr(nextIntLabel++);
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getNonDirectAncestorChild(), endTime, currentType));
                 break;
 
             case INTERNAL:
+                currentNode.setNr(nextIntLabel++);
 
                 // TODO Add support for birth among demes.
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(0), endTime, currentType));
@@ -464,84 +496,66 @@ public class TypeMappedTree extends Tree {
         return root;
     }
 
-    public double getProbOfNoEvent(RateFunction rateFunction, UnivariateRealIntegrator integrator,
-                                   double startTime, double endTime) {
-        try {
-            return integrator.integrate(rateFunction, startTime, endTime);
+    private double[] getForwardsRates(int fromType, double time, Node baseNode, double[] result) {
+        ContinuousOutputModel com = integrationResults[baseNode.getNr()];
+        com.setInterpolatedTime(time);
+        double[] y = com.getInterpolatedState();
+        int interval = param.getIntervalIndex(time);
 
-        } catch (FunctionEvaluationException | ConvergenceException e) {
-            throw new IllegalStateException("Numerical error integrating event probability.");
-        }
-    }
-
-    public double getWaitingTime(RateFunction rateFunction, UnivariateRealIntegrator integrator,
-                                 double startTime, double u) {
-
-
-        return 0.0;
-    }
-
-    public class ProbFunction implements UnivariateRealFunction {
-
-        RateFunction rateFunction;
-        UnivariateRealIntegrator integrator;
-        double startTime;
-
-        public ProbFunction(RateFunction rateFunction, UnivariateRealIntegrator integrator,
-                            double startTime) {
-
-        }
-
-        @Override
-        public double value(double x) throws FunctionEvaluationException {
-            return 0;
-        }
-    }
-
-    public class RateFunction implements UnivariateRealFunction {
-
-        ContinuousOutputModel com;
-        Parameterization p;
-        int fromType;
-
-        public RateFunction(ContinuousOutputModel com, Parameterization p) {
-            this.com = com;
-            this.p = p;
-            this.fromType = -1;
-        }
-
-        public void setFromType(int fromType) {
-            this.fromType = fromType;
-        }
-
-        public double getSingleRateValue(double t, int type) {
-            com.setInterpolatedTime(t);
-            double[] y = com.getInterpolatedState();
-            int interval = p.getIntervalIndex(t);
-
-            return (p.getCrossBirthRates()[interval][fromType][type]*y[type]
-                    + p.getMigRates()[interval][fromType][type])
-                    * y[p.getNTypes()+type]/y[p.getNTypes()+fromType];
-        }
-
-        @Override
-        public double value(double t) {
-
-            com.setInterpolatedTime(t);
-            double[] y = com.getInterpolatedState();
-            int interval = p.getIntervalIndex(t);
-
-            double totalRate = 0.0;
-            for (int type=0; type<p.getNTypes(); type++) {
-                double thisRate = (p.getCrossBirthRates()[interval][fromType][type]*y[type]
-                        + p.getMigRates()[interval][fromType][type])
-                        * y[p.getNTypes()+type]/y[p.getNTypes()+fromType];
-
-                totalRate += thisRate;
+        for (int type=0; type<param.getNTypes(); type++) {
+            if (type == fromType) {
+                result[type] = 0.0;
+                continue;
             }
 
-            return totalRate;
+            result[type] = (param.getCrossBirthRates()[interval][fromType][type] * y[type]
+                        + param.getMigRates()[interval][fromType][type])
+                        * y[param.getNTypes() + type];
         }
+
+        if (y[param.getNTypes()+fromType]<=0.0) {
+            // The source type prob approaches zero as the integration closes
+            // in on a node with a defined type.  This causes the transition
+            // rate to this type to become infinite.  What follows is a hack
+            // to ensure that this important situation is handled properly.
+
+            int maxRateIdx = -1;
+            double maxRate = Double.NEGATIVE_INFINITY;
+            for (int type=0; type<param.getNTypes(); type++) {
+                if (result[type]>maxRate) {
+                    maxRateIdx = type;
+                    maxRate = result[type];
+                }
+            }
+
+            for (int type=0; type<param.getNTypes(); type++)
+                result[type] = type == maxRateIdx ? 1.0 : 0.0 ;
+
+        } else {
+            // Apply source type prob as rate denominator:
+
+            for (int type=0; type<param.getNTypes(); type++)
+                result[type] /= y[param.getNTypes()+fromType];
+
+        }
+
+        return result;
     }
+
+    private double getTotalFowardsRate(int fromType, double time, Node baseNode, double[] working) {
+        double totalRate = 0.0;
+        double[] rates = getForwardsRates(fromType, time, baseNode, working);
+        for (int type=0; type<param.getNTypes(); type++)
+            totalRate += rates[type];
+
+        return totalRate;
+    }
+
+    private void setNodeType(Node node, int type) {
+        node.setMetaData(typeLabelInput.get(), type);
+
+        node.metaDataString = String.format("%s=\"%s\"", typeLabelInput.get(), type);
+    }
+
 
 }
