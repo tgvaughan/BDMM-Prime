@@ -7,6 +7,13 @@ import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
+import beast.util.Randomizer;
+import org.apache.commons.math.ConvergenceException;
+import org.apache.commons.math.FunctionEvaluationException;
+import org.apache.commons.math.MaxIterationsExceededException;
+import org.apache.commons.math.analysis.UnivariateRealFunction;
+import org.apache.commons.math.analysis.integration.TrapezoidIntegrator;
+import org.apache.commons.math.analysis.integration.UnivariateRealIntegrator;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
@@ -42,7 +49,7 @@ public class TypeMappedTree extends Tree {
             "Tree on which to apply mapping.",
             Input.Validate.REQUIRED);
 
-    Parameterization parameterization;
+    Parameterization param;
     Tree untypedTree;
 
     ODESystem odeSystem;
@@ -52,16 +59,27 @@ public class TypeMappedTree extends Tree {
     @Override
     public void initAndValidate() {
 
-        parameterization = parameterizationInput.get();
+        param = parameterizationInput.get();
         untypedTree = treeInput.get();
 
-        odeSystem = new ODESystem(parameterization);
+        odeSystem = new ODESystem(param);
         integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
         geScaleFactors = new double[untypedTree.getNodeCount()];
         double[] y = backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
-//        Node typedRoot = fowardSimulation(treeInput.get().getRoot(), rootType);
-//
+        // Sample starting type
+
+        double[] startTypeProbs = new double[param.getNTypes()];
+
+        for (int type=0; type<param.getNTypes(); type++)
+            startTypeProbs[type] = y[type+param.getNTypes()]*frequenciesInput.get().getValue(type);
+
+        // (startTypeProbs are unnormalized: this is okay for randomChoicePDF.)
+        int startType = Randomizer.randomChoicePDF(startTypeProbs);
+
+
+        Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0 , startType);
+
 //        assignFromWithoutID(new Tree(typedRoot));
 
         super.initAndValidate();
@@ -94,12 +112,12 @@ public class TypeMappedTree extends Tree {
         rhoSamplingIndex = new int[untypedTree.getLeafNodeCount()];
 
         for (int nodeNr=0; nodeNr < treeInput.get().getLeafNodeCount(); nodeNr++) {
-            double nodeTime = parameterization.getNodeTime(untypedTree.getNode(nodeNr));
+            double nodeTime = param.getNodeTime(untypedTree.getNode(nodeNr));
             rhoSampled[nodeNr] = false;
-            for (double rhoSamplingTime : parameterization.getRhoSamplingTimes()) {
+            for (double rhoSamplingTime : param.getRhoSamplingTimes()) {
                 if (Utils.equalWithPrecision(nodeTime, rhoSamplingTime)) {
                     rhoSampled[nodeNr] = true;
-                    rhoSamplingIndex[nodeNr] = parameterization.getIntervalIndex(rhoSamplingTime);
+                    rhoSamplingIndex[nodeNr] = param.getIntervalIndex(rhoSamplingTime);
                     break;
                 }
             }
@@ -156,12 +174,20 @@ public class TypeMappedTree extends Tree {
 
     FirstOrderIntegrator getNewIntegrator() {
         return new DormandPrince54Integrator(
-                parameterization.getTotalProcessLength()/1e100,
-                parameterization.getTotalProcessLength()/10.0,
+                param.getTotalProcessLength()/1e100,
+                param.getTotalProcessLength()/10.0,
                 1e-100, 1e-7);
     }
 
 
+    /**
+     * Integrate p0 and ge from leaves to root of subtree.  Integration results are
+     * stored in the field integrationResults.
+     *
+     * @param untypedSubtreeRoot root node of untyped subtree
+     * @param timeOfSubtreeRootEdgeTop
+     * @return integration state at
+     */
     public double[] backwardsIntegrateSubtree (Node untypedSubtreeRoot,
                                            double timeOfSubtreeRootEdgeTop) {
         double[] y;
@@ -191,13 +217,13 @@ public class TypeMappedTree extends Tree {
 
         double delta = 2*Utils.globalPrecisionThreshold;
 
-        double timeOfSubtreeRootEdgeBottom = parameterization.getNodeTime(untypedSubtreeRoot);
+        double timeOfSubtreeRootEdgeBottom = param.getNodeTime(untypedSubtreeRoot);
 
         integrator.addEventHandler(odeSystem,
                 (timeOfSubtreeRootEdgeTop-timeOfSubtreeRootEdgeBottom)/100,
                 1e-5, 1000);
 
-        odeSystem.setInterval(parameterization.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
+        odeSystem.setInterval(param.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
 
         integrator.integrate(odeSystem,
                 timeOfSubtreeRootEdgeBottom - delta, y,
@@ -211,20 +237,20 @@ public class TypeMappedTree extends Tree {
 
     double[] getLeafState(Node leafNode) {
 
-        double[] y = new double[parameterization.getNTypes()*2];
-        for (int type=0; type<parameterization.getNTypes(); type++) {
+        double[] y = new double[param.getNTypes()*2];
+        for (int type = 0; type< param.getNTypes(); type++) {
             y[type] = 1.0;
-            y[parameterization.getNTypes()+type] = 0.0;
+            y[param.getNTypes()+type] = 0.0;
         }
 
-        double leafTime = parameterization.getNodeTime(leafNode);
-        double T = parameterization.getTotalProcessLength();
+        double leafTime = param.getNodeTime(leafNode);
+        double T = param.getTotalProcessLength();
 
         if (Utils.lessThanWithPrecision(leafTime, T)) {
 
-            int finalInterval = parameterization.getIntervalIndex(T);
-            for (int type=0; type<parameterization.getNTypes(); type++) {
-                y[type] *= 1.0 - parameterization.getRhoValues()[finalInterval][type];
+            int finalInterval = param.getIntervalIndex(T);
+            for (int type = 0; type< param.getNTypes(); type++) {
+                y[type] *= 1.0 - param.getRhoValues()[finalInterval][type];
             }
 
             FirstOrderIntegrator integrator = getNewIntegrator();
@@ -242,10 +268,10 @@ public class TypeMappedTree extends Tree {
 
             int rhoSamplingInterval = getRhoSamplingInterval(leafNode);
 
-            for (int type=0; type<parameterization.getNTypes(); type++) {
-                double rho = parameterization.getRhoValues()[rhoSamplingInterval][type];
+            for (int type = 0; type< param.getNTypes(); type++) {
+                double rho = param.getRhoValues()[rhoSamplingInterval][type];
                 y[type] *= 1.0 - rho;
-                y[type + parameterization.getNTypes()] =
+                y[type + param.getNTypes()] =
                         type==leafType
                                 ? rho
                                 : 0.0;
@@ -253,13 +279,13 @@ public class TypeMappedTree extends Tree {
 
         } else {
 
-            int nodeInterval = parameterization.getNodeIntervalIndex(leafNode);
+            int nodeInterval = param.getNodeIntervalIndex(leafNode);
 
-            for (int type=0; type<parameterization.getNTypes(); type++) {
-                double psi = parameterization.getSamplingRates()[nodeInterval][type];
-                double r = parameterization.getRemovalProbs()[nodeInterval][type];
+            for (int type = 0; type< param.getNTypes(); type++) {
+                double psi = param.getSamplingRates()[nodeInterval][type];
+                double r = param.getRemovalProbs()[nodeInterval][type];
 
-                y[type + parameterization.getNTypes()] =
+                y[type + param.getNTypes()] =
                         type==leafType
                                 ? psi*(r + (1.0-r)*y[type])
                                 : 0.0;
@@ -274,7 +300,7 @@ public class TypeMappedTree extends Tree {
 
     double[] getSAState(Node saNode) {
 
-        double saNodeTime = parameterization.getNodeTime(saNode);
+        double saNodeTime = param.getNodeTime(saNode);
 
         double[] y = backwardsIntegrateSubtree(saNode.getNonDirectAncestorChild(), saNodeTime);
 
@@ -284,12 +310,12 @@ public class TypeMappedTree extends Tree {
 
             int rhoSamplingInterval = getRhoSamplingInterval(saNode);
 
-            for (int type=0; type<parameterization.getNTypes(); type++) {
-                double rho = parameterization.getRhoValues()[rhoSamplingInterval][type];
-                double r = parameterization.getRemovalProbs()[rhoSamplingInterval][type];
+            for (int type = 0; type< param.getNTypes(); type++) {
+                double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                double r = param.getRemovalProbs()[rhoSamplingInterval][type];
 
                 y[type] *= 1.0 - rho;
-                y[type+parameterization.getNTypes()] *=
+                y[type+ param.getNTypes()] *=
                         type==saType
                                 ? rho*(1-r)
                                 : 0.0;
@@ -297,13 +323,13 @@ public class TypeMappedTree extends Tree {
 
         } else {
 
-            int nodeInterval = parameterization.getNodeIntervalIndex(saNode);
+            int nodeInterval = param.getNodeIntervalIndex(saNode);
 
-            for (int type=0; type<parameterization.getNTypes(); type++) {
-                double psi = parameterization.getSamplingRates()[nodeInterval][type];
-                double r = parameterization.getRemovalProbs()[nodeInterval][type];
+            for (int type = 0; type< param.getNTypes(); type++) {
+                double psi = param.getSamplingRates()[nodeInterval][type];
+                double r = param.getRemovalProbs()[nodeInterval][type];
 
-                y[type + parameterization.getNTypes()] *=
+                y[type + param.getNTypes()] *=
                         type==saType
                                 ? psi*(1-r)
                                 : 0.0;
@@ -318,7 +344,7 @@ public class TypeMappedTree extends Tree {
 
     double[] getInternalState(Node internalNode) {
 
-        double internalNodeTime = parameterization.getNodeTime(internalNode);
+        double internalNodeTime = param.getNodeTime(internalNode);
 
         double[] yLeft = backwardsIntegrateSubtree(internalNode.getChild(0), internalNodeTime);
         double[] yRight = backwardsIntegrateSubtree(internalNode.getChild(1), internalNodeTime);
@@ -326,22 +352,22 @@ public class TypeMappedTree extends Tree {
         double logFLeft = geScaleFactors[internalNode.getChild(0).getNr()];
         double logFRight = geScaleFactors[internalNode.getChild(1).getNr()];
 
-        double[] y = new double[parameterization.getNTypes()*2];
+        double[] y = new double[param.getNTypes()*2];
 
-        int nodeInterval = parameterization.getNodeIntervalIndex(internalNode);
+        int nodeInterval = param.getNodeIntervalIndex(internalNode);
 
-        int N = parameterization.getNTypes();
+        int N = param.getNTypes();
 
-        for (int type=0; type<parameterization.getNTypes(); type++) {
+        for (int type = 0; type< param.getNTypes(); type++) {
             y[type] = yLeft[type];
             y[N+type] = 0.0;
 
             for (int typeOther=0; typeOther<N; typeOther++) {
                 if (typeOther == type) {
-                    y[N+type] += parameterization.getBirthRates()[nodeInterval][type]
+                    y[N+type] += param.getBirthRates()[nodeInterval][type]
                             *yLeft[N+type]*yRight[N+type];
                 } else {
-                    y[N+type] += parameterization.getCrossBirthRates()[nodeInterval][type][typeOther]
+                    y[N+type] += param.getCrossBirthRates()[nodeInterval][type][typeOther]
                             *(yLeft[N+type]*yRight[N+typeOther] + yLeft[N+typeOther]*yRight[N+type]);
                 }
             }
@@ -356,19 +382,166 @@ public class TypeMappedTree extends Tree {
     double rescale(double[] y, double prevLogF) {
 
         double C = 0.0;
-        for (int type=0; type<parameterization.getNTypes(); type++)
-            C = Math.max(C, y[type+parameterization.getNTypes()]);
+        for (int type = 0; type< param.getNTypes(); type++)
+            C = Math.max(C, y[type+ param.getNTypes()]);
 
-        for (int type=0; type<parameterization.getNTypes(); type++)
-            y[type+parameterization.getNTypes()] /= C;
+        for (int type = 0; type< param.getNTypes(); type++)
+            y[type+ param.getNTypes()] /= C;
 
         return prevLogF + Math.log(C);
     }
 
-    public Node fowardSimulation() {
-       Node root = new Node();
+    /**
+     *
+     *
+     * @param subtreeRoot
+     * @param startTime
+     * @param startType
+     * @return
+     */
+    public Node forwardSimulateSubtree (Node subtreeRoot, double startTime, int startType) {
 
-       return root;
+        Node root = new Node();
+        root.setMetaData(typeLabelInput.get(), startType);
+
+        Node currentNode = root;
+        int currentType = startType;
+        double currentTime = startTime;
+
+        double endTime = param.getNodeTime(subtreeRoot);
+
+        RateFunction rateFunction = new RateFunction(integrationResults[subtreeRoot.getNr()], param);
+        rateFunction.setFromType(currentType);
+        UnivariateRealIntegrator integrator = new TrapezoidIntegrator();
+
+        while (true) {
+
+            // Determine time of next event
+
+            double u = Randomizer.nextDouble();
+
+            if (u>getProbOfNoEvent(rateFunction, integrator, currentTime, endTime))
+                break;
+
+            currentTime = getWaitingTime(rateFunction, integrator, currentTime, u);
+            currentNode.setHeight(param.getTotalProcessLength()-currentTime);
+
+            // Sample event type
+
+            currentType = getNewType(rateFunction, currentTime);
+            rateFunction.setFromType(currentType);
+
+            // Implement event in tree
+
+            Node newNode = new Node();
+            newNode.setMetaData(typeLabelInput.get(), currentType);
+
+            currentNode.addChild(newNode);
+            currentNode = newNode;
+        }
+
+        currentNode.setHeight(endTime);
+
+        switch(getNodeKind(subtreeRoot)) {
+            case LEAF:
+                break;
+
+            case SA:
+                currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getNonDirectAncestorChild(), endTime, currentType));
+                break;
+
+            case INTERNAL:
+
+                // TODO Add support for birth among demes.
+                currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(0), endTime, currentType));
+                currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(1), endTime, currentType));
+                break;
+
+            default:
+                throw new IllegalArgumentException("Switch fell through in forward simulation.");
+        }
+
+        return root;
+    }
+
+    public double getProbOfNoEvent(RateFunction rateFunction, UnivariateRealIntegrator integrator,
+                                   double startTime, double endTime) {
+        try {
+            return integrator.integrate(rateFunction, startTime, endTime);
+
+        } catch (FunctionEvaluationException | ConvergenceException e) {
+            throw new IllegalStateException("Numerical error integrating event probability.");
+        }
+    }
+
+    public double getWaitingTime(RateFunction rateFunction, UnivariateRealIntegrator integrator,
+                                 double startTime, double u) {
+
+
+        return 0.0;
+    }
+
+    public class ProbFunction implements UnivariateRealFunction {
+
+        RateFunction rateFunction;
+        UnivariateRealIntegrator integrator;
+        double startTime;
+
+        public ProbFunction(RateFunction rateFunction, UnivariateRealIntegrator integrator,
+                            double startTime) {
+
+        }
+
+        @Override
+        public double value(double x) throws FunctionEvaluationException {
+            return 0;
+        }
+    }
+
+    public class RateFunction implements UnivariateRealFunction {
+
+        ContinuousOutputModel com;
+        Parameterization p;
+        int fromType;
+
+        public RateFunction(ContinuousOutputModel com, Parameterization p) {
+            this.com = com;
+            this.p = p;
+            this.fromType = -1;
+        }
+
+        public void setFromType(int fromType) {
+            this.fromType = fromType;
+        }
+
+        public double getSingleRateValue(double t, int type) {
+            com.setInterpolatedTime(t);
+            double[] y = com.getInterpolatedState();
+            int interval = p.getIntervalIndex(t);
+
+            return (p.getCrossBirthRates()[interval][fromType][type]*y[type]
+                    + p.getMigRates()[interval][fromType][type])
+                    * y[p.getNTypes()+type]/y[p.getNTypes()+fromType];
+        }
+
+        @Override
+        public double value(double t) {
+
+            com.setInterpolatedTime(t);
+            double[] y = com.getInterpolatedState();
+            int interval = p.getIntervalIndex(t);
+
+            double totalRate = 0.0;
+            for (int type=0; type<p.getNTypes(); type++) {
+                double thisRate = (p.getCrossBirthRates()[interval][fromType][type]*y[type]
+                        + p.getMigRates()[interval][fromType][type])
+                        * y[p.getNTypes()+type]/y[p.getNTypes()+fromType];
+
+                totalRate += thisRate;
+            }
+
+            return totalRate;
+        }
     }
 
 }
