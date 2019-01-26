@@ -6,6 +6,13 @@ import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.events.EventHandler;
 
+/**
+ * System of p0 and ge ODEs used in stochastic mapping.
+ *
+ * This class is kept distinct from the similar classes in the distributions
+ * package just because the stochastic mapper needs are more basic.  We can
+ * potentially merge these later on though.
+ */
 public class ODESystem implements FirstOrderDifferentialEquations, EventHandler {
 
     private Parameterization param;

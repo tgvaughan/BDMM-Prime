@@ -31,14 +31,6 @@ public class TypeMappedTree extends Tree {
                     "(like node types/locations) in the tree",
             Input.Validate.XOR, typeTraitSetInput);
 
-    public Input<Double> relativeToleranceInput = new Input<>("relTolerance",
-            "relative tolerance for numerical integration",
-            1e-7);
-
-    public Input<Double> absoluteToleranceInput = new Input<>("absTolerance",
-            "absolute tolerance for numerical integration",
-            1e-100 /*Double.MIN_VALUE*/);
-
     public Input<Tree> treeInput = new Input<>("untypedTree",
             "Tree on which to apply mapping.",
             Input.Validate.REQUIRED);
@@ -49,9 +41,23 @@ public class TypeMappedTree extends Tree {
     private ODESystem odeSystem;
     private ContinuousOutputModel[] integrationResults;
     double[] geScaleFactors;
+    private FirstOrderIntegrator odeIntegrator;
 
+    /**
+     * Parameters for backward-time numerical integration.
+     */
+    private final double BACKWARD_INTEGRATION_MIN_STEP = 1e-100;
+    private final double BACKWARD_INTEGRATION_MAX_STEP = 0.1;
+    private final double BACKWARD_INTEGRATION_ABS_TOLERANCE = 1e-100;
+    private final double BACKWARD_INTEGRATION_REL_TOLERANCE = 1e-7;
+    private final int RATE_CHANGE_CHECKS_PER_EDGE = 100;
 
-    private final int MAX_INTEGRATION_STEPS = 100;
+    /**
+     * Maximum number of steps in each waiting time calculation in
+     * forward simulation.
+     */
+    private final int FORWARD_INTEGRATION_STEPS = 100;
+
     private int nextInternalNodeLabel;
 
     @Override
@@ -59,6 +65,11 @@ public class TypeMappedTree extends Tree {
 
         param = parameterizationInput.get();
         untypedTree = treeInput.get();
+
+        odeIntegrator = new DormandPrince54Integrator(
+                param.getTotalProcessLength()*BACKWARD_INTEGRATION_MIN_STEP,
+                param.getTotalProcessLength()*BACKWARD_INTEGRATION_MAX_STEP,
+                BACKWARD_INTEGRATION_ABS_TOLERANCE, BACKWARD_INTEGRATION_REL_TOLERANCE);
 
         odeSystem = new ODESystem(param);
         integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
@@ -171,14 +182,6 @@ public class TypeMappedTree extends Tree {
         return NodeKind.INTERNAL;
     }
 
-    private FirstOrderIntegrator getNewODEIntegrator() {
-        return new DormandPrince54Integrator(
-                param.getTotalProcessLength()/1e100,
-                param.getTotalProcessLength()/10.0,
-                1e-100, 1e-7);
-    }
-
-
     /**
      * Integrate p0 and ge from leaves to root of subtree.  Integration results are
      * stored in the field integrationResults.
@@ -208,23 +211,25 @@ public class TypeMappedTree extends Tree {
                 throw new RuntimeException("Node kind switch fell through!");
         }
 
-
         ContinuousOutputModel results = new ContinuousOutputModel();
 
-        FirstOrderIntegrator integrator = getNewODEIntegrator();
-        integrator.addStepHandler(results);
+        // Prepare integrator.
+        odeIntegrator.clearEventHandlers();
+        odeIntegrator.clearStepHandlers();
+
+        odeIntegrator.addStepHandler(results);
 
         double delta = 2*Utils.globalPrecisionThreshold;
 
         double timeOfSubtreeRootEdgeBottom = param.getNodeTime(untypedSubtreeRoot);
 
-        integrator.addEventHandler(odeSystem,
+        odeIntegrator.addEventHandler(odeSystem,
                 (timeOfSubtreeRootEdgeTop-timeOfSubtreeRootEdgeBottom)/100,
                 1e-5, 1000);
 
         odeSystem.setInterval(param.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
 
-        integrator.integrate(odeSystem,
+        odeIntegrator.integrate(odeSystem,
                 timeOfSubtreeRootEdgeBottom - delta, y,
                 timeOfSubtreeRootEdgeTop+delta, y);
 
@@ -252,13 +257,14 @@ public class TypeMappedTree extends Tree {
                 y[type] *= 1.0 - param.getRhoValues()[finalInterval][type];
             }
 
-            FirstOrderIntegrator integrator = getNewODEIntegrator();
-
             double delta = 2*Utils.globalPrecisionThreshold;
 
             odeSystem.setInterval(finalInterval);
-            integrator.addEventHandler(odeSystem, (T-leafTime)/100, 1e-5, 1000);
-            integrator.integrate(odeSystem, T-delta, y, leafTime+delta, y);
+
+            odeIntegrator.clearStepHandlers();
+            odeIntegrator.clearEventHandlers();
+            odeIntegrator.addEventHandler(odeSystem, (T-leafTime)/100, 1e-5, 1000);
+            odeIntegrator.integrate(odeSystem, T-delta, y, leafTime+delta, y);
         }
 
         int leafType = getLeafType(leafNode);
@@ -424,12 +430,12 @@ public class TypeMappedTree extends Tree {
             double I = 0.0;
 
             double t = currentTime;
-            double dt = (endTime-currentTime)/MAX_INTEGRATION_STEPS;
+            double dt = (endTime-currentTime)/ FORWARD_INTEGRATION_STEPS;
             totalRate = getTotalFowardsRate(currentType, currentTime, subtreeRoot, rates);
 
             int integrationStep;
-            for (integrationStep=0; integrationStep<MAX_INTEGRATION_STEPS; integrationStep++) {
-                double tprime = currentTime + (endTime-currentTime)*(integrationStep+1)/MAX_INTEGRATION_STEPS;
+            for (integrationStep=0; integrationStep< FORWARD_INTEGRATION_STEPS; integrationStep++) {
+                double tprime = currentTime + (endTime-currentTime)*(integrationStep+1)/ FORWARD_INTEGRATION_STEPS;
 
                 totalRatePrime = getTotalFowardsRate(currentType, tprime, subtreeRoot, ratesPrime);
 
@@ -448,7 +454,7 @@ public class TypeMappedTree extends Tree {
                 t = tprime;
             }
 
-            if (integrationStep == MAX_INTEGRATION_STEPS)
+            if (integrationStep == FORWARD_INTEGRATION_STEPS)
                 break;
 
             currentNode.setHeight(param.getTotalProcessLength() - currentTime);
