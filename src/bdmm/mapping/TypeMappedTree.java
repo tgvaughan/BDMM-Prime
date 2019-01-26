@@ -58,22 +58,27 @@ public class TypeMappedTree extends Tree {
      */
     private final int FORWARD_INTEGRATION_STEPS = 100;
 
-    private int nextInternalNodeLabel;
-
     @Override
     public void initAndValidate() {
 
         param = parameterizationInput.get();
         untypedTree = treeInput.get();
 
+        // Prepare the backward-time integrator!
+
         odeIntegrator = new DormandPrince54Integrator(
                 param.getTotalProcessLength()*BACKWARD_INTEGRATION_MIN_STEP,
                 param.getTotalProcessLength()*BACKWARD_INTEGRATION_MAX_STEP,
                 BACKWARD_INTEGRATION_ABS_TOLERANCE, BACKWARD_INTEGRATION_REL_TOLERANCE);
 
+        // Prepare the ODE system and the arrays used to store the backward-time
+        // integration results.
+
         odeSystem = new ODESystem(param);
         integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
         geScaleFactors = new double[untypedTree.getNodeCount()];
+
+        // Perform the backward-time integration.
         double[] y = backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
         // Sample starting type
@@ -86,11 +91,13 @@ public class TypeMappedTree extends Tree {
         // (startTypeProbs are unnormalized: this is okay for randomChoicePDF.)
         int startType = Randomizer.randomChoicePDF(startTypeProbs);
 
-        nextInternalNodeLabel = untypedTree.getLeafNodeCount();
+        // Simulate type changes down tree
 
         Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0 , startType);
 
-        System.out.println(typedRoot.toNewick());
+        // Ensure internal nodes are numbered correctly.  (Leaf node numbers and
+        // labels are matched to those in the untyped tree during the simulation.)
+        numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
 
         assignFromWithoutID(new Tree(typedRoot));
     }
@@ -213,7 +220,8 @@ public class TypeMappedTree extends Tree {
 
         ContinuousOutputModel results = new ContinuousOutputModel();
 
-        // Prepare integrator.
+        // Prepare the integrator:
+
         odeIntegrator.clearEventHandlers();
         odeIntegrator.clearStepHandlers();
 
@@ -228,6 +236,8 @@ public class TypeMappedTree extends Tree {
                 1e-5, 1000);
 
         odeSystem.setInterval(param.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
+
+        // Perform the integration:
 
         odeIntegrator.integrate(odeSystem,
                 timeOfSubtreeRootEdgeBottom - delta, y,
@@ -384,6 +394,14 @@ public class TypeMappedTree extends Tree {
         return y;
     }
 
+    /**
+     * Scale state vector y so that its largest element is 1.0.  Takes
+     * the existing scale factor as input and returns the updated scale factor.
+     *
+     * @param y state vector to scale
+     * @param prevLogF current (log) scaling factor
+     * @return updated (log) scaling factor.
+     */
     private double rescale(double[] y, double prevLogF) {
 
         double C = 0.0;
@@ -481,13 +499,10 @@ public class TypeMappedTree extends Tree {
                 break;
 
             case SA:
-                currentNode.setNr(nextInternalNodeLabel++);
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getNonDirectAncestorChild(), endTime, currentType));
                 break;
 
             case INTERNAL:
-                currentNode.setNr(nextInternalNodeLabel++);
-
                 // TODO Add support for birth among demes.
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(0), endTime, currentType));
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(1), endTime, currentType));
@@ -561,5 +576,25 @@ public class TypeMappedTree extends Tree {
         node.metaDataString = String.format("%s=\"%s\"", typeLabelInput.get(), type);
     }
 
+    /**
+     * Apply node numbers to internal nodes below and including subtreeRoot.
+     * Numbers are applied postorder, so parents always have larger numbers
+     * than their children and the root has the hightest number.
+     *
+     * @param subtreeRoot root of subtree
+     * @param nextNumber next number to be used
+     * @return next number to be used on another part of the tree.
+     */
+    private int numberInternalNodesOnSubtree(Node subtreeRoot, int nextNumber) {
 
+        if (subtreeRoot.isLeaf())
+            return nextNumber;
+
+        for (Node child : subtreeRoot.getChildren())
+            nextNumber = numberInternalNodesOnSubtree(child, nextNumber);
+
+        subtreeRoot.setNr(nextNumber);
+
+        return nextNumber+1;
+    }
 }

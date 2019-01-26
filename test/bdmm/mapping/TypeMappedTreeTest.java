@@ -73,7 +73,6 @@ public class TypeMappedTreeTest {
         logProb = Math.log(logProb);
 
         assertEquals(logProbTrue, logProb, 1e-5);
-
     }
 
     @Test
