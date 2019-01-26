@@ -884,7 +884,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "frequencies", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", true,
                 "tree", tree,
-                "typeLabel", "state",
+                "typeLabel", "type",
                 "parallelize", true);
 
 		assertEquals(-661.9588648301033, density.calculateLogP(), 1e-5); // result from BEAST, not checked in R
