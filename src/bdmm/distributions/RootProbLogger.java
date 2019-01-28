@@ -1,9 +1,8 @@
-package bdmm.loggers;
+package bdmm.distributions;
 
 import beast.core.BEASTObject;
 import beast.core.Input;
 import beast.core.Loggable;
-import bdmm.distributions.BirthDeathMigrationDistribution;
 
 import java.io.PrintStream;
 
