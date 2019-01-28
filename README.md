@@ -10,6 +10,6 @@ BDMM, refer to the relevant tutorials found at https://taming-the-beast.org.
 
 BDMM is free software.  It is distributed under the terms of version 3
 of the GNU General Public License.  A copy of this license should
-be found in the file LICENSE located in the root directory of this repository.
+be found in the file COPYING located in the root directory of this repository.
 If this file is absent for some reason, it can also be retrieved from
 https://www.gnu.org/licenses.

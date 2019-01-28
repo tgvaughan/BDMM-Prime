@@ -39,7 +39,7 @@ public class ParameterizationTest {
                         originParam,
                         new RealParameter("0.0 0.0")));
 
-		System.out.println("Number of intervals: " + parameterization.getTotalIntervalCount());
+		Assert.assertEquals(2, parameterization.getTotalIntervalCount());
 
         Assert.assertEquals(2, parameterization.getBirthRates().length);
         Assert.assertEquals(2, parameterization.getDeathRates().length);

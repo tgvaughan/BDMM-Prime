@@ -138,7 +138,6 @@ public class TypeMappedTreeTest {
         }
         logProb = Math.log(logProb) + logScaleFactor;
 
-        System.out.println(logProb);
         assertEquals(logProbTrue, logProb, 1e-5);
 
     }
@@ -207,7 +206,6 @@ public class TypeMappedTreeTest {
         logProb = Math.log(logProb) + logScaleFactor;
 
 
-        System.out.println(logProb);
         assertEquals(logProbTrue, logProb, 1e-3);
     }
 }
