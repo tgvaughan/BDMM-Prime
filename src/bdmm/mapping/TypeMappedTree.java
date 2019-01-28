@@ -54,6 +54,10 @@ public class TypeMappedTree extends Tree {
             "Tree on which to apply mapping.",
             Input.Validate.REQUIRED);
 
+    public Input<Boolean> remapOnLogInput = new Input<>("remapOnLog",
+            "If true, mapping will be regenerated when this object " +
+                    "is logged.", false);
+
     private Parameterization param;
     private Tree untypedTree;
 
@@ -645,7 +649,10 @@ public class TypeMappedTree extends Tree {
 
     @Override
     public void log(long sample, PrintStream out) {
-        doStochasticMapping();
+
+        if (remapOnLogInput.get())
+            doStochasticMapping();
+
         Tree tree = (Tree) getCurrent();
         out.print("tree STATE_" + sample + " = ");
         // Don't sort, this can confuse CalculationNodes relying on the tree

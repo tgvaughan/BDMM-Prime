@@ -348,9 +348,9 @@
             <up idref="samplingProportion.t:h3n2_2deme"/>
             <down idref="becomeUninfectiousRate.t:h3n2_2deme"/>
         </operator>
-            
+
         <operator id="StrictClockRateScaler.c:h3n2_2deme" spec="ScaleOperator" parameter="@clockRate.c:h3n2_2deme" scaleFactor="0.75" weight="3.0"/>
-            
+
         <logger id="tracelog" fileName="$(filebase).log" logEvery="1000">
             <log idref="posterior"/>
             <log idref="likelihood"/>
@@ -365,7 +365,7 @@
             <log idref="clockRate.c:h3n2_2deme"/>
             <log id="rootProb" spec="RootProbLogger" bdmmTreePrior="@birthDeathMigration.t:h3n2_2deme"/>
         </logger>
-            
+
         <logger id="screenlog" logEvery="1000">
             <log idref="posterior"/>
             <log id="ESS.0" spec="util.ESS" arg="@posterior"/>
@@ -374,7 +374,7 @@
             <log idref="treeStat"/>
             <log idref="rootProb"/>
         </logger>
-            
+
         <logger id="treelog.t:h3n2_2deme" fileName="$(filebase).trees" logEvery="1000" mode="tree">
             <log idref="Tree.t:h3n2_2deme"/>
         </logger>

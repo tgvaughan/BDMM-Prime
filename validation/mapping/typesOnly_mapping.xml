@@ -1,0 +1,67 @@
+<beast version="2.0"
+       namespace="beast.core
+                 :beast.core.util
+                 :beast.core.parameter
+                 :beast.evolution.alignment
+                 :beast.evolution.likelihood
+                 :beast.evolution.tree
+                 :beast.evolution.tree.coalescent
+                 :beast.evolution.sitemodel
+                 :beast.evolution.substitutionmodel
+                 :beast.evolution.operators
+                 :beast.math.distributions
+                 :feast.simulation
+                 :bdmm.distribution
+                 :bdmm.parameterization
+                 :bdmm.mapping">
+
+    <typedTree spec="TypeMappedTree" id="typedTree" typeLabel="type" remapOnLog="false">
+
+        <parameterization spec="CanonicalParameterization">
+            <origin spec="RealParameter" id="origin" value="6.0"/>
+            <typeSet id="typeSet" spec="TypeSet" typeTraitSet="@typeTraitSet"/>
+            <birthRate spec="SkylineVectorParameter">
+                <rateValues spec="RealParameter" value="1.2 1.2"/>
+            </birthRate>
+            <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
+                       <rateValues spec="RealParameter" value="1.0"/>
+            </deathRate>
+            <migrationRate spec="SkylineMatrixParameter">
+                <changeTimes spec="RealParameter" value="3.0"/>
+                <rateValues spec="RealParameter" value="0.0 0.0 0.5 0.5"/>
+            </migrationRate>
+            <samplingRate spec="SkylineVectorParameter" typeSet="@typeSet">
+                <rateValues spec="RealParameter" value="0.1"/>
+            </samplingRate>
+            <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
+                <rateValues spec="RealParameter" value="1.0"/>
+            </removalProb>
+        </parameterization>
+
+        <frequencies spec="RealParameter" value="0.5 0.5"/>
+
+        <typeTraitSet id="typeTraitSet" spec="beast.evolution.tree.TraitSet" traitname="type" taxa="@taxonSet">
+            t1=0,t2=0,t3=1,t4=1,t5=0
+        </typeTraitSet>
+
+        <untypedTree spec="beast.util.TreeParser" adjustTipHeights="false" IsLabelledNewick="true"
+                     newick="(t5:5.7,((t1:1,t2:2):1,(t3:3,t4:4):0.5):1.3):0.0;"/>
+        <taxonset spec="TaxonSet" id="taxonSet">
+            <taxon spec="Taxon" id="t1"/>
+            <taxon spec="Taxon" id="t2"/>
+            <taxon spec="Taxon" id="t3"/>
+            <taxon spec="Taxon" id="t4"/>
+            <taxon spec="Taxon" id="t5"/>
+        </taxonset>
+    </typedTree>
+
+
+    <run spec="GPSimulator" nSims="1000">
+
+        <simulationObject idref="typedTree"/>
+
+        <logger spec="Logger" logEvery="1" mode="tree" fileName="$(filebase).trees">
+            <log idref="typedTree"/>
+        </logger>
+    </run>
+</beast>
