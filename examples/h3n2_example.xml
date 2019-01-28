@@ -137,32 +137,16 @@
         <sequence id="seq_EU857084_HongKong_2003.73972603" taxon="EU857084_HongKong_2003.73972603" totalcount="4" value="-----------------------------ATGAAGACTATCATTGCTTTGAGCTACATTCTATGTCTGGTTTTCGCTCAAAAACTTCCCGGAAATGACAACAGCACGGCAACGCTGTGCCTTGGGCACCATGCAGTACCAAACGGAACGATAGTGAAAACAATCACGAATGACCAAATTGAAGTTACTAATGCTACTGAGCTGGTTCAGAGTTCCTCAACAGGTGGAATATGCGACAGTCCTCATCAGATTCTTGATGGAGAAAACTGCACACTAATAGATGCTCTATTGGGAGACCCTCAGTGTGATGGCTTCCAAAATAAGAAATGGGACCTTTTTGTTGAACGCAGCAAAGCCTACAGCAACTGTTACCCTTATGATGTGCCGGATTATGCCTCCCTTAGGTCACTAGTTGCCTCATCCGGCACACTGGAGTTTAACAATGAAAGCTTCAATTGGACTGGAGTCACTCAGAATGGAACAAGCTCTGCTTGCCAAAGGAGATCTAATAAAAGTTTCTTTAGTAGATTGAATTGGTTGACCCACTTAAAATTCAAATACCCAGCATTGAACGTGACTATGCCAAACAATGAAAAATTTGACAAATTGTACATTTGGGGGGTTCACCACCCGGGTACGGACAATGACCAAATCAGCCTATATGCTCAAACATCAGGAAGAATCACAGTCTCTACCAAAAGAAGCCAACAAACTGTAATCCCGAATATCGGATCTAGACCCAGGGTAAGGGATGTCCCCAGCAGAATAAGCATCTATTGGACAATAGTAAAACCGGGAGACATACTTTTGATTAACAGCACAGGGAATCTAATTGCTCCTCGGGGTTACTTCAAAATACGAAGTGGGAAAAGCTCAATAATGAGATCAGATGCACCCATTGGCAAATGCAATTCTGAATGCATCACTCCAAATGGAAGCATTCCCAATGACAAACCATTTCAAAATGTAAACAGGATCACATATGGGGCCTGCCCCAGATATGTTAAGCAAAACACTCTGAAATTGGCAACAGGGATGCGAAATGTACCAGAGAGACAAACTAGAGGCATATTTGGCGCAATCGCGGGTTTCATAGAAAATGGTTGGGAGGGAATGGTGGACGGTTGGTACGGTTTCAGGCATCAAAATTCTGAGGGCACAGGACAAGCAGCAGATCTCAAAAGCACTCAAGCAGCAATCAACCAAATCAATGGGAAACTGAATAGGTTAATCGGGAAAACAAACGAGAAATTCCATCAGATTGAAAAAGAATTCTCAGAAGTAGAAGGGAGAATTCAGGACCTCGAGAAATATGTTGAGGACACTAAAATAGATCTCTGGTCATACAACGCGGAGCTTCTTGTTGCCCTGGAGAACCAACATACAATTGATCTAACTGACTCAGAAATGAACAAACTGTTTGAAAGAACAAAGAAGCAACTGAGGGAAAATGCTGAGGATATGGGCAATGGTTGTTTCAAAATATACCACAAATGTGACAATGCCTGCATAGGGTCAATCAGAAATGGAACTTATGACCATGATGTATACAGAGATGAAGCATTAAACAACCGGTTCCAGATCAAAGGTGTTGAGCTGAAGTCAGGATACAAAGATTGGATCCTATGGATTTCCTTTGCCATATCATGTTTTTTGCTTTGTGTTGCTTTGTTGGGGTTCATCATGTGGGCCTGCCAAAAAGGCAACATTAGGTGCAACATTTGCATTTGA--------------------------------"/>
                                     
     </data>
-        
-
-
-    
-
-
-    
 
     <map name="Uniform" >beast.math.distributions.Uniform</map>
-    
     <map name="Exponential" >beast.math.distributions.Exponential</map>
-    
     <map name="LogNormal" >beast.math.distributions.LogNormalDistributionModel</map>
-    
     <map name="Normal" >beast.math.distributions.Normal</map>
-    
     <map name="Beta" >beast.math.distributions.Beta</map>
-    
     <map name="Gamma" >beast.math.distributions.Gamma</map>
-    
     <map name="LaplaceDistribution" >beast.math.distributions.LaplaceDistribution</map>
-    
     <map name="prior" >beast.math.distributions.Prior</map>
-    
     <map name="InverseGamma" >beast.math.distributions.InverseGamma</map>
-    
     <map name="OneOnX" >beast.math.distributions.OneOnX</map>
     
     <run id="mcmc" spec="MCMC" chainLength="10000000">
@@ -182,15 +166,10 @@
             </stateNode>
                     
             <parameter id="R0.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="Infinity">2.0 2.0</parameter>
-                    
             <parameter id="becomeUninfectiousRate.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="Infinity">1.0 1.0</parameter>
-                    
             <parameter id="samplingProportion.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="1.0">0.01 0.01 0.0 0.0</parameter>
-                    
             <parameter id="rateMatrix.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="100.0">0.1 0.1</parameter>
-                    
             <parameter id="geo-frequencies.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="1.0">0.5 0.5</parameter>
-                    
             <parameter id="clockRate.c:h3n2_2deme" name="stateNode">1.0</parameter>
                 
         </state>
@@ -205,19 +184,14 @@
                     <parameterization spec="EpiParameterization" nTypes="2">
                         <!--<origin spec="RealParameter" id="origin" value="10.0"/>-->
                         <tree idref="Tree.t:h3n2_2deme"/>
-                        <R0 spec="SkylineVectorParameter"
-                            rateValues="@R0.t:h3n2_2deme"/>
-                        <becomeUninfectiousRate spec="SkylineVectorParameter"
-                                                rateValues="@becomeUninfectiousRate.t:h3n2_2deme"/>
-                        <migrationRate spec="SkylineMatrixParameter"
-                                       rateValues="@rateMatrix.t:h3n2_2deme"/>
+                        <R0 spec="SkylineVectorParameter" rateValues="@R0.t:h3n2_2deme"/>
+                        <becomeUninfectiousRate spec="SkylineVectorParameter" rateValues="@becomeUninfectiousRate.t:h3n2_2deme"/>
+                        <migrationRate spec="SkylineMatrixParameter" rateValues="@rateMatrix.t:h3n2_2deme"/>
                         <samplingProportion spec="SkylineVectorParameter" timesAreAges="true" tree="@Tree.t:h3n2_2deme">
                             <changeTimes spec="RealParameter" value="5.57"/>
                             <rateValues idref="samplingProportion.t:h3n2_2deme"/>
                         </samplingProportion>
-                        <removalProb spec="SkylineVectorParameter" nTypes="2">
-                            <rateValues spec="RealParameter" value="1.0"/>
-                        </removalProb>
+                        <removalProb spec="SkylineVectorParameter" nTypes="2"> <rateValues spec="RealParameter" value="1.0"/> </removalProb>
                     </parameterization>
                     <frequencies idref="geo-frequencies.t:h3n2_2deme"/>
 
@@ -228,83 +202,49 @@
                 </distribution>
                             
                 <prior id="RPrior.t:h3n2_2deme" name="distribution" x="@R0.t:h3n2_2deme">
-                                    
                     <LogNormal id="LogNormalDistributionModel.1" name="distr">
-                                            
                         <parameter id="RealParameter.7" estimate="false" name="M">0.0</parameter>
-                                            
                         <parameter id="RealParameter.8" estimate="false" name="S">1.0</parameter>
-                                        
                     </LogNormal>
-                                
                 </prior>
                             
                 <prior id="becomeUninfectiousRatePrior.t:h3n2_2deme" name="distribution" x="@becomeUninfectiousRate.t:h3n2_2deme">
-                                    
                     <LogNormal id="LogNormalDistributionModel.0" name="distr">
-                                            
                         <parameter id="RealParameter.5" estimate="false" name="M">0.0</parameter>
-                                            
                         <parameter id="RealParameter.6" estimate="false" name="S">1.0</parameter>
-                                        
                     </LogNormal>
-                                
                 </prior>
                             
                 <prior id="ClockPrior.c:h3n2_2deme" name="distribution" x="@clockRate.c:h3n2_2deme">
-                                    
                     <Uniform id="Uniform.0" name="distr" upper="Infinity"/>
-                                
                 </prior>
                             
                 <prior id="rateMatrixPrior.t:h3n2_2deme" name="distribution" x="@rateMatrix.t:h3n2_2deme">
-                                    
                     <Exponential id="Exponential.1" name="distr">
-                                            
                         <parameter id="RealParameter.11" estimate="false" name="mean">1.0</parameter>
-                                        
                     </Exponential>
-                                
                 </prior>
                             
-                <distribution id="samplingProportionPrior.t:h3n2_2deme" spec="multitypetree.distributions.ExcludablePrior" x="@samplingProportion.t:h3n2_2deme">
-                                    
-                    <xInclude id="samplingProportionXInclude.t:h3n2_2deme" spec="parameter.BooleanParameter" dimension="4">1 1 0 0</xInclude>
-                                    
+                <prior id="samplingProportionPrior.t:h3n2_2deme" name="distribution">
+                    <x spec="bdmm.util.Slice" arg="@samplingProportion.t:h3n2_2deme" index="0" count="2"/>
                     <Beta id="Beta.0" name="distr">
-                                            
                         <parameter id="RealParameter.9" estimate="false" name="alpha">1.0</parameter>
-                                            
                         <parameter id="RealParameter.10" estimate="false" name="beta">1.0</parameter>
-                                        
                     </Beta>
-                                
-                </distribution>
-                        
+                </prior>
             </distribution>
                     
             <distribution id="likelihood" spec="util.CompoundDistribution">
-                            
                 <distribution id="treeLikelihood.h3n2_2deme" spec="TreeLikelihood" data="@h3n2_2deme" tree="@Tree.t:h3n2_2deme">
-                                    
                     <siteModel id="SiteModel.s:h3n2_2deme" spec="SiteModel">
-                                            
                         <parameter id="mutationRate.s:h3n2_2deme" estimate="false" name="mutationRate">1.0</parameter>
-                                            
                         <parameter id="gammaShape.s:h3n2_2deme" estimate="false" name="shape">1.0</parameter>
-                                            
                         <parameter id="proportionInvariant.s:h3n2_2deme" estimate="false" lower="0.0" name="proportionInvariant" upper="1.0">0.0</parameter>
-                                            
                         <substModel id="JC69.s:h3n2_2deme" spec="JukesCantor"/>
-                                        
                     </siteModel>
-                                    
                     <branchRateModel id="StrictClock.c:h3n2_2deme" spec="beast.evolution.branchratemodel.StrictClockModel" clock.rate="@clockRate.c:h3n2_2deme"/>
-                                
                 </distribution>
-                        
             </distribution>
-                
         </distribution>
 
         <operator id="treeScaler" scaleFactor="0.75" spec="ScaleOperator" tree="@Tree.t:h3n2_2deme" weight="3.0"/>
