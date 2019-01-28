@@ -378,13 +378,16 @@
         </logger>
 
         <logger fileName="$(filebase).mapped.trees" logEvery="1000" mode="tree">
-            <log spec="TypeMappedTree" parameterization="@param"
+            <log spec="TypeMappedTree" id="typedTree" parameterization="@param"
                  frequencies="@geo-frequencies.t:h3n2_2deme"
                  typeTraitSet="@typeTraitSetInput.t:h3n2_2deme"
                  typeLabel="type"
                  untypedTree="@Tree.t:h3n2_2deme"/>
         </logger>
 
+        <logger fileName="$(filebase).typedNode.trees" logEvery="1000" mode="tree">
+            <log spec="TypedNodeTreeLogger" typedTree="@typedTree"/>
+        </logger>
     </run>
     
 </beast>
