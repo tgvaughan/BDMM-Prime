@@ -1,6 +1,8 @@
 BDMM
 ====
 
+[![Build Status](https://travis-ci.org/tgvaughan/bdmm.svg?branch=master)](https://travis-ci.org/tgvaughan/bdmm)
+
 The BDMM project provides a [BEAST 2](http://www.beast2.org/) package for
 performing phylodynamic inference under a structured birth-death model.
 
