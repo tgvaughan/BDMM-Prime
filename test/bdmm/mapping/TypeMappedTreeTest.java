@@ -21,7 +21,7 @@ public class TypeMappedTreeTest {
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "origin", new RealParameter("6.0"),
-                "nTypes", 2,
+                "typeSet", new TypeSet(2),
                 "R0", new SkylineVectorParameter(
                         null,
                         new RealParameter((4.0 / 3.0) + " " + 5.0)),
@@ -85,7 +85,7 @@ public class TypeMappedTreeTest {
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "origin", new RealParameter("6.0"),
-                "nTypes", 2,
+                "typeSet", new TypeSet(2),
                 "R0", new SkylineVectorParameter(
                         null,
                         new RealParameter((4.0 / 3.0) + " " + 5.0)),
@@ -153,7 +153,7 @@ public class TypeMappedTreeTest {
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "origin", new RealParameter(Double.toString(tree.getRoot().getHeight()+0.1)),
-                "nTypes", 2,
+                "typeSet", new TypeSet(2),
                 "R0", new SkylineVectorParameter(
                         null,
                         new RealParameter((4.0 / 3.0) + " " + 5.0)),

@@ -35,8 +35,8 @@ public class SkylineVectorParameter extends SkylineParameter {
         int valsPerInterval = rateValuesInput.get().getDimension()/nIntervals;
         inputIsScalar = valsPerInterval==1;
 
-        if (nTypesInput.get() != null) {
-            nTypes = nTypesInput.get();
+        if (typeSetInput.get() != null) {
+            nTypes = typeSetInput.get().getNTypes();
 
             if (!inputIsScalar && nTypes != valsPerInterval)
                 throw new IllegalArgumentException("SkylineVector has an incorrect " +

@@ -4,9 +4,6 @@ import beast.core.parameter.RealParameter;
 
 public class SkylineMatrixParameter extends SkylineParameter {
 
-    int nTypes;
-
-
     double[][][] values, storedValues;
     double[][] valuesAtTime;
 
@@ -40,8 +37,8 @@ public class SkylineMatrixParameter extends SkylineParameter {
         int elementsPerMatrix = totalElementCount/nIntervals;
         inputIsScalar = elementsPerMatrix == 1;
 
-        if (nTypesInput.get() != null) {
-            nTypes = nTypesInput.get();
+        if (typeSetInput.get() != null) {
+            nTypes = typeSetInput.get().getNTypes();
 
             if (!inputIsScalar && elementsPerMatrix != nTypes*(nTypes-1)) {
                 throw new IllegalArgumentException("SkylineMatrix parameter has " +

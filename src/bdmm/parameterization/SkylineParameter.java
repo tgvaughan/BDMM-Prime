@@ -32,10 +32,9 @@ public abstract class SkylineParameter extends CalculationNode {
     public Input<Tree> treeInput = new Input<>("tree",
             "Tree when root time is used to identify the start of the process.");
 
-    public Input<Integer> nTypesInput = new Input<>("nTypes",
-            "Number of distinct types in model.  If unspecified, inferred" +
-                    "from length of other parameter inputs.  Use this when a " +
-                    "single parameter value is shared among all types.");
+    public Input<TypeSet> typeSetInput = new Input<>("typeSet",
+            "Type set defining distinct types in model. Usefed when a" +
+                    "single value is to be shared amongst several types.");
 
     boolean timesAreAges, timesAreRelative;
 
@@ -60,7 +59,7 @@ public abstract class SkylineParameter extends CalculationNode {
                             int nTypes) {
         changeTimesInput.setValue(changeTimesParam, this);
         rateValuesInput.setValue(rateValuesParam, this);
-        nTypesInput.setValue(nTypes, this);
+        typeSetInput.setValue(new TypeSet(nTypes), this);
         initAndValidate();
     }
 

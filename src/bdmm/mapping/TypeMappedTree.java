@@ -14,6 +14,22 @@ import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
 import java.io.PrintStream;
 
+/**
+ * An instance of this class is a tree equivalent to untypedTree but with
+ * ancestral type changes mapped according the the given multi-type birth-death
+ * model.
+ *
+ * Note that there is a degree of duplication between the code in this class
+ * and the code in BirthDeathMigrationDistribution.  Most of this is intentional:
+ * the likelihood class cares a lot more about making sure the likelihood calculations
+ * are accurate for large data sets, while here we avoid using SmallNumbers and
+ * instead rely on dynamic scaling of integration results to prevent underflow.
+ * This seems to be good enough for our purpose and allows us to simplify the
+ * backwards integration stage of the SM algorithm.  This is important here
+ * because unlike the likelihood computation, the SM algorithm requires recording
+ * all intermediate results of the backward integration stage for use in the
+ * subsequent forward-time simulation stage.
+ */
 public class TypeMappedTree extends Tree {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
@@ -26,8 +42,9 @@ public class TypeMappedTree extends Tree {
 
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
             "Trait information for initializing traits " +
-                    "(like node types/locations) in the tree",
-            Input.Validate.REQUIRED);
+                    "(like node types/locations) in the tree. If this is " +
+                    "not provided we will try to extract this information from " +
+                    "metadata on the untyped tree leaves.");
 
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Type label used for traits in generated metadata.",
@@ -121,7 +138,33 @@ public class TypeMappedTree extends Tree {
      * @return trait value.
      */
     private int getLeafType(Node leafNode) {
-            return (int) typeTraitSetInput.get().getValue(leafNode.getID());
+            String nodeTypeName;
+
+            if (typeTraitSetInput.get() != null)
+                nodeTypeName = typeTraitSetInput.get().getStringValue(leafNode.getID());
+            else {
+                Object metaData = leafNode.getMetaData(typeLabelInput.get());
+
+                if (metaData instanceof Double)
+                    nodeTypeName = String.valueOf(Math.round((double)metaData));
+                else
+                    nodeTypeName = metaData.toString();
+            }
+
+            return param.getTypeSet().getTypeIndex(nodeTypeName);
+    }
+
+    /**
+     * Set value of trait at node.
+     *
+     * @param node node at which to set trait.
+     * @param type numeric type index.
+     */
+    private void setNodeType(Node node, int type) {
+        node.setMetaData(typeLabelInput.get(), type);
+
+        node.metaDataString = String.format("%s=\"%s\"",
+                typeLabelInput.get(), param.getTypeSet().getTypeName(type));
     }
 
     private boolean[] rhoSampled = null;
@@ -312,7 +355,7 @@ public class TypeMappedTree extends Tree {
         }
 
         // Scale ge and record scale factor
-        geScaleFactors[leafNode.getNr()] = rescale(y, 0.0);
+        geScaleFactors[leafNode.getNr()] = rescaleState(y, 0.0);
 
         return y;
     }
@@ -356,7 +399,7 @@ public class TypeMappedTree extends Tree {
         }
 
         // Scale ge and record scale factor
-        geScaleFactors[saNode.getNr()] = rescale(y, geScaleFactors[saNode.getNonDirectAncestorChild().getNr()]);
+        geScaleFactors[saNode.getNr()] = rescaleState(y, geScaleFactors[saNode.getNonDirectAncestorChild().getNr()]);
 
         return y;
     }
@@ -393,7 +436,7 @@ public class TypeMappedTree extends Tree {
         }
 
         // Scale ge and record scale factor
-        geScaleFactors[internalNode.getNr()] = rescale(y, logFLeft+logFRight);
+        geScaleFactors[internalNode.getNr()] = rescaleState(y, logFLeft+logFRight);
 
         return y;
     }
@@ -406,7 +449,7 @@ public class TypeMappedTree extends Tree {
      * @param prevLogF current (log) scaling factor
      * @return updated (log) scaling factor.
      */
-    private double rescale(double[] y, double prevLogF) {
+    private double rescaleState(double[] y, double prevLogF) {
 
         double C = 0.0;
         for (int type = 0; type< param.getNTypes(); type++)
@@ -572,12 +615,6 @@ public class TypeMappedTree extends Tree {
             totalRate += rates[type];
 
         return totalRate;
-    }
-
-    private void setNodeType(Node node, int type) {
-        node.setMetaData(typeLabelInput.get(), type);
-
-        node.metaDataString = String.format("%s=\"%s\"", typeLabelInput.get(), type);
     }
 
     /**

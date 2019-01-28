@@ -2,9 +2,6 @@ package bdmm.parameterization;
 
 import beast.core.Input;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
-
 public class EpiParameterization extends Parameterization {
 
     public Input<SkylineVectorParameter> R0Input = new Input<>("R0",

@@ -267,30 +267,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (!storeNodeTypes.get() || init) {
 
-            int nodestate;
+            String nodeTypeName;
 
-            if (typeTraitSetInput.get() != null) {
+            if (typeTraitSetInput.get() != null)
+                nodeTypeName = typeTraitSetInput.get().getStringValue(node.getID());
+            else {
+                Object metaData = node.getMetaData(typeLabel.get());
 
-                nodestate = (int) typeTraitSetInput.get().getValue((node.getID()));
-
-            } else {
-
-                Object d = node.getMetaData(typeLabel.get());
-
-                if (d instanceof Integer)
-                    nodestate = (Integer) d;
-                else if (d instanceof Double)
-                    nodestate = ((Double) d).intValue();
-                else if (d instanceof int[])
-                    nodestate = ((int[]) d)[0];
-                else if (d instanceof String)
-                    nodestate = Integer.valueOf((String) d);
+                if (metaData instanceof Double)
+                    nodeTypeName = String.valueOf(Math.round((double)metaData));
                 else
-                    throw new RuntimeException("Error interpreting as type index: " + d);
-
+                    nodeTypeName = metaData.toString();
             }
 
-            return nodestate;
+            return parameterization.getTypeSet().getTypeIndex(nodeTypeName);
 
         } else return nodeStates[node.getNr()];
     }

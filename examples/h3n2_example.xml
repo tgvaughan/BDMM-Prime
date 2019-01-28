@@ -167,7 +167,7 @@
             </stateNode>
                     
             <parameter id="R0.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="Infinity">2.0 2.0</parameter>
-            <parameter id="becomeUninfectiousRate.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="Infinity">1.0 1.0</parameter>
+            <parameter id="becomeUninfectiousRate.t:h3n2_2deme" dimension="1" lower="0.0" name="stateNode" upper="Infinity">1.0</parameter>
             <parameter id="samplingProportion.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="1.0">0.01 0.01 0.0 0.0</parameter>
             <parameter id="rateMatrix.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="100.0">0.1 0.1</parameter>
             <parameter id="geo-frequencies.t:h3n2_2deme" dimension="2" lower="0.0" name="stateNode" upper="1.0">0.5 0.5</parameter>
@@ -182,81 +182,83 @@
                 <distribution id="birthDeathMigration.t:h3n2_2deme" spec="BirthDeathMigrationDistribution"
                               tree="@Tree.t:h3n2_2deme" conditionOnSurvival="false" parallelize="true">
 
-                    <parameterization id="param" spec="EpiParameterization" nTypes="2">
+                    <parameterization id="param" spec="EpiParameterization">
                         <!--<origin spec="RealParameter" id="origin" value="10.0"/>-->
                         <tree idref="Tree.t:h3n2_2deme"/>
+                        <typeSet id="typeSet" spec="TypeSet" typeTraitSet="@typeTraitSetInput.t:h3n2_2deme"/>
                         <R0 spec="SkylineVectorParameter" rateValues="@R0.t:h3n2_2deme"/>
-                        <becomeUninfectiousRate spec="SkylineVectorParameter" rateValues="@becomeUninfectiousRate.t:h3n2_2deme"/>
+                        <becomeUninfectiousRate spec="SkylineVectorParameter" typeSet="@typeSet" rateValues="@becomeUninfectiousRate.t:h3n2_2deme"/>
                         <migrationRate spec="SkylineMatrixParameter" rateValues="@rateMatrix.t:h3n2_2deme"/>
                         <samplingProportion spec="SkylineVectorParameter" timesAreAges="true" tree="@Tree.t:h3n2_2deme">
                             <changeTimes spec="RealParameter" value="5.57"/>
                             <rateValues idref="samplingProportion.t:h3n2_2deme"/>
                         </samplingProportion>
-                        <removalProb spec="SkylineVectorParameter" nTypes="2"> <rateValues spec="RealParameter" value="1.0"/> </removalProb>
+                        <removalProb spec="SkylineVectorParameter" typeSet="@typeSet"> <rateValues spec="RealParameter" value="1.0"/> </removalProb>
                     </parameterization>
                     <frequencies idref="geo-frequencies.t:h3n2_2deme"/>
 
+
                     <typeTraitSet id="typeTraitSetInput.t:h3n2_2deme" spec="beast.evolution.tree.TraitSet" traitname="type" taxa="@TaxonSet.0">
-                      EU856841_HongKong_2005.34246575=0,
-                      EU856989_HongKong_2002.58356164=0,
-                      CY039495_HongKong_2004.5890411=0,
-                      EU856853_HongKong_2001.17808219=0,
-                      EU857026_HongKong_2003.51232877=0,
-                      EU856916_HongKong_2002.26849315=0,
-                      EU857018_HongKong_2001.85479452=0,
-                      EU857052_HongKong_2002.9890411=0,
-                      EU857042_HongKong_2004.61917808=0,
-                      EU856945_HongKong_2001.5369863=0,
-                      EU856865_HongKong_2001.21643836=0,
-                      CY038959_HongKong_2004.19178082=0,
-                      EU857065_HongKong_2002.09315068=0,
-                      EU856838_HongKong_2005.33972603=0,
-                      EU857037_HongKong_2004.6=0,
-                      EU856904_HongKong_2000.09863014=0,
-                      CY043768_HongKong_2005.52328767=0,
-                      EU856859_HongKong_2003.16438356=0,
-                      EU857043_HongKong_2004.63013699=0,
-                      CY040314_HongKong_2004.73150685=0,
-                      EU856863_HongKong_2001.20547945=0,
-                      EU857068_HongKong_2003.10410959=0,
-                      CY039239_HongKong_2005.37534247=0,
-                      EU857031_HongKong_2001.98630137=0,
-                      EU857033_HongKong_2001.99178082=0,
-                      CY038751_HongKong_2005.54246575=0,
-                      CY038671_HongKong_2004.8=0,
-                      EU857011_HongKong_2005.56986301=0,
-                      EU857024_HongKong_2004.51506849=0,
-                      EU857084_HongKong_2003.73972603=0,
-                      CY011728_NewZealand_2003.44383562=1,
-                      CY007395_NewZealand_2004.63287671=1,
-                      CY007059_NewZealand_2003.50958904=1,
-                      CY008139_NewZealand_2000.65479452=1,
-                      CY007011_NewZealand_2003.61917808=1,
-                      CY008196_NewZealand_2003.54520548=1,
-                      CY007227_NewZealand_2003.54246575=1,
-                      CY011020_NewZealand_2000.64109589=1,
-                      CY008828_NewZealand_2000.79178082=1,
-                      CY009404_NewZealand_2001.50410959=1,
-                      CY008620_NewZealand_2005.66849315=1,
-                      CY007795_NewZealand_2005.17534247=1,
-                      CY007923_NewZealand_2002.48219178=1,
-                      CY007203_NewZealand_2003.53972603=1,
-                      CY012432_NewZealand_2000.81643836=1,
-                      CY013096_NewZealand_2002.55890411=1,
-                      CY008652_NewZealand_2005.66849315=1,
-                      CY008380_NewZealand_2005.54246575=1,
-                      CY012376_NewZealand_2003.53972603=1,
-                      CY011064_NewZealand_2000.67671233=1,
-                      CY013072_NewZealand_2001.36986301=1,
-                      CY007667_NewZealand_2002.35616438=1,
-                      CY016467_NewZealand_2005.60821918=1,
-                      CY008388_NewZealand_2005.57260274=1,
-                      CY011960_NewZealand_2000.6630137=1,
-                      CY008420_NewZealand_2005.58630137=1,
-                      CY012640_NewZealand_2002.43287671=1,
-                      CY012000_NewZealand_2002.52054795=1,
-                      CY007267_NewZealand_2003.62739726=1,
-                      CY002938_NewZealand_2004.68767123=1
+                      EU856841_HongKong_2005.34246575=HongKong,
+                      EU856989_HongKong_2002.58356164=HongKong,
+                      CY039495_HongKong_2004.5890411=HongKong,
+                      EU856853_HongKong_2001.17808219=HongKong,
+                      EU857026_HongKong_2003.51232877=HongKong,
+                      EU856916_HongKong_2002.26849315=HongKong,
+                      EU857018_HongKong_2001.85479452=HongKong,
+                      EU857052_HongKong_2002.9890411=HongKong,
+                      EU857042_HongKong_2004.61917808=HongKong,
+                      EU856945_HongKong_2001.5369863=HongKong,
+                      EU856865_HongKong_2001.21643836=HongKong,
+                      CY038959_HongKong_2004.19178082=HongKong,
+                      EU857065_HongKong_2002.09315068=HongKong,
+                      EU856838_HongKong_2005.33972603=HongKong,
+                      EU857037_HongKong_2004.6=HongKong,
+                      EU856904_HongKong_2000.09863014=HongKong,
+                      CY043768_HongKong_2005.52328767=HongKong,
+                      EU856859_HongKong_2003.16438356=HongKong,
+                      EU857043_HongKong_2004.63013699=HongKong,
+                      CY040314_HongKong_2004.73150685=HongKong,
+                      EU856863_HongKong_2001.20547945=HongKong,
+                      EU857068_HongKong_2003.10410959=HongKong,
+                      CY039239_HongKong_2005.37534247=HongKong,
+                      EU857031_HongKong_2001.98630137=HongKong,
+                      EU857033_HongKong_2001.99178082=HongKong,
+                      CY038751_HongKong_2005.54246575=HongKong,
+                      CY038671_HongKong_2004.8=HongKong,
+                      EU857011_HongKong_2005.56986301=HongKong,
+                      EU857024_HongKong_2004.51506849=HongKong,
+                      EU857084_HongKong_2003.73972603=HongKong,
+                      CY011728_NewZealand_2003.44383562=NewZealand,
+                      CY007395_NewZealand_2004.63287671=NewZealand,
+                      CY007059_NewZealand_2003.50958904=NewZealand,
+                      CY008139_NewZealand_2000.65479452=NewZealand,
+                      CY007011_NewZealand_2003.61917808=NewZealand,
+                      CY008196_NewZealand_2003.54520548=NewZealand,
+                      CY007227_NewZealand_2003.54246575=NewZealand,
+                      CY011020_NewZealand_2000.64109589=NewZealand,
+                      CY008828_NewZealand_2000.79178082=NewZealand,
+                      CY009404_NewZealand_2001.50410959=NewZealand,
+                      CY008620_NewZealand_2005.66849315=NewZealand,
+                      CY007795_NewZealand_2005.17534247=NewZealand,
+                      CY007923_NewZealand_2002.48219178=NewZealand,
+                      CY007203_NewZealand_2003.53972603=NewZealand,
+                      CY012432_NewZealand_2000.81643836=NewZealand,
+                      CY013096_NewZealand_2002.55890411=NewZealand,
+                      CY008652_NewZealand_2005.66849315=NewZealand,
+                      CY008380_NewZealand_2005.54246575=NewZealand,
+                      CY012376_NewZealand_2003.53972603=NewZealand,
+                      CY011064_NewZealand_2000.67671233=NewZealand,
+                      CY013072_NewZealand_2001.36986301=NewZealand,
+                      CY007667_NewZealand_2002.35616438=NewZealand,
+                      CY016467_NewZealand_2005.60821918=NewZealand,
+                      CY008388_NewZealand_2005.57260274=NewZealand,
+                      CY011960_NewZealand_2000.6630137=NewZealand,
+                      CY008420_NewZealand_2005.58630137=NewZealand,
+                      CY012640_NewZealand_2002.43287671=NewZealand,
+                      CY012000_NewZealand_2002.52054795=NewZealand,
+                      CY007267_NewZealand_2003.62739726=NewZealand,
+                      CY002938_NewZealand_2004.68767123=NewZealand
                     </typeTraitSet>
 
                 </distribution>
@@ -325,7 +327,7 @@
         </operator>
 
         <operator id="R0Scaler.t:h3n2_2deme" spec="ScaleOperator" parameter="@R0.t:h3n2_2deme" scaleFactor="0.8" weight="3.0"/>
-        <operator id="becomeUninfectiousRateScaler.t:h3n2_2deme" spec="ScaleOperator" optimise="false" parameter="@becomeUninfectiousRate.t:h3n2_2deme" scaleAll="true" scaleFactor="0.9" weight="1.0"/>
+        <operator id="becomeUninfectiousRateScaler.t:h3n2_2deme" spec="ScaleOperator" optimise="false" parameter="@becomeUninfectiousRate.t:h3n2_2deme" scaleFactor="0.9" weight="1.0"/>
         <operator id="samplingScaler.t:h3n2_2deme" spec="ScaleOperator" parameter="@samplingProportion.t:h3n2_2deme" scaleFactor="0.9" weight="3.0"/>
         <operator id="rateMatrixScaler.t:h3n2_2deme" spec="ScaleOperator" parameter="@rateMatrix.t:h3n2_2deme" scaleFactor="0.8" weight="1.0"/>
         <operator id="geo-frequenciesExchange.t:h3n2_2deme" spec="DeltaExchangeOperator" delta="0.1" weight="0.1">
