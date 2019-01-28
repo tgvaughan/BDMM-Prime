@@ -26,12 +26,12 @@ public class TypeMappedTree extends Tree {
 
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
             "Trait information for initializing traits " +
-                    "(like node types/locations) in the tree");
+                    "(like node types/locations) in the tree",
+            Input.Validate.REQUIRED);
 
     public Input<String> typeLabelInput = new Input<>("typeLabel",
-            "type label in tree for initializing traits " +
-                    "(like node types/locations) in the tree",
-            Input.Validate.XOR, typeTraitSetInput);
+            "Type label used for traits in generated metadata.",
+            Input.Validate.REQUIRED);
 
     public Input<Tree> treeInput = new Input<>("untypedTree",
             "Tree on which to apply mapping.",
@@ -114,22 +114,14 @@ public class TypeMappedTree extends Tree {
         assignFromWithoutID(new Tree(typedRoot));
     }
 
+    /**
+     * Obtain value of trait at leaf node.
+     *
+     * @param leafNode leaf node at which to obtain trait.
+     * @return trait value.
+     */
     private int getLeafType(Node leafNode) {
-        if (typeTraitSetInput.get() != null)
             return (int) typeTraitSetInput.get().getValue(leafNode.getID());
-        else {
-            Object metaData = leafNode.getMetaData(typeLabelInput.get());
-            if (metaData instanceof Double)
-                return (int) Math.round((double) metaData);
-            else if (metaData instanceof Integer)
-                return (int) metaData;
-            else if (metaData instanceof String)
-                return Integer.valueOf((String) metaData);
-            else
-                throw new IllegalArgumentException(
-                        "Cannot determine type of taxon '" +
-                                leafNode.getID() + "'.");
-        }
     }
 
     private boolean[] rhoSampled = null;
@@ -206,7 +198,7 @@ public class TypeMappedTree extends Tree {
      * stored in the field integrationResults.
      *
      * @param untypedSubtreeRoot root node of untyped subtree
-     * @param timeOfSubtreeRootEdgeTop
+     * @param timeOfSubtreeRootEdgeTop time of top of edge above subtree
      * @return integration state at
      */
     double[] backwardsIntegrateSubtree(Node untypedSubtreeRoot,
@@ -617,6 +609,13 @@ public class TypeMappedTree extends Tree {
     @Override
     public void log(long sample, PrintStream out) {
         doStochasticMapping();
-        super.log(sample, out);
+        Tree tree = (Tree) getCurrent();
+        out.print("tree STATE_" + sample + " = ");
+        // Don't sort, this can confuse CalculationNodes relying on the tree
+        //tree.getRoot().sort();
+        final int[] dummy = new int[1];
+        final String newick = tree.getRoot().toSortedNewick(dummy, true);
+        out.print(newick);
+        out.print(";");
     }
 }
