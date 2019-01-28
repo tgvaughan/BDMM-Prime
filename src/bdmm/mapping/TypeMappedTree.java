@@ -12,6 +12,8 @@ import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
+import java.io.PrintStream;
+
 public class TypeMappedTree extends Tree {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
@@ -51,6 +53,8 @@ public class TypeMappedTree extends Tree {
     private final double BACKWARD_INTEGRATION_ABS_TOLERANCE = 1e-100;
     private final double BACKWARD_INTEGRATION_REL_TOLERANCE = 1e-7;
     private final int RATE_CHANGE_CHECKS_PER_EDGE = 100;
+    private final double RATE_CHANGE_CHECK_CONVERGENCE = 1e-5;
+    private final int RATE_CHANGE_MAX_ITERATIONS = 1000;
 
     /**
      * Maximum number of steps in each waiting time calculation in
@@ -64,7 +68,15 @@ public class TypeMappedTree extends Tree {
         param = parameterizationInput.get();
         untypedTree = treeInput.get();
 
-        // Prepare the backward-time integrator!
+        doStochasticMapping();
+    }
+
+    /**
+     * Generate new tree by stochastically mapping type changes on untyped tree.
+     * Called both during initialization and at when logging.
+     */
+    public void doStochasticMapping() {
+         // Prepare the backward-time integrator!
 
         odeIntegrator = new DormandPrince54Integrator(
                 param.getTotalProcessLength()*BACKWARD_INTEGRATION_MIN_STEP,
@@ -232,8 +244,8 @@ public class TypeMappedTree extends Tree {
         double timeOfSubtreeRootEdgeBottom = param.getNodeTime(untypedSubtreeRoot);
 
         odeIntegrator.addEventHandler(odeSystem,
-                (timeOfSubtreeRootEdgeTop-timeOfSubtreeRootEdgeBottom)/100,
-                1e-5, 1000);
+                (timeOfSubtreeRootEdgeTop-timeOfSubtreeRootEdgeBottom)/RATE_CHANGE_CHECKS_PER_EDGE,
+                RATE_CHANGE_CHECK_CONVERGENCE, RATE_CHANGE_MAX_ITERATIONS);
 
         odeSystem.setInterval(param.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
 
@@ -596,5 +608,15 @@ public class TypeMappedTree extends Tree {
         subtreeRoot.setNr(nextNumber);
 
         return nextNumber+1;
+    }
+
+    /*
+     * Loggable implementation
+     */
+
+    @Override
+    public void log(long sample, PrintStream out) {
+        doStochasticMapping();
+        super.log(sample, out);
     }
 }
