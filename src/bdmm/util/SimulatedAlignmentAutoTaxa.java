@@ -1,4 +1,4 @@
-package beast.app.seqgen;
+package bdmm.util;
 
 import beast.core.Description;
 import beast.core.Input;
