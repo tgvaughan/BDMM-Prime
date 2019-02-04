@@ -30,7 +30,8 @@ import java.util.concurrent.*;
         "Mol Biol Evol. 33(8):2102–2116."
         , DOI = "10.1093/molbev/msw064", year = 2016, firstAuthorSurname = "Kuehnert")
 
-@Description("This model implements a multi-deme version of the BirthDeathSkylineModel with discrete locations and migration events among demes. " +
+@Description("This model implements a multi-deme version of the BirthDeathSkylineModel " +
+        "with discrete locations and migration events among demes. " +
         "This implementation also works with sampled ancestor trees.")
 public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
@@ -511,16 +512,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             System.out.print("  ");
 
         System.out.println(message);
-    }
-
-    /**
-     * Used to indicate that the state assignment went wrong.
-     */
-    protected class ConstraintViolatedException extends RuntimeException {
-        public ConstraintViolatedException(String s) {
-            super(s);
-        }
-
     }
 
     /**

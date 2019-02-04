@@ -9,6 +9,9 @@ import beast.evolution.tree.Tree;
 
 import java.io.PrintStream;
 
+/**
+ * Logger for generating statistics from type mapped trees.
+ */
 public class TypedTreeStatsLogger extends BEASTObject implements Loggable {
 
     public Input<Tree> typedTreeInput = new Input<>("typedTree",
