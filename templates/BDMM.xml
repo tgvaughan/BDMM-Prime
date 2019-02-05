@@ -1,0 +1,62 @@
+<beast version='2.0'
+       namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
+
+    <mergewith point='treePriorTemplates'>
+
+        <subtemplate id='BDMM' class='bdmm.distributions.BirthDeathMigrationDistribution' mainid='BDMM.t:$(n)'>
+            <![CDATA[
+                <distribution id="BDMM.t:$(n)" spec="BirthDeathMigrationDistribution"
+                              tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
+
+                    <parameterization id="param" spec="CanonicalParameterization">
+                        <origin spec="RealParameter" id="origin" value="10.0"/>
+                        <typeSet id="typeSet" spec="TypeSet" typeTraitSet="@typeTraitSetInput.t:$(n)"/>
+                        <birthRate spec="SkylineVectorParameter" rateValues="@R0.t:$(n)"/>
+                        <deathRate spec="SkylineVectorParameter" typeSet="@typeSet" rateValues="@becomeUninfectiousRate.t:$(n)"/>
+                        <migrationRate spec="SkylineMatrixParameter" rateValues="@rateMatrix.t:$(n)"/>
+                        <samplingRate spec="SkylineVectorParameter" timesAreAges="true" tree="@Tree.t:$(n)">
+                            <rateValues idref="samplingProportion.t:$(n)"/>
+                        </samplingRate>
+                        <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
+                            <rateValues spec="RealParameter" value="1.0"/>
+                        </removalProb>
+                    </parameterization>
+
+                    <frequencies id="geo-frequencies.t:$(n)" spec="RealParameter" value="1.0"/>
+                </distribution>
+
+
+                <prior id='YuleBirthRatePrior.t:$(n)' x='@birthRate.t:$(n)'><distr spec="beast.math.distributions.Uniform" lower='0' upper='1000'/></prior>
+
+  		        <scale id='YuleBirthRateScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@birthRate.t:$(n)"/>
+            ]]>
+			<plate fragment="TreeOperators" var="m" range="BDMM"/>
+
+            <connect srcID='BDMM.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>Yule
+                speciation prior on tree t:$(n)
+            </connect>
+            <connect srcID='birthRate.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(YuleModel.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(birthRate.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
+
+            <connect srcID='YuleBirthRatePrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(YuleModel.t:$(n)) and inposterior(Tree.t:$(n)) and birthRate.t:$(n)/estimate=true'>
+                Yule speciation process birth rate of partition t:$(n)
+            </connect>
+            <connect srcID='YuleBirthRateScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(YuleModel.t:$(n)) and inposterior(Tree.t:$(n)) and birthRate.t:$(n)/estimate=true'>
+                Scale birth rate of Yule prior of tree t:$(n)
+            </connect>
+
+            <connect srcID='YuleModel.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(YuleModel.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'/>
+            <connect srcID='birthRate.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(YuleModel.t:$(n)) and inposterior(Tree.t:$(n)) and birthRate.t:$(n)/estimate=true'/>
+
+			<connect srcID='birthRate.t:Species' targetID='SBI' inputName='birthRate' if='inposterior(YuleModel.t:Species) and inposterior(birthRate.t:Species)'/>
+        </subtemplate>
+
+    </mergewith>
+</beast>
+
+
