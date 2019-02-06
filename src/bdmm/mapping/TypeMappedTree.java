@@ -15,11 +15,11 @@ import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 import java.io.PrintStream;
 
 /**
- * An instance of this class is a tree equivalent to untypedTree but with
+ * <p>An instance of this class is a tree equivalent to untypedTree but with
  * ancestral type changes mapped according the the given multi-type birth-death
- * model.
+ * model.</p>
  *
- * Note that there is a degree of duplication between the code in this class
+ * <p>Note that there is a degree of duplication between the code in this class
  * and the code in BirthDeathMigrationDistribution.  Most of this is intentional:
  * the likelihood class cares a lot more about making sure the likelihood calculations
  * are accurate for large data sets, while here we avoid using SmallNumbers and
@@ -28,7 +28,19 @@ import java.io.PrintStream;
  * backwards integration stage of the SM algorithm.  This is important here
  * because unlike the likelihood computation, the SM algorithm requires recording
  * all intermediate results of the backward integration stage for use in the
- * subsequent forward-time simulation stage.
+ * subsequent forward-time simulation stage.</p>
+ *
+ * <p>Furthermore, note that the code here separately integrates the p_i(t)
+ * equations up to each leaf node.  This is inefficient, as the same ODE
+ * is integrated over the same time period multiple times.  In practice this
+ * probably doesn't matter too much as the mapper is only called rarely and
+ * this is a relatively small part of the mapping algorithm.</p>
+ *
+ * <p>As for the refactored BirthDeathMigrationDistribution class, the backward
+ * integration strategy here is to have the integrator only handle rate shift and
+ * rho sampling events which are _not_ coincident with nodes in the tree.
+ * Events which _are_ coincident are handled as part of the ODE boundary
+ * condition calculations done at each node.</p>
  */
 public class TypeMappedTree extends Tree {
 
@@ -554,9 +566,9 @@ public class TypeMappedTree extends Tree {
                 break;
 
             case INTERNAL:
-                // TODO Add support for birth among demes.
-                currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(0), endTime, currentType));
-                currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(1), endTime, currentType));
+                int[] childTypes = sampleChildTypes(subtreeRoot, currentType);
+                currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(0), endTime, childTypes[0]));
+                currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(1), endTime, childTypes[1]));
                 break;
 
             default:
@@ -566,6 +578,71 @@ public class TypeMappedTree extends Tree {
         return root;
     }
 
+    private int[] sampleChildTypes(Node node, int parentType) {
+
+        double t = param.getNodeTime(node);
+        int interval = param.getIntervalIndex(t);
+
+        ContinuousOutputModel com1 = integrationResults[node.getChild(0).getNr()];
+        ContinuousOutputModel com2 = integrationResults[node.getChild(1).getNr()];
+
+        com1.setInterpolatedTime(t);
+        double[] y1 = com1.getInterpolatedState();
+
+        com2.setInterpolatedTime(t);
+        double[] y2 = com2.getInterpolatedState();
+
+        double[][] probs = new double[param.getNTypes()][param.getNTypes()];
+
+        double totalMass = 0.0;
+        for (int type1=0; type1<param.getNTypes(); type1++) {
+            for (int type2=0; type2<param.getNTypes(); type2++) {
+
+                if (type1 != parentType && type2 != parentType) {
+                    probs[type1][type2] = 0.0;
+                    continue;
+                }
+
+                if (type1 == type2) {
+                    probs[type1][type1] = param.getBirthRates()[interval][type1]
+                            *y1[param.getNTypes()+type1]*y2[param.getNTypes()+type1];
+                } else {
+                    probs[type1][type2] = param.getCrossBirthRates()[interval][type1][type2]
+                            * 0.5 * (y1[param.getNTypes()+type1]*y2[param.getNTypes()+type2]
+                            + y1[param.getNTypes()+type2]*y2[param.getNTypes()+type1]);
+                }
+
+                totalMass += probs[type1][type2];
+            }
+        }
+
+        double u = Randomizer.nextDouble()*totalMass;
+
+        for (int type1=0; type1<param.getNTypes(); type1++) {
+            for (int type2 = 0; type2 < param.getNTypes(); type2++) {
+
+                if (u < probs[type1][type2]) {
+                    return new int[]{type1, type2};
+                }
+
+                u -= probs[type1][type2];
+            }
+        }
+
+        throw new IllegalStateException("Internal node child type sampling loop fell through.");
+    }
+
+    /**
+     * Compute forward migration rates at a particular time and from a particular
+     * type. The results are stored in the provided array, a reference to which
+     * is also returned.
+     *
+     * @param fromType current type
+     * @param time time at which to compute rates
+     * @param baseNode node at base of edge along which to compute rates.
+     * @param result array in which results will be stored.
+     * @return reference to array.
+     */
     private double[] getForwardsRates(int fromType, double time, Node baseNode, double[] result) {
         ContinuousOutputModel com = integrationResults[baseNode.getNr()];
         com.setInterpolatedTime(time);
@@ -612,9 +689,18 @@ public class TypeMappedTree extends Tree {
         return result;
     }
 
-    private double getTotalFowardsRate(int fromType, double time, Node baseNode, double[] working) {
+    /**
+     * Compute total forward-time transition rate.
+     *
+     * @param fromType starting type for transition
+     * @param time time at which to compute rates
+     * @param baseNode base node of edge on which to compute rates
+     * @param rates array in which individual rates are stored
+     * @return total forward-time transision rate.
+     */
+    private double getTotalFowardsRate(int fromType, double time, Node baseNode, double[] rates) {
         double totalRate = 0.0;
-        double[] rates = getForwardsRates(fromType, time, baseNode, working);
+        getForwardsRates(fromType, time, baseNode, rates);
         for (int type=0; type<param.getNTypes(); type++)
             totalRate += rates[type];
 
