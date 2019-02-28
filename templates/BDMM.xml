@@ -5,30 +5,32 @@
 
         <subtemplate id='BDMM' class='bdmm.distributions.BirthDeathMigrationDistribution' mainid='BDMM.t:$(n)'>
             <![CDATA[
-                <distribution id="BDMM.t:$(n)" spec="BirthDeathMigrationDistribution"
+                <distribution id="BDMM.t:$(n)" spec="bdmm.distributions.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
 
-                    <parameterization id="param" spec="CanonicalParameterization">
-                        <origin spec="RealParameter" id="origin" value="10.0"/>
-                        <typeSet id="typeSet" spec="TypeSet" typeTraitSet="@typeTraitSetInput.t:$(n)"/>
-                        <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="birthRates.t:$(n)" spec='RealParameter' value="1.0"/>
+                    <parameterization id="param" spec="bdmm.parameterization.CanonicalParameterization">
+                        <origin spec="beast.core.parameter.RealParameter" id="origin" value="10.0"/>
+                        <typeSet id="typeSet" spec="bdmm.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
+                        <birthRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                            <rateValues id="birthRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </birthRate>
-                        <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="deathRates.t:$(n)" spec='RealParameter' value="1.0"/>
+                        <deathRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                            <rateValues id="deathRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </deathRate>
-                        <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
-                            <rateValues id="migrationRates.t:$(n)" spec='RealParameter' value="1.0"/>
+                        <migrationRate spec="bdmm.parameterization.SkylineMatrixParameter" typeSet="@typeSet">
+                            <rateValues id="migrationRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </migrationRate>
-                        <samplingRate spec="SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="samplingRates.t:$(n)" spec="RealParameter" value="0.1"/>
+                        <samplingRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                            <rateValues id="samplingRates.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingRate>
-                        <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="removalProbs" spec="RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                        <removalProb spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                            <rateValues id="removalProbs" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
                     </parameterization>
 
-                    <frequencies id="typeFrequencies.t:$(n)" spec="RealParameter" value="1.0"/>
+                    <traitSet id="typeTraitSet.t:$(n)" spec="beast.evolution.tree.TraitSet"/>
+
+                    <frequencies id="typeFrequencies.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                 </distribution>
 
                 <prior id='BirthRatesPrior.t:$(n)' x='@birthRates.t:$(n)'>
