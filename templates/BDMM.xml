@@ -3,12 +3,16 @@
 
     <mergewith point='treePriorTemplates'>
 
-        <subtemplate id='BDMM' class='bdmm.distributions.BirthDeathMigrationDistribution' mainid='BDMM.t:$(n)'>
+        <subtemplate id='BDMM' class='bdmm.distributions.BirthDeathMigrationDistribution' mainid='BDMM.t:$(n)'
+                     inlineInputs="bdmm.distributions.BirthDeathMigrationDistribution.parameterization"
+        suppressInputs="bdmm.distributions.BirthDeathMigrationDistribution.typeLabel,
+                        bdmm.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
+                        bdmm.distributions.BirthDeathMigrationDistribution.tree">
             <![CDATA[
                 <distribution id="BDMM.t:$(n)" spec="bdmm.distributions.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
 
-                    <parameterization id="param" spec="bdmm.parameterization.CanonicalParameterization">
+                    <parameterization id="CanonicalBDMMParameterization.t:$(n)" spec="bdmm.parameterization.CanonicalParameterization">
                         <origin spec="beast.core.parameter.RealParameter" id="origin" value="10.0"/>
                         <typeSet id="typeSet" spec="bdmm.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
                         <birthRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
