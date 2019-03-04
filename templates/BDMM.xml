@@ -24,11 +24,13 @@
                             <rateValues id="samplingRates.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingRate>
                         <removalProb spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="removalProbs" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                            <rateValues id="removalProbs.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
                     </parameterization>
 
-                    <traitSet id="typeTraitSet.t:$(n)" spec="beast.evolution.tree.TraitSet"/>
+                    <typeTraitSet id="typeTraitSet.t:$(n)" spec="bdmm.util.InitializedTraitSet" traitname="type" tree="@Tree.t:$(n)">
+                        <taxa spec="beast.evolution.alignment.TaxonSet" alignment="@$(n)"/>
+                    </typeTraitSet>
 
                     <frequencies id="typeFrequencies.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                 </distribution>
