@@ -1,8 +1,28 @@
 <beast version='2.0'
        namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
 
-
     <mergewith point='misc'>
+        <fragment id='ParameterBits' spec="beast.app.beauti.Fragment">
+            <![CDATA[
+
+            <prior id='$(p)Prior.t:$(n)' x='@$(p).t:$(n)'>
+                   <distr id="$(p)OneOnXPrior.t:$(n)" spec="beast.math.distributions.OneOnX"/>
+            </prior>
+  		    <operator id='$(p)Scaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(p).t:$(n)"/>
+            ]]>
+
+            <connect srcID='$(p).t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior($(p).t:$(n)) and $(p).t:$(n)/estimate=true'/>
+            <connect srcID='$(p)Prior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and $(p).t:$(n)/estimate=true'/>
+            <connect srcID='birthRatesScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and $(p).t:$(n)/estimate=true'/>
+            <connect srcID='birthRates.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior($(p).t:$(n)) and $(p).t:$(n)/estimate=true'/>
+        </fragment>
+    </mergewith>
+
+    <mergewith point='treePriorTemplates'>
 
         <!-- Canonical parameterization -->
         <subtemplate id="CanonicalParameterization" class="bdmm.parameterization.CanonicalParameterization"
@@ -12,22 +32,30 @@
                         <origin spec="beast.core.parameter.RealParameter" id="origin" value="10.0"/>
                         <typeSet id="typeSet" spec="bdmm.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
                         <birthRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="birthRates.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                            <rateValues id="birthRate.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </birthRate>
                         <deathRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="deathRates.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                            <rateValues id="deathRate.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </deathRate>
                         <migrationRate spec="bdmm.parameterization.SkylineMatrixParameter" typeSet="@typeSet">
-                            <rateValues id="migrationRates.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                            <rateValues id="migrationRate.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </migrationRate>
                         <samplingRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="samplingRates.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
+                            <rateValues id="samplingRate.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingRate>
                         <removalProb spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="removalProbs.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                            <rateValues id="removalProb.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
         </parameterization>
+
+
 ]]>
+            <plate fragment="ParameterBits" var="p" range="birthRate"/>
+            <plate fragment="ParameterBits" var="p" range="deathRate"/>
+            <plate fragment="ParameterBits" var="p" range="migrationRate"/>
+            <plate fragment="ParameterBits" var="p" range="samplingRate"/>
+            <plate fragment="ParameterBits" var="p" range="removalProb"/>
+
         </subtemplate>
 
         <!-- Epi parameterization -->
@@ -38,22 +66,28 @@
                         <origin spec="beast.core.parameter.RealParameter" id="origin" value="10.0"/>
                         <typeSet id="typeSet" spec="bdmm.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
                         <R0 spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="birthRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="R0.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </R0>
                         <becomeUninfectiousRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="deathRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="becomeUninfectiousRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </becomeUninfectiousRate>
                         <migrationRate spec="bdmm.parameterization.SkylineMatrixParameter" typeSet="@typeSet">
-                            <rateValues id="migrationRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="migrationRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </migrationRate>
-                        <samplingRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="samplingRates.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
-                        </samplingRate>
+                        <samplingProportion spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                            <rateValues id="samplingRate.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
+                        </samplingProportion>
                         <removalProb spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="removalProbs.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                            <rateValues id="removalProb.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
         </parameterization>
 ]]>
+            <plate fragment="ParameterBits" var="p" range="R0"/>
+            <plate fragment="ParameterBits" var="p" range="becomeUninfectiousRate"/>
+            <plate fragment="ParameterBits" var="p" range="migrationRate"/>
+            <plate fragment="ParameterBits" var="p" range="samplingProportion"/>
+            <plate fragment="ParameterBits" var="p" range="removalProb"/>
+
         </subtemplate>
 
     </mergewith>

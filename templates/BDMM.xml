@@ -16,19 +16,19 @@
                         <origin spec="beast.core.parameter.RealParameter" id="origin" value="10.0"/>
                         <typeSet id="typeSet" spec="bdmm.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
                         <birthRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="birthRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="birthRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </birthRate>
                         <deathRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="deathRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="deathRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </deathRate>
                         <migrationRate spec="bdmm.parameterization.SkylineMatrixParameter" typeSet="@typeSet">
-                            <rateValues id="migrationRates.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="migrationRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </migrationRate>
                         <samplingRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="samplingRates.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
+                            <rateValues id="samplingRate.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingRate>
                         <removalProb spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="removalProbs.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                            <rateValues id="removalProb.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
                     </parameterization>
 
@@ -39,83 +39,19 @@
                     <frequencies id="typeFrequencies.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                 </distribution>
 
-                <prior id='BirthRatesPrior.t:$(n)' x='@birthRates.t:$(n)'>
-                    <distr spec="beast.math.distributions.OneOnX"/>
-                </prior>
-
-                <prior id='DeathRatesPrior.t:$(n)' x='@deathRates.t:$(n)'>
-                    <distr spec="beast.math.distributions.OneOnX"/>
-                </prior>
-
-                <prior id='MigrationRatesPrior.t:$(n)' x='@migrationRates.t:$(n)'>
-                    <distr spec="beast.math.distributions.OneOnX"/>
-                </prior>
-
-                <prior id='SamplingRatesPrior.t:$(n)' x='@samplingRates.t:$(n)'>
-                    <distr spec="beast.math.distributions.OneOnX"/>
-                </prior>
-
-                <prior id='removalProbsPrior.t:$(n)' x='@removalProbs.t:$(n)'>
-                    <distr spec="beast.math.distributions.Uniform"/>
-                </prior>
-
-  		        <operator id='birthRatesScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@birthRates.t:$(n)"/>
-  		        <operator id='deathRatesScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@deathRates.t:$(n)"/>
-  		        <operator id='migrationRatesScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@migrationRates.t:$(n)"/>
-  		        <operator id='samplingRatesScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@samplingRates.t:$(n)"/>
-  		        <operator id='removalProbsScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@removalProbs.t:$(n)"/>
             ]]>
 			<plate fragment="TreeOperators" var="m" range="BDMM"/>
+
+            <plate fragment="ParameterBits" var="p" range="birthRate"/>
+            <plate fragment="ParameterBits" var="p" range="deathRate"/>
+            <plate fragment="ParameterBits" var="p" range="migrationRate"/>
+            <plate fragment="ParameterBits" var="p" range="samplingRate"/>
+            <plate fragment="ParameterBits" var="p" range="removalProb"/>
 
             <connect srcID='BDMM.t:$(n)' targetID='prior' inputName='distribution'
                      if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>
                 BDMM prior on tree t:$(n)
             </connect>
-
-            <connect srcID='birthRates.t:$(n)' targetID='state' inputName='stateNode'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(birthRates.t:$(n)) and birthRates.t:$(n)/estimate=true'/>
-            <connect srcID='birthRatesPrior.t:$(n)' targetID='prior' inputName='distribution'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and birthRates.t:$(n)/estimate=true'/>
-            <connect srcID='birthRatesScaler.t:$(n)' targetID='mcmc' inputName='operator'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and deathRates.t:$(n)/estimate=true'/>
-            <connect srcID='birthRates.t:$(n)' targetID='tracelog' inputName='log'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(birthRates.t:$(n)) and birthRates.t:$(n)/estimate=true'/>
-
-            <connect srcID='deathRates.t:$(n)' targetID='state' inputName='stateNode'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(deathRates.t:$(n)) and deathRates.t:$(n)/estimate=true'/>
-            <connect srcID='deathRatesPrior.t:$(n)' targetID='prior' inputName='distribution'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and deathRates.t:$(n)/estimate=true'/>
-            <connect srcID='deathRatesScaler.t:$(n)' targetID='mcmc' inputName='operator'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and deathRates.t:$(n)/estimate=true'/>
-            <connect srcID='deathRates.t:$(n)' targetID='tracelog' inputName='log'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(deathRates.t:$(n)) and deathRates.t:$(n)/estimate=true'/>
-
-            <connect srcID='migrationRates.t:$(n)' targetID='state' inputName='stateNode'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(migrationRates.t:$(n)) and migrationRates.t:$(n)/estimate=true'/>
-            <connect srcID='migrationRatesPrior.t:$(n)' targetID='prior' inputName='distribution'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and migrationRates.t:$(n)/estimate=true'/>
-            <connect srcID='migrationRatesScaler.t:$(n)' targetID='mcmc' inputName='operator'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and migrationRates.t:$(n)/estimate=true'/>
-            <connect srcID='migrationRates.t:$(n)' targetID='tracelog' inputName='log'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(migrationRates.t:$(n)) and migrationRates.t:$(n)/estimate=true'/>
-
-            <connect srcID='samplingRates.t:$(n)' targetID='state' inputName='stateNode'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(samplingRates.t:$(n)) and samplingRates.t:$(n)/estimate=true'/>
-            <connect srcID='samplingRatesPrior.t:$(n)' targetID='prior' inputName='distribution'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and samplingRates.t:$(n)/estimate=true'/>
-            <connect srcID='samplingRatesScaler.t:$(n)' targetID='mcmc' inputName='operator'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and samplingRates.t:$(n)/estimate=true'/>
-            <connect srcID='samplingRates.t:$(n)' targetID='tracelog' inputName='log'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(samplingRates.t:$(n)) and samplingRates.t:$(n)/estimate=true'/>
-
-            <connect srcID='removalProbs.t:$(n)' targetID='state' inputName='stateNode'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(removalProbs.t:$(n)) and removalProbs.t:$(n)/estimate=true'/>
-            <connect srcID='removalProbsPrior.t:$(n)' targetID='prior' inputName='distribution'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and removalProbs.t:$(n)/estimate=true'/>
-            <connect srcID='removalProbsScaler.t:$(n)' targetID='mcmc' inputName='operator'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and removalProbs.t:$(n)/estimate=true'/>
-            <connect srcID='removalProbs.t:$(n)' targetID='tracelog' inputName='log'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(removalProbs.t:$(n)) and removalProbs.t:$(n)/estimate=true'/>
         </subtemplate>
 
     </mergewith>
