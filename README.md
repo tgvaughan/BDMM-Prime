@@ -1,16 +1,19 @@
-BDMM
-====
+BDMMPrime
+=========
 
 [![Build Status](https://travis-ci.org/tgvaughan/bdmm.svg?branch=master)](https://travis-ci.org/tgvaughan/bdmm)
 
 The BDMM project provides a [BEAST 2](http://www.beast2.org/) package for
 performing phylodynamic inference under a structured birth-death model.
 
-Note that this repository contains only the source code for the package and
-will therefore be of interest only to programmers. For details on how to use
-BDMM, refer to the relevant tutorials found at https://taming-the-beast.org.
+BDMMPrime is a fork of the [BDMM project](https://github.com/denisekuehnert/bdmm) aimed at making the package simultaneously
+more flexible and easier to use.  It employs an exact stochastic mapping algorithm
+rather than MCMC in order to sample state changes along tree lineages.
 
-BDMM is free software.  It is distributed under the terms of version 3
+BDMMPime is currently still in development and is not yet ready for general use.
+Instead, refer to the original [BDMM project](https://github.com/denisekuehnert/bdmm).
+
+BDMMPrime is free software.  It is distributed under the terms of version 3
 of the GNU General Public License.  A copy of this license should
 be found in the file COPYING located in the root directory of this repository.
 If this file is absent for some reason, it can also be retrieved from
