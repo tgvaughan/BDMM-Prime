@@ -1,6 +1,8 @@
 BDMM-Prime
 ==========
 
+[![Build Status](https://travis-ci.org/tgvaughan/BDMM-Prime.svg?branch=master)](https://travis-ci.org/tgvaughan/BDMM-Prime)
+
 The BDMM-Prime project provides a [BEAST 2](http://www.beast2.org/) package for
 performing phylodynamic inference under a structured birth-death model.
 
