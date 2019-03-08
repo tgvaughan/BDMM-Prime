@@ -1,19 +1,21 @@
-BDMMPrime
-=========
+BDMM-Prime
+==========
 
-[![Build Status](https://travis-ci.org/tgvaughan/bdmm.svg?branch=master)](https://travis-ci.org/tgvaughan/bdmm)
-
-The BDMM project provides a [BEAST 2](http://www.beast2.org/) package for
+The BDMM-Prime project provides a [BEAST 2](http://www.beast2.org/) package for
 performing phylodynamic inference under a structured birth-death model.
 
-BDMMPrime is a fork of the [BDMM project](https://github.com/denisekuehnert/bdmm) aimed at making the package simultaneously
-more flexible and easier to use.  It employs an exact stochastic mapping algorithm
-rather than MCMC in order to sample state changes along tree lineages.
+The BDMM-Prime project is a fork of the original [BDMM project](https://github.com/denisekuehnert/bdmm).
+The intention is to maintain exactly the same the functionaility of the original package,
+while improving its flexibility and ease of use. To this end, the fork
+employs an exact stochastic mapping algorithm rather than MCMC in
+order to sample state changes along tree lineages.  As a result of the
+many changes that were required in making this transition, it is
+completely incompatible with BDMM itself.
 
-BDMMPime is currently still in development and is not yet ready for general use.
+BDMM-Pime is currently still in development and is not yet ready for general use.
 Instead, refer to the original [BDMM project](https://github.com/denisekuehnert/bdmm).
 
-BDMMPrime is free software.  It is distributed under the terms of version 3
+BDMM-Prime is free software.  It is distributed under the terms of version 3
 of the GNU General Public License.  A copy of this license should
 be found in the file COPYING located in the root directory of this repository.
 If this file is absent for some reason, it can also be retrieved from
