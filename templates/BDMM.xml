@@ -3,36 +3,36 @@
 
     <mergewith point='treePriorTemplates'>
 
-        <subtemplate id='BDMM' class='bdmm.distributions.BirthDeathMigrationDistribution' mainid='BDMM.t:$(n)'
-                     inlineInputs="bdmm.distributions.BirthDeathMigrationDistribution.parameterization"
-        suppressInputs="bdmm.distributions.BirthDeathMigrationDistribution.typeLabel,
-                        bdmm.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
-                        bdmm.distributions.BirthDeathMigrationDistribution.tree">
+        <subtemplate id='BDMMPrime' class='bdmmprime.distributions.BirthDeathMigrationDistribution' mainid='BDMMPrime.t:$(n)'
+                     inlineInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.parameterization"
+                     suppressInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.typeLabel,
+                        bdmmprime.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
+                        bdmmprime.distributions.BirthDeathMigrationDistribution.tree">
             <![CDATA[
-                <distribution id="BDMM.t:$(n)" spec="bdmm.distributions.BirthDeathMigrationDistribution"
+                <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distributions.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
 
-                    <parameterization id="CanonicalBDMMParameterization.t:$(n)" spec="bdmm.parameterization.CanonicalParameterization">
+                    <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)" spec="bdmmprime.parameterization.CanonicalParameterization">
                         <origin spec="beast.core.parameter.RealParameter" id="origin" value="10.0"/>
-                        <typeSet id="typeSet" spec="bdmm.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
-                        <birthRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                        <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
+                        <birthRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSet">
                             <rateValues id="birthRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </birthRate>
-                        <deathRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                        <deathRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSet">
                             <rateValues id="deathRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </deathRate>
-                        <migrationRate spec="bdmm.parameterization.SkylineMatrixParameter" typeSet="@typeSet">
+                        <migrationRate spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSet">
                             <rateValues id="migrationRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </migrationRate>
-                        <samplingRate spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                        <samplingRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSet">
                             <rateValues id="samplingRate.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingRate>
-                        <removalProb spec="bdmm.parameterization.SkylineVectorParameter" typeSet="@typeSet">
+                        <removalProb spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSet">
                             <rateValues id="removalProb.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
                     </parameterization>
 
-                    <typeTraitSet id="typeTraitSet.t:$(n)" spec="bdmm.util.InitializedTraitSet" traitname="type" tree="@Tree.t:$(n)">
+                    <typeTraitSet id="typeTraitSet.t:$(n)" spec="bdmmprime.util.InitializedTraitSet" traitname="type" tree="@Tree.t:$(n)">
                         <taxa spec="beast.evolution.alignment.TaxonSet" alignment="@$(n)"/>
                     </typeTraitSet>
 
@@ -40,7 +40,7 @@
                 </distribution>
 
             ]]>
-			<plate fragment="TreeOperators" var="m" range="BDMM"/>
+			<plate fragment="TreeOperators" var="m" range="BDMMPrime"/>
 
             <plate fragment="ParameterBits" var="p" range="birthRate"/>
             <plate fragment="ParameterBits" var="p" range="deathRate"/>
@@ -48,8 +48,8 @@
             <plate fragment="ParameterBits" var="p" range="samplingRate"/>
             <plate fragment="ParameterBits" var="p" range="removalProb"/>
 
-            <connect srcID='BDMM.t:$(n)' targetID='prior' inputName='distribution'
-                     if='inposterior(BDMM.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>
+            <connect srcID='BDMMPrime.t:$(n)' targetID='prior' inputName='distribution'
+                    if='inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>
                 BDMM prior on tree t:$(n)
             </connect>
         </subtemplate>

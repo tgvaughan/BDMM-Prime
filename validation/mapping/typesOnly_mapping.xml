@@ -11,9 +11,9 @@
                  :beast.evolution.operators
                  :beast.math.distributions
                  :feast.simulation
-                 :bdmm.distribution
-                 :bdmm.parameterization
-                 :bdmm.mapping">
+                 :bdmmprime.distribution
+                 :bdmmprime.parameterization
+                 :bdmmprime.mapping">
 
     <typedTree spec="TypeMappedTree" id="typedTree" typeLabel="type" remapOnLog="false">
 

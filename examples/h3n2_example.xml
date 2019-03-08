@@ -11,9 +11,9 @@
                  :beast.evolution.substitutionmodel
                  :beast.evolution.likelihood
                  :beast.core.parameter
-                 :bdmm.distributions
-                 :bdmm.parameterization
-                 :bdmm.mapping">
+                 :bdmmprime.distributions
+                 :bdmmprime.parameterization
+                 :bdmmprime.mapping">
         
     <data id="h3n2_2deme" name="alignment">
                                         
@@ -291,7 +291,7 @@
                 </prior>
                             
                 <prior id="samplingProportionPrior.t:h3n2_2deme" name="distribution">
-                    <x spec="bdmm.util.Slice" arg="@samplingProportion.t:h3n2_2deme" index="0" count="2"/>
+                    <x spec="bdmmprime.util.Slice" arg="@samplingProportion.t:h3n2_2deme" index="0" count="2"/>
                     <LogNormal name="distr" meanInRealSpace="true">
                         <parameter id="RealParameter.9" estimate="false" name="M">0.001</parameter>
                         <parameter id="RealParameter.10" estimate="false" name="S">1.25</parameter>
