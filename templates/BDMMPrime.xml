@@ -42,11 +42,11 @@
             ]]>
 			<plate fragment="TreeOperators" var="m" range="BDMMPrime"/>
 
-            <plate fragment="ParameterBits" var="p" range="birthRate"/>
-            <plate fragment="ParameterBits" var="p" range="deathRate"/>
-            <plate fragment="ParameterBits" var="p" range="migrationRate"/>
-            <plate fragment="ParameterBits" var="p" range="samplingRate"/>
-            <plate fragment="ParameterBits" var="p" range="removalProb"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="birthRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="deathRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="migrationRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="samplingRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="removalProb"/>
 
             <connect srcID='BDMMPrime.t:$(n)' targetID='prior' inputName='distribution'
                     if='inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>

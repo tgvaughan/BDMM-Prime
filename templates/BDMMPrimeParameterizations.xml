@@ -2,7 +2,7 @@
        namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
 
     <mergewith point='misc'>
-        <fragment id='ParameterBits' spec="beast.app.beauti.Fragment">
+        <fragment id='BDMMPrimeParameters' spec="beast.app.beauti.Fragment">
             <![CDATA[
 
             <prior id='$(p)Prior.t:$(n)' x='@$(p).t:$(n)'>
@@ -28,7 +28,8 @@
         <subtemplate id="CanonicalParameterization" class="bdmmprime.parameterization.CanonicalParameterization"
                      mainid="CanonicalBDMMPrimeParameterization.t:$(n)">
             <![CDATA[
-        <parameterization spec="bdmmprime.parameterization.CanonicalParameterization">
+        <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
+                        spec="bdmmprime.parameterization.CanonicalParameterization">
                         <origin spec="beast.core.parameter.RealParameter" id="origin" value="10.0"/>
                         <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
                         <birthRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSet">
@@ -50,11 +51,11 @@
 
 
 ]]>
-            <plate fragment="ParameterBits" var="p" range="birthRate"/>
-            <plate fragment="ParameterBits" var="p" range="deathRate"/>
-            <plate fragment="ParameterBits" var="p" range="migrationRate"/>
-            <plate fragment="ParameterBits" var="p" range="samplingRate"/>
-            <plate fragment="ParameterBits" var="p" range="removalProb"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="birthRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="deathRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="migrationRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="samplingRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="removalProb"/>
 
         </subtemplate>
 
@@ -62,8 +63,9 @@
         <subtemplate id="EpiParameterization" class="bdmmprime.parameterization.EpiParameterization"
                      mainid="EpiBDMMPrimeParameterization.t:$(n)">
             <![CDATA[
-        <parameterization spec="bdmmprime.parameterization.EpiParameterization">
-                        <origin spec="beast.core.parameter.RealParameter" id="origin" value="10.0"/>
+        <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
+                        spec="bdmmprime.parameterization.EpiParameterization">
+                        <origin spec="beast.core.parameter.RealParameter" id="origin" value="9.0"/>
                         <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
                         <R0 spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSet">
                             <rateValues id="R0.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
@@ -75,18 +77,18 @@
                             <rateValues id="migrationRate.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </migrationRate>
                         <samplingProportion spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSet">
-                            <rateValues id="samplingRate.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
+                            <rateValues id="samplingProportion.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingProportion>
                         <removalProb spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSet">
                             <rateValues id="removalProb.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
         </parameterization>
 ]]>
-            <plate fragment="ParameterBits" var="p" range="R0"/>
-            <plate fragment="ParameterBits" var="p" range="becomeUninfectiousRate"/>
-            <plate fragment="ParameterBits" var="p" range="migrationRate"/>
-            <plate fragment="ParameterBits" var="p" range="samplingProportion"/>
-            <plate fragment="ParameterBits" var="p" range="removalProb"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="R0"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="becomeUninfectiousRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="migrationRate"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="samplingProportion"/>
+            <plate fragment="BDMMPrimeParameters" var="p" range="removalProb"/>
 
         </subtemplate>
 
