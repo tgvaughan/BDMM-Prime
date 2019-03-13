@@ -66,7 +66,7 @@
 
             <plate var="param" range="Epi">
             <![CDATA[
-        <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
+        <parameterization id="$(param)BDMMPrimeParameterization.t:$(n)"
                         spec="bdmmprime.parameterization.EpiParameterization">
                         <origin spec="beast.core.parameter.RealParameter" id="origin" value="9.0"/>
                         <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
