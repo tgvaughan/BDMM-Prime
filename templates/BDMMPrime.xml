@@ -43,26 +43,45 @@
                 </distribution>
 
                 <typeSet id="typeSetBDMMPrime.t:$(n)" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
+
                 <origin spec="beast.core.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
+                <prior id='originBDMMPrimePrior.t:$(n)' x='@originBDMMPrime.t:$(n)'>
+                   <distr id="originBDMMPrimeOneOnXPrior.t:$(n)" spec="beast.math.distributions.OneOnX"/>
+                </prior>
+  		        <operator id='originBDMMPrimeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
             ]]>
             </plate>
 
 			<plate fragment="TreeOperators" var="m" range="BDMMPrime"/>
 
 
-            <plate var="param" range="Canonical">
-            <plate fragment="BDMMPrimeParameters" var="p"
-                   range="birthRate$(param),deathRate$(param),migrationRate$(param),samplingRate$(param),removalProb$(param)"/>
-            </plate>
-
-            <plate fragment="BDMMPrimeParameters" var="p" range="originBDMMPrime">
-
+            <plate var="parameterization" range="Canonical">
+            <plate fragment="BDMMPrimeParameters" var="thisparam"
+                   range="birthRate$(parameterization),deathRate$(parameterization),migrationRate$(parameterization),samplingRate$(parameterization),removalProb$(parameterization)"/>
             </plate>
 
             <connect srcID='BDMMPrime.t:$(n)' targetID='prior' inputName='distribution'
                     if='inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>
                 BDMM prior on tree t:$(n)
             </connect>
+
+            <connect srcID='originBDMMPrime.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and originBDMMPrime.t:$(n)/estimate=true'/>
+            <connect srcID='originBDMMPrimePrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and originBDMMPrime.t:$(n)/estimate=true'/>
+            <connect srcID='birthRatesScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and originBDMMPrime.t:$(n)/estimate=true'/>
+            <connect srcID='birthRates.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and originBDMMPrime.t:$(n)/estimate=true'/>
+
         </subtemplate>
 
     </mergewith>
