@@ -2,39 +2,64 @@
        namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
 
     <mergewith point='misc'>
+        <fragment id='CanonicalBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
+            <![CDATA[
 
-        <plate var="parameterization" range="Canonical,Epi">
-            <fragment id='$(parameterization)BDMMPrimeParameters' spec="beast.app.beauti.Fragment">
-                <![CDATA[
+            <prior id='$(thisparam)CanonicalPrior.t:$(n)' x='@$(thisparam)Canonical.t:$(n)'>
+                   <distr id="$(thisparam)CanonicalOneOnXPrior.t:$(n)" spec="beast.math.distributions.OneOnX"/>
+            </prior>
+  		    <operator id='$(thisparam)CanonicalScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
+            ]]>
 
-                <prior id='$(thisparam)Prior.t:$(n)' x='@$(thisparam).t:$(n)'>
-                   <distr id="$(thisparam)OneOnXPrior.t:$(n)" spec="beast.math.distributions.OneOnX"/>
-                </prior>
-  		        <operator id='$(thisparam)Scaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam).t:$(n)"/>
-                ]]>
+            <connect srcID='$(thisparam)Canonical.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and inposterior(CanonicalBDMMPrimeParameterization.t:$(n)) and $(thisparam)Canonical.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)CanonicalPrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)Canonical.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)CanonicalScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)Canonical.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)Canonical.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)Canonical.t:$(n)/estimate=true'/>
+        </fragment>
 
-                <connect srcID='$(thisparam).t:$(n)' targetID='state' inputName='stateNode'
-                         if='inposterior(BDMMPrime.t:$(n))
+        <fragment id='EpiBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
+            <![CDATA[
+
+            <prior id='$(thisparam)EpiPrior.t:$(n)' x='@$(thisparam)Epi.t:$(n)'>
+                   <distr id="$(thisparam)EpiOneOnXPrior.t:$(n)" spec="beast.math.distributions.OneOnX"/>
+            </prior>
+  		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
+            ]]>
+
+            <connect srcID='$(thisparam)Epi.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and inposterior($(parameterization)BDMMPrimeParameterization.t:$(n))
-                     and $(thisparam).t:$(n)/estimate=true'/>
-                <connect srcID='$(thisparam)Prior.t:$(n)' targetID='prior' inputName='distribution'
-                         if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)EpiPrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and inposterior($(parameterization)BDMMPrimeParameterization.t:$(n))
-                     and $(thisparam).t:$(n)/estimate=true'/>
-                <connect srcID='birthRatesScaler.t:$(n)' targetID='mcmc' inputName='operator'
-                         if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)EpiScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and inposterior($(parameterization)BDMMPrimeParameterization.t:$(n))
-                     and $(thisparam).t:$(n)/estimate=true'/>
-                <connect srcID='birthRates.t:$(n)' targetID='tracelog' inputName='log'
-                         if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)Epi.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and inposterior($(parameterization)BDMMPrimeParameterization.t:$(n))
-                     and $(thisparam).t:$(n)/estimate=true'/>
-            </fragment>
-        </plate>
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+        </fragment>
     </mergewith>
 
     <mergewith point='treePriorTemplates'>
@@ -43,69 +68,60 @@
         <subtemplate id="CanonicalParameterization" class="bdmmprime.parameterization.CanonicalParameterization"
                      mainid="CanonicalBDMMPrimeParameterization.t:$(n)">
 
-            <plate var="parameterization" range="Canonical">
-            <![CDATA[
-        <parameterization id="$(parameterization)BDMMPrimeParameterization.t:$(n)"
+        <![CDATA[
+            <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
                         spec="bdmmprime.parameterization.CanonicalParameterization">
                         <origin idref="originBDMMPrime.t:$(n)"/>
                         <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
                         <birthRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="birthRate$(parameterization).t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                            <rateValues id="birthRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </birthRate>
                         <deathRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="deathRate$(parameterization).t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                            <rateValues id="deathRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </deathRate>
                         <migrationRate spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="migrationRate$(parameterization).t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                            <rateValues id="migrationRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </migrationRate>
                         <samplingRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="samplingRate$(parameterization).t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
+                            <rateValues id="samplingRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingRate>
                         <removalProb spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="removalProb$(parameterization).t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                            <rateValues id="removalProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
-        </parameterization>
+            </parameterization>
         ]]>
-        </plate>
-            <plate var="parameterization" range="Canonical">
-                <plate fragment="$(parameterization)BDMMPrimeParameters" var="thisparam"
-                       range="birthRate$(parameterization),deathRate$(parameterization),migrationRate$(parameterization),samplingRate$(parameterization),removalProb$(parameterization)"/>
-            </plate>
+            <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
+                   range="birthRate,deathRate,migrationRate,samplingRate,removalProb"/>
         </subtemplate>
 
         <!-- Epi parameterization -->
         <subtemplate id="EpiParameterization" class="bdmmprime.parameterization.EpiParameterization"
                      mainid="EpiBDMMPrimeParameterization.t:$(n)">
 
-            <plate var="parameterization" range="Epi">
-            <![CDATA[
-        <parameterization id="$(parameterization)BDMMPrimeParameterization.t:$(n)"
-                        spec="bdmmprime.parameterization.EpiParameterization">
+        <![CDATA[
+            <parameterization id="EpiBDMMPrimeParameterization.t:$(n)"
+                              spec="bdmmprime.parameterization.EpiParameterization">
                         <origin idref="originBDMMPrime.t:$(n)"/>
                         <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
                         <R0 spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="R0$(parameterization).t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="R0Epi.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </R0>
                         <becomeUninfectiousRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="becomeUninfectiousRate$(parameterization).t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="becomeUninfectiousRateEpi.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </becomeUninfectiousRate>
                         <migrationRate spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="migrationRate$(parameterization).t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="migrationRateEpi.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
                         </migrationRate>
                         <samplingProportion spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="samplingProportion$(parameterization).t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
+                            <rateValues id="samplingProportionEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingProportion>
                         <removalProb spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="removalProb$(parameterization).t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                            <rateValues id="removalProbEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
-        </parameterization>
-]]>
-            </plate>
-
-            <plate var="parameterization" range="Epi">
-                <plate fragment="$(parameterization)BDMMPrimeParameters" var="thisparam"
-                       range="R0$(parameterization),becomeUninfectiousRate$(parameterization),migrationRate$(parameterization),samplingProportion$(parameterization),removalProb$(parameterization)"/>
-            </plate>
+            </parameterization>
+        ]]>
+        <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
+               range="R0,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb"/>
 
         </subtemplate>
 

@@ -9,31 +9,31 @@
                         bdmmprime.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.tree">
 
-            <plate var="param" range="Canonical">
             <![CDATA[
                 <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distributions.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
 
-
-                    <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)" spec="bdmmprime.parameterization.CanonicalParameterization">
-                        <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
+                    <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
+                                      spec="bdmmprime.parameterization.CanonicalParameterization">
                         <origin idref="originBDMMPrime.t:$(n)"/>
+                        <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
                         <birthRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="birthRate$(param).t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="birthRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </birthRate>
                         <deathRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="deathRate$(param).t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="deathRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </deathRate>
                         <migrationRate spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="migrationRate$(param).t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                            <rateValues id="migrationRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
                         </migrationRate>
                         <samplingRate spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="samplingRate$(param).t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
+                            <rateValues id="samplingRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
                         </samplingRate>
                         <removalProb spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)">
-                            <rateValues id="removalProb$(param).t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                            <rateValues id="removalProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
                     </parameterization>
+
 
                     <typeTraitSet id="typeTraitSet.t:$(n)" spec="bdmmprime.util.InitializedTraitSet" traitname="type" tree="@Tree.t:$(n)">
                         <taxa spec="beast.evolution.alignment.TaxonSet" alignment="@$(n)"/>
@@ -50,12 +50,9 @@
                 </prior>
   		        <operator id='originBDMMPrimeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
             ]]>
-            </plate>
 
-            <plate var="parameterization" range="Canonical">
-                <plate fragment="$(parameterization)BDMMPrimeParameters" var="thisparam"
-                       range="birthRate$(parameterization),deathRate$(parameterization),migrationRate$(parameterization),samplingRate$(parameterization),removalProb$(parameterization)"/>
-            </plate>
+            <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
+                   range="birthRate,deathRate,migrationRate,samplingRate,removalProb"/>
 
             <connect srcID='BDMMPrime.t:$(n)' targetID='prior' inputName='distribution'
                     if='inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>
