@@ -7,8 +7,14 @@
                      inlineInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.parameterization"
                      suppressInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.typeLabel,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
-                        bdmmprime.distributions.BirthDeathMigrationDistribution.tree">
-
+                        bdmmprime.distributions.BirthDeathMigrationDistribution.tree"
+                     collapsedInputs="bdmmprime.parameterization.CanonicalParameterization.birthRate,
+                                      bdmmprime.parameterization.CanonicalParameterization.deathRate,
+                                      bdmmprime.parameterization.CanonicalParameterization.migrationRate,
+                                      bdmmprime.parameterization.CanonicalParameterization.samplingRate,
+                                      bdmmprime.parameterization.CanonicalParameterization.removalProb,
+                                      bdmmprime.parameterization.CanonicalParameterization.rhoSampling,
+                                      bdmmprime.parameterization.CanonicalParameterization.birthRateAmongDemes">
             <![CDATA[
                 <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distributions.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
@@ -35,7 +41,7 @@
                     </parameterization>
 
 
-                    <typeTraitSet id="typeTraitSet.t:$(n)" spec="bdmmprime.util.InitializedTraitSet" traitname="type" tree="@Tree.t:$(n)">
+                    <typeTraitSet id="typeTraitSet.t:$(n)" spec="bdmmprime.util.InitializedTraitSet" traitname="type">
                         <taxa spec="beast.evolution.alignment.TaxonSet" alignment="@$(n)"/>
                     </typeTraitSet>
 

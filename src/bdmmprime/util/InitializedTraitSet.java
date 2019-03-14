@@ -9,10 +9,6 @@ import java.util.stream.Collectors;
 
 public class InitializedTraitSet extends TraitSet {
 
-    public Input<Tree> treeInput = new Input<>("tree",
-    "Tree from which to extract taxa.",
-            Input.Validate.REQUIRED);
-
     public InitializedTraitSet() {
         traitsInput.setRule(Input.Validate.OPTIONAL);
     }
@@ -21,7 +17,7 @@ public class InitializedTraitSet extends TraitSet {
     public void initAndValidate() {
 
         if (traitsInput.get() == null) {
-            String value = Arrays.stream(treeInput.get().getTaxaNames())
+            String value = taxaInput.get().getTaxaNames().stream()
                     .map(n -> n + "=NOT_SET")
                     .collect(Collectors.joining(","));
 
