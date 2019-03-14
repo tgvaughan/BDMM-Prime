@@ -52,12 +52,9 @@
             ]]>
             </plate>
 
-			<plate fragment="TreeOperators" var="m" range="BDMMPrime"/>
-
-
             <plate var="parameterization" range="Canonical">
-            <plate fragment="BDMMPrimeParameters" var="thisparam"
-                   range="birthRate$(parameterization),deathRate$(parameterization),migrationRate$(parameterization),samplingRate$(parameterization),removalProb$(parameterization)"/>
+                <plate fragment="$(parameterization)BDMMPrimeParameters" var="thisparam"
+                       range="birthRate$(parameterization),deathRate$(parameterization),migrationRate$(parameterization),samplingRate$(parameterization),removalProb$(parameterization)"/>
             </plate>
 
             <connect srcID='BDMMPrime.t:$(n)' targetID='prior' inputName='distribution'
