@@ -66,14 +66,7 @@
 
         <!-- Canonical parameterization -->
         <subtemplate id="CanonicalParameterization" class="bdmmprime.parameterization.CanonicalParameterization"
-                     mainid="CanonicalBDMMPrimeParameterization.t:$(n)"
-                     collapsedInputs="bdmmprime.parameterization.CanonicalParameterization.birthRate,
-                                      bdmmprime.parameterization.CanonicalParameterization.deathRate,
-                                      bdmmprime.parameterization.CanonicalParameterization.migrationRate,
-                                      bdmmprime.parameterization.CanonicalParameterization.samplingRate,
-                                      bdmmprime.parameterization.CanonicalParameterization.removalProb,
-                                      bdmmprime.parameterization.CanonicalParameterization.rhoSampling,
-                                      bdmmprime.parameterization.CanonicalParameterization.birthRateAmongDemes">
+                     mainid="CanonicalBDMMPrimeParameterization.t:$(n)">
 
         <![CDATA[
             <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
@@ -103,14 +96,7 @@
 
         <!-- Epi parameterization -->
         <subtemplate id="EpiParameterization" class="bdmmprime.parameterization.EpiParameterization"
-                     mainid="EpiBDMMPrimeParameterization.t:$(n)"
-                     collapsedInputs="bdmmprime.parameterization.EpiParameterization.R0,
-                                      bdmmprime.parameterization.EpiParameterization.becomeUninfectiousRate,
-                                      bdmmprime.parameterization.EpiParameterization.samplingProportion,
-                                      bdmmprime.parameterization.EpiParameterization.rhoSampling,
-                                      bdmmprime.parameterization.EpiParameterization.removalProb,
-                                      bdmmprime.parameterization.EpiParameterization.migrationRate,
-                                      bdmmprime.parameterization.EpiParameterization.R0AmongDemes">
+                     mainid="EpiBDMMPrimeParameterization.t:$(n)">
 
         <![CDATA[
             <parameterization id="EpiBDMMPrimeParameterization.t:$(n)"

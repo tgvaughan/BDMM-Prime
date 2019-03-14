@@ -29,10 +29,6 @@ public class ParameterizationInputEditor extends BEASTObjectInputEditor {
         m_beastObject = beastObject;
         this.itemNr = itemNr;
 
-        List<BeautiSubTemplate> availableBEASTObjects =
-                doc.getInputEditorFactory().getAvailableTemplates(m_input,
-                        m_beastObject, null, doc);
-
         super.init(input, beastObject, itemNr, isExpandOption, addButtons);
     }
 }

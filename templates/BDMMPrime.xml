@@ -4,17 +4,11 @@
     <mergewith point='treePriorTemplates'>
 
         <subtemplate id='BDMMPrime' class='bdmmprime.distributions.BirthDeathMigrationDistribution' mainid='BDMMPrime.t:$(n)'
-                     inlineInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.parameterization"
                      suppressInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.typeLabel,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.tree"
-                     collapsedInputs="bdmmprime.parameterization.CanonicalParameterization.birthRate,
-                                      bdmmprime.parameterization.CanonicalParameterization.deathRate,
-                                      bdmmprime.parameterization.CanonicalParameterization.migrationRate,
-                                      bdmmprime.parameterization.CanonicalParameterization.samplingRate,
-                                      bdmmprime.parameterization.CanonicalParameterization.removalProb,
-                                      bdmmprime.parameterization.CanonicalParameterization.rhoSampling,
-                                      bdmmprime.parameterization.CanonicalParameterization.birthRateAmongDemes">
+                     inlineInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.parameterization">
+
             <![CDATA[
                 <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distributions.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
