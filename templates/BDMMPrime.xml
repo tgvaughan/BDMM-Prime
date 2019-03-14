@@ -46,7 +46,7 @@
 
                 <origin spec="beast.core.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
                 <prior id='originBDMMPrimePrior.t:$(n)' x='@originBDMMPrime.t:$(n)'>
-                   <distr id="originBDMMPrimeOneOnXPrior.t:$(n)" spec="beast.math.distributions.OneOnX"/>
+                   <distr spec="beast.math.distributions.OneOnX"/>
                 </prior>
   		        <operator id='originBDMMPrimeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
             ]]>
