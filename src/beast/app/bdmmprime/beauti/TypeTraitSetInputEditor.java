@@ -89,6 +89,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             traitSet.traitsInput.setValue(traitString, traitSet);
             try {
                 traitSet.initAndValidate();
+                traitSet.getOutputs().forEach(BEASTInterface::initAndValidate);
             } catch (Exception ex) {
                 System.err.println("Error setting type trait.");
             }
@@ -106,6 +107,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             traitSet.traitsInput.setValue(traitStringBuilder.toString(), traitSet);
             try {
                 traitSet.initAndValidate();
+                traitSet.getOutputs().forEach(BEASTInterface::initAndValidate);
             } catch (Exception ex) {
                 System.err.println("Error clearing type trait.");
             }
@@ -179,11 +181,14 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             traitSet.traitsInput.setValue(newTraitString, traitSet);
             try {
                 traitSet.initAndValidate();
+                traitSet.getOutputs().forEach(BEASTInterface::initAndValidate);
             } catch (Exception ex) {
                 System.err.println("Error setting type trait value.");
             }
 
             fireTableCellUpdated(rowIndex, columnIndex);
+
+            refreshPanel();
         }
 
         @Override
@@ -197,5 +202,10 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                     return null;
             }
         }
+    }
+
+    // TODO Add some nasty hack.
+    public static boolean customConnector(BeautiDoc doc) {
+        return false;
     }
 }

@@ -121,6 +121,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
     void loadFromModel() {
 
         int nChanges = skylineVector.getChangeCount();
+        int nTypes = skylineVector.typeSetInput.get().getNTypes();
 
         // Load changepoints:
         if (nChanges > 0) {
@@ -145,7 +146,13 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         RealParameter valuesParameter = skylineVector.rateValuesInput.get();
         if (valuesParameter.getDimension()==(nChanges+1)) {
-            scalarRatesCheckBox.setSelected(true);
+            if (nTypes>1) {
+                scalarRatesCheckBox.setSelected(true);
+                scalarRatesCheckBox.setEnabled(true);
+            } else {
+                scalarRatesCheckBox.setSelected(false);
+                scalarRatesCheckBox.setEnabled(false);
+            }
             valuesTableModel.setRowCount(1);
 
             for (int i=0; i<valuesParameter.getDimension(); i++)
@@ -164,6 +171,10 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
     }
 
+    void updateTableModels() {
+
+    }
+
     void saveToModel() {
 
         if (modelSaveInProcess)
@@ -179,7 +190,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         // Update table models:
 
         valuesTableModel.setColumnCount(nChanges+1);
-        if (scalarRatesCheckBox.isEnabled()) {
+        if (scalarRatesCheckBox.isSelected()) {
             valuesTableModel.setRowCount(1);
         } else {
             valuesTableModel.setRowCount(skylineVector.getNTypes());

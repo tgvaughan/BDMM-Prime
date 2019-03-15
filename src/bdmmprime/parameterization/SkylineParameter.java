@@ -33,7 +33,7 @@ public abstract class SkylineParameter extends CalculationNode {
             "Tree when root time is used to identify the start of the process.");
 
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
-            "Type set defining distinct types in model. Usefed when a" +
+            "Type set defining distinct types in model. Used when a" +
                     "single value is to be shared amongst several types.");
 
     boolean timesAreAges, timesAreRelative;
