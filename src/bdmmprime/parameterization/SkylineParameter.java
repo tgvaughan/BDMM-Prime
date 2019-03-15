@@ -104,7 +104,7 @@ public abstract class SkylineParameter extends CalculationNode {
 	public int getChangeCount() {
         update();
 
-        return changeTimesInput.get().getDimension();
+        return times.length;
     }
 
 
