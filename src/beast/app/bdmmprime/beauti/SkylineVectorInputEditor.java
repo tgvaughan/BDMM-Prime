@@ -2,6 +2,7 @@ package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineVectorParameter;
 import beast.app.beauti.BeautiDoc;
+import beast.app.beauti.PartitionContext;
 import beast.app.draw.InputEditor;
 import beast.core.BEASTInterface;
 import beast.core.Input;
@@ -14,7 +15,7 @@ import java.awt.*;
 
 public class SkylineVectorInputEditor extends InputEditor.Base {
 
-    SkylineVectorParameter skylineVectorParameter;
+    SkylineVectorParameter skylineVector;
 
     SpinnerModel changeCountSpinnerModel;
     JCheckBox scalarRatesCheckBox, timesAreAgesCheckBox;
@@ -27,6 +28,8 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
     JTable valuesTable;
 
     JCheckBox estimateValuesCheckBox, estimateTimesCheckBox;
+
+    boolean modelSaveInProcess = false;
 
     public SkylineVectorInputEditor(BeautiDoc doc) {
         super(doc);
@@ -46,7 +49,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         m_beastObject = beastObject;
         this.itemNr= itemNr;
 
-        skylineVectorParameter = (SkylineVectorParameter)input.get();
+        skylineVector = (SkylineVectorParameter)input.get();
 
         addInputLabel();
 
@@ -103,11 +106,21 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         add(boxVert);
 
         loadFromModel();
+
+        // Add event listeners:
+        changeCountSpinnerModel.addChangeListener(e -> saveToModel());
+        changeTimesTableModel.addTableModelListener(e -> saveToModel());
+        timesAreAgesCheckBox.addItemListener(e -> saveToModel());
+        estimateTimesCheckBox.addItemListener(e -> saveToModel());
+
+        valuesTableModel.addTableModelListener(e -> saveToModel());
+        scalarRatesCheckBox.addItemListener(e -> saveToModel());
+        estimateValuesCheckBox.addItemListener(e -> saveToModel());
     }
 
     void loadFromModel() {
 
-        int nChanges = skylineVectorParameter.getChangeCount();
+        int nChanges = skylineVector.getChangeCount();
 
         // Load changepoints:
         if (nChanges > 0) {
@@ -116,7 +129,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
             changeTimesBox.setVisible(true);
 
             estimateTimesCheckBox.setEnabled(true);
-            estimateTimesCheckBox.setSelected(skylineVectorParameter.changeTimesInput.get().isEstimatedInput.get());
+            estimateTimesCheckBox.setSelected(skylineVector.changeTimesInput.get().isEstimatedInput.get());
         } else {
             changeCountSpinnerModel.setValue(0);
             changeTimesTableModel.setColumnCount(0);
@@ -124,13 +137,13 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
             estimateTimesCheckBox.setEnabled(false);
         }
-        timesAreAgesCheckBox.setEnabled(skylineVectorParameter.timesAreAgesInput.get());
+        timesAreAgesCheckBox.setEnabled(skylineVector.timesAreAgesInput.get());
 
         // Load values
 
         valuesTableModel.setColumnCount(nChanges+1);
 
-        RealParameter valuesParameter = skylineVectorParameter.rateValuesInput.get();
+        RealParameter valuesParameter = skylineVector.rateValuesInput.get();
         if (valuesParameter.getDimension()==(nChanges+1)) {
             scalarRatesCheckBox.setSelected(true);
             valuesTableModel.setRowCount(1);
@@ -139,10 +152,10 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
                 valuesTableModel.setValueAt(valuesParameter.getValue(i), 0, i);
         } else {
             scalarRatesCheckBox.setSelected(false);
-            valuesTableModel.setRowCount(skylineVectorParameter.getNTypes());
+            valuesTableModel.setRowCount(skylineVector.getNTypes());
 
             for (int interval=0; interval<valuesParameter.getDimension(); interval++) {
-                for (int typeIdx=0; typeIdx<skylineVectorParameter.getNTypes(); typeIdx++) {
+                for (int typeIdx = 0; typeIdx< skylineVector.getNTypes(); typeIdx++) {
                     valuesTableModel.setValueAt(valuesParameter.getValue(interval), typeIdx, interval);
                 }
             }
@@ -153,5 +166,97 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
     void saveToModel() {
 
+        if (modelSaveInProcess)
+            return;
+
+        modelSaveInProcess = true;
+
+        PartitionContext partitionContext = doc.getContextFor(m_beastObject);
+        String partitionID = ".t:" + partitionContext.tree;
+
+        int nChanges = (int)changeCountSpinnerModel.getValue();
+
+        // Update table models:
+
+        valuesTableModel.setColumnCount(nChanges+1);
+        if (scalarRatesCheckBox.isEnabled()) {
+            valuesTableModel.setRowCount(1);
+        } else {
+            valuesTableModel.setRowCount(skylineVector.getNTypes());
+        }
+        for (int rowIdx=0; rowIdx<valuesTableModel.getRowCount(); rowIdx++) {
+            for (int colIdx=0; colIdx<valuesTableModel.getColumnCount(); colIdx++) {
+                if (valuesTableModel.getValueAt(rowIdx,colIdx) == null)
+                    valuesTableModel.setValueAt(0.0, rowIdx, colIdx);
+            }
+        }
+
+        changeTimesTableModel.setColumnCount(nChanges);
+        for (int colIdx=0; colIdx<changeTimesTable.getColumnCount(); colIdx++) {
+            if (changeTimesTableModel.getValueAt(0, colIdx) == null)
+                changeTimesTableModel.setValueAt(0.0, 0, colIdx);
+        }
+
+        // Save values
+
+        RealParameter rateValuesParam = skylineVector.rateValuesInput.get();
+        rateValuesParam.setDimension(
+                changeTimesTableModel.getRowCount()*changeTimesTableModel.getColumnCount());
+        StringBuilder valuesBuilder = new StringBuilder();
+        for (int colIdx=0; colIdx<valuesTableModel.getColumnCount(); colIdx++) {
+            for (int rowIdx=0; rowIdx<valuesTableModel.getRowCount(); rowIdx++) {
+                valuesBuilder.append(" ").append(valuesTableModel.getValueAt(rowIdx, colIdx));
+            }
+        }
+        rateValuesParam.valuesInput.setValue(valuesBuilder.toString(), rateValuesParam);
+        rateValuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), rateValuesParam);
+
+        // Save change times
+
+        RealParameter changeTimesParam = skylineVector.changeTimesInput.get();
+        if (nChanges>0) {
+            if (changeTimesParam == null) {
+                String changeTimeId = getChangeTimesParameterID();
+                changeTimesParam = (RealParameter) doc.pluginmap.get(changeTimeId);
+                if (changeTimesParam == null) {
+                    changeTimesParam = new RealParameter("0.0");
+                    changeTimesParam.setID(changeTimeId);
+                }
+            }
+            changeTimesParam.setDimension(nChanges);
+
+            StringBuilder changeTimesBuilder = new StringBuilder();
+            for (int i=0; i<nChanges; i++)
+                changeTimesBuilder.append(" ").append(changeTimesTableModel.getValueAt(0, i));
+
+            changeTimesParam.valuesInput.setValue(changeTimesBuilder.toString(), changeTimesParam);
+            changeTimesParam.isEstimatedInput.setValue(estimateTimesCheckBox.isSelected(), changeTimesParam);
+
+        } else {
+            if (changeTimesParam != null)
+                changeTimesParam.isEstimatedInput.setValue(false, changeTimesParam);
+        }
+
+        skylineVector.setInputValue("rateValues", rateValuesParam);
+        rateValuesParam.initAndValidate();
+
+        if (nChanges>0) {
+            skylineVector.setInputValue("changeTimes", changeTimesParam);
+            changeTimesParam.initAndValidate();
+        }
+
+        skylineVector.initAndValidate();
+
+        modelSaveInProcess = false;
+
+        refreshPanel();
+    }
+
+    String getChangeTimesParameterID() {
+        int idx = skylineVector.getID().indexOf("SV");
+        String prefix = skylineVector.getID().substring(0, idx);
+        String suffix = skylineVector.getID().substring(idx+2);
+
+        return prefix + "ChangeTimes" + suffix;
     }
 }
