@@ -161,15 +161,16 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
             }
             valuesTableModel.setRowCount(1);
 
-            for (int i=0; i<valuesParameter.getDimension(); i++)
-                valuesTableModel.setValueAt(valuesParameter.getValue(i), 0, i);
+            for (int interval=0; interval<nChanges+1; interval++)
+                valuesTableModel.setValueAt(valuesParameter.getValue(interval), 0, interval);
         } else {
             scalarRatesCheckBox.setSelected(false);
             valuesTableModel.setRowCount(skylineVector.getNTypes());
 
-            for (int interval=0; interval<valuesParameter.getDimension(); interval++) {
-                for (int typeIdx = 0; typeIdx< skylineVector.getNTypes(); typeIdx++) {
-                    valuesTableModel.setValueAt(valuesParameter.getValue(interval), typeIdx, interval);
+            int valueIdx = 0;
+            for (int interval=0; interval<nChanges+1; interval++) {
+                for (int typeIdx = 0; typeIdx<nTypes; typeIdx++) {
+                    valuesTableModel.setValueAt(valuesParameter.getValue(valueIdx++), typeIdx, interval);
                 }
             }
         }
@@ -188,18 +189,20 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         modelSaveInProcess = true;
 
-        PartitionContext partitionContext = doc.getContextFor(m_beastObject);
-        String partitionID = ".t:" + partitionContext.tree;
+        int nTypes = skylineVector.typeSetInput.get().getNTypes();
+
+//        PartitionContext partitionContext = doc.getContextFor(m_beastObject);
+//        String partitionID = ".t:" + partitionContext.tree;
 
         int nChanges = (int)changeCountSpinnerModel.getValue();
 
-        // Update table models:
+        // Update table model dimensions
 
         valuesTableModel.setColumnCount(nChanges+1);
         if (scalarRatesCheckBox.isSelected()) {
             valuesTableModel.setRowCount(1);
         } else {
-            valuesTableModel.setRowCount(skylineVector.getNTypes());
+            valuesTableModel.setRowCount(nTypes);
         }
         for (int rowIdx=0; rowIdx<valuesTableModel.getRowCount(); rowIdx++) {
             for (int colIdx=0; colIdx<valuesTableModel.getColumnCount(); colIdx++) {
@@ -218,7 +221,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         RealParameter rateValuesParam = skylineVector.rateValuesInput.get();
         rateValuesParam.setDimension(
-                changeTimesTableModel.getRowCount()*changeTimesTableModel.getColumnCount());
+                valuesTableModel.getRowCount()*valuesTableModel.getColumnCount());
         StringBuilder valuesBuilder = new StringBuilder();
         for (int colIdx=0; colIdx<valuesTableModel.getColumnCount(); colIdx++) {
             for (int rowIdx=0; rowIdx<valuesTableModel.getRowCount(); rowIdx++) {
@@ -260,6 +263,8 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         if (nChanges>0) {
             skylineVector.setInputValue("changeTimes", changeTimesParam);
             changeTimesParam.initAndValidate();
+        } else {
+            skylineVector.setInputValue("changeTimes", null);
         }
 
         skylineVector.initAndValidate();
