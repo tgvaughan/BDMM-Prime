@@ -123,7 +123,8 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         int nChanges = skylineVector.getChangeCount();
         int nTypes = skylineVector.typeSetInput.get().getNTypes();
 
-        // Load changepoints:
+        // Load change times:
+
         if (nChanges > 0) {
             changeCountSpinnerModel.setValue(nChanges);
             changeTimesTableModel.setColumnCount(nChanges);
@@ -131,6 +132,11 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
             estimateTimesCheckBox.setEnabled(true);
             estimateTimesCheckBox.setSelected(skylineVector.changeTimesInput.get().isEstimatedInput.get());
+
+            RealParameter changeTimesParameter = skylineVector.changeTimesInput.get();
+            for (int i=0; i<changeTimesParameter.getDimension(); i++)
+                changeTimesTableModel.setValueAt(changeTimesParameter.getValue(i), 0, i);
+
         } else {
             changeCountSpinnerModel.setValue(0);
             changeTimesTableModel.setColumnCount(0);
