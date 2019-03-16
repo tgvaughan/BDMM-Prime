@@ -16,16 +16,19 @@
             <connect srcID='$(thisparam)CanonicalPrior.t:$(n)' targetID='prior' inputName='distribution'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Canonical.t:$(n))
                      and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
             <connect srcID='$(thisparam)CanonicalScaler.t:$(n)' targetID='mcmc' inputName='operator'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Canonical.t:$(n))
                      and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
             <connect srcID='$(thisparam)Canonical.t:$(n)' targetID='tracelog' inputName='log'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Canonical.t:$(n))
                      and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
         </fragment>
@@ -42,21 +45,25 @@
             <connect srcID='$(thisparam)Epi.t:$(n)' targetID='state' inputName='stateNode'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
             <connect srcID='$(thisparam)EpiPrior.t:$(n)' targetID='prior' inputName='distribution'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
             <connect srcID='$(thisparam)EpiScaler.t:$(n)' targetID='mcmc' inputName='operator'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
             <connect srcID='$(thisparam)Epi.t:$(n)' targetID='tracelog' inputName='log'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
         </fragment>
@@ -99,9 +106,18 @@
                             <rateValues id="removalProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
             </parameterization>
+
+            <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
         ]]>
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
                    range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb"/>
+            <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
+                   range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes"/>
         </subtemplate>
 
         <!-- Epi parameterization -->
@@ -138,9 +154,18 @@
                             <rateValues id="removalProbEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
             </parameterization>
+
+            <param id="R0ChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="R0AmongDemesChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="becomeUninfectiousRateChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="migrationRateChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="samplingProportionChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="removalProbChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
         ]]>
         <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
                range="R0,R0AmongDemes,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb"/>
+            <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
+                   range="R0ChangeTimes,R0AmongDemesChangeTimes,becomeUninfectiousRateChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,removalProbChangeTimes"/>
 
         </subtemplate>
 

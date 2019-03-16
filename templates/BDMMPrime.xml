@@ -59,10 +59,19 @@
                    <distr spec="beast.math.distributions.OneOnX"/>
                 </prior>
   		        <operator id='originBDMMPrimeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
+
+  		        <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		        <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		        <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		        <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		        <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		        <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
             ]]>
 
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
                    range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb"/>
+            <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
+                   range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes"/>
 
             <connect srcID='BDMMPrime.t:$(n)' targetID='prior' inputName='distribution'
                     if='inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>
