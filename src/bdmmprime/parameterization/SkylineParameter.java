@@ -22,8 +22,8 @@ public abstract class SkylineParameter extends CalculationNode {
                     "of times after birth-death process start.",
             false);
 
-    public Input<RealParameter> rateValuesInput = new Input<>("rateValues",
-            "Parameter specifying rate values through time.",
+    public Input<RealParameter> skylineValuesInput = new Input<>("skylineValues",
+            "Parameter specifying parameter values through time.",
             Input.Validate.REQUIRED);
 
     public Input<RealParameter> originInput = new Input<>("origin",
@@ -48,17 +48,17 @@ public abstract class SkylineParameter extends CalculationNode {
     public SkylineParameter() { }
 
     public SkylineParameter(RealParameter changeTimesParam,
-                            RealParameter rateValuesParam) {
+                            RealParameter skylineValuesParam) {
         changeTimesInput.setValue(changeTimesParam, this);
-        rateValuesInput.setValue(rateValuesParam, this);
+        skylineValuesInput.setValue(skylineValuesParam, this);
         initAndValidate();
     }
 
     public SkylineParameter(RealParameter changeTimesParam,
-                            RealParameter rateValuesParam,
+                            RealParameter skylineValuesParam,
                             int nTypes) {
         changeTimesInput.setValue(changeTimesParam, this);
-        rateValuesInput.setValue(rateValuesParam, this);
+        skylineValuesInput.setValue(skylineValuesParam, this);
         typeSetInput.setValue(new TypeSet(nTypes), this);
         initAndValidate();
     }

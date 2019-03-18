@@ -13,14 +13,14 @@ public class SkylineVectorParameter extends SkylineParameter {
     public SkylineVectorParameter() { }
 
     public SkylineVectorParameter(RealParameter changeTimesParam,
-                                  RealParameter rateValuesParam) {
-        super(changeTimesParam, rateValuesParam);
+                                  RealParameter skylineValuesParam) {
+        super(changeTimesParam, skylineValuesParam);
     }
 
     public SkylineVectorParameter(RealParameter changeTimesParam,
-                                  RealParameter rateValuesParam,
+                                  RealParameter skylineValuesParam,
                                   int nTypes) {
-        super(changeTimesParam, rateValuesParam, nTypes);
+        super(changeTimesParam, skylineValuesParam, nTypes);
     }
 
 
@@ -28,11 +28,11 @@ public class SkylineVectorParameter extends SkylineParameter {
     public void initAndValidate() {
         super.initAndValidate();
 
-        if (rateValuesInput.get().getDimension() % nIntervals != 0)
+        if (skylineValuesInput.get().getDimension() % nIntervals != 0)
             throw new IllegalArgumentException("Value parameter dimension must " +
                     "be a multiple of the number of intervals.");
 
-        int valsPerInterval = rateValuesInput.get().getDimension()/nIntervals;
+        int valsPerInterval = skylineValuesInput.get().getDimension()/nIntervals;
         inputIsScalar = valsPerInterval==1;
 
         if (typeSetInput.get() != null) {
@@ -57,9 +57,9 @@ public class SkylineVectorParameter extends SkylineParameter {
         for (int interval=0; interval<nIntervals; interval++) {
             for (int i=0; i<nTypes; i++) {
                 if (inputIsScalar)
-                    values[interval][i] = rateValuesInput.get().getValue(interval);
+                    values[interval][i] = skylineValuesInput.get().getValue(interval);
                 else
-                    values[interval][i] = rateValuesInput.get().getValue(interval * nTypes + i);
+                    values[interval][i] = skylineValuesInput.get().getValue(interval * nTypes + i);
             }
         }
 

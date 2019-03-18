@@ -55,6 +55,8 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         Box boxVert, boxHoriz;
 
+        // Add elements specific to change times
+
         boxVert = Box.createVerticalBox();
         boxVert.setBorder(new EtchedBorder());
 
@@ -93,6 +95,8 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         changeTimesBox.add(changeTimesBoxRow);
 
         boxVert.add(changeTimesBox);
+
+        // Add elements specific to values
 
         boxHoriz = Box.createHorizontalBox();
         boxHoriz.add(new JLabel("Values:"));
@@ -170,7 +174,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         int nTypes = skylineVector.typeSetInput.get().getNTypes();
         int nIntervals = skylineVector.getChangeCount() + 1;
 
-        RealParameter valuesParam = skylineVector.rateValuesInput.get();
+        RealParameter valuesParam = skylineVector.skylineValuesInput.get();
         int valuesPerInterval = valuesParam.getDimension() / nIntervals;
 
         if (valuesPerInterval == 1 || valuesPerInterval == nTypes) {
@@ -240,7 +244,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         // Load values
 
-        RealParameter valuesParameter = skylineVector.rateValuesInput.get();
+        RealParameter valuesParameter = skylineVector.skylineValuesInput.get();
 
         valuesTableModel.setIntervalCount(nChanges+1);
         valuesTableModel.loadFromParameter(valuesParameter);
@@ -294,12 +298,12 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         // Save values
 
-        RealParameter rateValuesParam = skylineVector.rateValuesInput.get();
-        rateValuesParam.setDimension(valuesTableModel.getRowCount()*(nChanges+1));
-        rateValuesParam.valuesInput.setValue(valuesTableModel.getParameterString(), rateValuesParam);
-        rateValuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), rateValuesParam);
-        skylineVector.setInputValue("rateValues", rateValuesParam);
-        rateValuesParam.initAndValidate();
+        RealParameter skylineValuesParam = skylineVector.skylineValuesInput.get();
+        skylineValuesParam.setDimension(valuesTableModel.getRowCount()*(nChanges+1));
+        skylineValuesParam.valuesInput.setValue(valuesTableModel.getParameterString(), skylineValuesParam);
+        skylineValuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), skylineValuesParam);
+        skylineVector.setInputValue("skylineValues", skylineValuesParam);
+        skylineValuesParam.initAndValidate();
 
         // Save change times
 

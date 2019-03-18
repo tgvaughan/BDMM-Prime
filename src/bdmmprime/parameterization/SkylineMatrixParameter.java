@@ -12,22 +12,22 @@ public class SkylineMatrixParameter extends SkylineParameter {
     public SkylineMatrixParameter() { }
 
     public SkylineMatrixParameter(RealParameter changeTimesParam,
-                                  RealParameter rateValuesParam) {
-        super(changeTimesParam, rateValuesParam);
+                                  RealParameter skylineValuesParam) {
+        super(changeTimesParam, skylineValuesParam);
     }
 
     public SkylineMatrixParameter(RealParameter changeTimesParam,
-                                  RealParameter rateValuesParam,
+                                  RealParameter skylineValuesParam,
                                   int nTypes) {
-        super(changeTimesParam, rateValuesParam, nTypes);
+        super(changeTimesParam, skylineValuesParam, nTypes);
     }
 
     @Override
     public void initAndValidate() {
         super.initAndValidate();
 
-        int totalElementCount = rateValuesInput.get() != null
-                ? rateValuesInput.get().getDimension()
+        int totalElementCount = skylineValuesInput.get() != null
+                ? skylineValuesInput.get().getDimension()
                 : 0;
 
         if (totalElementCount % nIntervals != 0)
@@ -66,9 +66,9 @@ public class SkylineMatrixParameter extends SkylineParameter {
                     }
 
                     if (inputIsScalar)
-                        values[interval][i][j] = rateValuesInput.get().getValue(interval);
+                        values[interval][i][j] = skylineValuesInput.get().getValue(interval);
                     else
-                        values[interval][i][j] = rateValuesInput.get().getValue(idx);
+                        values[interval][i][j] = skylineValuesInput.get().getValue(idx);
 
                     idx += 1;
                 }
