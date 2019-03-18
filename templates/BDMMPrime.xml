@@ -66,6 +66,15 @@
   		        <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		        <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		        <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+
+  		    <logger id="typedTreeLogger.t:$(n)"
+  		            fileName="$(filebase).$(tree).mapped.trees" logEvery="1000" mode="tree">
+                <log spec="bdmmprime.mapping.TypeMappedTree" id="typeMappedTree.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
+                     frequencies="@typeFrequencies.t:$(n)"
+                     typeTraitSet="@typeTraitSet.t:$(n)"
+                     typeLabel="type"
+                     untypedTree="@Tree.t:$(n)"/>
+            </logger>
             ]]>
 
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
@@ -95,6 +104,10 @@
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true'/>
 
+            <connect srcID="typedTreeLogger.t:$(n)" targetID="mcmc" inputName="logger"
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and originBDMMPrime.t:$(n)/estimate=true'/>
         </subtemplate>
 
     </mergewith>

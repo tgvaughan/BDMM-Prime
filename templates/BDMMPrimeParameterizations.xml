@@ -124,7 +124,7 @@
         <subtemplate id="EpiParameterization" class="bdmmprime.parameterization.EpiParameterization"
                      mainid="EpiBDMMPrimeParameterization.t:$(n)">
 
-        <![CDATA[
+            <![CDATA[
             <parameterization id="EpiBDMMPrimeParameterization.t:$(n)"
                               spec="bdmmprime.parameterization.EpiParameterization">
                         <origin idref="originBDMMPrime.t:$(n)"/>
@@ -161,9 +161,10 @@
   		    <param id="migrationRateChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		    <param id="samplingProportionChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		    <param id="removalProbChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
-        ]]>
-        <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
-               range="R0,R0AmongDemes,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb"/>
+            ]]>
+
+            <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
+                   range="R0,R0AmongDemes,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb"/>
             <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
                    range="R0ChangeTimes,R0AmongDemesChangeTimes,becomeUninfectiousRateChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,removalProbChangeTimes"/>
 

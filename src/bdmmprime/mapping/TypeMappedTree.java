@@ -1,5 +1,6 @@
 package bdmmprime.mapping;
 
+import bdmmprime.distributions.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
 import beast.core.Input;
@@ -70,6 +71,10 @@ public class TypeMappedTree extends Tree {
             "If true, mapping will be regenerated when this object " +
                     "is logged.", false);
 
+    public Input<BirthDeathMigrationDistribution> bdmmDistribInput = new Input<>("bdmmDistrib",
+            "If provided, extract the parameterization from here.",
+            Input.Validate.XOR, parameterizationInput);
+
     private Parameterization param;
     private Tree untypedTree;
 
@@ -98,7 +103,11 @@ public class TypeMappedTree extends Tree {
     @Override
     public void initAndValidate() {
 
-        param = parameterizationInput.get();
+        if (parameterizationInput.get() != null)
+            param = parameterizationInput.get();
+        else
+            param = bdmmDistribInput.get().parameterizationInput.get();
+
         untypedTree = treeInput.get();
 
         doStochasticMapping();
