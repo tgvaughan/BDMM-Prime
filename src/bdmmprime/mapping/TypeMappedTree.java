@@ -71,6 +71,10 @@ public class TypeMappedTree extends Tree {
             "If true, mapping will be regenerated when this object " +
                     "is logged.", false);
 
+    public Input<Boolean> mapOnInitInput = new Input<>("mapOnInit",
+            "If true, mapping will be performed when object is " +
+                    "first initialize.", true);
+
     public Input<BirthDeathMigrationDistribution> bdmmDistribInput = new Input<>("bdmmDistrib",
             "If provided, extract the parameterization from here.",
             Input.Validate.XOR, parameterizationInput);
@@ -110,7 +114,8 @@ public class TypeMappedTree extends Tree {
 
         untypedTree = treeInput.get();
 
-        doStochasticMapping();
+        if (mapOnInitInput.get())
+            doStochasticMapping();
     }
 
     /**
