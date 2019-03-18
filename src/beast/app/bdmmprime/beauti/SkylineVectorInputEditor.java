@@ -71,12 +71,15 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         changeTimesBox = Box.createVerticalBox();
         Box changeTimesBoxRow = Box.createHorizontalBox();
         changeTimesBoxRow.add(new JLabel("Change times:"));
-        changeTimesTableModel = new DefaultTableModel(1,1);
+        changeTimesTableModel = new DefaultTableModel(new String[] {"Epoch 1"}, 1);
         changeTimesTable = new JTable(changeTimesTableModel);
         changeTimesTable.setShowGrid(true);
         changeTimesTable.setGridColor(Color.GRAY);
         changeTimesTable.setCellSelectionEnabled(false);
-        changeTimesBoxRow.add(changeTimesTable);
+        Box changeTimesTableBoxCol = Box.createVerticalBox();
+        changeTimesTableBoxCol.add(changeTimesTable.getTableHeader());
+        changeTimesTableBoxCol.add(changeTimesTable);
+        changeTimesBoxRow.add(changeTimesTableBoxCol);
         changeTimesBox.add(changeTimesBoxRow);
         changeTimesBoxRow = Box.createHorizontalBox();
         timesAreAgesCheckBox = new JCheckBox("Times specified as ages");
@@ -178,6 +181,13 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         if (nChanges > 0) {
             changeCountSpinnerModel.setValue(nChanges);
             changeTimesTableModel.setColumnCount(nChanges);
+
+            String[] columnNames = new String[nChanges];
+            for (int i=0; i<nChanges; i++) {
+                columnNames[i] = "Epoch " + (i+1) + " -> " + (i+2);
+            }
+            changeTimesTableModel.setColumnIdentifiers(columnNames);
+
             changeTimesBox.setVisible(true);
 
             estimateTimesCheckBox.setEnabled(true);
