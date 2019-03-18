@@ -2,7 +2,6 @@ package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineVectorParameter;
 import beast.app.beauti.BeautiDoc;
-import beast.app.beauti.PartitionContext;
 import beast.app.draw.InputEditor;
 import beast.core.BEASTInterface;
 import beast.core.Input;
@@ -75,6 +74,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         changeTimesTableModel = new DefaultTableModel(1,1);
         changeTimesTable = new JTable(changeTimesTableModel);
         changeTimesTable.setShowGrid(true);
+        changeTimesTable.setGridColor(Color.GRAY);
         changeTimesTable.setCellSelectionEnabled(false);
         changeTimesBoxRow.add(changeTimesTable);
         changeTimesBox.add(changeTimesBoxRow);
@@ -92,6 +92,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         valuesTableModel = new DefaultTableModel(1,1);
         valuesTable = new JTable(valuesTableModel);
         valuesTable.setShowGrid(true);
+        valuesTable.setGridColor(Color.GRAY);
         valuesTable.setCellSelectionEnabled(false);
         boxHoriz.add(valuesTable);
 
@@ -126,6 +127,9 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
      *
      * This is necessary because the TypeSet can be modified by other input
      * editors, such as the type trait set input editor.
+     *
+     * Once returning from this method, the number of types reported by the
+     * SV itself should match the number reported by the typeset.
      */
     void ensureParamsConsistent() {
         int nTypes = skylineVector.typeSetInput.get().getNTypes();
@@ -134,8 +138,10 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         RealParameter valuesParam = skylineVector.rateValuesInput.get();
         int valuesPerInterval = valuesParam.getDimension() / nIntervals;
 
-        if (valuesPerInterval == 1 || valuesPerInterval == nTypes)
+        if (valuesPerInterval == 1 || valuesPerInterval == nTypes) {
+            skylineVector.initAndValidate();
             return;
+        }
 
         StringBuilder valueBuilder = new StringBuilder();
 
@@ -156,6 +162,10 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         skylineVector.initAndValidate();
     }
 
+    /**
+     * Populate GUI elements with values/dimensions from current BEASTObject model.
+     * Called immediately after init(), and thus after every refreshPanel().
+     */
     void loadFromModel() {
 
         ensureParamsConsistent();
@@ -218,6 +228,13 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
     }
 
+    /**
+     * Write anything in the GUI elements to the BEASTObject model.  Called
+     * immediately when any of the change event handlers for the GUI objects
+     * fire, i.e. when any of the values in the GUI are changed.
+     *
+     * Ends with a call to refreshPanel().
+     */
     void saveToModel() {
 
         if (modelSaveInProcess)
@@ -238,15 +255,23 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         }
         for (int rowIdx=0; rowIdx<valuesTableModel.getRowCount(); rowIdx++) {
             for (int colIdx=0; colIdx<valuesTableModel.getColumnCount(); colIdx++) {
-                if (valuesTableModel.getValueAt(rowIdx,colIdx) == null)
-                    valuesTableModel.setValueAt(0.0, rowIdx, colIdx);
+                if (valuesTableModel.getValueAt(rowIdx, colIdx) == null)
+                    valuesTableModel.setValueAt(
+                            colIdx > 0
+                                    ? valuesTableModel.getValueAt(rowIdx, colIdx-1)
+                                    : valuesTableModel.getValueAt(rowIdx-1, colIdx),
+                            rowIdx, colIdx);
             }
         }
 
         changeTimesTableModel.setColumnCount(nChanges);
         for (int colIdx=0; colIdx<changeTimesTable.getColumnCount(); colIdx++) {
             if (changeTimesTableModel.getValueAt(0, colIdx) == null)
-                changeTimesTableModel.setValueAt(0.0, 0, colIdx);
+                changeTimesTableModel.setValueAt(
+                        colIdx > 0
+                                ? changeTimesTableModel.getValueAt(0, colIdx-1)
+                                : 0.0,
+                        0, colIdx);
         }
 
         // Save values
