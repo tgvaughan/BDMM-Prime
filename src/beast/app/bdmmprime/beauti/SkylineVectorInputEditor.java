@@ -1,6 +1,7 @@
 package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineVectorParameter;
+import bdmmprime.parameterization.TypeSet;
 import beast.app.beauti.BeautiDoc;
 import beast.app.draw.InputEditor;
 import beast.core.BEASTInterface;
@@ -9,6 +10,7 @@ import beast.core.parameter.RealParameter;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
@@ -23,7 +25,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
     JTable changeTimesTable;
     Box changeTimesBox;
 
-    DefaultTableModel valuesTableModel;
+    ValuesTableModel valuesTableModel;
     JTable valuesTable;
 
     JCheckBox estimateValuesCheckBox, estimateTimesCheckBox;
@@ -71,11 +73,12 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         changeTimesBox = Box.createVerticalBox();
         Box changeTimesBoxRow = Box.createHorizontalBox();
         changeTimesBoxRow.add(new JLabel("Change times:"));
-        changeTimesTableModel = new DefaultTableModel(new String[] {"Epoch 1"}, 1);
+        changeTimesTableModel = new DefaultTableModel(new String[] {"Epoch 1->2"}, 1);
         changeTimesTable = new JTable(changeTimesTableModel);
         changeTimesTable.setShowGrid(true);
         changeTimesTable.setGridColor(Color.GRAY);
         changeTimesTable.setCellSelectionEnabled(false);
+        changeTimesTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         Box changeTimesTableBoxCol = Box.createVerticalBox();
         changeTimesTableBoxCol.add(changeTimesTable.getTableHeader());
         changeTimesTableBoxCol.add(changeTimesTable);
@@ -92,11 +95,12 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         boxHoriz = Box.createHorizontalBox();
         boxHoriz.add(new JLabel("Values:"));
-        valuesTableModel = new DefaultTableModel(1,1);
+        valuesTableModel = new ValuesTableModel(skylineVector.typeSetInput.get(), true, 1);
         valuesTable = new JTable(valuesTableModel);
         valuesTable.setShowGrid(true);
         valuesTable.setGridColor(Color.GRAY);
         valuesTable.setCellSelectionEnabled(false);
+        valuesTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         boxHoriz.add(valuesTable);
 
         boxVert.add(boxHoriz);
@@ -135,6 +139,9 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
      * SV itself should match the number reported by the typeset.
      */
     void ensureParamsConsistent() {
+
+        skylineVector.typeSetInput.get().initAndValidate();
+
         int nTypes = skylineVector.typeSetInput.get().getNTypes();
         int nIntervals = skylineVector.getChangeCount() + 1;
 
@@ -204,13 +211,15 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
             estimateTimesCheckBox.setEnabled(false);
         }
-        timesAreAgesCheckBox.setEnabled(skylineVector.timesAreAgesInput.get());
+        timesAreAgesCheckBox.setSelected(skylineVector.timesAreAgesInput.get());
 
         // Load values
 
-        valuesTableModel.setColumnCount(nChanges+1);
-
         RealParameter valuesParameter = skylineVector.rateValuesInput.get();
+
+        valuesTableModel.setIntervalCount(nChanges+1);
+        valuesTableModel.loadFromParameter(valuesParameter);
+
         if (valuesParameter.getDimension()==(nChanges+1)) {
             if (nTypes>1) {
                 scalarRatesCheckBox.setSelected(true);
@@ -219,20 +228,8 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
                 scalarRatesCheckBox.setSelected(false);
                 scalarRatesCheckBox.setEnabled(false);
             }
-            valuesTableModel.setRowCount(1);
-
-            for (int interval=0; interval<nChanges+1; interval++)
-                valuesTableModel.setValueAt(valuesParameter.getValue(interval), 0, interval);
         } else {
             scalarRatesCheckBox.setSelected(false);
-            valuesTableModel.setRowCount(nTypes);
-
-            int valueIdx = 0;
-            for (int interval=0; interval<nChanges+1; interval++) {
-                for (int typeIdx = 0; typeIdx<nTypes; typeIdx++) {
-                    valuesTableModel.setValueAt(valuesParameter.getValue(valueIdx++), typeIdx, interval);
-                }
-            }
         }
 
         estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
@@ -257,22 +254,8 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         // Update table model dimensions
 
-        valuesTableModel.setColumnCount(nChanges+1);
-        if (scalarRatesCheckBox.isSelected()) {
-            valuesTableModel.setRowCount(1);
-        } else {
-            valuesTableModel.setRowCount(nTypes);
-        }
-        for (int rowIdx=0; rowIdx<valuesTableModel.getRowCount(); rowIdx++) {
-            for (int colIdx=0; colIdx<valuesTableModel.getColumnCount(); colIdx++) {
-                if (valuesTableModel.getValueAt(rowIdx, colIdx) == null)
-                    valuesTableModel.setValueAt(
-                            colIdx > 0
-                                    ? valuesTableModel.getValueAt(rowIdx, colIdx-1)
-                                    : valuesTableModel.getValueAt(rowIdx-1, colIdx),
-                            rowIdx, colIdx);
-            }
-        }
+        valuesTableModel.setIntervalCount(nChanges+1);
+        valuesTableModel.setScalar(scalarRatesCheckBox.isSelected());
 
         changeTimesTableModel.setColumnCount(nChanges);
         for (int colIdx=0; colIdx<changeTimesTable.getColumnCount(); colIdx++) {
@@ -287,16 +270,11 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         // Save values
 
         RealParameter rateValuesParam = skylineVector.rateValuesInput.get();
-        rateValuesParam.setDimension(
-                valuesTableModel.getRowCount()*valuesTableModel.getColumnCount());
-        StringBuilder valuesBuilder = new StringBuilder();
-        for (int colIdx=0; colIdx<valuesTableModel.getColumnCount(); colIdx++) {
-            for (int rowIdx=0; rowIdx<valuesTableModel.getRowCount(); rowIdx++) {
-                valuesBuilder.append(" ").append(valuesTableModel.getValueAt(rowIdx, colIdx));
-            }
-        }
-        rateValuesParam.valuesInput.setValue(valuesBuilder.toString(), rateValuesParam);
+        rateValuesParam.setDimension( valuesTableModel.getRowCount()*(nChanges+1));
+        rateValuesParam.valuesInput.setValue(valuesTableModel.getParameterString(), rateValuesParam);
         rateValuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), rateValuesParam);
+        skylineVector.setInputValue("rateValues", rateValuesParam);
+        rateValuesParam.initAndValidate();
 
         // Save change times
 
@@ -324,8 +302,6 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
                 changeTimesParam.isEstimatedInput.setValue(false, changeTimesParam);
         }
 
-        skylineVector.setInputValue("rateValues", rateValuesParam);
-        rateValuesParam.initAndValidate();
 
         if (nChanges>0) {
             skylineVector.setInputValue("changeTimes", changeTimesParam);
@@ -348,4 +324,163 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         return prefix + "ChangeTimes" + suffix;
     }
+
+    class ValuesTableModel extends AbstractTableModel {
+
+        double[] data;
+        int nIntervals;
+        boolean scalar;
+        TypeSet typeSet;
+
+        public ValuesTableModel(TypeSet typeSet, boolean scalar, int nIntervals) {
+            this.typeSet = typeSet;
+            this.nIntervals = nIntervals;
+            this.scalar = scalar;
+
+            int nRows = scalar ? 1 : typeSet.getNTypes();
+
+            this.data = new double[nRows*nIntervals];
+        }
+
+        @Override
+        public int getRowCount() {
+            return scalar ? 1 : typeSet.getNTypes();
+        }
+
+        @Override
+        public int getColumnCount() {
+            return nIntervals+1;
+        }
+
+        @Override
+        public String getColumnName(int column) {
+            return column > 0 ? "Epoch " + column : "";
+        }
+
+        @Override
+        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
+            data[(columnIndex-1)*getRowCount() + rowIndex] = Double.parseDouble((String)aValue);
+            fireTableDataChanged();
+        }
+
+        @Override
+        public Object getValueAt(int rowIndex, int columnIndex) {
+            if (columnIndex>0)
+                return data[(columnIndex-1)*getRowCount() + rowIndex];
+            else {
+                if (scalar)
+                    return "ALL";
+                else
+                    return typeSet.getTypeName(rowIndex);
+            }
+        }
+
+        public void setIntervalCount(int nIntervalsNew) {
+
+            double [] oldData = data;
+            int nRows = getRowCount();
+            data = new double[nIntervalsNew*nRows];
+
+            for (int interval=0; interval<nIntervalsNew; interval++) {
+                for (int row=0; row<nRows; row++) {
+                    if (interval< nIntervals)
+                        data[interval*nRows + row] = oldData[interval*nRows + row];
+                    else {
+                        if (interval > 0)
+                            data[interval*nRows + row] = oldData[(nIntervals-1)*nRows + row];
+                        else {
+                            if (row > 0)
+                                data[row] = oldData[row-1];
+                            else
+                                data[0] = 0.0;
+                        }
+
+                    }
+                }
+            }
+
+            nIntervals = nIntervalsNew;
+
+            fireTableDataChanged();
+        }
+
+        public void setScalar(boolean scalar) {
+
+            if (this.scalar == scalar)
+                return;
+
+            if (scalar) {
+
+                double [] oldData = data;
+                data = new double[nIntervals];
+
+                int nRowsOld = getRowCount();
+
+                for (int interval=0; interval<nIntervals; interval++) {
+                    data[interval] = oldData[nRowsOld*interval];
+                }
+
+            } else {
+                double [] oldData = data;
+                data = new double[nIntervals*typeSet.getNTypes()];
+
+                for (int interval=0; interval<nIntervals; interval++) {
+                    for (int row=0; row<typeSet.getNTypes(); row++) {
+                        data[interval*typeSet.getNTypes()+row] = oldData[interval];
+                    }
+                }
+            }
+
+            this.scalar = scalar;
+
+            fireTableDataChanged();
+        }
+
+        /**
+         * @return string appropriate for initializing RealParameter
+         * corresponding to table values.
+         */
+        public String getParameterString() {
+
+            int rowCount = getRowCount();
+
+            StringBuilder valuesBuilder = new StringBuilder();
+            for (int interval=0; interval<nIntervals; interval++) {
+                for (int row=0; row<rowCount; row++) {
+                    valuesBuilder.append(" ").append(data[rowCount*interval + row]);
+                }
+            }
+
+            return valuesBuilder.toString();
+        }
+
+        @Override
+        public boolean isCellEditable(int rowIndex, int columnIndex) {
+            return columnIndex>0;
+        }
+
+        /**
+         * @param realParameter parameter from which to import values.
+         */
+        public void loadFromParameter(RealParameter realParameter) {
+            if (realParameter.getDimension()==nIntervals) {
+                setScalar(typeSet.getNTypes()>1);
+
+                for (int interval=0; interval<nIntervals; interval++)
+                    data[interval] = realParameter.getValue(interval);
+            } else {
+                setScalar(false);
+
+                int valueIdx = 0;
+                for (int interval=0; interval<nIntervals; interval++) {
+                    for (int typeIdx = 0; typeIdx<typeSet.getNTypes(); typeIdx++) {
+                        data[interval*typeSet.getNTypes() + typeIdx] = realParameter.getValue(valueIdx++);
+                    }
+                }
+            }
+
+            fireTableDataChanged();
+        }
+    }
+
 }
