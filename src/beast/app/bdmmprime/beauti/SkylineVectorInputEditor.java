@@ -75,6 +75,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         changeTimesTableModel = new DefaultTableModel(1,1);
         changeTimesTable = new JTable(changeTimesTableModel);
         changeTimesTable.setShowGrid(true);
+        changeTimesTable.setCellSelectionEnabled(false);
         changeTimesBoxRow.add(changeTimesTable);
         changeTimesBox.add(changeTimesBoxRow);
         changeTimesBoxRow = Box.createHorizontalBox();
@@ -91,6 +92,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         valuesTableModel = new DefaultTableModel(1,1);
         valuesTable = new JTable(valuesTableModel);
         valuesTable.setShowGrid(true);
+        valuesTable.setCellSelectionEnabled(false);
         boxHoriz.add(valuesTable);
 
         boxVert.add(boxHoriz);
@@ -118,10 +120,48 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         estimateValuesCheckBox.addItemListener(e -> saveToModel());
     }
 
+    /**
+     * Ensures that the dimensions of the values RealParameter is consistent
+     * with the number of types specified by the TypeSet.
+     *
+     * This is necessary because the TypeSet can be modified by other input
+     * editors, such as the type trait set input editor.
+     */
+    void ensureParamsConsistent() {
+        int nTypes = skylineVector.typeSetInput.get().getNTypes();
+        int nIntervals = skylineVector.getChangeCount() + 1;
+
+        RealParameter valuesParam = skylineVector.rateValuesInput.get();
+        int valuesPerInterval = valuesParam.getDimension() / nIntervals;
+
+        if (valuesPerInterval == 1 || valuesPerInterval == nTypes)
+            return;
+
+        StringBuilder valueBuilder = new StringBuilder();
+
+        for (int interval=0; interval<nIntervals; interval++) {
+            for (int typeIdx = 0; typeIdx < nTypes; typeIdx++) {
+                valueBuilder.append(" ");
+
+                if (typeIdx < valuesPerInterval)
+                    valueBuilder.append(valuesParam.getValue(interval*valuesPerInterval + typeIdx));
+                else
+                    valueBuilder.append(valuesParam.getValue(interval*valuesPerInterval + (valuesPerInterval-1)));
+            }
+        }
+
+        valuesParam.valuesInput.setValue(valueBuilder.toString(), valuesParam);
+        valuesParam.initAndValidate();
+
+        skylineVector.initAndValidate();
+    }
+
     void loadFromModel() {
 
+        ensureParamsConsistent();
+
         int nChanges = skylineVector.getChangeCount();
-        int nTypes = skylineVector.typeSetInput.get().getNTypes();
+        int nTypes = skylineVector.getNTypes();
 
         // Load change times:
 
@@ -165,7 +205,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
                 valuesTableModel.setValueAt(valuesParameter.getValue(interval), 0, interval);
         } else {
             scalarRatesCheckBox.setSelected(false);
-            valuesTableModel.setRowCount(skylineVector.getNTypes());
+            valuesTableModel.setRowCount(nTypes);
 
             int valueIdx = 0;
             for (int interval=0; interval<nChanges+1; interval++) {
@@ -178,10 +218,6 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
     }
 
-    void updateTableModels() {
-
-    }
-
     void saveToModel() {
 
         if (modelSaveInProcess)
@@ -189,11 +225,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         modelSaveInProcess = true;
 
-        int nTypes = skylineVector.typeSetInput.get().getNTypes();
-
-//        PartitionContext partitionContext = doc.getContextFor(m_beastObject);
-//        String partitionID = ".t:" + partitionContext.tree;
-
+        int nTypes = skylineVector.getNTypes();
         int nChanges = (int)changeCountSpinnerModel.getValue();
 
         // Update table model dimensions
