@@ -10,8 +10,7 @@ import beast.core.parameter.RealParameter;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableModel;
+import javax.swing.table.*;
 import java.awt.*;
 
 public class SkylineVectorInputEditor extends InputEditor.Base {
@@ -67,6 +66,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         changePointsSpinner.setModel(changeCountSpinnerModel);
         boxHoriz.add(changePointLabel);
         boxHoriz.add(changePointsSpinner);
+        boxHoriz.add(makeHorizontalFiller());
 
         boxVert.add(boxHoriz);
 
@@ -78,17 +78,18 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         changeTimesTable.setShowGrid(true);
         changeTimesTable.setGridColor(Color.GRAY);
         changeTimesTable.setCellSelectionEnabled(false);
-        changeTimesTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
         Box changeTimesTableBoxCol = Box.createVerticalBox();
         changeTimesTableBoxCol.add(changeTimesTable.getTableHeader());
         changeTimesTableBoxCol.add(changeTimesTable);
         changeTimesBoxRow.add(changeTimesTableBoxCol);
+        changeTimesBoxRow.add(makeHorizontalFiller());
         changeTimesBox.add(changeTimesBoxRow);
         changeTimesBoxRow = Box.createHorizontalBox();
         timesAreAgesCheckBox = new JCheckBox("Times specified as ages");
         changeTimesBoxRow.add(timesAreAgesCheckBox);
         estimateTimesCheckBox = new JCheckBox("Estimate change times");
         changeTimesBoxRow.add(estimateTimesCheckBox);
+        changeTimesBoxRow.add(makeHorizontalFiller());
         changeTimesBox.add(changeTimesBoxRow);
 
         boxVert.add(changeTimesBox);
@@ -97,11 +98,34 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         boxHoriz.add(new JLabel("Values:"));
         valuesTableModel = new ValuesTableModel(skylineVector.typeSetInput.get(), true, 1);
         valuesTable = new JTable(valuesTableModel);
+        valuesTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+
+            Color defaultBG = null;
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+                JLabel l = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                if (defaultBG == null)
+                    defaultBG = l.getBackground();
+
+                if (column==0) {
+                    l.setBackground(Color.LIGHT_GRAY);
+                }  else {
+                    l.setBackground(defaultBG);
+                }
+
+                return l;
+            }
+        });
         valuesTable.setShowGrid(true);
         valuesTable.setGridColor(Color.GRAY);
         valuesTable.setCellSelectionEnabled(false);
-        valuesTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-        boxHoriz.add(valuesTable);
+        Box valuesTableBoxCol = Box.createVerticalBox();
+        valuesTableBoxCol.add(valuesTable.getTableHeader());
+        valuesTableBoxCol.add(valuesTable);
+        boxHoriz.add(valuesTableBoxCol);
+        boxHoriz.add(makeHorizontalFiller());
 
         boxVert.add(boxHoriz);
 
@@ -110,6 +134,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         boxHoriz.add(scalarRatesCheckBox, Component.LEFT_ALIGNMENT);
         estimateValuesCheckBox = new JCheckBox("Estimate values");
         boxHoriz.add(estimateValuesCheckBox);
+        boxHoriz.add(makeHorizontalFiller());
 
         boxVert.add(boxHoriz);
 
@@ -357,7 +382,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         @Override
         public String getColumnName(int column) {
-            return column > 0 ? "Epoch " + column : "";
+            return column > 0 ? "Epoch " + column : "Types";
         }
 
         @Override
@@ -486,6 +511,15 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
             fireTableDataChanged();
         }
+    }
+
+    /**
+     * @return a horizontal filler object.
+     */
+    public static Box.Filler makeHorizontalFiller() {
+        return new Box.Filler(new Dimension(1,1),
+                new Dimension(1,1),
+                new Dimension(Integer.MAX_VALUE,1));
     }
 
 }
