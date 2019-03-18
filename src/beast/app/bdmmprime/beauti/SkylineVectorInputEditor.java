@@ -270,7 +270,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         // Save values
 
         RealParameter rateValuesParam = skylineVector.rateValuesInput.get();
-        rateValuesParam.setDimension( valuesTableModel.getRowCount()*(nChanges+1));
+        rateValuesParam.setDimension(valuesTableModel.getRowCount()*(nChanges+1));
         rateValuesParam.valuesInput.setValue(valuesTableModel.getParameterString(), rateValuesParam);
         rateValuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), rateValuesParam);
         skylineVector.setInputValue("rateValues", rateValuesParam);
@@ -325,6 +325,9 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         return prefix + "ChangeTimes" + suffix;
     }
 
+    /**
+     * Table model used to represent SV parameter values.
+     */
     class ValuesTableModel extends AbstractTableModel {
 
         double[] data;
@@ -402,6 +405,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
             nIntervals = nIntervalsNew;
 
             fireTableDataChanged();
+            fireTableStructureChanged();
         }
 
         public void setScalar(boolean scalar) {
@@ -434,6 +438,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
             this.scalar = scalar;
 
             fireTableDataChanged();
+            fireTableStructureChanged();
         }
 
         /**

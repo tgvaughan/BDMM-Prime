@@ -57,13 +57,13 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         tableModel = new TypeTraitTableModel(traitSet);
         JTable table = new JTable(tableModel);
 
-        JButton guessButton = new JButton("Guess");
+        JButton guessButton = new JButton("Auto-configure");
         guessButton.addActionListener((ActionEvent e) -> {
             GuessPatternDialog dlg = new GuessPatternDialog(null,
                 ".*(\\d\\d\\d\\d).*");
             
             String traitString = "";
-            switch(dlg.showDialog("Guess locations")) {
+            switch(dlg.showDialog("Auto-configure locations")) {
                 case canceled:
                     return;
                 case trait:
