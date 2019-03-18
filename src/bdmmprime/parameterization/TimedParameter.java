@@ -34,10 +34,10 @@ public class TimedParameter extends CalculationNode {
     public Input<Tree> treeInput = new Input<>("tree",
             "Tree when root time is used to identify the start of the process.");
 
-    public Input<Integer> nTypesInput = new Input<>("nTypes",
-            "Number of distinct types in model.  If unspecified, inferred" +
-                    "from length of other parameter inputs.  Use this when a " +
-                    "single parameter value is shared among all types.");
+    public Input<TypeSet> typeSetInput = new Input<>("typeSet",
+            "Type set defining distinct types in model. Used when a" +
+                    "single value is to be shared amongst several types.");
+
 
     public Input<RealParameter> valuesInput = new Input<>(
             "values",
@@ -97,8 +97,8 @@ public class TimedParameter extends CalculationNode {
         int valsPerInterval = valuesInput.get().getDimension()/nTimes;
         inputIsScalar = valsPerInterval==1;
 
-        if (nTypesInput.get() != null) {
-            nTypes = nTypesInput.get();
+        if (typeSetInput.get() != null) {
+            nTypes = typeSetInput.get().getNTypes();
 
             if (!inputIsScalar && nTypes != valsPerInterval)
                 throw new IllegalArgumentException("TimedParameter has an incorrect " +
@@ -128,6 +128,10 @@ public class TimedParameter extends CalculationNode {
         update();
 
         return times;
+    }
+
+    public int getTimeCount() {
+        return times.length;
     }
 
     public double[] getValuesAtTime(double time) {
