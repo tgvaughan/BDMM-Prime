@@ -278,7 +278,6 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
         modelSaveInProcess = true;
 
-        int nTypes = skylineVector.getNTypes();
         int nChanges = (int)changeCountSpinnerModel.getValue();
 
         // Update table model dimensions
@@ -331,13 +330,14 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
                 changeTimesParam.isEstimatedInput.setValue(false, changeTimesParam);
         }
 
-
         if (nChanges>0) {
             skylineVector.setInputValue("changeTimes", changeTimesParam);
             changeTimesParam.initAndValidate();
         } else {
             skylineVector.setInputValue("changeTimes", null);
         }
+
+        skylineVector.timesAreAgesInput.setValue(timesAreAgesCheckBox.isSelected(), skylineVector);
 
         skylineVector.initAndValidate();
 
