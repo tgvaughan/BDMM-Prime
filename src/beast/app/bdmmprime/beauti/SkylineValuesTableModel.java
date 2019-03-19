@@ -18,8 +18,6 @@ abstract class SkylineValuesTableModel extends AbstractTableModel {
         this.typeSet = typeSet;
         this.nIntervals = nIntervals;
         this.scalar = scalar;
-
-        int nRows = scalar ? 1 : typeSet.getNTypes();
     }
 
     abstract void setIntervalCount(int nIntervalsNew);

@@ -10,18 +10,19 @@ import javax.swing.table.AbstractTableModel;
  */
 class SkylineVectorValuesTableModel extends SkylineValuesTableModel {
 
-    double[] data;
+    double[][] data;
+    int nRows;
 
     public SkylineVectorValuesTableModel(TypeSet typeSet, boolean scalar, int nIntervals) {
         super(typeSet, scalar, nIntervals);
 
-        int nRows = scalar ? 1 : typeSet.getNTypes();
-        this.data = new double[nRows*nIntervals];
+        nRows = scalar ? 1 : typeSet.getNTypes();
+        this.data = new double[nIntervals][nRows];
     }
 
     @Override
     public int getRowCount() {
-        return scalar ? 1 : typeSet.getNTypes();
+        return nRows;
     }
 
     @Override
@@ -36,14 +37,14 @@ class SkylineVectorValuesTableModel extends SkylineValuesTableModel {
 
     @Override
     public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-        data[(columnIndex-1)*getRowCount() + rowIndex] = Double.parseDouble((String)aValue);
+        data[columnIndex-1][rowIndex] = Double.parseDouble((String)aValue);
         fireTableDataChanged();
     }
 
     @Override
     public Object getValueAt(int rowIndex, int columnIndex) {
         if (columnIndex>0)
-            return data[(columnIndex-1)*getRowCount() + rowIndex];
+            return data[columnIndex-1][rowIndex];
         else {
             if (scalar)
                 return "ALL";
@@ -54,22 +55,21 @@ class SkylineVectorValuesTableModel extends SkylineValuesTableModel {
 
     public void setIntervalCount(int nIntervalsNew) {
 
-        double [] oldData = data;
-        int nRows = getRowCount();
-        data = new double[nIntervalsNew*nRows];
+        double[][] oldData = data;
+        data = new double[nIntervalsNew][nRows];
 
         for (int interval=0; interval<nIntervalsNew; interval++) {
             for (int row=0; row<nRows; row++) {
                 if (interval< nIntervals)
-                    data[interval*nRows + row] = oldData[interval*nRows + row];
+                    data[interval][row] = oldData[interval][row];
                 else {
                     if (interval > 0)
-                        data[interval*nRows + row] = oldData[(nIntervals-1)*nRows + row];
+                        data[interval][row] = oldData[nIntervals-1][row];
                     else {
                         if (row > 0)
-                            data[row] = oldData[row-1];
+                            data[0][row] = oldData[0][row-1];
                         else
-                            data[0] = 0.0;
+                            data[0][0] = 0.0;
                     }
 
                 }
@@ -89,22 +89,20 @@ class SkylineVectorValuesTableModel extends SkylineValuesTableModel {
 
         if (scalar) {
 
-            double [] oldData = data;
-            data = new double[nIntervals];
-
-            int nRowsOld = getRowCount();
+            double[][] oldData = data;
+            data = new double[nIntervals][1];
 
             for (int interval=0; interval<nIntervals; interval++) {
-                data[interval] = oldData[nRowsOld*interval];
+                data[interval][0] = oldData[interval][0];
             }
 
         } else {
-            double [] oldData = data;
-            data = new double[nIntervals*typeSet.getNTypes()];
+            double[][] oldData = data;
+            data = new double[nIntervals][typeSet.getNTypes()];
 
             for (int interval=0; interval<nIntervals; interval++) {
                 for (int row=0; row<typeSet.getNTypes(); row++) {
-                    data[interval*typeSet.getNTypes()+row] = oldData[interval];
+                    data[interval][row] = oldData[interval][0];
                 }
             }
         }
@@ -146,14 +144,14 @@ class SkylineVectorValuesTableModel extends SkylineValuesTableModel {
             setScalar(typeSet.getNTypes()>1);
 
             for (int interval=0; interval<nIntervals; interval++)
-                data[interval] = realParameter.getValue(interval);
+                data[interval][0] = realParameter.getValue(interval);
         } else {
             setScalar(false);
 
             int valueIdx = 0;
             for (int interval=0; interval<nIntervals; interval++) {
                 for (int typeIdx = 0; typeIdx<typeSet.getNTypes(); typeIdx++) {
-                    data[interval*typeSet.getNTypes() + typeIdx] = realParameter.getValue(valueIdx++);
+                    data[interval][typeIdx] = realParameter.getValue(valueIdx++);
                 }
             }
         }

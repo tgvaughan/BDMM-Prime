@@ -1,14 +1,12 @@
 package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineMatrixParameter;
-import bdmmprime.parameterization.SkylineVectorParameter;
 import beast.app.beauti.BeautiDoc;
 import beast.core.BEASTInterface;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 
 import javax.swing.*;
-import javax.swing.border.EtchedBorder;
 
 public class SkylineMatrixInputEditor extends SkylineInputEditor {
 
