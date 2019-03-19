@@ -226,7 +226,6 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
 
             changeTimesBox.setVisible(true);
 
-            estimateTimesCheckBox.setEnabled(true);
             estimateTimesCheckBox.setSelected(skylineVector.changeTimesInput.get().isEstimatedInput.get());
 
             RealParameter changeTimesParameter = skylineVector.changeTimesInput.get();
@@ -237,9 +236,8 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
             changeCountSpinnerModel.setValue(0);
             changeTimesTableModel.setColumnCount(0);
             changeTimesBox.setVisible(false);
-
-            estimateTimesCheckBox.setEnabled(false);
         }
+
         timesAreAgesCheckBox.setSelected(skylineVector.timesAreAgesInput.get());
 
         // Load values

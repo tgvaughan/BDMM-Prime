@@ -237,14 +237,11 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             }
             timesTableModel.setColumnIdentifiers(columnNames);
 
-            estimateTimesCheckBox.setEnabled(true);
             estimateTimesCheckBox.setSelected(timedParameter.timesInput.get().isEstimatedInput.get());
 
             RealParameter changeTimesParameter = timedParameter.timesInput.get();
             for (int i = 0; i < changeTimesParameter.getDimension(); i++)
                 timesTableModel.setValueAt(changeTimesParameter.getValue(i), 0, i);
-
-            timesAreAgesCheckBox.setSelected(timedParameter.timesAreAgesInput.get());
 
             // Load values
 
@@ -271,10 +268,14 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             timesTableModel.setColumnCount(0);
             valuesTableModel.setTimeCount(0);
 
-            estimateTimesCheckBox.setEnabled(false);
+            estimateTimesCheckBox.setSelected(false);
+            estimateValuesCheckBox.setSelected(false);
 
             elementsBox.setVisible(false);
         }
+
+        timesAreAgesCheckBox.setSelected(timedParameter.timesAreAgesInput.get());
+
     }
 
     /**
@@ -350,6 +351,8 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             timedParameter.setInputValue("times", null);
         }
 
+        timedParameter.timesAreAgesInput.setValue(timesAreAgesCheckBox.isSelected(), timedParameter);
+
         timedParameter.initAndValidate();
 
         modelSaveInProcess = false;
@@ -364,12 +367,12 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             int idx = timedParameter.getID().indexOf("TP");
             String prefix = timedParameter.getID().substring(0, idx);
             String suffix = timedParameter.getID().substring(idx+2);
-            String changeTimeId = prefix + "Prob" + suffix;
+            String paramID = prefix + suffix;
 
-            changeTimesParam = (RealParameter) doc.pluginmap.get(changeTimeId);
+            changeTimesParam = (RealParameter) doc.pluginmap.get(paramID);
             if (changeTimesParam == null) {
                 changeTimesParam = new RealParameter("0.0");
-                changeTimesParam.setID(changeTimeId);
+                changeTimesParam.setID(paramID);
             }
         }
 
@@ -383,12 +386,12 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             int idx = timedParameter.getID().indexOf("TP");
             String prefix = timedParameter.getID().substring(0, idx);
             String suffix = timedParameter.getID().substring(idx+2);
-            String changeTimeId = prefix + "Times" + suffix;
+            String paramID = prefix + "Times" + suffix;
 
-            changeTimesParam = (RealParameter) doc.pluginmap.get(changeTimeId);
+            changeTimesParam = (RealParameter) doc.pluginmap.get(paramID);
             if (changeTimesParam == null) {
                 changeTimesParam = new RealParameter("0.0");
-                changeTimesParam.setID(changeTimeId);
+                changeTimesParam.setID(paramID);
             }
         }
 
