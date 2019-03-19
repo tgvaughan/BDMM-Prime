@@ -97,7 +97,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         boxHoriz = Box.createHorizontalBox();
         boxHoriz.add(new JLabel("Values:"));
-        valuesTableModel = new SkylineValuesTableModel(skylineParameter.typeSetInput.get(), true, 1);
+        valuesTableModel = getValuesTableModel();
         valuesTable = new JTable(valuesTableModel);
         valuesTable.setShowGrid(true);
         valuesTable.setGridColor(Color.GRAY);
@@ -134,6 +134,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         scalarRatesCheckBox.addItemListener(e -> saveToModel());
         estimateValuesCheckBox.addItemListener(e -> saveToModel());
     }
+
+    abstract SkylineValuesTableModel getValuesTableModel();
 
     /**
      * @return a horizontal filler object.

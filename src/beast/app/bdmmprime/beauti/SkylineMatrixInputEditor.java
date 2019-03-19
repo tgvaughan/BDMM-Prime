@@ -32,6 +32,10 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         super.init(input, beastObject, itemNr, isExpandOption, addButtons);
     }
 
+    @Override
+    SkylineValuesTableModel getValuesTableModel() {
+        return new SkylineMatrixValuesTableModel(skylineMatrix.typeSetInput.get(), true, 0);
+    }
 
     @Override
     void ensureParamsConsistent() {
