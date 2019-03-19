@@ -1,15 +1,10 @@
 package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineVectorParameter;
-import bdmmprime.parameterization.TypeSet;
 import beast.app.beauti.BeautiDoc;
 import beast.core.BEASTInterface;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
-
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import java.awt.*;
 
 public class SkylineVectorInputEditor extends SkylineInputEditor {
 
@@ -35,7 +30,7 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
 
     @Override
     SkylineValuesTableModel getValuesTableModel() {
-        return new SkylineMatrixValuesTableModel(skylineVector.typeSetInput.get(), true, 1);
+        return new SkylineVectorValuesTableModel(skylineVector.typeSetInput.get(), true, 1);
     }
 
     @Override
