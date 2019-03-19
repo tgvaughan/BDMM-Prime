@@ -68,6 +68,9 @@ class SkylineMatrixValuesTableModel extends SkylineValuesTableModel {
 
     public void setIntervalCount(int nIntervalsNew) {
 
+        if (nIntervalsNew == nIntervals)
+            return;
+
         nIntervals = nIntervalsNew;
         data = new double[nIntervals][nRows][nRows];
 
@@ -117,7 +120,7 @@ class SkylineMatrixValuesTableModel extends SkylineValuesTableModel {
 
     @Override
     public boolean isCellEditable(int rowIndex, int columnIndex) {
-        return columnIndex>0 && (scalar || (columnIndex-1) != rowIndex);
+        return columnIndex>0 && (scalar || (columnIndex-1)%nRows != rowIndex);
     }
 
     /**
