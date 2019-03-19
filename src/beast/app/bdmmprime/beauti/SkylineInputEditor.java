@@ -17,7 +17,6 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
     SkylineParameter skylineParameter;
 
-
     SpinnerModel changeCountSpinnerModel;
     JCheckBox scalarRatesCheckBox, timesAreAgesCheckBox;
 
@@ -29,6 +28,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     JTable valuesTable;
 
     JCheckBox estimateValuesCheckBox, estimateTimesCheckBox;
+
+    Box mainInputBox;
 
     boolean modelSaveInProcess = false;
 
@@ -49,12 +50,12 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         addInputLabel();
 
-        Box boxVert, boxHoriz;
+        Box boxHoriz;
 
         // Add elements specific to change times
 
-        boxVert = Box.createVerticalBox();
-        boxVert.setBorder(new EtchedBorder());
+        mainInputBox = Box.createVerticalBox();
+        mainInputBox.setBorder(new EtchedBorder());
 
         boxHoriz = Box.createHorizontalBox();
         JLabel changePointLabel = new JLabel("Number of change times:");
@@ -66,7 +67,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz.add(changePointsSpinner);
         boxHoriz.add(makeHorizontalFiller());
 
-        boxVert.add(boxHoriz);
+        mainInputBox.add(boxHoriz);
 
         changeTimesBox = Box.createVerticalBox();
         Box changeTimesBoxRow = Box.createHorizontalBox();
@@ -90,7 +91,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         changeTimesBoxRow.add(makeHorizontalFiller());
         changeTimesBox.add(changeTimesBoxRow);
 
-        boxVert.add(changeTimesBox);
+        mainInputBox.add(changeTimesBox);
 
         // Add elements specific to values
 
@@ -98,26 +99,6 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz.add(new JLabel("Values:"));
         valuesTableModel = new SkylineValuesTableModel(skylineParameter.typeSetInput.get(), true, 1);
         valuesTable = new JTable(valuesTableModel);
-        valuesTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-
-            Color defaultBG = null;
-
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel l = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                if (defaultBG == null)
-                    defaultBG = l.getBackground();
-
-                if (column==0) {
-                    l.setBackground(Color.LIGHT_GRAY);
-                }  else {
-                    l.setBackground(defaultBG);
-                }
-
-                return l;
-            }
-        });
         valuesTable.setShowGrid(true);
         valuesTable.setGridColor(Color.GRAY);
         valuesTable.setCellSelectionEnabled(false);
@@ -127,7 +108,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz.add(valuesTableBoxCol);
         boxHoriz.add(makeHorizontalFiller());
 
-        boxVert.add(boxHoriz);
+        mainInputBox.add(boxHoriz);
 
         boxHoriz = Box.createHorizontalBox();
         scalarRatesCheckBox = new JCheckBox("Scalar values");
@@ -136,10 +117,11 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz.add(estimateValuesCheckBox);
         boxHoriz.add(makeHorizontalFiller());
 
-        boxVert.add(boxHoriz);
+        mainInputBox.add(boxHoriz);
 
-        add(boxVert);
+        add(mainInputBox);
 
+        ensureParamsConsistent();
         loadFromModel();
 
         // Add event listeners:
@@ -179,8 +161,6 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
      * Called immediately after init(), and thus after every refreshPanel().
      */
     void loadFromModel() {
-
-        ensureParamsConsistent();
 
         int nChanges = skylineParameter.getChangeCount();
         int nTypes = skylineParameter.getNTypes();
