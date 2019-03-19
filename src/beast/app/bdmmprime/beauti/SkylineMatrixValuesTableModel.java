@@ -34,7 +34,7 @@ class SkylineMatrixValuesTableModel extends SkylineValuesTableModel {
             return "Types";
 
         if ((column-1)%nRows == 0)
-            return "Epoch " + (column-1)/nRows;
+            return "Epoch " + ((column-1)/nRows + 1);
 
         else
             return "";
