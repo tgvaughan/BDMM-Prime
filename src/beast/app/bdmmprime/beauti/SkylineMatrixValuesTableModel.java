@@ -63,6 +63,9 @@ class SkylineMatrixValuesTableModel extends SkylineValuesTableModel {
         int type1idx = rowIndex;
         int type2idx = (columnIndex-1)%nRows;
 
+        if (!scalar && type1idx == type2idx)
+            return "-";
+
         return data[interval][type1idx][type2idx];
     }
 

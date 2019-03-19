@@ -7,6 +7,8 @@ import beast.core.Input;
 import beast.core.parameter.RealParameter;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
+import java.awt.*;
 
 public class SkylineMatrixInputEditor extends SkylineInputEditor {
 
@@ -28,6 +30,27 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         skylineMatrix = (SkylineMatrixParameter) input.get();
 
         super.init(input, beastObject, itemNr, isExpandOption, addButtons);
+
+        valuesTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            Color defaultBG = null;
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+
+                JLabel l = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+                if (defaultBG == null)
+                    defaultBG = l.getBackground();
+
+                if (l.getText().equals("-")) {
+                    l.setText("");
+                    l.setBackground(Color.LIGHT_GRAY);
+                } else
+                    l.setBackground(defaultBG);
+
+                return l;
+            }
+        });
     }
 
     @Override
