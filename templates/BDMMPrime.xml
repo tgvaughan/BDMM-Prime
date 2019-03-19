@@ -7,6 +7,7 @@
                      suppressInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.typeLabel,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.tree,
+                        bdmmprime.parameterization.CanonicalParameterization.typeSet,
                         bdmmprime.parameterization.SkylineVectorParameter.origin,
                         bdmmprime.parameterization.SkylineMatrixParameter.origin"
                      inlineInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.parameterization">

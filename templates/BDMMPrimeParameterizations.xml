@@ -76,6 +76,7 @@
 
         <!-- Canonical parameterization -->
         <subtemplate id="CanonicalParameterization" class="bdmmprime.parameterization.CanonicalParameterization"
+                     suppressInputs="bdmmprime.parameterization.CanonicalParameterization.typeSet"
                      mainid="CanonicalBDMMPrimeParameterization.t:$(n)">
 
         <![CDATA[
@@ -132,6 +133,7 @@
 
         <!-- Epi parameterization -->
         <subtemplate id="EpiParameterization" class="bdmmprime.parameterization.EpiParameterization"
+                     suppressInputs="bdmmprime.parameterization.EpiParameterization.typeSet"
                      mainid="EpiBDMMPrimeParameterization.t:$(n)">
 
             <![CDATA[
