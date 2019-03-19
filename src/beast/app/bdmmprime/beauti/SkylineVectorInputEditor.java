@@ -47,7 +47,7 @@ public class SkylineVectorInputEditor extends InputEditor.Base {
         m_bAddButtons = addButtons;
         m_input = input;
         m_beastObject = beastObject;
-        this.itemNr= itemNr;
+        this.itemNr = itemNr;
 
         skylineVector = (SkylineVectorParameter)input.get();
 

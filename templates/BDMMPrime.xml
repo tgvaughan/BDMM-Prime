@@ -43,6 +43,10 @@
                             <origin idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="removalProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
+
+                        <rhoSampling id="rhoSamplingProbTPCanonical.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                        </rhoSampling>
                     </parameterization>
 
                     <typeTraitSet id="typeTraitSet.t:$(n)" spec="bdmmprime.util.InitializedTraitSet" traitname="type">
@@ -67,20 +71,24 @@
   		        <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		        <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
 
-  		    <logger id="typedTreeLogger.t:$(n)"
-  		            fileName="$(filebase).$(tree).mapped.trees" logEvery="1000" mode="tree">
-                <log spec="bdmmprime.mapping.TypeMappedTree" id="typeMappedTree.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
-                     frequencies="@typeFrequencies.t:$(n)"
-                     typeTraitSet="@typeTraitSet.t:$(n)"
-                     typeLabel="type"
-                     untypedTree="@Tree.t:$(n)"/>
-            </logger>
+                <param id="rhoSamplingTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
+                <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
+
+                <logger id="typedTreeLogger.t:$(n)"
+                        fileName="$(filebase).$(tree).mapped.trees" logEvery="1000" mode="tree">
+                    <log spec="bdmmprime.mapping.TypeMappedTree" id="typeMappedTree.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
+                         mapOnInit="false" remapOnLog="true"
+                         frequencies="@typeFrequencies.t:$(n)"
+                         typeTraitSet="@typeTraitSet.t:$(n)"
+                         typeLabel="type"
+                         untypedTree="@Tree.t:$(n)"/>
+                </logger>
             ]]>
 
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
-                   range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb"/>
+                   range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb,rhoSamplingProb"/>
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
-                   range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes"/>
+                   range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingTimes"/>
 
             <connect srcID='BDMMPrime.t:$(n)' targetID='prior' inputName='distribution'
                     if='inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>

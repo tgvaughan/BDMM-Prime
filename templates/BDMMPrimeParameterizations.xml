@@ -105,6 +105,10 @@
                             <origin idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="removalProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
+
+                        <rhoSampling id="rhoSamplingProbTPCanonical.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                        </rhoSampling>
             </parameterization>
 
             <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
@@ -113,11 +117,14 @@
   		    <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		    <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		    <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+
+            <param id="rhoSamplingTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
+            <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
         ]]>
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
-                   range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb"/>
+                   range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb,rhoSamplingProb"/>
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
-                   range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes"/>
+                   range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingTimes"/>
         </subtemplate>
 
         <!-- Epi parameterization -->
@@ -153,6 +160,10 @@
                             <origin idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="removalProbEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
+
+                        <rhoSampling id="rhoSamplingProbTPEpi.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                        </rhoSampling>
             </parameterization>
 
             <param id="R0ChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
@@ -161,15 +172,17 @@
   		    <param id="migrationRateChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		    <param id="samplingProportionChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		    <param id="removalProbChangeTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+
+            <param id="rhoSamplingTimesEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
+            <param id="rhoSamplingProbEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
             ]]>
 
             <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
-                   range="R0,R0AmongDemes,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb"/>
+                   range="R0,R0AmongDemes,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb,rhoSamplingProb"/>
             <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
-                   range="R0ChangeTimes,R0AmongDemesChangeTimes,becomeUninfectiousRateChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,removalProbChangeTimes"/>
+                   range="R0ChangeTimes,R0AmongDemesChangeTimes,becomeUninfectiousRateChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,removalProbChangeTimes,rhoSamplingTimes"/>
 
         </subtemplate>
-
     </mergewith>
 
 </beast>

@@ -15,8 +15,7 @@ public class TimedParameter extends CalculationNode {
 
     public Input<RealParameter> timesInput = new Input<>(
             "times",
-            "Times associated with probabilities.",
-            Input.Validate.REQUIRED);
+            "Times associated with probabilities.");
 
     public Input<Boolean> timesAreAgesInput = new Input<>(
             "timesAreAges",
@@ -41,8 +40,7 @@ public class TimedParameter extends CalculationNode {
 
     public Input<RealParameter> valuesInput = new Input<>(
             "values",
-            "Probability values associated with each time.",
-            Input.Validate.REQUIRED);
+            "Probability values associated with each time.");
 
     boolean timesAreAges, timesAreRelative, inputIsScalar;
 
@@ -90,12 +88,23 @@ public class TimedParameter extends CalculationNode {
             throw new IllegalArgumentException("Only one of origin or tree " +
                     "should be specified.");
 
-        nTimes = timesInput.get().getDimension();
+        if (timesInput.get() != null)
+            nTimes = timesInput.get().getDimension();
+        else
+            nTimes = 0;
+
+        if (nTimes == 0 && valuesInput.get() != null)
+            throw new IllegalArgumentException("When timed parameter is empty, " +
+                    "both times and values inputs must be omitted.");
+
         times = new double[nTimes];
         storedTimes = new double[nTimes];
 
-        int valsPerInterval = valuesInput.get().getDimension()/nTimes;
-        inputIsScalar = valsPerInterval==1;
+        int valsPerInterval = nTimes>0
+                ? valuesInput.get().getDimension() / nTimes
+                : 1;
+
+        inputIsScalar = valsPerInterval == 1;
 
         if (typeSetInput.get() != null) {
             nTypes = typeSetInput.get().getNTypes();
@@ -201,7 +210,8 @@ public class TimedParameter extends CalculationNode {
     protected void store() {
         super.store();
 
-        System.arraycopy(times, 0, storedTimes, 0, nTimes);
+        if (nTimes>0)
+            System.arraycopy(times, 0, storedTimes, 0, nTimes);
 
         for (int timeIdx=0; timeIdx<nTimes; timeIdx++)
             System.arraycopy(values[timeIdx], 0, storedValues[timeIdx], 0, nTypes);
