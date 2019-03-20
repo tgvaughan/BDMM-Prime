@@ -96,6 +96,8 @@
                 BDMM prior on tree t:$(n)
             </connect>
 
+            <plate fragment="TreeOperators" var="m" range="BDMMPrime"/>
+
             <connect srcID='originBDMMPrime.t:$(n)' targetID='state' inputName='stateNode'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
