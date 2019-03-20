@@ -16,11 +16,14 @@
  */
 package beast.app.bdmmprime.beauti;
 
+import bdmmprime.distributions.BirthDeathMigrationDistribution;
+import bdmmprime.parameterization.TypeSet;
 import beast.app.beauti.BeautiDoc;
 import beast.app.beauti.GuessPatternDialog;
 import beast.app.draw.InputEditor;
 import beast.core.BEASTInterface;
 import beast.core.Input;
+import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.TaxonSet;
 import beast.evolution.tree.TraitSet;
 
@@ -93,6 +96,8 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 System.err.println("Error setting type trait.");
                 ex.printStackTrace();
             }
+
+            updateFrequencies();
             refreshPanel();
         });
 
@@ -111,6 +116,8 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 System.err.println("Error clearing type trait.");
                 ex.printStackTrace();
             }
+
+            updateFrequencies();
             refreshPanel();
         });
 
@@ -188,6 +195,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
             fireTableCellUpdated(rowIndex, columnIndex);
 
+            updateFrequencies();
             refreshPanel();
         }
 
@@ -204,8 +212,42 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         }
     }
 
-    // TODO Add some nasty hack.
-    public static boolean customConnector(BeautiDoc doc) {
-        return false;
+    /**
+     * Ugly hack to keep equilibrium type frequency parameter dimension up to date.
+     */
+    void updateFrequencies() {
+
+        for (BEASTInterface beastInterface : traitSet.getOutputs()) {
+            if (!(beastInterface instanceof BirthDeathMigrationDistribution))
+                continue;
+
+            BirthDeathMigrationDistribution bdmmDistr =
+                    (BirthDeathMigrationDistribution)beastInterface;
+
+            TypeSet typeSet = bdmmDistr.parameterizationInput.get().typeSetInput.get();
+            typeSet.initAndValidate();
+            int nTypes = typeSet.getNTypes();
+
+            RealParameter frequencies = bdmmDistr.frequenciesInput.get();
+
+            if (frequencies.getDimension() == nTypes)
+                continue;
+
+            StringBuilder frequenciesBuilder = new StringBuilder();
+
+            for (int typeIdx=0; typeIdx<nTypes; typeIdx++) {
+                frequenciesBuilder.append(" ").append(1.0/nTypes);
+            }
+
+            frequencies.setDimension(nTypes);
+            frequencies.valuesInput.setValue(frequenciesBuilder.toString(), frequencies);
+
+            try {
+                frequencies.initAndValidate();
+                bdmmDistr.initAndValidate();
+            } catch (Exception ex) {
+                System.err.println("Error updating BDMM geo frequencies.");
+            }
+        }
     }
 }
