@@ -70,6 +70,41 @@
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
         </fragment>
+
+        <fragment id='FBDBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
+            <![CDATA[
+
+            <prior id='$(thisparam)FBDPrior.t:$(n)' x='@$(thisparam)FBD.t:$(n)'>
+                   <distr spec="beast.math.distributions.OneOnX"/>
+            </prior>
+  		    <operator id='$(thisparam)FBDScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
+            ]]>
+
+            <connect srcID='$(thisparam)FBD.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)FBD.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)FBDPrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)FBD.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)FBDScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)FBD.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)FBD.t:$(n)' targetID='tracelog' inputName='log'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)FBD.t:$(n)/estimate=true'/>
+        </fragment>
     </mergewith>
 
     <mergewith point='treePriorTemplates'>
@@ -186,6 +221,59 @@
                    range="R0,R0AmongDemes,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb,rhoSamplingProb"/>
             <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
                    range="R0ChangeTimes,R0AmongDemesChangeTimes,becomeUninfectiousRateChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
+
+        </subtemplate>
+
+        <!-- FBD parameterization -->
+        <subtemplate id="FossilizedBirthDeathParameterization" class="bdmmprime.parameterization.FBDParameterization"
+                     suppressInputs="bdmmprime.parameterization.FBDParameterization.typeSet"
+                     mainid="FBDBDMMPrimeParameterization.t:$(n)">
+
+            <![CDATA[
+            <parameterization id="FBDBDMMPrimeParameterization.t:$(n)"
+                              spec="bdmmprime.parameterization.FBDParameterization">
+                        <origin idref="originBDMMPrime.t:$(n)"/>
+                        <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
+                        <diversificationRate id="diversificationRateSVFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                            <skylineValues id="diversificationRateFBD.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0" lower="1.0"/>
+                        </diversificationRate>
+                        <diversificationRateAmongDemes id="diversificationRateAmongDemesSMFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                            <skylineValues id="diversificationRateAmongDemesFBD.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                        </diversificationRateAmongDemes>
+                        <turnover id="turnoverSVFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                            <skylineValues id="turnoverFBD.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0" lower="0" upper="1"/>
+                        </turnover>
+                        <migrationRate id="migrationRateSMFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                            <skylineValues id="migrationRateFBD.t:$(n)" spec='beast.core.parameter.RealParameter' value="1.0"/>
+                        </migrationRate>
+                        <samplingProportion id="samplingProportionSVFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                            <skylineValues id="samplingProportionFBD.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1" lower="0" upper="1"/>
+                        </samplingProportion>
+
+                        <rhoSampling id="rhoSamplingProbTPFBD.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                            <origin idref="originBDMMPrime.t:$(n)"/>
+                        </rhoSampling>
+            </parameterization>
+
+            <param id="diversificationRateChangeTimesFBD.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="diversificationRateAmongDemesChangeTimesFBD.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="turnoverChangeTimesFBD.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="migrationRateChangeTimesFBD.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		    <param id="samplingProportionChangeTimesFBD.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+
+            <param id="rhoSamplingProbFBD.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
+            <param id="rhoSamplingProbTimesFBD.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
+            ]]>
+
+            <plate fragment="FBDBDMMPrimeParameters" var="thisparam"
+                   range="diversificationRate,diversificationRateAmongDemes,turnover,migrationRate,samplingProportion,rhoSamplingProb"/>
+            <plate fragment="FBDBDMMPrimeParameters" var="thisparam"
+                   range="diversificationRateChangeTimes,diversificationRateAmongDemesChangeTimes,turnoverChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,rhoSamplingProbTimes"/>
 
         </subtemplate>
     </mergewith>
