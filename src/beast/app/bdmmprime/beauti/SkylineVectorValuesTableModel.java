@@ -124,7 +124,7 @@ class SkylineVectorValuesTableModel extends SkylineValuesTableModel {
         StringBuilder valuesBuilder = new StringBuilder();
         for (int interval=0; interval<nIntervals; interval++) {
             for (int row=0; row<rowCount; row++) {
-                valuesBuilder.append(" ").append(data[rowCount*interval + row]);
+                valuesBuilder.append(" ").append(data[interval][row]);
             }
         }
 
