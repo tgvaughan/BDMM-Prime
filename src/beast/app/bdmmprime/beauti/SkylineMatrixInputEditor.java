@@ -31,6 +31,8 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
 
         super.init(input, beastObject, itemNr, isExpandOption, addButtons);
 
+        // Custom cell renderer to gray out diagonal entries in values table:
+
         valuesTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
             Color defaultBG = null;
 

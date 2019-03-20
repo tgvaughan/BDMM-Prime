@@ -96,6 +96,7 @@
                 BDMM prior on tree t:$(n)
             </connect>
 
+            <!-- TODO replace these with SA operators. -->
             <plate fragment="TreeOperators" var="m" range="BDMMPrime"/>
 
             <connect srcID='originBDMMPrime.t:$(n)' targetID='state' inputName='stateNode'
@@ -106,11 +107,11 @@
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true'/>
-            <connect srcID='birthRatesScaler.t:$(n)' targetID='mcmc' inputName='operator'
+            <connect srcID='originBDMMPrimeScaler.t:$(n)' targetID='mcmc' inputName='operator'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true'/>
-            <connect srcID='birthRates.t:$(n)' targetID='tracelog' inputName='log'
+            <connect srcID='originBDMMPrime.t:$(n)' targetID='tracelog' inputName='log'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true'/>

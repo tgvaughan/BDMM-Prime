@@ -96,6 +96,8 @@ class SkylineVectorValuesTableModel extends SkylineValuesTableModel {
                 data[interval][0] = oldData[interval][0];
             }
 
+            this.nRows = 1;
+
         } else {
             double[][] oldData = data;
             data = new double[nIntervals][typeSet.getNTypes()];
@@ -105,6 +107,8 @@ class SkylineVectorValuesTableModel extends SkylineValuesTableModel {
                     data[interval][row] = oldData[interval][0];
                 }
             }
+
+            this.nRows = typeSet.getNTypes();
         }
 
         this.scalar = scalar;
