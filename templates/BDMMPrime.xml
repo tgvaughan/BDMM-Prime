@@ -1,9 +1,9 @@
-<beast version='2.0'
-       namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
+<beast version="2.0"
+       namespace="beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions">
 
-    <mergewith point='treePriorTemplates'>
+    <mergewith point="treePriorTemplates">
 
-        <subtemplate id='BDMMPrime' class='bdmmprime.distributions.BirthDeathMigrationDistribution' mainid='BDMMPrime.t:$(n)'
+        <subtemplate id="BDMMPrime" class="bdmmprime.distributions.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
                      suppressInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.typeLabel,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.tree,
@@ -26,7 +26,7 @@
                         </birthRate>
                         <birthRateAmongDemes id="birthRateAmongDemesSMCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <origin idref="originBDMMPrime.t:$(n)"/>
-                            <skylineValues id="birthRateAmongDemesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                            <skylineValues id="birthRateAmongDemesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" estimate="false"/>
                         </birthRateAmongDemes>
                         <deathRate id="deathRateSVCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <origin idref="originBDMMPrime.t:$(n)"/>
@@ -34,7 +34,7 @@
                         </deathRate>
                         <migrationRate id="migrationRateSMCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <origin idref="originBDMMPrime.t:$(n)"/>
-                            <skylineValues id="migrationRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                            <skylineValues id="migrationRateCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" estimate="false"/>
                         </migrationRate>
                         <samplingRate id="samplingRateSVCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <origin idref="originBDMMPrime.t:$(n)"/>
@@ -60,10 +60,12 @@
                 <typeSet id="typeSetBDMMPrime.t:$(n)" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
 
                 <origin spec="beast.core.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
-                <prior id='originBDMMPrimePrior.t:$(n)' x='@originBDMMPrime.t:$(n)'>
+                <prior id="originBDMMPrimePrior.t:$(n)" x="@originBDMMPrime.t:$(n)">
                    <distr spec="beast.math.distributions.OneOnX"/>
                 </prior>
-  		        <operator id='originBDMMPrimeScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
+  		        <operator id="originBDMMPrimeScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
+
+  		        <operator id="typeFrequenciesExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@typeFrequencies.t:$(n)" delta="0.1" weight="1.0"/>
 
   		        <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
   		        <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
@@ -91,35 +93,44 @@
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
                    range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
 
-            <connect srcID='BDMMPrime.t:$(n)' targetID='prior' inputName='distribution'
-                    if='inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true'>
+            <connect srcID="BDMMPrime.t:$(n)" targetID="prior" inputName="distribution"
+                    if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true">
                 BDMM prior on tree t:$(n)
             </connect>
 
             <!-- TODO replace these with SA operators. -->
             <plate fragment="TreeOperators" var="m" range="BDMMPrime"/>
 
-            <connect srcID='originBDMMPrime.t:$(n)' targetID='state' inputName='stateNode'
-                     if='inposterior(BDMMPrime.t:$(n))
+            <connect srcID="originBDMMPrime.t:$(n)" targetID="state" inputName="stateNode"
+                     if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true'/>
-            <connect srcID='originBDMMPrimePrior.t:$(n)' targetID='prior' inputName='distribution'
-                     if='inposterior(BDMMPrime.t:$(n))
+                     and originBDMMPrime.t:$(n)/estimate=true"/>
+            <connect srcID="originBDMMPrimePrior.t:$(n)" targetID="prior" inputName="distribution"
+                     if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true'/>
-            <connect srcID='originBDMMPrimeScaler.t:$(n)' targetID='mcmc' inputName='operator'
-                     if='inposterior(BDMMPrime.t:$(n))
+                     and originBDMMPrime.t:$(n)/estimate=true"/>
+            <connect srcID="originBDMMPrimeScaler.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true'/>
-            <connect srcID='originBDMMPrime.t:$(n)' targetID='tracelog' inputName='log'
-                     if='inposterior(BDMMPrime.t:$(n))
+                     and originBDMMPrime.t:$(n)/estimate=true"/>
+            <connect srcID="originBDMMPrime.t:$(n)" targetID="tracelog" inputName="log"
+                     if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true'/>
+                     and originBDMMPrime.t:$(n)/estimate=true"/>
+
+            <connect srcID="typeFrequenciesExchanger.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and typeFrequencies.t:$(n)/estimate=true"/>
+            <connect srcID="typeFrequencies.t:$(n)" targetID="tracelog" inputName="log"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and typeFrequencies.t:$(n)/estimate=true"/>
 
             <connect srcID="typedTreeLogger.t:$(n)" targetID="mcmc" inputName="logger"
-                     if='inposterior(BDMMPrime.t:$(n))
+                     if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true'/>
+                     and originBDMMPrime.t:$(n)/estimate=true"/>
         </subtemplate>
 
     </mergewith>
