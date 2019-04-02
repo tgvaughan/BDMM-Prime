@@ -21,6 +21,10 @@ that depend on it remain usable.
 BDMM-Pime is currently still in development and is not yet ready for general use.
 Instead, refer to the original [BDMM project](https://github.com/denisekuehnert/bdmm).
 
+However, if you are interested in playing around with the new version, you can install
+it by adding https://tgvaughan.github.io/BDMM-Prime/package.xml as a third party
+BEAST package repository and installing the package that appears.
+
 Acknowledgements
 ----------------
 
