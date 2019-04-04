@@ -10,6 +10,10 @@ import java.util.stream.Collectors;
  * are initialized to a stand-in value.  Used by the BDMM-Prime BEAUti template,
  * where the trait set must be specified before any value (or indeed
  * the taxa themselves) can be known.
+ *
+ * Use of this trait set class in the BEAUti template is also important as
+ * it causes BDMM-Prime's own traitset input editor to be used rather than
+ * some other input editor (such as the one that MTT provdes).
  */
 public class InitializedTraitSet extends TraitSet {
 

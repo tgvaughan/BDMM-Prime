@@ -18,6 +18,7 @@ package beast.app.bdmmprime.beauti;
 
 import bdmmprime.distributions.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.TypeSet;
+import bdmmprime.util.InitializedTraitSet;
 import beast.app.beauti.BeautiDoc;
 import beast.app.beauti.GuessPatternDialog;
 import beast.app.draw.InputEditor;
@@ -49,7 +50,11 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
     @Override
     public Class<?> type() {
-        return TraitSet.class;
+
+        // Hack to ensure that this input editor is definitely used for
+        // BDMM-Prime analyses, as InitializedTraitSet is used in place of
+        // TraitSet in the BDMM-Prime BEAUti template.
+        return InitializedTraitSet.class;
     }
 
     @Override
