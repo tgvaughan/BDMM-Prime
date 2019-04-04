@@ -31,6 +31,9 @@ import beast.evolution.tree.TraitSet;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import java.awt.event.ActionEvent;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 /**
  * BEAUti input editor for type traits.
@@ -74,14 +77,18 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             switch(dlg.showDialog("Auto-configure locations")) {
                 case canceled:
                     return;
+
                 case trait:
-                    traitString = dlg.getTrait();
+                    traitString = dlg.getTraitMap().entrySet().stream()
+                            .map(entry -> entry.getKey() + "=" + entry.getValue())
+                            .collect(Collectors.joining(","));
                     break;
+
                 case pattern:
                     StringBuilder traitStringBuilder = new StringBuilder();
                     for (String taxonName : taxonSet.asStringList()) {
                         String matchString = dlg.match(taxonName);
-                        if (matchString == null)
+                        if (matchString == null || matchString.isEmpty())
                             return;
                         
                         if (traitStringBuilder.length()>0)
@@ -94,7 +101,9 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                     traitString = traitStringBuilder.toString();
                     break;
             }
+
             traitSet.traitsInput.setValue(traitString, traitSet);
+
             try {
                 traitSet.initAndValidate();
             } catch (Exception ex) {
@@ -137,7 +146,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
         add(boxVert);
     }
-    
+
     class TypeTraitTableModel extends AbstractTableModel {
 
         TraitSet typeTraitSet;
