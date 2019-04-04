@@ -67,12 +67,12 @@
 
   		        <operator id="typeFrequenciesExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@typeFrequencies.t:$(n)" delta="0.1" weight="1.0"/>
 
-  		        <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		        <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		        <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		        <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		        <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		        <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0"/>
+  		        <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+  		        <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+  		        <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+  		        <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+  		        <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+  		        <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
 
                 <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
                 <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
@@ -118,6 +118,10 @@
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true"/>
 
+            <connect srcID="typeFrequencies.t:$(n)" targetID="state" inputName="stateNode"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and typeFrequencies.t:$(n)/estimate=true"/>
             <connect srcID="typeFrequenciesExchanger.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
