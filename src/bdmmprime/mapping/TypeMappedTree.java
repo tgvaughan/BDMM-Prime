@@ -748,6 +748,11 @@ public class TypeMappedTree extends Tree {
      */
 
     @Override
+    public void init(PrintStream out) {
+        untypedTree.init(out);
+    }
+
+    @Override
     public void log(long sample, PrintStream out) {
 
         if (remapOnLogInput.get())
@@ -761,5 +766,10 @@ public class TypeMappedTree extends Tree {
         final String newick = tree.getRoot().toSortedNewick(dummy, true);
         out.print(newick);
         out.print(";");
+    }
+
+    @Override
+    public void close(PrintStream out) {
+        untypedTree.close(out);
     }
 }
