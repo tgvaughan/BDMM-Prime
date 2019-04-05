@@ -3,8 +3,6 @@ package beast.app.bdmmprime.beauti;
 import bdmmprime.parameterization.TypeSet;
 import beast.core.parameter.RealParameter;
 
-import javax.swing.table.AbstractTableModel;
-
 /**
  * Table model used to represent SV parameter values.
  */

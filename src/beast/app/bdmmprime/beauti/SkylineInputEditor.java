@@ -1,15 +1,18 @@
 package beast.app.bdmmprime.beauti;
 
+import bdmmprime.distributions.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.SkylineParameter;
 import beast.app.beauti.BeautiDoc;
 import beast.app.draw.InputEditor;
 import beast.core.BEASTInterface;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.TraitSet;
+import beast.evolution.tree.Tree;
+import beast.util.Randomizer;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 
@@ -31,7 +34,9 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
     Box mainInputBox;
 
-    boolean modelSaveInProcess = false;
+    EpochVisualizerPanel epochVisualizer;
+
+    private boolean modelSaveInProcess = false;
 
     public SkylineInputEditor(BeautiDoc doc) {
         super(doc);
@@ -119,9 +124,17 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         mainInputBox.add(boxHoriz);
 
+        boxHoriz = Box.createHorizontalBox();
+        epochVisualizer = new EpochVisualizerPanel();
+        boxHoriz.add(epochVisualizer);
+        boxHoriz.add(makeHorizontalFiller());
+
+        mainInputBox.add(boxHoriz);
+
         add(mainInputBox);
 
         ensureParamsConsistent();
+
         loadFromModel();
 
         // Add event listeners:
@@ -215,6 +228,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         }
 
         estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
+
+        epochVisualizer.drawChart(getTree(), getTypeTraitSet(), skylineParameter);
     }
 
     /**
@@ -300,4 +315,23 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     }
 
     abstract String getChangeTimesParameterID();
+
+    private String getPartitionID() {
+        return skylineParameter.getID().split("\\.t:")[1];
+    }
+
+    protected Tree getTree() {
+
+        return (Tree) doc.pluginmap.get("Tree.t:" + getPartitionID());
+    }
+
+    protected TraitSet getTypeTraitSet() {
+
+        BirthDeathMigrationDistribution bdmmPrimeDistrib =
+                (BirthDeathMigrationDistribution) doc.pluginmap.get("BDMMPrime.t:" + getPartitionID());
+
+        return bdmmPrimeDistrib.typeTraitSetInput.get();
+    }
+
+
 }

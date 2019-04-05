@@ -2,12 +2,9 @@ package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.Parameterization;
 import beast.app.beauti.BeautiDoc;
-import beast.app.beauti.BeautiSubTemplate;
 import beast.app.draw.BEASTObjectInputEditor;
 import beast.core.BEASTInterface;
 import beast.core.Input;
-
-import java.util.List;
 
 public class ParameterizationInputEditor extends BEASTObjectInputEditor {
 
