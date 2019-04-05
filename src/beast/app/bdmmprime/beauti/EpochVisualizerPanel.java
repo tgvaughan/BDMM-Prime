@@ -2,11 +2,9 @@ package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineParameter;
 import bdmmprime.parameterization.TypeSet;
-import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
 
 import javax.swing.*;
 import java.awt.*;
@@ -20,7 +18,7 @@ public class EpochVisualizerPanel extends JPanel {
     boolean isScalar = false;
 
     final int HEADER_HEIGHT = 1;
-    final int FOOTER_HEIGHT = 2;
+    final int FOOTER_HEIGHT = 3;
     final int HEIGHT_PER_TYPE = 1;
     final int MARGIN_WIDTH = 2;
 
@@ -44,23 +42,24 @@ public class EpochVisualizerPanel extends JPanel {
         // Draw rectangles highlighting type bands
 
         if (param.getNTypes()>1 && !isScalar) {
-            for (int typeIdx=0; typeIdx<param.getNTypes(); typeIdx++) {
+            for (int rowNum=0; rowNum<param.getNTypes(); rowNum++) {
 
                 // Draw bar
-                if (typeIdx % 2 == 0) {
+                if (rowNum % 2 == 0) {
                     g2.setColor(Color.LIGHT_GRAY);
                     g2.fillRect(fm.getHeight()*MARGIN_WIDTH,
-                            getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE*(typeIdx+1))*fm.getHeight(),
+                            getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE*(rowNum+1))*fm.getHeight(),
                             getWidth()-2*MARGIN_WIDTH*fm.getHeight(),
                             HEIGHT_PER_TYPE*fm.getHeight());
                 }
+
+                int typeIdx = param.getNTypes()-1-rowNum;
 
                 // Draw label
                 g2.setColor(Color.DARK_GRAY);
                 g2.drawString(param.typeSetInput.get().getTypeName(typeIdx),
                         fm.getHeight()*MARGIN_WIDTH,
-                        getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE*typeIdx)*fm.getHeight()
-                                - (HEIGHT_PER_TYPE-1)*fm.getHeight()/2);
+                        getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE * rowNum) * fm.getHeight());
             }
         }
 
@@ -80,6 +79,31 @@ public class EpochVisualizerPanel extends JPanel {
         g2.drawString(axisLabel,
                 (int) ((getWidth()-fm.stringWidth(axisLabel))/2.0),
                 (int) (getHeight()-0.5*fm.getHeight()));
+
+        // Draw ticks
+
+        double delta = Math.pow(10, Math.ceil(Math.log10(origin/10)));
+
+        Font oldFont = getFont();
+        g2.setColor(Color.black);
+        for (double t=0; t<=origin; t += delta) {
+            g2.drawLine(getHorizontalPixel(t), axisBaseY, getHorizontalPixel(t), axisBaseY+fm.getHeight()/4);
+
+            double val = useAges
+                    ? origin - t
+                    : t;
+
+            String tickLabel;
+            if (Math.ceil(val) == val)
+                tickLabel = String.valueOf(Math.round(val));
+            else
+                tickLabel = String.valueOf(val);
+
+            g2.drawString(tickLabel,
+                    getHorizontalPixel(t) - fm.stringWidth(tickLabel)/2,
+                    axisBaseY+fm.getHeight()/4+fm.getHeight());
+        }
+        setFont(oldFont);
 
         // Mark Origin
 
@@ -127,18 +151,18 @@ public class EpochVisualizerPanel extends JPanel {
         for (int nodeNr=0; nodeNr<nLeaves; nodeNr++) {
 
 
-            int typeIdx;
+            int rowNum;
             if (isScalar) {
-                typeIdx = 0;
+                rowNum = 0;
             } else {
                 Node node = tree.getNode(nodeNr);
                 String typeName = typeTraitSet.getStringValue(node.getID());
-                typeIdx = typeSet.getTypeIndex(typeName);
+                rowNum = param.getNTypes()-1-typeSet.getTypeIndex(typeName);
             }
 
             int circleRad = fm.getHeight()/4;
             g2.fillOval(getHorizontalPixel(leafTimes[nodeNr]) - circleRad,
-                    axisBaseY - fm.getHeight()*HEIGHT_PER_TYPE/2 - fm.getHeight()*HEIGHT_PER_TYPE*typeIdx - circleRad,
+                    axisBaseY - fm.getHeight()*HEIGHT_PER_TYPE/2 - fm.getHeight()*HEIGHT_PER_TYPE*rowNum - circleRad,
                     circleRad*2, circleRad*2);
         }
     }
