@@ -198,4 +198,10 @@ public abstract class SkylineParameter extends CalculationNode {
 	    isDirty = true;
 	    return true;
     }
+
+    /**
+     * Beauti hack
+     */
+
+    public boolean epochVisualizerDisplayed = false;
 }

@@ -34,6 +34,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
     Box mainInputBox;
 
+    JCheckBox visualizerCheckBox;
     EpochVisualizerPanel epochVisualizer;
 
     private boolean modelSaveInProcess = false;
@@ -125,11 +126,13 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         mainInputBox.add(boxHoriz);
 
         boxHoriz = Box.createHorizontalBox();
-        epochVisualizer = new EpochVisualizerPanel();
-        boxHoriz.add(epochVisualizer);
+        visualizerCheckBox = new JCheckBox("Display visualization");
+        boxHoriz.add(visualizerCheckBox, Component.LEFT_ALIGNMENT);
         boxHoriz.add(makeHorizontalFiller());
-
         mainInputBox.add(boxHoriz);
+
+        epochVisualizer = new EpochVisualizerPanel(getTree(), getTypeTraitSet(), skylineParameter);
+        mainInputBox.add(epochVisualizer);
 
         add(mainInputBox);
 
@@ -146,6 +149,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         valuesTableModel.addTableModelListener(e -> saveToModel());
         scalarRatesCheckBox.addItemListener(e -> saveToModel());
         estimateValuesCheckBox.addItemListener(e -> saveToModel());
+
+        visualizerCheckBox.addItemListener(e -> saveToModel());
     }
 
     abstract SkylineValuesTableModel getValuesTableModel();
@@ -219,17 +224,21 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
             if (nTypes>1) {
                 scalarRatesCheckBox.setSelected(true);
                 scalarRatesCheckBox.setEnabled(true);
+                epochVisualizer.setScalar(true);
             } else {
                 scalarRatesCheckBox.setSelected(false);
                 scalarRatesCheckBox.setEnabled(false);
+                epochVisualizer.setScalar(false);
             }
         } else {
             scalarRatesCheckBox.setSelected(false);
+            epochVisualizer.setScalar(false);
         }
 
         estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
 
-        epochVisualizer.drawChart(getTree(), getTypeTraitSet(), skylineParameter);
+        visualizerCheckBox.setSelected(skylineParameter.epochVisualizerDisplayed);
+        epochVisualizer.setVisible(skylineParameter.epochVisualizerDisplayed);
     }
 
     /**
@@ -306,6 +315,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         }
 
         skylineParameter.timesAreAgesInput.setValue(timesAreAgesCheckBox.isSelected(), skylineParameter);
+
+        skylineParameter.epochVisualizerDisplayed = visualizerCheckBox.isSelected();
 
         skylineParameter.initAndValidate();
 

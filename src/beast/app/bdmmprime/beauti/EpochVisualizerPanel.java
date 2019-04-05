@@ -7,18 +7,9 @@ import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
-import org.knowm.xchart.XChartPanel;
-import org.knowm.xchart.XYChart;
-import org.knowm.xchart.XYChartBuilder;
-import org.knowm.xchart.XYSeries;
-import org.knowm.xchart.internal.series.Series;
-import org.knowm.xchart.style.Styler;
-import org.knowm.xchart.style.markers.Marker;
-import org.knowm.xchart.style.markers.SeriesMarkers;
 
 import javax.swing.*;
 import java.awt.*;
-import java.util.Collections;
 
 public class EpochVisualizerPanel extends JPanel {
 
@@ -26,104 +17,157 @@ public class EpochVisualizerPanel extends JPanel {
     TraitSet typeTraitSet;
     SkylineParameter param;
 
-    XYChart chart;
-    XChartPanel chartPanel;
+    boolean isScalar = false;
 
-    JCheckBox showVisualizerCheckBox;
+    final int HEADER_HEIGHT = 1;
+    final int FOOTER_HEIGHT = 2;
+    final int HEIGHT_PER_TYPE = 1;
+    final int MARGIN_WIDTH = 2;
 
-    public EpochVisualizerPanel() {
 
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-        showVisualizerCheckBox = new JCheckBox("Display visualizer");
-        showVisualizerCheckBox.setSelected(false);
-        showVisualizerCheckBox.addItemListener( e -> {
-            chartPanel.setVisible(showVisualizerCheckBox.isSelected());
-        });
-        add(showVisualizerCheckBox, Component.LEFT_ALIGNMENT);
-
-        chart = new XYChartBuilder()
-                .height(getFontMetrics(getFont()).getHeight()*10)
-                .width(getFontMetrics(getFont()).getHeight()*30)
-                .build();
-
-        chart.getStyler().setLegendVisible(false);
-
-        chartPanel = new XChartPanel<>(chart);
-        chartPanel.setVisible(false);
-        add(chartPanel, Component.LEFT_ALIGNMENT);
+    public EpochVisualizerPanel(Tree tree, TraitSet typeTraitSet, SkylineParameter param) {
+        this.tree = tree;
+        this.typeTraitSet = typeTraitSet;
+        this.param = param;
     }
 
+    @Override
+    protected void paintComponent(Graphics g) {
 
-
-    public void drawChart(Tree tree, TraitSet typeTraitSet, SkylineParameter param) {
+        Graphics2D g2 = (Graphics2D)g;
+        FontMetrics fm = getFontMetrics(getFont());
 
         boolean useAges = param.timesAreAgesInput.get();
-
-        double[] leafAges = new double[tree.getLeafNodeCount()];
-        if (tree.hasDateTrait()) {
-            tree.getDateTrait().initAndValidate();
-            for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++)
-                leafAges[nodeNr] = tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
-        } else {
-            for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++)
-                leafAges[nodeNr] = 0.0;
-
-        }
-
-        RealParameter origin = param.originInput.get();
+        double origin = param.originInput.get().getValue();
         TypeSet typeSet = param.typeSetInput.get();
 
-        int epoch = 1;
-        for (Double epocBoundaryTime : param.getChangeTimes()) {
-            String seriesName = "Epoch " + epoch + "->" + (epoch+1) + " Boundary";
-            chart.addSeries(seriesName,
-                    new double[] {epocBoundaryTime, epocBoundaryTime},
-                    new double[] {-1, param.getNTypes()});
+        // Draw rectangles highlighting type bands
 
-            XYSeries series = chart.getSeriesMap().get(seriesName);
-            series.setLineColor(Color.BLACK);
-            series.setMarker(SeriesMarkers.NONE);
+        if (param.getNTypes()>1 && !isScalar) {
+            for (int typeIdx=0; typeIdx<param.getNTypes(); typeIdx++) {
 
-            epoch += 1;
+                // Draw bar
+                if (typeIdx % 2 == 0) {
+                    g2.setColor(Color.LIGHT_GRAY);
+                    g2.fillRect(fm.getHeight()*MARGIN_WIDTH,
+                            getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE*(typeIdx+1))*fm.getHeight(),
+                            getWidth()-2*MARGIN_WIDTH*fm.getHeight(),
+                            HEIGHT_PER_TYPE*fm.getHeight());
+                }
+
+                // Draw label
+                g2.setColor(Color.DARK_GRAY);
+                g2.drawString(param.typeSetInput.get().getTypeName(typeIdx),
+                        fm.getHeight()*MARGIN_WIDTH,
+                        getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE*typeIdx)*fm.getHeight()
+                                - (HEIGHT_PER_TYPE-1)*fm.getHeight()/2);
+            }
         }
 
-        double originXvalue = useAges ? origin.getValue() : 0.0;
+        // Draw axis
 
-        chart.addSeries("Origin",
-                new double[] {originXvalue, originXvalue},
-                new double[] {-1, param.getNTypes()});
-        XYSeries series = chart.getSeriesMap().get("Origin");
-        series.setLineColor(Color.BLACK);
-        series.setMarker(SeriesMarkers.NONE);
+        int axisBaseY = getHeight() - fm.getHeight()*FOOTER_HEIGHT;
+        int boundaryLabelY = fm.getHeight();
+
+        g2.setColor(Color.BLACK);
+        g2.drawLine(getHorizontalPixel(0.0), axisBaseY,
+                getHorizontalPixel(origin), axisBaseY);
+
+        String axisLabel = useAges
+                ? "Age before most recent sample"
+                : "Time relative to start of BD process";
+
+        g2.drawString(axisLabel,
+                (int) ((getWidth()-fm.stringWidth(axisLabel))/2.0),
+                (int) (getHeight()-0.5*fm.getHeight()));
+
+        // Mark Origin
+
+        String originLabel = "Origin";
+        int originPosition = getHorizontalPixel(0.0);
+        g2.drawLine(originPosition, axisBaseY, originPosition, fm.getHeight()*HEADER_HEIGHT);
+        g2.drawString(originLabel,
+                originPosition-fm.stringWidth(originLabel)/2,
+                boundaryLabelY);
+
+        // Mark Epochs
+
+        for (int epoch=0; epoch<param.getChangeCount(); epoch++) {
+            String boundaryLabel = (epoch+1) + " -> " + (epoch+2);
+            g2.setColor(Color.BLUE);
+
+            double changeTime = useAges
+                    ? param.getChangeTimes()[param.getChangeCount()-epoch-1]
+                    : param.getChangeTimes()[epoch];
+
+            int boundaryPosition = getHorizontalPixel(changeTime);
+            g2.drawLine(boundaryPosition, axisBaseY, boundaryPosition, fm.getHeight()*HEADER_HEIGHT);
+
+            g2.drawString(boundaryLabel,
+                    boundaryPosition - fm.stringWidth(boundaryLabel)/2,
+                    fm.getHeight()*HEADER_HEIGHT);
+        }
+
+        // Compute sample ages
 
         int nLeaves = tree.getLeafNodeCount();
-
-        double[] x = new double[nLeaves];
-        double[] y = new double[nLeaves];
-
-
-        if (useAges)
-            chart.setXAxisTitle("Age before most recent sample");
-        else
-            chart.setXAxisTitle("Time after the origin");
-
-        for (int nodeNr=0; nodeNr<nLeaves; nodeNr++) {
-
-            Node node = tree.getNode(nodeNr);
-            String typeName = typeTraitSet.getStringValue(node.getID());
-            int typeIdx = typeSet.getTypeIndex(typeName);
-
-            x[nodeNr] = useAges ? leafAges[nodeNr] : origin.getValue() - leafAges[nodeNr];
-            y[nodeNr] = typeSet.getNTypes() - (typeIdx + 1)
-                    + 0.1*(Randomizer.nextDouble() - 0.5);
+        double[] leafTimes = new double[nLeaves];
+        if (tree.hasDateTrait()) {
+            tree.getDateTrait().initAndValidate();
+            for (int nodeNr = 0; nodeNr < nLeaves; nodeNr++)
+                leafTimes[nodeNr] = origin - tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
+        } else {
+            for (int nodeNr = 0; nodeNr < nLeaves; nodeNr++)
+                leafTimes[nodeNr] = origin;
         }
 
-        chart.addSeries("Samples", x, y);
-        chart.getSeriesMap().get("Samples").setXYSeriesRenderStyle(XYSeries.XYSeriesRenderStyle.Scatter);
-        series = chart.getSeriesMap().get("Samples");
-        series.setMarker(SeriesMarkers.DIAMOND);
-        series.setMarkerColor(Color.ORANGE);
+        // Draw samples
 
+        g2.setColor(Color.RED);
+        for (int nodeNr=0; nodeNr<nLeaves; nodeNr++) {
+
+
+            int typeIdx;
+            if (isScalar) {
+                typeIdx = 0;
+            } else {
+                Node node = tree.getNode(nodeNr);
+                String typeName = typeTraitSet.getStringValue(node.getID());
+                typeIdx = typeSet.getTypeIndex(typeName);
+            }
+
+            int circleRad = fm.getHeight()/4;
+            g2.fillOval(getHorizontalPixel(leafTimes[nodeNr]) - circleRad,
+                    axisBaseY - fm.getHeight()*HEIGHT_PER_TYPE/2 - fm.getHeight()*HEIGHT_PER_TYPE*typeIdx - circleRad,
+                    circleRad*2, circleRad*2);
+        }
+    }
+
+    int getHorizontalPixel(double time) {
+        boolean useAges = param.timesAreAgesInput.get();
+
+        int charHeight = getFontMetrics(getFont()).getHeight();
+        int axisXStart = charHeight*2;
+        int axisXEnd = getWidth() - charHeight*2;
+
+        int scaledTime = (int)Math.round((axisXEnd-axisXStart)
+                *time/param.originInput.get().getValue());
+
+        return useAges
+                ? axisXEnd - scaledTime
+                : axisXStart + scaledTime;
+    }
+
+    public void setScalar(boolean isScalar) {
+        this.isScalar = isScalar;
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+        int units = HEADER_HEIGHT + FOOTER_HEIGHT
+                + HEIGHT_PER_TYPE*(isScalar ? 1 : param.getNTypes());
+
+        return new Dimension(super.getPreferredSize().width,
+                units*getFontMetrics(getFont()).getHeight());
     }
 }
