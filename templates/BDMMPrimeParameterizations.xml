@@ -5,9 +5,9 @@
         <fragment id='CanonicalBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
             <![CDATA[
 
-            <prior id='$(thisparam)CanonicalPrior.t:$(n)' x='@$(thisparam)Canonical.t:$(n)'>
+            <distribution spec="bdmmprime.util.ZeroExcludingPrior" id='$(thisparam)CanonicalPrior.t:$(n)' x='@$(thisparam)Canonical.t:$(n)'>
                    <distr spec="beast.math.distributions.OneOnX"/>
-            </prior>
+            </distribution>
   		    <operator id='$(thisparam)CanonicalScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
             ]]>
 
@@ -39,9 +39,9 @@
         <fragment id='EpiBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
             <![CDATA[
 
-            <prior id='$(thisparam)EpiPrior.t:$(n)' x='@$(thisparam)Epi.t:$(n)'>
+            <distribution spec="bdmmprime.util.ZeroExcludingPrior" id='$(thisparam)EpiPrior.t:$(n)' x='@$(thisparam)Epi.t:$(n)'>
                    <distr spec="beast.math.distributions.OneOnX"/>
-            </prior>
+            </distribution>
   		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
             ]]>
 
@@ -74,9 +74,9 @@
         <fragment id='FBDBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
             <![CDATA[
 
-            <prior id='$(thisparam)FBDPrior.t:$(n)' x='@$(thisparam)FBD.t:$(n)'>
+            <distribution spec="bdmmprime.util.ZeroExcludingPrior" id='$(thisparam)FBDPrior.t:$(n)' x='@$(thisparam)FBD.t:$(n)'>
                    <distr spec="beast.math.distributions.OneOnX"/>
-            </prior>
+            </distribution>
   		    <operator id='$(thisparam)FBDScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
             ]]>
 
