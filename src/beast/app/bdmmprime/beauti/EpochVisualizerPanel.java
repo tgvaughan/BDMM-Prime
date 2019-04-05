@@ -8,6 +8,9 @@ import beast.evolution.tree.Tree;
 
 import javax.swing.*;
 import java.awt.*;
+import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 
 public class EpochVisualizerPanel extends JPanel {
 
@@ -39,13 +42,19 @@ public class EpochVisualizerPanel extends JPanel {
         double origin = param.originInput.get().getValue();
         TypeSet typeSet = param.typeSetInput.get();
 
+        if (origin <= 0.0) {
+            g2.drawString("Can't visualize: invalid origin value.", 0, getHeight()/2);
+            return;
+        }
+
         // Draw rectangles highlighting type bands
 
         if (param.getNTypes()>1 && !isScalar) {
             for (int rowNum=0; rowNum<param.getNTypes(); rowNum++) {
 
                 // Draw bar
-                if (rowNum % 2 == 0) {
+
+                if (rowNum % 2 == 1) {
                     g2.setColor(Color.LIGHT_GRAY);
                     g2.fillRect(fm.getHeight()*MARGIN_WIDTH,
                             getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE*(rowNum+1))*fm.getHeight(),
@@ -56,9 +65,17 @@ public class EpochVisualizerPanel extends JPanel {
                 int typeIdx = param.getNTypes()-1-rowNum;
 
                 // Draw label
+
+                String typeName = param.typeSetInput.get().getTypeName(typeIdx);
+
                 g2.setColor(Color.DARK_GRAY);
-                g2.drawString(param.typeSetInput.get().getTypeName(typeIdx),
+
+                g2.drawString(typeName,
                         fm.getHeight()*MARGIN_WIDTH,
+                        getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE * rowNum) * fm.getHeight());
+
+                g2.drawString(typeName,
+                        getWidth() - fm.getHeight()*MARGIN_WIDTH - fm.stringWidth(typeName),
                         getHeight() - (FOOTER_HEIGHT + HEIGHT_PER_TYPE * rowNum) * fm.getHeight());
             }
         }
@@ -96,8 +113,11 @@ public class EpochVisualizerPanel extends JPanel {
             String tickLabel;
             if (Math.ceil(val) == val)
                 tickLabel = String.valueOf(Math.round(val));
+            else if (Math.abs(val)<1e-10)
+                tickLabel = "0";
             else
-                tickLabel = String.valueOf(val);
+                tickLabel = new BigDecimal(val, new MathContext(4))
+                        .stripTrailingZeros().toEngineeringString();
 
             g2.drawString(tickLabel,
                     getHorizontalPixel(t) - fm.stringWidth(tickLabel)/2,
@@ -147,7 +167,8 @@ public class EpochVisualizerPanel extends JPanel {
 
         // Draw samples
 
-        g2.setColor(Color.RED);
+        Color[] sampleCols = new Color[] {Color.RED, Color.ORANGE};
+
         for (int nodeNr=0; nodeNr<nLeaves; nodeNr++) {
 
 
@@ -159,6 +180,8 @@ public class EpochVisualizerPanel extends JPanel {
                 String typeName = typeTraitSet.getStringValue(node.getID());
                 rowNum = param.getNTypes()-1-typeSet.getTypeIndex(typeName);
             }
+
+            g2.setColor(sampleCols[getEpoch(leafTimes[nodeNr]) % sampleCols.length]);
 
             int circleRad = fm.getHeight()/4;
             g2.fillOval(getHorizontalPixel(leafTimes[nodeNr]) - circleRad,
@@ -180,6 +203,18 @@ public class EpochVisualizerPanel extends JPanel {
         return useAges
                 ? axisXEnd - scaledTime
                 : axisXStart + scaledTime;
+    }
+
+    int getEpoch(double time) {
+        int epoch=0;
+
+        while (epoch < param.getChangeCount() && time > param.getChangeTimes()[epoch])
+            epoch ++;
+
+        if (param.timesAreAgesInput.get())
+            epoch = param.getChangeCount() - epoch;
+
+        return epoch;
     }
 
     public void setScalar(boolean isScalar) {
