@@ -25,7 +25,7 @@ public abstract class Parameterization extends CalculationNode {
 
     private SortedSet<Double> intervalEndTimesSet = new TreeSet<>();
 
-    private double[] intervalEndTimes;
+    private double[] intervalEndTimes, storedIntervalEndTimes;
 
     private double[][] birthRates, deathRates, samplingRates, removalProbs, rhoValues;
     private double[][][] migRates, crossBirthRates;
@@ -50,6 +50,7 @@ public abstract class Parameterization extends CalculationNode {
         ZERO_VALUE_MATRIX = new double[nTypes][nTypes];
 
         dirty = true;
+        update();
     }
 
     public abstract double[] getBirthRateChangeTimes();
@@ -142,8 +143,10 @@ public abstract class Parameterization extends CalculationNode {
 
         intervalEndTimesSet.add(getTotalProcessLength()); // End time of final interval
 
-        if (intervalEndTimes == null)
+        if (intervalEndTimes == null) {
             intervalEndTimes = new double[intervalEndTimesSet.size()];
+            storedIntervalEndTimes = new double[intervalEndTimesSet.size()];
+        }
 
         List<Double> timeList = new ArrayList<>(intervalEndTimesSet);
         for (int i = 0; i< intervalEndTimesSet.size(); i++)
@@ -227,7 +230,7 @@ public abstract class Parameterization extends CalculationNode {
     }
 
     public double[][] getRhoValues() {
-        updateValues();
+        update();
 
         return rhoValues;
     }
@@ -299,6 +302,8 @@ public abstract class Parameterization extends CalculationNode {
 
     @Override
     protected void store() {
+       System.arraycopy(intervalEndTimes, 0, storedIntervalEndTimes, 0, intervalEndTimes.length);
+
         for (int interval=0; interval<intervalEndTimes.length; interval++) {
 
             System.arraycopy(birthRates[interval], 0, storedBirthRates[interval], 0, nTypes);
@@ -318,8 +323,14 @@ public abstract class Parameterization extends CalculationNode {
 
     @Override
     protected void restore() {
+
+        double[] scalarTmp;
         double[][] vectorTmp;
         double[][][] matrixTmp;
+
+        scalarTmp = intervalEndTimes;
+        intervalEndTimes = storedIntervalEndTimes;
+        storedIntervalEndTimes = scalarTmp;
 
         vectorTmp = birthRates;
         birthRates = storedBirthRates;
