@@ -122,7 +122,7 @@ public class TypeMappedTree extends Tree {
      * Generate new tree by stochastically mapping type changes on untyped tree.
      * Called both during initialization and at when logging.
      */
-    public void doStochasticMapping() {
+    private void doStochasticMapping() {
          // Prepare the backward-time integrator!
 
         odeIntegrator = new DormandPrince54Integrator(
@@ -502,7 +502,7 @@ public class TypeMappedTree extends Tree {
      * @param startType type at the start of the simulation.
      * @return root of new tree with type changes marked.
      */
-    Node forwardSimulateSubtree (Node subtreeRoot, double startTime, int startType) {
+    private Node forwardSimulateSubtree(Node subtreeRoot, double startTime, int startType) {
 
         Node root = new Node();
         setNodeType(root, startType);
