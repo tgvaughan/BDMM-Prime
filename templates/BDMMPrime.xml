@@ -54,7 +54,7 @@
                         <taxa spec="beast.evolution.alignment.TaxonSet" alignment="@$(n)"/>
                     </typeTraitSet>
 
-                    <frequencies id="typeFrequencies.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0"/>
+                    <frequencies id="typeFrequencies.t:$(n)" spec="beast.core.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0"/>
                 </distribution>
 
                 <typeSet id="typeSetBDMMPrime.t:$(n)" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
