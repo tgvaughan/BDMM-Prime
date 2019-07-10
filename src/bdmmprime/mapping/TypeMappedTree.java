@@ -663,15 +663,6 @@ public class TypeMappedTree extends Tree {
         double[] y = com.getInterpolatedState();
         int interval = param.getIntervalIndex(time);
 
-        // Sanitize interpolated state:
-        // (Neccessary to remove the occasional rounding error.)
-        for (int i=0; i<2*param.getNTypes(); i++) {
-            if (y[i]<0.0)
-                y[i] = 0.0;
-            else if (y[i] > 1.0)
-                y[i] = 1.0;
-        }
-
         for (int type=0; type<param.getNTypes(); type++) {
             if (type == fromType) {
                 result[type] = 0.0;
