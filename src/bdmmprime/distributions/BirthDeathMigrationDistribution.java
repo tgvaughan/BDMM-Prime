@@ -13,6 +13,7 @@ import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
 import beast.util.HeapSort;
+import org.apache.commons.math.special.Gamma;
 
 import java.util.List;
 import java.util.Random;
@@ -254,12 +255,18 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (debug) System.out.println("\nlogP = " + logP);
 
-        // Weird correction:
-        // TGV: Why is this only applied when the removal prob is less than 1??
+        // TGV: This seems to be the conversion from oriented tree to (unnormalized) labeled tree probability.
+        // I understand that the factor is constant for binary trees, but still: why is it only applied when
+        // the removal prob is less than 1? This isn't an expensive computation and could lead to future confusion.
+        // It's left as is for the moment, because otherwise the tests fail.
+
         if (parameterization.getRemovalProbs()[0][0] != 1.0) {
             int internalNodeCount = tree.getLeafNodeCount() - ((Tree) tree).getDirectAncestorNodeCount() - 1;
             logP += Math.log(2) * internalNodeCount;
         }
+
+        // Again, for proper agreement with theory we need a 1/N! here.
+        // logP -= Gamma.logGamma(tree.getLeafNodeCount()+1);
 
         return logP;
     }
