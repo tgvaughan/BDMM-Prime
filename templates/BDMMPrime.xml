@@ -16,27 +16,27 @@
                      if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
                 Changes whether a sample is a leaf or sampled ancestor.
             </connect>
-            <connect srcID="@(m)SAWilsonBalding.t:$(n)" targetID="mcmc" inputName="operator"
+            <connect srcID="$(m)SAWilsonBalding.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
                 Wilson-Balding topology move for trees with sampled ancestors.
             </connect>
-            <connect srcID="@(m)SAWide.t:$(n)" targetID="mcmc" inputName="operator"
+            <connect srcID="$(m)SAWide.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
                 Wide exchange topology operator for trees with sampled ancestors.
             </connect>
-            <connect srcID="@(m)SANarrow.t:$(n)" targetID="mcmc" inputName="operator"
+            <connect srcID="$(m)SANarrow.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
                 Narrow exchange topology operator for trees with sampled ancestors.
             </connect>
-            <connect srcID="@(m)SAUniformOperator.t:$(n)" targetID="mcmc" inputName="operator"
+            <connect srcID="$(m)SAUniformOperator.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
                 Uniform node age operator for trees with sampled ancestors.
             </connect>
-            <connect srcID="@(m)SATreeRootScaler.t:$(n)" targetID="mcmc" inputName="operator"
+            <connect srcID="$(m)SATreeRootScaler.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
                 Tree root age scaler for trees with sampled ancestors.
             </connect>
-            <connect srcID="@(m)SATreeScaler.t:$(n)" targetID="mcmc" inputName="operator"
+            <connect srcID="$(m)SATreeScaler.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
                 Tree scaler for trees with sampled ancestors.
             </connect>
