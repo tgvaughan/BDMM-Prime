@@ -1,6 +1,48 @@
 <beast version="2.0"
        namespace="beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions">
 
+    <mergewith point="misc">
+        <fragment id="SATreeOperators" spec="beast.app.beauti.Fragment">
+            <![CDATA[
+            <operator id='$(m)LeafToSA.t:$(n)' spec='beast.evolution.operators.LeafToSampledAncestorJump' weight="10" tree="@Tree.t:$(n)"/>
+            <operator id='$(m)SAWilsonBalding.t:$(n)' spec='beast.evolution.operators.SAWilsonBalding' weight="10" tree="@Tree.t:$(n)"/>
+            <operator id='$(m)SAWide.t:$(n)' spec='beast.evolution.operators.SAExchange' isNarrow="false" weight="10" tree="@Tree.t:$(n)"/>
+            <operator id='$(m)SANarrow.t:$(n)' spec='beast.evolution.operators.SAExchange' weight="10" tree="@Tree.t:$(n)"/>
+            <operator id='$(m)SAUniformOperator.t:$(n)' spec='beast.evolution.operators.SAUniform' weight="20" tree="@Tree.t:$(n)"/>
+            <operator id='$(m)SATreeRootScaler.t:$(n)' spec='beast.evolution.operators.SAScaleOperator' scaleFactor=".95" weight="1" tree="@Tree.t:$(n)" rootOnly='true'/>
+            <operator id='$(m)SATreeScaler.t:$(n)' spec='beast.evolution.operators.SAScaleOperator' scaleFactor=".95" weight="3" tree="@Tree.t:$(n)"/>
+            ]]>
+            <connect srcID="$(m)LeafToSA.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
+                Changes whether a sample is a leaf or sampled ancestor.
+            </connect>
+            <connect srcID="@(m)SAWilsonBalding.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
+                Wilson-Balding topology move for trees with sampled ancestors.
+            </connect>
+            <connect srcID="@(m)SAWide.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
+                Wide exchange topology operator for trees with sampled ancestors.
+            </connect>
+            <connect srcID="@(m)SANarrow.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
+                Narrow exchange topology operator for trees with sampled ancestors.
+            </connect>
+            <connect srcID="@(m)SAUniformOperator.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
+                Uniform node age operator for trees with sampled ancestors.
+            </connect>
+            <connect srcID="@(m)SATreeRootScaler.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
+                Tree root age scaler for trees with sampled ancestors.
+            </connect>
+            <connect srcID="@(m)SATreeScaler.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior($(m).t:$(n)) and Tree.t:$(n)/estimate=true">
+                Tree scaler for trees with sampled ancestors.
+            </connect>
+        </fragment>
+    </mergewith>
+
     <mergewith point="treePriorTemplates">
 
         <subtemplate id="BDMMPrime" class="bdmmprime.distributions.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
@@ -99,7 +141,7 @@
             </connect>
 
             <!-- TODO replace these with SA operators. -->
-            <plate fragment="TreeOperators" var="m" range="BDMMPrime"/>
+            <plate fragment="SATreeOperators" var="m" range="BDMMPrime"/>
 
             <connect srcID="originBDMMPrime.t:$(n)" targetID="state" inputName="stateNode"
                      if="inposterior(BDMMPrime.t:$(n))
