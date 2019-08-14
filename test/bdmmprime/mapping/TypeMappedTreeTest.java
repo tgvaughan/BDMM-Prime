@@ -5,6 +5,7 @@ import bdmmprime.parameterization.*;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 import beast.util.TreeParser;
+import org.apache.commons.math.special.Gamma;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -70,7 +71,9 @@ public class TypeMappedTreeTest {
             logProb += y[type+parameterization.getNTypes()]*Math.exp(logScaleFactor)*frequencies.getValue(type);
         }
 
-        logProb = Math.log(logProb);
+        logProb = Math.log(logProb)
+                + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
+                - Gamma.logGamma(tree.getLeafNodeCount()+1);
 
         assertEquals(logProbTrue, logProb, 1e-5);
     }
@@ -136,7 +139,9 @@ public class TypeMappedTreeTest {
         for (int type=0; type<parameterization.getNTypes(); type++) {
             logProb += y[type+parameterization.getNTypes()]*frequencies.getValue(type);
         }
-        logProb = Math.log(logProb) + logScaleFactor;
+        logProb = Math.log(logProb) + logScaleFactor
+                + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
+                - Gamma.logGamma(tree.getLeafNodeCount()+1);
 
         assertEquals(logProbTrue, logProb, 1e-5);
 
@@ -203,7 +208,9 @@ public class TypeMappedTreeTest {
         for (int type=0; type<parameterization.getNTypes(); type++) {
             logProb += y[type+parameterization.getNTypes()]*frequencies.getValue(type);
         }
-        logProb = Math.log(logProb) + logScaleFactor;
+        logProb = Math.log(logProb) + logScaleFactor
+                + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
+                - Gamma.logGamma(tree.getLeafNodeCount()+1);
 
         assertEquals(logProbTrue, logProb, 1e-5);
 
@@ -270,8 +277,9 @@ public class TypeMappedTreeTest {
         for (int type=0; type<parameterization.getNTypes(); type++) {
             logProb += y[type+parameterization.getNTypes()]*frequencies.getValue(type);
         }
-        logProb = Math.log(logProb) + logScaleFactor;
-
+        logProb = Math.log(logProb) + logScaleFactor
+                + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
+                - Gamma.logGamma(tree.getLeafNodeCount()+1);
 
         assertEquals(logProbTrue, logProb, 1e-3);
     }

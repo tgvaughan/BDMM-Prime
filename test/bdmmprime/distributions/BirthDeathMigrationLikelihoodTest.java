@@ -3,7 +3,9 @@ package bdmmprime.distributions;
 import bdmmprime.parameterization.*;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
+import beast.evolution.tree.TreeInterface;
 import beast.util.TreeParser;
+import org.apache.commons.math.special.Gamma;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
@@ -16,6 +18,28 @@ import static junit.framework.Assert.assertEquals;
 public class BirthDeathMigrationLikelihoodTest {
 
 	double runtime;
+
+	/**
+     * The original tests were developed assuming BDSKY/BDMM-like behaviour, i.e. return an oriented
+	 * tree probability unless r!=1 in which case return an un-oriented and unlabeled tree probability.
+	 * In contrast, BDMM-Prime always returns a labeled tree probability.
+     *
+	 * This method exists to convert BDSKY/BDMM test probabilities to be labeled tree probabilities,
+	 * allowing comparison with BDMM-Prime.
+	 *
+	 * @param density BDMM-prime probability density object
+	 * @return conversion factor
+	 */
+	private double labeledTreeConversionFactor(BirthDeathMigrationDistribution density) {
+		Tree tree = (Tree)density.treeInput.get();
+		boolean SAmodel = density.parameterizationInput.get().getRemovalProbs()[0][0] != 1.0;
+		double factor = - Gamma.logGamma(tree.getLeafNodeCount() +1);
+
+		if (!SAmodel)
+			factor += Math.log(2) * (tree.getLeafNodeCount() - tree.getDirectAncestorNodeCount() - 1);
+
+		return factor;
+	}
 
 	/**
 	 * Basic test for migration rate change 
@@ -72,7 +96,8 @@ public class BirthDeathMigrationLikelihoodTest {
 		System.out.println("Birth-death result: " + logL + "\t- Test LikelihoodMigRateChange 1");
 
 		// Reference BDMM (version 0.2.0) 22/06/2017
-		assertEquals(-6.7022069383966025, logL, 1e-5);
+		assertEquals(-6.7022069383966025 - labeledTreeConversionFactor(density),
+				logL, 1e-5);
 	}
 
     /**
@@ -174,7 +199,8 @@ public class BirthDeathMigrationLikelihoodTest {
 		double logL = density.calculateLogP();
 
         // Reference BDMM (version 0.2.0) 22/06/2017
-		assertEquals(-21.25413884159791, logL, 1e-5);
+		assertEquals(-21.25413884159791 + labeledTreeConversionFactor(density),
+				logL, 1e-5);
 	}
 
 	/**
@@ -226,7 +252,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		double logL = density.calculateLogP();
 
         // Reference BDMM (version 0.2.0) 29/03/2018
-		assertEquals(-21.185194919464568, logL, 1e-5);
+		assertEquals(-21.185194919464568 + labeledTreeConversionFactor(density), logL, 1e-5);
 	}
 
 
@@ -279,7 +305,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		double logL = density.calculateLogP();
 
 		// this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=0)
-		assertEquals(-6.761909, logL, 1e-4);
+		assertEquals(-6.761909 + labeledTreeConversionFactor(density), logL, 1e-4);
 
 		// test with conditioned-on-survival tree
 		parameterization.setInputValue("origin", "10");
@@ -295,7 +321,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		double logL2 = density.calculateLogP();
 
         // this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5,5.5+1e-100),root=0,survival=1)
-		assertEquals(-7.404227, logL2, 1e-4);
+		assertEquals(-7.404227 + labeledTreeConversionFactor(density), logL2, 1e-4);
 	}
 
 	/**
@@ -415,7 +441,8 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", true);
 
-		assertEquals(-124.96086690757612, density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
+		assertEquals(-124.96086690757612 + labeledTreeConversionFactor(density),
+				density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
 
         parameterization.setInputValue("rhoSampling",
                 new TimedParameter(new RealParameter("0.0 0.5 1.0"),
@@ -424,7 +451,8 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initAndValidate();
         density.initAndValidate();
 
-        assertEquals(-124.96086690757612, density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
+        assertEquals(-124.96086690757612 + labeledTreeConversionFactor(density),
+				density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
 	}
 
 	/**
@@ -475,7 +503,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parallelize", false);
 
         //		System.out.println("\na) Likelihood: " + bdssm.calculateTreeLogLikelihood(tree));
-        assertEquals(-21.42666177086957, density.calculateLogP(), 1e-5);
+        assertEquals(-21.42666177086957 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
     }
 
 
@@ -520,7 +548,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-        assertEquals(-87.59718586549747, density.calculateLogP(), 1e-5);
+        assertEquals(-87.59718586549747 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
     }
 
     @Test
@@ -564,7 +592,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-        assertEquals(-87.96488, density.calculateLogP(), 1e-1);
+        assertEquals(-87.96488 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
     }
 
     @Test
@@ -607,7 +635,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-        assertEquals(-100.15682190617582, density.calculateLogP(), 1e-1);
+        assertEquals(-100.15682190617582 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
 	}
 
 	/**
@@ -646,12 +674,12 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "parallelize", false);
 
-        assertEquals(-19.019796073623493, density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
+        assertEquals(-19.019796073623493 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
 
         density.setInputValue("conditionOnSurvival", true);
         density.initAndValidate();
 
-		assertEquals(-18.574104140202046, density.calculateLogP(), 1e-5); // Reference BDSKY (version 1.3.3)
+		assertEquals(-18.574104140202046 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // Reference BDSKY (version 1.3.3)
 	}
 
 	/**
@@ -689,7 +717,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "parallelize", false);
 
-        assertEquals(-33.7573, density.calculateLogP(), 1e-4); // Reference BDSKY
+        assertEquals(-33.7573 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // Reference BDSKY
 	}
 
 	/**
@@ -732,7 +760,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "parallelize", false);
 
-		assertEquals(-7.215222, density.calculateLogP(), 1e-6); // result from R
+		assertEquals(-7.215222 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
 
 		// no migration, symmetric birth among demes
 
@@ -743,7 +771,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initAndValidate();
         density.initAndValidate();
 
-		assertEquals(-7.404888, density.calculateLogP(), 1e-6); // result from R
+		assertEquals(-7.404888 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
 
 		// no migration, asymmetric birth among demes
 
@@ -753,7 +781,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initAndValidate();
         density.initAndValidate();
 
-		assertEquals(-7.18723, density.calculateLogP(), 1e-6); // result from R
+		assertEquals(-7.18723 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
 
 
         // no migration, asymmetric R0, asymmetric birth among demes
@@ -764,7 +792,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initAndValidate();
         density.initAndValidate();
 
-		assertEquals(-7.350649, density.calculateLogP(), 1e-6); // result from R
+		assertEquals(-7.350649 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
 
         // no migration, asymmetric R0, birth among demes, BU rate, samp proportion
 
@@ -783,7 +811,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initAndValidate();
         density.initAndValidate();
 
-		assertEquals(-6.504139, density.calculateLogP(), 1e-6); // result from R
+		assertEquals(-6.504139 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
 
 		// Same params as last test, swapped leaf states
 
@@ -791,7 +819,7 @@ public class BirthDeathMigrationLikelihoodTest {
         density.setInputValue("tree", tree);
         density.initAndValidate();
 
-		assertEquals(-7.700916, density.calculateLogP(), 1e-6); // result from R
+		assertEquals(-7.700916 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
 	}
 
 	/**
@@ -836,7 +864,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-        assertEquals(-26.53293, density.calculateLogP(), 1e-5);
+        assertEquals(-26.53293 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
     }
 
 	/**
@@ -881,7 +909,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", true);
 
-		assertEquals(-661.9588648301033, density.calculateLogP(), 1e-5); // result from BEAST, not checked in R
+		assertEquals(-661.9588648301033 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from BEAST, not checked in R
 
 	}
 
@@ -928,7 +956,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parallelize", false);
 
         //System.out.println("Log-likelihood " + logL + " - testLikelihoodCalculationInfAmongDemes \t");
-        assertEquals(-5.1966118470881, density.calculateLogP(), 1e-3);
+        assertEquals(-5.1966118470881 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-3);
 
     }
 
@@ -972,7 +1000,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-		assertEquals(-26.7939, density.calculateLogP(), 1e-5);  //result from R
+		assertEquals(-26.7939 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);  //result from R
 	}
 
 	/**
@@ -1019,7 +1047,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-        assertEquals(-16.466832439520886, density.calculateLogP(), 1e-4); // result from BDMM, 28/06/2017
+        assertEquals(-16.466832439520886 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // result from BDMM, 28/06/2017
     }
 
     /**
@@ -1066,7 +1094,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 		
-		assertEquals(-12.1441, density.calculateLogP(), 1e-4); // tanja's result from R
+		assertEquals(-12.1441 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // tanja's result from R
 		
 	}
 	
@@ -1110,7 +1138,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-		assertEquals(-16.88601100061662, density.calculateLogP(), 1e-4); // result from BDMM, version 0.2.0, 06/07/2017
+		assertEquals(-16.88601100061662 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // result from BDMM, version 0.2.0, 06/07/2017
 	}
 
 	/**
@@ -1153,7 +1181,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parallelize", false);
 
         //	System.out.println("Log-likelihood = " + logL);
-        assertEquals(-18.82798, density.calculateLogP(), 1e-4); // tanja's result from R
+        assertEquals(-18.82798 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // tanja's result from R
     }
 
     /**
@@ -1198,7 +1226,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-        assertEquals(-18.986212857895506, density.calculateLogP(), 1e-4); // reference from BDMM - 0.2.0 - 06/07/2017
+        assertEquals(-18.986212857895506 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // reference from BDMM - 0.2.0 - 06/07/2017
     }
 
     /**
@@ -1243,7 +1271,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-		assertEquals(-17.87099909579358, density.calculateLogP(), 1e-4); // reference from BDMM - 0.2.0 - 06/07/2017
+		assertEquals(-17.87099909579358 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // reference from BDMM - 0.2.0 - 06/07/2017
 	}
 	
 	/**
@@ -1288,7 +1316,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-		assertEquals(-8.906223150087108, density.calculateLogP(), 1e-4);   // Reference from BDMM - version 0.2.0 - 06/07/2017
+		assertEquals(-8.906223150087108 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);   // Reference from BDMM - version 0.2.0 - 06/07/2017
 
 	}
 	
@@ -1328,7 +1356,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-		assertEquals(-18.854438107814335, density.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017)
+		assertEquals(-18.854438107814335 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017)
 	}
 
 	/**
@@ -1374,7 +1402,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-		assertEquals(-22.348462265673483, density.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017)
+		assertEquals(-22.348462265673483 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017)
 	}
 
 	/**
@@ -1417,7 +1445,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         // Conditioned on root:
 
-		assertEquals(-15.99699690815937, density.calculateLogP(), 1e-4);
+		assertEquals(-15.99699690815937 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
 
 		// Conditioned on origin:
 
@@ -1426,6 +1454,6 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initAndValidate();
 		density.initAndValidate();
 
-		assertEquals(-25.991511346557598, density.calculateLogP(), 1e-4);
+		assertEquals(-25.991511346557598 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
 	}
 }
