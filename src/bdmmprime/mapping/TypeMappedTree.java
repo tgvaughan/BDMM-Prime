@@ -398,7 +398,7 @@ public class TypeMappedTree extends Tree {
 
         int saType = getLeafType(saNode.getDirectAncestorChild());
 
-        if (nodeIsRhoSampled(saNode)) {
+        if (nodeIsRhoSampled(saNode.getDirectAncestorChild())) {
 
             int rhoSamplingInterval = getRhoSamplingInterval(saNode);
 
@@ -576,6 +576,15 @@ public class TypeMappedTree extends Tree {
                 break;
 
             case SA:
+                Node oldDAChild = subtreeRoot.getDirectAncestorChild();
+                Node newDAChild = new Node();
+
+                newDAChild.setHeight(oldDAChild.getHeight());
+                setNodeType(newDAChild, currentType);
+                newDAChild.setNr(oldDAChild.getNr());
+                newDAChild.setID((oldDAChild.getID()));
+
+                currentNode.addChild(newDAChild);
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getNonDirectAncestorChild(), endTime, currentType));
                 break;
 
