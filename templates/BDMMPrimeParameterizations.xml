@@ -194,7 +194,7 @@
                         </migrationRate>
                         <samplingProportion id="samplingProportionSVEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <origin idref="originBDMMPrime.t:$(n)"/>
-                            <skylineValues id="samplingProportionEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1"/>
+                            <skylineValues id="samplingProportionEpi.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.1" lower="0.0" upper="1.0"/>
                         </samplingProportion>
                         <removalProb id="removalProbSVEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <origin idref="originBDMMPrime.t:$(n)"/>
