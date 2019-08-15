@@ -766,6 +766,23 @@ public class TypeMappedTree extends Tree {
      * Loggable implementation
      */
 
+    private long lastRemapSample = -1;
+
+    /**
+     * Remap the tree.  Intended to be called by loggers requiring
+     * a mapped tree.  Supplying the sample number allows the result
+     * of the remapping to be cached and used for other loggers.
+     *
+     * @param sample sample number at log
+     */
+    public void remapForLog(long sample) {
+        if (!remapOnLogInput.get() || sample == lastRemapSample)
+            return;
+
+        doStochasticMapping();
+        lastRemapSample = sample;
+    }
+
     @Override
     public void init(PrintStream out) {
         untypedTree.init(out);
@@ -773,9 +790,7 @@ public class TypeMappedTree extends Tree {
 
     @Override
     public void log(long sample, PrintStream out) {
-
-        if (remapOnLogInput.get())
-            doStochasticMapping();
+        remapForLog(sample);
 
         Tree tree = (Tree) getCurrent();
         out.print("tree STATE_" + sample + " = ");

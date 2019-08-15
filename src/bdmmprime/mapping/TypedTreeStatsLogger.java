@@ -14,7 +14,7 @@ import java.io.PrintStream;
  */
 public class TypedTreeStatsLogger extends BEASTObject implements Loggable {
 
-    public Input<Tree> typedTreeInput = new Input<>("typedTree",
+    public Input<TypeMappedTree> typedTreeInput = new Input<>("typedTree",
             "Tree with type changes mapped.",
             Input.Validate.REQUIRED);
 
@@ -33,7 +33,7 @@ public class TypedTreeStatsLogger extends BEASTObject implements Loggable {
 
     int[][] countMatrix;
 
-    Tree tree;
+    TypeMappedTree tree;
     TypeSet typeSet;
     int nTypes;
     String typeLabel;
@@ -117,6 +117,8 @@ public class TypedTreeStatsLogger extends BEASTObject implements Loggable {
 
     @Override
     public void log(long sample, PrintStream out) {
+
+        tree.remapForLog(sample);
         update();
 
         for (int type=0; type<nTypes; type++) {
