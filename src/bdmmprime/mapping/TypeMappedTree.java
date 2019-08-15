@@ -601,19 +601,31 @@ public class TypeMappedTree extends Tree {
         return root;
     }
 
+    /**
+     * Retrieve (scaled) result of backward-time integration, ensuring that the query remains
+     * inside the bounds of the integration.
+     *
+     * @param node node below edge on which integration result is to be retrieved.
+     * @param time time at which state is to be retrieved
+     * @return backward-time integration result at this point on the tree
+     */
+    private double[] getBackwardsIntegrationResult(Node node, double time) {
+        double parentTime = node.isRoot() ? 0.0 : param.getNodeTime(node.getParent());
+        double adjustedTime = Math.max(time, parentTime + 2*Utils.globalPrecisionThreshold);
+
+        ContinuousOutputModel com = integrationResults[node.getNr()];
+        com.setInterpolatedTime(adjustedTime);
+
+        return com.getInterpolatedState();
+    }
+
     private int[] sampleChildTypes(Node node, int parentType) {
 
         double t = param.getNodeTime(node);
         int interval = param.getIntervalIndex(t);
 
-        ContinuousOutputModel com1 = integrationResults[node.getChild(0).getNr()];
-        ContinuousOutputModel com2 = integrationResults[node.getChild(1).getNr()];
-
-        com1.setInterpolatedTime(t);
-        double[] y1 = com1.getInterpolatedState();
-
-        com2.setInterpolatedTime(t);
-        double[] y2 = com2.getInterpolatedState();
+        double[] y1 = getBackwardsIntegrationResult(node.getChild(0), t);
+        double[] y2 = getBackwardsIntegrationResult(node.getChild(1), t);
 
         double[][] probs = new double[param.getNTypes()][param.getNTypes()];
 
@@ -667,9 +679,7 @@ public class TypeMappedTree extends Tree {
      * @return reference to array.
      */
     private double[] getForwardsRates(int fromType, double time, Node baseNode, double[] result) {
-        ContinuousOutputModel com = integrationResults[baseNode.getNr()];
-        com.setInterpolatedTime(time);
-        double[] y = com.getInterpolatedState();
+        double[] y = getBackwardsIntegrationResult(baseNode, time);
         int interval = param.getIntervalIndex(time);
 
         for (int type=0; type<param.getNTypes(); type++) {
