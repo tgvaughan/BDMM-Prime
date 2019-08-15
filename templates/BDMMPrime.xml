@@ -128,6 +128,13 @@
                          typeLabel="type"
                          untypedTree="@Tree.t:$(n)"/>
                 </logger>
+
+                <log id="typedTreeStats.t:$(n)"
+                     spec="bdmmprime.mapping.TypedTreeStatsLogger"
+                     typedTree="@typeMappedTree.t:$(n)"
+                     typeSet="@typeSetBDMMPrime.t:$(n)"
+                     typeLabel="type"
+                     includeRootEdgeChanges="true"/>
             ]]>
 
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
@@ -140,7 +147,6 @@
                 BDMM prior on tree t:$(n)
             </connect>
 
-            <!-- TODO replace these with SA operators. -->
             <plate fragment="SATreeOperators" var="m" range="BDMMPrime"/>
 
             <connect srcID="originBDMMPrime.t:$(n)" targetID="state" inputName="stateNode"
@@ -177,6 +183,9 @@
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true"/>
+
+            <connect srcID="typedTreeStats.t:$(n)" targetID="tracelog" inputName="log"
+                     if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
         </subtemplate>
 
     </mergewith>
