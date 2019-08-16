@@ -41,34 +41,32 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             Input.Validate.REQUIRED);
 
     public Input<RealParameter> frequenciesInput = new Input<>("frequencies",
-            "The frequencies for each type",
+            "The equilibrium frequencies for each type",
             Input.Validate.REQUIRED);
 
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
-            "Trait information for initializing traits " +
-                    "(like node types/locations) in the tree");
+            "Trait set specifying sample trait values.");
 
     public Input<String> typeLabel = new Input<>("typeLabel",
-            "type label in tree for initializing traits " +
-                    "(like node types/locations) in the tree",
+            "Attribute key used to specify sample trait values in tree.",
             Input.Validate.XOR, typeTraitSetInput);
 
     public Input<Boolean> conditionOnSurvival = new Input<>("conditionOnSurvival",
-            "condition on at least one survival? Default true.",
+            "Condition on at least one surviving lineage. (Default true.)",
             true);
 
     public Input<Double> relativeToleranceInput = new Input<>("relTolerance",
-            "relative tolerance for numerical integration",
+            "Relative tolerance for numerical integration.",
             1e-7);
 
     public Input<Double> absoluteToleranceInput = new Input<>("absTolerance",
-            "absolute tolerance for numerical integration",
+            "Absolute tolerance for numerical integration.",
             1e-100 /*Double.MIN_VALUE*/);
 
     public Input<Boolean> parallelizeInput = new Input<>(
             "parallelize",
-            "is the calculation parallelized on sibling subtrees " +
-                    "or not (default true)",
+            "Whether or not to parallelized the calculation of subtree likelihoods. " +
+                    "(Default true.)",
             true);
 
     /* If a large number a cores is available (more than 8 or 10) the
@@ -110,13 +108,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     @Override
     public void initAndValidate() {
         parameterization = parameterizationInput.get();
-
         tree = treeInput.get();
+
+        // Stop here if we have only a single type, as we can use the exact algorithm
+        // and avoid the rest of the nonsense.
+        if (parameterization.getNTypes() == 1)
+            return;
 
         double freqSum = 0;
         for (double f : frequenciesInput.get().getValues()) freqSum += f;
         if (Math.abs(1.0 - freqSum) > 1e-10)
-            throw new RuntimeException("Error: frequencies must add up to 1 but currently add to " + freqSum + ".");
+            throw new RuntimeException("Error: equilibrium frequencies must add up to 1 but currently add to " + freqSum + ".");
 
         int nLeaves = tree.getLeafNodeCount();
 
@@ -161,6 +163,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (tree.getRoot().getHeight() > parameterization.getTotalProcessLength()) {
             logP = Double.NEGATIVE_INFINITY;
+            return logP;
+        }
+
+        // Use the exact solution in the case of a single type
+        if (parameterization.getNTypes() == 1) {
+            logP = getSingleTypeTreeLogLikelihood(tree);
             return logP;
         }
 
@@ -282,13 +290,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             return parameterization.getTypeSet().getTypeIndex(nodeTypeName);
 
         } else return nodeStates[node.getNr()];
-    }
-
-    public int getLeafStateForLogging(Node node, long sampleNr) {
-        if (!node.isLeaf()) {
-            throw new IllegalArgumentException("Node should be a leaf");
-        }
-        return getNodeType(node, sampleNr == 0);
     }
 
 
@@ -779,6 +780,38 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             // traverse the tree in a potentially-parallelized way
             return calculateSubtreeLikelihood(rootSubtree, from, to, PG, depth);
         }
+    }
+
+    /* --- Exact calculation for single type case --- */
+
+    private double getp_i(double lambda_i, double mu_i, double psi_i, double A_i, double B_i, double t_i, double t) {
+
+        double ratio = (Math.exp(A_i*(t-t_i))*(1+B_i) - (1-B_i))
+                / (Math.exp(A_i*(t-t_i))*(1+B_i) + (1-B_i));
+
+        return (lambda_i + mu_i + psi_i - A_i*ratio)/(2*lambda_i);
+    }
+
+    private double getSingleTypeTreeLogLikelihood(TreeInterface tree) {
+        double logP = 0.0;
+
+        int nIntervals = parameterization.getIntervalEndTimes().length;
+        for (int i=nIntervals; i>=0; i--) {
+            double lambda_i = parameterization.getBirthRates()[i][0];
+            double mu_i = parameterization.getDeathRates()[i][0];
+            double psi_i = parameterization.getSamplingRates()[i][0];
+
+            double A_i = Math.sqrt(Math.pow(lambda_i - mu_i - psi_i, 2.0) + 4*lambda_i*psi_i);
+
+            double p_iplus1 = (i == nIntervals) ? 1.0 : getp_i(lambda_i, mu_i, psi_i, A_i, )
+            double B_i = (0 - 2*(1 - parameterization.getRhoValues()[i][0]))
+        }
+
+
+        // Factor to account for label permutations
+        logP -= Gamma.logGamma(tree.getLeafNodeCount()+1);
+
+        return logP;
     }
 
     /* StateNode implementation */
