@@ -18,7 +18,7 @@ BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
 package will be maintained separately to ensure that BEAST 2 XMLs and packages
 that depend on it remain usable.
 
-BDMM-Pime is currently still in development and is not yet ready for general use.
+BDMM-Prime is currently still in development and is not yet ready for general use.
 Instead, refer to the original [BDMM project](https://github.com/denisekuehnert/bdmm).
 
 However, if you are interested in playing around with the new version, you can install
