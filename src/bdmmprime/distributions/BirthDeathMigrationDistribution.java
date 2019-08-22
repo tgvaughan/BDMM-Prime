@@ -15,9 +15,12 @@ import beast.evolution.tree.TreeInterface;
 import beast.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
 
+import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 /**
  * @author Denise Kuehnert
@@ -784,32 +787,99 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     /* --- Exact calculation for single type case --- */
 
-    private double getp_i(double lambda_i, double mu_i, double psi_i, double A_i, double B_i, double t_i, double t) {
+    private double get_p_l(double lambda, double mu, double psi, double A, double B, double t_l, double t) {
+        double v = Math.exp(A * (t_l - t)) * (1 + B);
+        return (lambda + mu + psi - A*(v - (1 - B)) / (v + (1 - B)))
+                / (2*lambda);
+    }
 
-        double ratio = (Math.exp(A_i*(t-t_i))*(1+B_i) - (1-B_i))
-                / (Math.exp(A_i*(t-t_i))*(1+B_i) + (1-B_i));
-
-        return (lambda_i + mu_i + psi_i - A_i*ratio)/(2*lambda_i);
+    private double get_q_l(double A, double B, double t_l, double t) {
+        double v = Math.exp(A * (t_l - t));
+        return 4* v / Math.pow(v*(1+B) + (1-B), 2.0);
     }
 
     private double getSingleTypeTreeLogLikelihood(TreeInterface tree) {
         double logP = 0.0;
 
-        int nIntervals = parameterization.getIntervalEndTimes().length;
-        for (int i=nIntervals; i>=0; i--) {
-            double lambda_i = parameterization.getBirthRates()[i][0];
-            double mu_i = parameterization.getDeathRates()[i][0];
-            double psi_i = parameterization.getSamplingRates()[i][0];
+        List<Node> nodeList = Arrays.stream(tree.getNodesAsArray())
+                .filter(n -> !n.isFake())
+                .sorted(Comparator.comparingDouble(Node::getHeight))
+                .collect(Collectors.toList());
 
-            double A_i = Math.sqrt(Math.pow(lambda_i - mu_i - psi_i, 2.0) + 4*lambda_i*psi_i);
+        double p_l_prev = 1.0;
+        double q_l_prev = 1.0;
+        double r_l_prev = 1.0;
 
-            double p_iplus1 = (i == nIntervals) ? 1.0 : getp_i(lambda_i, mu_i, psi_i, A_i, )
-            double B_i = (0 - 2*(1 - parameterization.getRhoValues()[i][0]))
+        int i = 0;
+        int lineageCount = 0;
+
+        for (int l=0; l<parameterization.getTotalIntervalCount(); l++) {
+            double t_l = parameterization.getIntervalEndTimes()[l];
+
+            int thisM = 0, thisK = 0;
+
+            while (Utils.equalWithPrecision(parameterization.getNodeTime(nodeList.get(i)), t_l)) {
+
+                if (nodeList.get(i).isLeaf()) {
+                    if (nodeList.get(i).isDirectAncestor()) {
+                        thisK += 1;
+                    } else {
+                        thisM += 1;
+                        lineageCount += 1;
+                    }
+                } else {
+                    lineageCount -= 1;
+                }
+
+                i += 1;
+            }
+
+            int thisN = thisM + thisK;
+            int thisn = lineageCount - thisN;
+
+            double rho_l = parameterization.getRhoValues()[l][0];
+            double lambda_l = parameterization.getBirthRates()[l][0];
+            double mu_l = parameterization.getDeathRates()[l][0];
+            double psi_l = parameterization.getSamplingRates()[l][0];
+            double r_l = parameterization.getRemovalProbs()[l][0];
+
+            logP += thisn*(Math.log(1.0 - rho_l) + Math.log(q_l_prev)) + thisN*Math.log(rho_l)
+                    + thisK*Math.log((1-r_l_prev)*q_l_prev)
+                    + thisM*Math.log(r_l_prev + (1-r_l_prev)*p_l_prev);
+
+            double A_l = Math.sqrt(Math.pow(lambda_l-mu_l-psi_l, 2.0) + 4*lambda_l*psi_l);
+            double B_l = ((1 - 2*(1 - rho_l)*p_l_prev)*lambda_l + mu_l + psi_l)/A_l;
+
+            double t_l_next = (l+1<parameterization.getTotalIntervalCount())
+                    ? parameterization.getIntervalEndTimes()[l+1]
+                    : Double.NEGATIVE_INFINITY;
+
+            while (Utils.lessThanWithPrecision(parameterization.getNodeTime(nodeList.get(i)), t_l_next)) {
+
+                double t_node = parameterization.getNodeTime(nodeList.get(i));
+
+                if (nodeList.get(i).isLeaf()) {
+                    if (nodeList.get(i).isDirectAncestor()) {
+                        logP += Math.log((1-rho_l)*psi_l);
+                    } else {
+                        logP += Math.log(psi_l*(r_l + (1-r_l)*get_p_l(lambda_l,mu_l, psi_l, A_l, B_l, t_l, t_node)))
+                                - Math.log(get_q_l(A_l, B_l, t_l, t_node));
+                    }
+                } else {
+                    logP += Math.log(2*lambda_l*get_q_l(A_l, B_l, t_l, t_node));
+                }
+
+            }
+
+            if (t_l_next > Double.NEGATIVE_INFINITY) {
+                p_l_prev = get_p_l(lambda_l, mu_l, psi_l, A_l, B_l, t_l, t_l_next);
+                q_l_prev = get_q_l(A_l, B_l, t_l, t_l_next);
+                r_l_prev = parameterization.getRemovalProbs()[l][0];
+            }
         }
 
-
-        // Factor to account for label permutations
-        logP -= Gamma.logGamma(tree.getLeafNodeCount()+1);
+        // Factor to account for possible labelling permutations
+        logP += -Gamma.logGamma(tree.getLeafNodeCount() + 1);
 
         return logP;
     }
