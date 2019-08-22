@@ -58,6 +58,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "Condition on at least one surviving lineage. (Default true.)",
             true);
 
+    public Input<Boolean> useAnalyticalSingleTypeSolutionInput = new Input<>("useAnalyticalSingleTypeSolution",
+            "Use the analytical SABDSKY tree prior when the model has only one type.",
+            true);
+
     public Input<Double> relativeToleranceInput = new Input<>("relTolerance",
             "Relative tolerance for numerical integration.",
             1e-7);
@@ -115,7 +119,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         // Stop here if we have only a single type, as we can use the exact algorithm
         // and avoid the rest of the nonsense.
-        if (parameterization.getNTypes() == 1)
+        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1)
             return;
 
         double freqSum = 0;
@@ -170,7 +174,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         // Use the exact solution in the case of a single type
-        if (parameterization.getNTypes() == 1) {
+        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1) {
             logP = getSingleTypeTreeLogLikelihood(tree);
             return logP;
         }
@@ -813,29 +817,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         int i = 0;
         int lineageCount = 0;
 
-        for (int l=0; l<parameterization.getTotalIntervalCount(); l++) {
+        for (int l=parameterization.getTotalIntervalCount()-1; l>=0;  l--) {
             double t_l = parameterization.getIntervalEndTimes()[l];
-
-            int thisM = 0, thisK = 0;
-
-            while (Utils.equalWithPrecision(parameterization.getNodeTime(nodeList.get(i)), t_l)) {
-
-                if (nodeList.get(i).isLeaf()) {
-                    if (nodeList.get(i).isDirectAncestor()) {
-                        thisK += 1;
-                    } else {
-                        thisM += 1;
-                        lineageCount += 1;
-                    }
-                } else {
-                    lineageCount -= 1;
-                }
-
-                i += 1;
-            }
-
-            int thisN = thisM + thisK;
-            int thisn = lineageCount - thisN;
 
             double rho_l = parameterization.getRhoValues()[l][0];
             double lambda_l = parameterization.getBirthRates()[l][0];
@@ -843,32 +826,65 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double psi_l = parameterization.getSamplingRates()[l][0];
             double r_l = parameterization.getRemovalProbs()[l][0];
 
-            logP += thisn*(Math.log(1.0 - rho_l) + Math.log(q_l_prev)) + thisN*Math.log(rho_l)
-                    + thisK*Math.log((1-r_l_prev)*q_l_prev)
-                    + thisM*Math.log(r_l_prev + (1-r_l_prev)*p_l_prev);
+            // Deal with nodes  that occur precisely on the interval l end time:
+
+            int thisM = 0, thisK = 0, thisJ = 0;
+
+            boolean isRhoSamplingEvent = Arrays.binarySearch(parameterization.getRhoSamplingTimes(), t_l) >=0;
+            while (Utils.equalWithPrecision(parameterization.getNodeTime(nodeList.get(i)), t_l)) {
+                if (nodeList.get(i).isLeaf()) {
+                    if (nodeList.get(i).isDirectAncestor()) {
+                        if (isRhoSamplingEvent)
+                            thisK += 1;
+                    } else {
+                        if (isRhoSamplingEvent)
+                            thisM += 1;
+
+                        lineageCount += 1;
+                    }
+                } else {
+                    lineageCount -= 1;
+                    thisJ += 1;
+                }
+
+                i += 1;
+            }
+
+            int thisN = thisM + thisK;
+            int thisn = lineageCount - thisN
+
+            if (thisN > 0) logP += thisN * Math.log(rho_l);
+            if (thisK > 0) logP += thisK * Math.log(1 - r_l_prev);
+            if (thisM > 0) logP += thisM * Math.log(r_l_prev + (1 - r_l_prev) * p_l_prev);
+
+            // Deal with remaining nodes in interval
 
             double A_l = Math.sqrt(Math.pow(lambda_l-mu_l-psi_l, 2.0) + 4*lambda_l*psi_l);
             double B_l = ((1 - 2*(1 - rho_l)*p_l_prev)*lambda_l + mu_l + psi_l)/A_l;
 
-            double t_l_next = (l+1<parameterization.getTotalIntervalCount())
-                    ? parameterization.getIntervalEndTimes()[l+1]
+            double t_l_next = l>0
+                    ? parameterization.getIntervalEndTimes()[l-1]
                     : Double.NEGATIVE_INFINITY;
 
-            while (Utils.lessThanWithPrecision(parameterization.getNodeTime(nodeList.get(i)), t_l_next)) {
+            while (i < nodeList.size()
+                    && Utils.greaterThanWithPrecision(parameterization.getNodeTime(nodeList.get(i)), t_l_next)) {
 
                 double t_node = parameterization.getNodeTime(nodeList.get(i));
 
                 if (nodeList.get(i).isLeaf()) {
                     if (nodeList.get(i).isDirectAncestor()) {
-                        logP += Math.log((1-rho_l)*psi_l);
+                        logP += Math.log((1-r_l)*psi_l);
                     } else {
                         logP += Math.log(psi_l*(r_l + (1-r_l)*get_p_l(lambda_l,mu_l, psi_l, A_l, B_l, t_l, t_node)))
                                 - Math.log(get_q_l(A_l, B_l, t_l, t_node));
+                        lineageCount += 1;
                     }
                 } else {
                     logP += Math.log(2*lambda_l*get_q_l(A_l, B_l, t_l, t_node));
+                    lineageCount -= 1;
                 }
 
+                i += 1;
             }
 
             if (t_l_next > Double.NEGATIVE_INFINITY) {

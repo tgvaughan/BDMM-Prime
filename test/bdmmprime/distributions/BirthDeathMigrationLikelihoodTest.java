@@ -194,13 +194,30 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
 		double logL = density.calculateLogP();
 
         // Reference BDMM (version 0.2.0) 22/06/2017
 		assertEquals(-21.25413884159791 + labeledTreeConversionFactor(density),
 				logL, 1e-5);
+
+		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
+		densityExact.initByName(
+				"parameterization", parameterization,
+				"frequencies", new RealParameter("1.0"),
+				"conditionOnSurvival", false,
+				"tree", new TreeParser(newick, false, false, true,0),
+				"typeLabel", "type",
+				"parallelize", false,
+				"useAnalyticalSingleTypeSolution", true);
+
+		double logLExact = densityExact.calculateLogP();
+
+		// Reference BDMM (version 0.2.0) 22/06/2017
+		assertEquals(-21.25413884159791 + labeledTreeConversionFactor(density),
+				logLExact, 1e-5);
 	}
 
 	/**
@@ -500,11 +517,23 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
         //		System.out.println("\na) Likelihood: " + bdssm.calculateTreeLogLikelihood(tree));
         assertEquals(-21.42666177086957 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
-    }
+
+		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
+		densityExact.initByName("parameterization", parameterization,
+				"frequencies", new RealParameter("1.0"),
+				"conditionOnSurvival", true,
+				"tree", tree,
+				"typeLabel", "type",
+				"parallelize", false,
+				"useAnalyticalSingleTypeSolution", true);
+
+		assertEquals(-21.42666177086957 + labeledTreeConversionFactor(density), densityExact.calculateLogP(), 1e-5);
+	}
 
 
     @Test
