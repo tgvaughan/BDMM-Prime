@@ -119,8 +119,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         // Stop here if we have only a single type, as we can use the exact algorithm
         // and avoid the rest of the nonsense.
-        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1)
-            return;
+//        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 0)
+//            return;
 
         double freqSum = 0;
         for (double f : frequenciesInput.get().getValues()) freqSum += f;
@@ -853,7 +853,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         double mu_i = parameterization.getDeathRates()[i][0];
         double psi_i = parameterization.getSamplingRates()[i][0];
         double r_i = parameterization.getRemovalProbs()[i][0];
-        double r_iplus1 = i<parameterization.getTotalIntervalCount()
+        double r_iplus1 = i+1 < parameterization.getTotalIntervalCount()
                 ? parameterization.getRemovalProbs()[i+1][0]
                 : 1.0;
 
@@ -889,7 +889,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getNonDirectAncestorChild(), t_node, A, B);
 
-            if (isRhoTip[subtreeRoot.getNr()]) {
+            if (isRhoTip[subtreeRoot.getDirectAncestorChild().getNr()]) {
 
                 double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
                         ? get_q_i(A[i+1], B[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
