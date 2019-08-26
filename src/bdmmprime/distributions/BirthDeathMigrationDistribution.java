@@ -835,6 +835,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         double logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot(), 0.0, A, B);
 
+        int i = parameterization.getIntervalIndex(0.0);
+        logP += Math.log(get_q_i(A[i], B[i], parameterization.getIntervalEndTimes()[i], 0.0));
+
         return logP;
     }
 
@@ -881,14 +884,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             }
 
 
-        } if (subtreeRoot.isDirectAncestor()) {
+        } else if (subtreeRoot.isFake()) {
             // SA node
 
             logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getNonDirectAncestorChild(), t_node, A, B);
 
             if (isRhoTip[subtreeRoot.getNr()]) {
 
-                double q_iplus1 = i < parameterization.getTotalIntervalCount()
+                double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
                         ? get_q_i(A[i+1], B[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
                         : 1.0;
 
@@ -911,12 +914,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         // Compute contributions from intervals along edge
 
-        while (Utils.greaterThanWithPrecision(t_i, timeOfSubtreeRootEdgeTop)) {
+        while (i >= 0 && Utils.greaterThanWithPrecision(parameterization.getIntervalEndTimes()[i], timeOfSubtreeRootEdgeTop)) {
 
-            logP += Math.log((1-parameterization.getRhoValues()[i][0])*get_q_i(A[i+1],B[i+1], t_iplus1, t_i);
+            double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
+                    ? get_q_i(A[i+1], B[i+1], parameterization.getIntervalEndTimes()[i+1], parameterization.getIntervalEndTimes()[i])
+                    : 1.0;
+
+            logP += Math.log((1-parameterization.getRhoValues()[i][0])*q_iplus1);
 
             i -= 1;
-            t_i = parameterization.getIntervalEndTimes()[i];
         }
 
         return logP;
