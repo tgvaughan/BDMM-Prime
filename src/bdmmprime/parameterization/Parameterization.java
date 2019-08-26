@@ -8,6 +8,20 @@ import beast.evolution.tree.Tree;
 
 import java.util.*;
 
+/**
+ * Full parameterization for a multi-type birth-death skyline model with sampled ancestors.
+ *
+ * Objects of this class expose a variety of methods for interrogating
+ * the canonical (lambda, mu, M, psi, rho, r, t_origin) parameters at different
+ * times.  By "time" we mean a number that increases into the future from
+ * some point in the past defined by the start of the birth-death process.
+ * (We us "ages" to refer to numbers that increase into the past.)
+ *
+ * In accordance with birth-death skyline convention, the time period spanned by
+ * the birth-death process is broken up into intervals at boundaries t_i.
+ * Interval i includes the times (t_i-1,t_i], i.e. it does NOT include the time
+ * at the earlier boundary.
+ */
 public abstract class Parameterization extends CalculationNode {
 
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
