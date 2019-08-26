@@ -791,111 +791,133 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     /* --- Exact calculation for single type case --- */
 
-    private double get_p_l(double lambda, double mu, double psi, double A, double B, double t_l, double t) {
-        double v = Math.exp(A * (t_l - t)) * (1 + B);
+    private double get_p_i(double lambda, double mu, double psi, double A, double B, double t_i, double t) {
+        double v = Math.exp(A * (t_i - t)) * (1 + B);
         return (lambda + mu + psi - A*(v - (1 - B)) / (v + (1 - B)))
                 / (2*lambda);
     }
 
-    private double get_q_l(double A, double B, double t_l, double t) {
-        double v = Math.exp(A * (t_l - t));
+    private double get_q_i(double A, double B, double t_i, double t) {
+        double v = Math.exp(A * (t_i - t));
         return 4* v / Math.pow(v*(1+B) + (1-B), 2.0);
     }
 
+    private void computeConstants(double[] A, double[] B) {
+
+        for (int i=parameterization.getTotalIntervalCount()-1; i>=0; i--) {
+
+            double t_i = parameterization.getIntervalEndTimes()[i];
+
+            double rho_i = parameterization.getRhoValues()[i][0];
+            double lambda_i = parameterization.getBirthRates()[i][0];
+            double mu_i = parameterization.getDeathRates()[i][0];
+            double psi_i = parameterization.getSamplingRates()[i][0];
+
+            double p_i_prev;
+            if (i + 1 < parameterization.getTotalIntervalCount()) {
+                double t_i_prev = parameterization.getIntervalEndTimes()[i+1];
+                p_i_prev = get_p_i(lambda_i, mu_i, psi_i, A[i+1], B[i+1], t_i_prev, t_i);
+            } else {
+                p_i_prev = 1.0;
+            }
+
+            A[i] = Math.sqrt((lambda_i-mu_i-psi_i)*(lambda_i-mu_i-psi_i) + 4*lambda_i*psi_i);
+            B[i] = ((1 - 2*(1-rho_i)*p_i_prev)*lambda_i + mu_i + psi_i)/A[i];
+        }
+    }
+
     private double getSingleTypeTreeLogLikelihood(TreeInterface tree) {
-        double logP = 0.0;
 
-        List<Node> nodeList = Arrays.stream(tree.getNodesAsArray())
-                .filter(n -> !n.isFake())
-                .sorted(Comparator.comparingDouble(Node::getHeight))
-                .collect(Collectors.toList());
+        double[] A = new double[parameterization.getTotalIntervalCount()];
+        double[] B = new double[parameterization.getTotalIntervalCount()];
 
-        double p_l_prev = 1.0;
-        double q_l_prev = 1.0;
-        double r_l_prev = 1.0;
+        computeConstants(A, B);
 
-        int i = 0;
-        int lineageCount = 0;
+        double logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot(), 0.0, A, B);
 
-        for (int l=parameterization.getTotalIntervalCount()-1; l>=0;  l--) {
-            double t_l = parameterization.getIntervalEndTimes()[l];
+        return logP;
+    }
 
-            double rho_l = parameterization.getRhoValues()[l][0];
-            double lambda_l = parameterization.getBirthRates()[l][0];
-            double mu_l = parameterization.getDeathRates()[l][0];
-            double psi_l = parameterization.getSamplingRates()[l][0];
-            double r_l = parameterization.getRemovalProbs()[l][0];
+    private double getSingleTypeSubtreeLogLikelihood(Node subtreeRoot, double timeOfSubtreeRootEdgeTop,
+                                                     double[] A, double[] B) {
 
-            // Deal with nodes  that occur precisely on the interval l end time:
+        double t_node = parameterization.getNodeTime(subtreeRoot);
+        int i = parameterization.getIntervalIndex(t_node);
+        double t_i = parameterization.getIntervalEndTimes()[i];
 
-            int thisM = 0, thisK = 0, thisJ = 0;
+        double rho_i = parameterization.getRhoValues()[i][0];
+        double lambda_i = parameterization.getBirthRates()[i][0];
+        double mu_i = parameterization.getDeathRates()[i][0];
+        double psi_i = parameterization.getSamplingRates()[i][0];
+        double r_i = parameterization.getRemovalProbs()[i][0];
+        double r_iplus1 = i<parameterization.getTotalIntervalCount()
+                ? parameterization.getRemovalProbs()[i+1][0]
+                : 1.0;
 
-            boolean isRhoSamplingEvent = Arrays.binarySearch(parameterization.getRhoSamplingTimes(), t_l) >=0;
-            while (Utils.equalWithPrecision(parameterization.getNodeTime(nodeList.get(i)), t_l)) {
-                if (nodeList.get(i).isLeaf()) {
-                    if (nodeList.get(i).isDirectAncestor()) {
-                        if (isRhoSamplingEvent)
-                            thisK += 1;
-                    } else {
-                        if (isRhoSamplingEvent)
-                            thisM += 1;
+        double logP;
 
-                        lineageCount += 1;
-                    }
-                } else {
-                    lineageCount -= 1;
-                    thisJ += 1;
-                }
+        if (subtreeRoot.isLeaf()) {
+            // Leaf Node
 
-                i += 1;
+            logP = 0.0;
+
+            if (isRhoTip[subtreeRoot.getNr()]) {
+
+                double p_iplus1 = i < parameterization.getTotalIntervalCount()
+                        ? get_p_i(parameterization.getBirthRates()[i + 1][0],
+                        parameterization.getDeathRates()[i + 1][0],
+                        parameterization.getSamplingRates()[i + 1][0],
+                        A[i + 1], B[i + 1], parameterization.getIntervalEndTimes()[i+1], t_node)
+                        : 1.0;
+
+                logP += Math.log(rho_i*(r_iplus1 - (1 - r_iplus1) * p_iplus1));
+
+            } else {
+
+                logP += Math.log(psi_i)
+                        + Math.log(r_i + (1-r_i)*get_p_i(lambda_i, mu_i, psi_i, A[i], B[i], t_i, t_node))
+                        - Math.log(get_q_i(A[i], B[i], t_i, t_node));
+
             }
 
-            int thisN = thisM + thisK;
-            int thisn = lineageCount - thisN
 
-            if (thisN > 0) logP += thisN * Math.log(rho_l);
-            if (thisK > 0) logP += thisK * Math.log(1 - r_l_prev);
-            if (thisM > 0) logP += thisM * Math.log(r_l_prev + (1 - r_l_prev) * p_l_prev);
+        } if (subtreeRoot.isDirectAncestor()) {
+            // SA node
 
-            // Deal with remaining nodes in interval
+            logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getNonDirectAncestorChild(), t_node, A, B);
 
-            double A_l = Math.sqrt(Math.pow(lambda_l-mu_l-psi_l, 2.0) + 4*lambda_l*psi_l);
-            double B_l = ((1 - 2*(1 - rho_l)*p_l_prev)*lambda_l + mu_l + psi_l)/A_l;
+            if (isRhoTip[subtreeRoot.getNr()]) {
 
-            double t_l_next = l>0
-                    ? parameterization.getIntervalEndTimes()[l-1]
-                    : Double.NEGATIVE_INFINITY;
+                double q_iplus1 = i < parameterization.getTotalIntervalCount()
+                        ? get_q_i(A[i+1], B[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
+                        : 1.0;
 
-            while (i < nodeList.size()
-                    && Utils.greaterThanWithPrecision(parameterization.getNodeTime(nodeList.get(i)), t_l_next)) {
+                logP += Math.log(rho_i*(1-r_iplus1)*q_iplus1);
 
-                double t_node = parameterization.getNodeTime(nodeList.get(i));
+            } else {
 
-                if (nodeList.get(i).isLeaf()) {
-                    if (nodeList.get(i).isDirectAncestor()) {
-                        logP += Math.log((1-r_l)*psi_l);
-                    } else {
-                        logP += Math.log(psi_l*(r_l + (1-r_l)*get_p_l(lambda_l,mu_l, psi_l, A_l, B_l, t_l, t_node)))
-                                - Math.log(get_q_l(A_l, B_l, t_l, t_node));
-                        lineageCount += 1;
-                    }
-                } else {
-                    logP += Math.log(2*lambda_l*get_q_l(A_l, B_l, t_l, t_node));
-                    lineageCount -= 1;
-                }
+                logP += Math.log(psi_i*(1-r_i));
 
-                i += 1;
             }
 
-            if (t_l_next > Double.NEGATIVE_INFINITY) {
-                p_l_prev = get_p_l(lambda_l, mu_l, psi_l, A_l, B_l, t_l, t_l_next);
-                q_l_prev = get_q_l(A_l, B_l, t_l, t_l_next);
-                r_l_prev = parameterization.getRemovalProbs()[l][0];
-            }
+        } else {
+            // Internal node
+
+            logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(0), t_node, A, B)
+                    + getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(1), t_node, A, B);
+
+            logP += Math.log(2*psi_i*get_q_i(A[i], B[i], t_i, t_node));
         }
 
-        // Factor to account for possible labelling permutations
-        logP += -Gamma.logGamma(tree.getLeafNodeCount() + 1);
+        // Compute contributions from intervals along edge
+
+        while (Utils.greaterThanWithPrecision(t_i, timeOfSubtreeRootEdgeTop)) {
+
+            logP += Math.log((1-parameterization.getRhoValues()[i][0])*get_q_i(A[i+1],B[i+1], t_iplus1, t_i);
+
+            i -= 1;
+            t_i = parameterization.getIntervalEndTimes()[i];
+        }
 
         return logP;
     }
