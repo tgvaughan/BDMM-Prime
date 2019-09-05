@@ -220,6 +220,61 @@ public class BirthDeathMigrationLikelihoodTest {
 				logLExact, 1e-5);
 	}
 
+	@Test
+	public void tinyAnalyticalTest() {
+
+//		String newick = "(1[&type=0]: 1.0, (2[&type=0]: 0.5, 3[&type=0]:0.5):0.5): 1.0;";
+		String newick = "(1[&type=0]: 1.0, 2[&type=0]: 1.0): 1.0;";
+
+		Parameterization parameterization = new CanonicalParameterization();
+		parameterization.initByName(
+				"typeSet", new TypeSet(1),
+				"origin", new RealParameter("2.0"),
+				"birthRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("2.0")),
+				"deathRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.5")),
+				"birthRateAmongDemes", new SkylineMatrixParameter(null, null),
+				"migrationRate", new SkylineMatrixParameter(null, null),
+				"samplingRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.5")),
+				"rhoSampling", new TimedParameter(
+						new RealParameter("2.0"),
+						new RealParameter("0.5")),
+				"removalProb", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.5")));
+
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName(
+				"parameterization", parameterization,
+				"frequencies", new RealParameter("1.0"),
+				"conditionOnSurvival", false,
+				"tree", new TreeParser(newick, false, false, true,0),
+				"typeLabel", "type",
+				"parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
+
+		double logLnumerical = density.calculateLogP();
+
+		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
+		densityExact.initByName(
+				"parameterization", parameterization,
+				"frequencies", new RealParameter("1.0"),
+				"conditionOnSurvival", false,
+				"tree", new TreeParser(newick, false, false, true,0),
+				"typeLabel", "type",
+				"parallelize", false,
+				"useAnalyticalSingleTypeSolution", true);
+
+		double logLanalytical = densityExact.calculateLogP();
+
+		assertEquals(logLnumerical, logLanalytical, 1e-5);
+	}
+
 	/**
 	 * Two-state test for removal-probability rate change
 	 * Reference from BDMM itself

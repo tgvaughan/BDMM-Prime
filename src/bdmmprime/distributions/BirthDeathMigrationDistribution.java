@@ -799,7 +799,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     private double get_q_i(double A, double B, double t_i, double t) {
         double v = Math.exp(A * (t_i - t));
-        return 4* v / Math.pow(v*(1+B) + (1-B), 2.0);
+        return 4 * v / Math.pow(v*(1+B) + (1-B), 2.0);
     }
 
     private void computeConstants(double[] A, double[] B) {
@@ -838,6 +838,18 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         int i = parameterization.getIntervalIndex(0.0);
         logP += Math.log(get_q_i(A[i], B[i], parameterization.getIntervalEndTimes()[i], 0.0));
 
+        if (conditionOnSurvival.get()) {
+            logP -= Math.log(1.0 -
+                    get_p_i(parameterization.getBirthRates()[i][0],
+                            parameterization.getDeathRates()[i][0],
+                            parameterization.getSamplingRates()[i][0],
+                            A[i], B[i],
+                            parameterization.getIntervalEndTimes()[i], 0.0));
+        }
+
+        // Account for possible label permutations
+        logP += -Gamma.logGamma(tree.getLeafNodeCount() + 1);
+
         return logP;
     }
 
@@ -866,7 +878,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             if (isRhoTip[subtreeRoot.getNr()]) {
 
-                double p_iplus1 = i < parameterization.getTotalIntervalCount()
+                double p_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
                         ? get_p_i(parameterization.getBirthRates()[i + 1][0],
                         parameterization.getDeathRates()[i + 1][0],
                         parameterization.getSamplingRates()[i + 1][0],
@@ -909,18 +921,22 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(0), t_node, A, B)
                     + getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(1), t_node, A, B);
 
-            logP += Math.log(2*psi_i*get_q_i(A[i], B[i], t_i, t_node));
+            logP += Math.log(2*lambda_i*get_q_i(A[i], B[i], t_i, t_node));
         }
 
         // Compute contributions from intervals along edge
 
         while (i >= 0 && Utils.greaterThanWithPrecision(parameterization.getIntervalEndTimes()[i], timeOfSubtreeRootEdgeTop)) {
 
-            double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
-                    ? get_q_i(A[i+1], B[i+1], parameterization.getIntervalEndTimes()[i+1], parameterization.getIntervalEndTimes()[i])
-                    : 1.0;
+            if (Utils.lessThanWithPrecision(parameterization.getIntervalEndTimes()[i], t_node)) {
+                double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
+                        ? get_q_i(A[i + 1], B[i + 1],
+                        parameterization.getIntervalEndTimes()[i + 1],
+                        parameterization.getIntervalEndTimes()[i])
+                        : 1.0;
 
-            logP += Math.log((1-parameterization.getRhoValues()[i][0])*q_iplus1);
+                logP += Math.log((1-parameterization.getRhoValues()[i][0])*q_iplus1);
+            }
 
             i -= 1;
         }
