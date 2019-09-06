@@ -841,12 +841,29 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         computeConstants(A, B);
 
-        double logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot(), 0.0, A, B);
+        double logP;
 
-        int i = parameterization.getIntervalIndex(0.0);
-        logP += Math.log(get_q_i(A[i], B[i], parameterization.getIntervalEndTimes()[i], 0.0));
+        if (parameterization.conditionedOnRoot()) {
+
+            double t_root = parameterization.getNodeTime(tree.getRoot());
+            logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(0), t_root, A, B)
+                    + getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(1), t_root, A, B)
+                    + Math.log(2);
+
+            int i_root = parameterization.getIntervalIndex(t_root);
+            logP += 2*Math.log(get_q_i(A[i_root], B[i_root], parameterization.getIntervalEndTimes()[i_root], 0.0));
+
+        } else {
+
+            logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot(), 0.0, A, B);
+
+            int i = parameterization.getIntervalIndex(0.0);
+            logP += Math.log(get_q_i(A[i], B[i], parameterization.getIntervalEndTimes()[i], 0.0));
+
+        }
 
         if (conditionOnSurvival.get()) {
+            int i = parameterization.getIntervalIndex(0.0);
             logP -= Math.log(1.0 -
                     get_p_i(parameterization.getBirthRates()[i][0],
                             parameterization.getDeathRates()[i][0],
