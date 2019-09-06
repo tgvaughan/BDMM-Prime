@@ -792,9 +792,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     /* --- Exact calculation for single type case --- */
 
     private double get_p_i(double lambda, double mu, double psi, double A, double B, double t_i, double t) {
-        double v = Math.exp(A * (t_i - t)) * (1 + B);
-        return (lambda + mu + psi - A*(v - (1 - B)) / (v + (1 - B)))
-                / (2*lambda);
+
+        if (lambda > 0.0) {
+            double v = Math.exp(A * (t_i - t)) * (1 + B);
+            return (lambda + mu + psi - A * (v - (1 - B)) / (v + (1 - B)))
+                    / (2 * lambda);
+        } else {
+            // The limit of p_i as lambda -> 0
+            return 0.5;
+        }
     }
 
     private double get_q_i(double A, double B, double t_i, double t) {
@@ -921,7 +927,21 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(0), t_node, A, B)
                     + getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(1), t_node, A, B);
 
-            logP += Math.log(2*lambda_i*get_q_i(A[i], B[i], t_i, t_node));
+            logP += Math.log(2*lambda_i);
+
+            double q_i = get_q_i(A[i], B[i], t_i, t_node);
+            logP -= Math.log(q_i);
+
+            if (Utils.equalWithPrecision(t_i, t_node)) {
+                double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
+                        ? get_q_i(A[i+1], B[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
+                        : 1.0;
+
+                logP += 2*Math.log((1-rho_i)*q_iplus1);
+            } else {
+
+                logP += 2*Math.log(q_i);
+            }
         }
 
         // Compute contributions from intervals along edge
