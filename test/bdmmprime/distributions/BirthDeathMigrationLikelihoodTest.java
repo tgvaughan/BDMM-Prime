@@ -220,10 +220,11 @@ public class BirthDeathMigrationLikelihoodTest {
 				logLExact, 1e-5);
 	}
 
+	/**
+	 * Direct comparison between numerical and analytical solutions for a tiny example with no rate changes.
+	 */
 	@Test
 	public void tinyAnalyticalTest() {
-
-//		String newick = "(1[&type=0]: 1.0, (2[&type=0]: 0.5, 3[&type=0]:0.5):0.5): 1.0;";
 		String newick = "(1[&type=0]: 1.0, 2[&type=0]: 1.0): 1.0;";
 
 		Parameterization parameterization = new CanonicalParameterization();
@@ -372,12 +373,19 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
 		double logL = density.calculateLogP();
 
 		// this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=0)
 		assertEquals(-6.761909 + labeledTreeConversionFactor(density), logL, 1e-4);
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
+
+		double logLanalytical = density.calculateLogP();
+		assertEquals(-6.761909 + labeledTreeConversionFactor(density), logLanalytical, 1e-4);
 
 		// test with conditioned-on-survival tree
 		parameterization.setInputValue("origin", "10");
@@ -388,12 +396,20 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initAndValidate();
 
         density.setInputValue("conditionOnSurvival", true);
+		density.setInputValue("useAnalyticalSingleTypeSolution", false);
 		density.initAndValidate();
 
 		double logL2 = density.calculateLogP();
 
         // this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5,5.5+1e-100),root=0,survival=1)
 		assertEquals(-7.404227 + labeledTreeConversionFactor(density), logL2, 1e-4);
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", false);
+		density.initAndValidate();
+
+		double logL2analytical = density.calculateLogP();
+
+		assertEquals(-7.404227 + labeledTreeConversionFactor(density), logL2analytical, 1e-4);
 	}
 
 	/**
@@ -445,21 +461,36 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
 		double logL = density.calculateLogP();
 
 		// this result is from BEAST: BDSKY, not double checked in R
 		assertEquals(-10.569863754307026, logL, 1e-4);
 
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
+
+		double logLanalytical = density.calculateLogP();
+		assertEquals(-10.569863754307026, logLanalytical, 1e-4);
+
 		// tips sampled at two different times
 		tree = new TreeParser("(3[&type=0]: 1.5, 4[&type=0]: 4) ;",false);
 		density.setInputValue("tree", tree);
+		density.setInputValue("useAnalyticalSingleTypeSolution", false);
 		density.initAndValidate();
 
 		double logL2 = density.calculateLogP();
 
 		// this result is from BEAST: BDSKY, not double checked in R
+		assertEquals(-8.099631076932816, logL2, 1e-4);
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", false);
+		density.initAndValidate();
+
+		double logL2analytical = density.calculateLogP();
+
 		assertEquals(-8.099631076932816, logL2, 1e-4);
 	}
 
@@ -511,8 +542,14 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", true);
+                "parallelize", true,
+				"useAnalyticalSingleTypeSolution", false);
 
+		assertEquals(-124.96086690757612 + labeledTreeConversionFactor(density),
+				density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
 		assertEquals(-124.96086690757612 + labeledTreeConversionFactor(density),
 				density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
 
@@ -521,9 +558,16 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealParameter("0.01 0.05 0.0"),
                         originParam));
         parameterization.initAndValidate();
+        density.setInputValue("useAnalyticalSingleTypeSolution", false);
         density.initAndValidate();
 
         assertEquals(-124.96086690757612 + labeledTreeConversionFactor(density),
+				density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
+
+		assertEquals(-124.96086690757612 + labeledTreeConversionFactor(density),
 				density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
 	}
 
@@ -630,10 +674,15 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
         assertEquals(-87.59718586549747 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
-    }
+
+        density.setInputValue("useAnalyticalSingleTypeSolution", true);
+        density.initAndValidate();
+		assertEquals(-87.59718586549747 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
+	}
 
     @Test
     public void testMultiRhoWithRateChanges3() {
@@ -674,10 +723,14 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
         assertEquals(-87.96488 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
-    }
+
+        density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		assertEquals(-87.96488 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
+	}
 
     @Test
     public void testMultiRhoWithRateChanges4() {
@@ -717,9 +770,13 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
-        assertEquals(-100.15682190617582 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
+		assertEquals(-100.15682190617582 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		assertEquals(-100.15682190617582 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
 	}
 
 	/**
@@ -756,12 +813,23 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "state",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
-        assertEquals(-19.019796073623493 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
+		assertEquals(-19.019796073623493 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
+		assertEquals(-19.019796073623493 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
 
         density.setInputValue("conditionOnSurvival", true);
+		density.setInputValue("useAnalyticalSingleTypeSolution", false);
         density.initAndValidate();
+
+		assertEquals(-18.574104140202046 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // Reference BDSKY (version 1.3.3)
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
 
 		assertEquals(-18.574104140202046 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // Reference BDSKY (version 1.3.3)
 	}
@@ -799,9 +867,14 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "state",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
         assertEquals(-33.7573 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // Reference BDSKY
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
+		assertEquals(-33.7573 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // Reference BDSKY
 	}
 
 	/**
@@ -1438,7 +1511,13 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
+
+		assertEquals(-18.854438107814335 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017)
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
 
 		assertEquals(-18.854438107814335 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017)
 	}
@@ -1484,7 +1563,13 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
+
+		assertEquals(-22.348462265673483 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017)
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
 
 		assertEquals(-22.348462265673483 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017)
 	}
@@ -1525,9 +1610,15 @@ public class BirthDeathMigrationLikelihoodTest {
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
-                "parallelize", false);
+                "parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
 
         // Conditioned on root:
+
+		assertEquals(-15.99699690815937 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
 
 		assertEquals(-15.99699690815937 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
 
@@ -1536,6 +1627,12 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.setInputValue("tree", null);
 		parameterization.setInputValue("origin", new RealParameter("10.0"));
 		parameterization.initAndValidate();
+		density.setInputValue("useAnalyticalSingleTypeSolution", false);
+		density.initAndValidate();
+
+		assertEquals(-25.991511346557598 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
 		density.initAndValidate();
 
 		assertEquals(-25.991511346557598 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
