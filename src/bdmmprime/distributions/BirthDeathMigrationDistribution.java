@@ -812,20 +812,22 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         for (int i=parameterization.getTotalIntervalCount()-1; i>=0; i--) {
 
-            double t_i = parameterization.getIntervalEndTimes()[i];
+            double p_i_prev;
+            if (i + 1 < parameterization.getTotalIntervalCount()) {
+                p_i_prev = get_p_i(parameterization.getBirthRates()[i+1][0],
+                        parameterization.getDeathRates()[i+1][0],
+                        parameterization.getSamplingRates()[i+1][0],
+                        A[i+1], B[i+1],
+                        parameterization.getIntervalEndTimes()[i+1],
+                        parameterization.getIntervalEndTimes()[i]);
+            } else {
+                p_i_prev = 1.0;
+            }
 
             double rho_i = parameterization.getRhoValues()[i][0];
             double lambda_i = parameterization.getBirthRates()[i][0];
             double mu_i = parameterization.getDeathRates()[i][0];
             double psi_i = parameterization.getSamplingRates()[i][0];
-
-            double p_i_prev;
-            if (i + 1 < parameterization.getTotalIntervalCount()) {
-                double t_i_prev = parameterization.getIntervalEndTimes()[i+1];
-                p_i_prev = get_p_i(lambda_i, mu_i, psi_i, A[i+1], B[i+1], t_i_prev, t_i);
-            } else {
-                p_i_prev = 1.0;
-            }
 
             A[i] = Math.sqrt((lambda_i-mu_i-psi_i)*(lambda_i-mu_i-psi_i) + 4*lambda_i*psi_i);
             B[i] = ((1 - 2*(1-rho_i)*p_i_prev)*lambda_i + mu_i + psi_i)/A[i];
