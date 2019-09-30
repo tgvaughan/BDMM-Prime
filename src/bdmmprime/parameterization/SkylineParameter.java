@@ -3,12 +3,14 @@ package bdmmprime.parameterization;
 import bdmmprime.util.Utils;
 import beast.core.CalculationNode;
 import beast.core.Input;
+import beast.core.Loggable;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 
+import java.io.PrintStream;
 import java.util.*;
 
-public abstract class SkylineParameter extends CalculationNode {
+public abstract class SkylineParameter extends CalculationNode implements Loggable {
 
     public Input<RealParameter> changeTimesInput = new Input<>("changeTimes",
             "Parameter containing change times for skyline function.");

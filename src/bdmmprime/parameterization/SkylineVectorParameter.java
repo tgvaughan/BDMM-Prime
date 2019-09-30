@@ -3,6 +3,8 @@ package bdmmprime.parameterization;
 import bdmmprime.util.Utils;
 import beast.core.parameter.RealParameter;
 
+import java.io.PrintStream;
+
 public class SkylineVectorParameter extends SkylineParameter {
 
     double[][] values, storedValues;
@@ -103,5 +105,46 @@ public class SkylineVectorParameter extends SkylineParameter {
         tmp = values;
         values = storedValues;
         storedValues = tmp;
+    }
+
+    /*
+     * Loggable implementation
+     */
+
+    @Override
+    public void init(PrintStream out) {
+
+        for (int interval=0; interval<nIntervals; interval++) {
+            out.print(getID() + "_e" + interval + "_endtime\t");
+
+            for (int type=0; type<nTypes; type++) {
+                out.print(getID() + "_e" + interval + "_type" + "_");
+
+                if (typeSetInput.get() != null)
+                    out.print(typeSetInput.get().getTypeName(type));
+                else
+                    out.print(type);
+
+                out.print("\t");
+            }
+        }
+    }
+
+    @Override
+    public void log(long sample, PrintStream out) {
+
+        double[] times = getChangeTimes();
+
+        for (int interval=0; interval<nIntervals; interval++) {
+            out.print(times[interval] + "\t");
+
+            double[] values = getValuesAtTime(times[interval]);
+            for (int type = 0; type < nTypes; type++)
+                out.print(values[type] + "\t");
+        }
+    }
+
+    @Override
+    public void close(PrintStream out) {
     }
 }

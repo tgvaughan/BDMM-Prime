@@ -2,6 +2,8 @@ package bdmmprime.parameterization;
 
 import beast.core.parameter.RealParameter;
 
+import java.io.PrintStream;
+
 public class SkylineMatrixParameter extends SkylineParameter {
 
     double[][][] values, storedValues;
@@ -119,5 +121,55 @@ public class SkylineMatrixParameter extends SkylineParameter {
         tmp = values;
         values = storedValues;
         storedValues = tmp;
+    }
+
+    /*
+     * Loggable implementation
+     */
+
+    @Override
+    public void init(PrintStream out) {
+
+        for (int interval=0; interval<nIntervals; interval++) {
+            out.print(getID() + "_e" + interval + "_endtime\t");
+
+            for (int type1=0; type1<nTypes; type1++) {
+                for (int type2=0; type2<nTypes; type2++) {
+                    out.print(getID() + "_e" + interval + "_");
+
+                    if (typeSetInput.get() != null)
+                        out.print(typeSetInput.get().getTypeName(type1) + "_to_"
+                                + typeSetInput.get().getTypeName(type2));
+                    else
+                        out.print(type1 + "_to_" + type2);
+
+                    out.print("\t");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void log(long sample, PrintStream out) {
+
+        double[] times = getChangeTimes();
+
+        for (int interval=0; interval<nIntervals; interval++) {
+            out.print(times[interval] + "\t");
+
+            double[][] values = getValuesAtTime(times[interval]);
+            for (int type1 = 0; type1 < nTypes; type1++) {
+                for (int type2 = 0; type1 < nTypes; type2++) {
+                    if (type2 == type1)
+                        continue;
+
+                    out.print(values[type1][type2] + "\t");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void close(PrintStream out) {
     }
 }
