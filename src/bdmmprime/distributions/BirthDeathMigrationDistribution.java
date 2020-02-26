@@ -15,12 +15,9 @@ import beast.evolution.tree.TreeInterface;
 import beast.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
 
-import java.util.Arrays;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * @author Denise Kuehnert
@@ -116,11 +113,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public void initAndValidate() {
         parameterization = parameterizationInput.get();
         tree = treeInput.get();
-
-        // Stop here if we have only a single type, as we can use the exact algorithm
-        // and avoid the rest of the nonsense.
-//        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 0)
-//            return;
 
         double freqSum = 0;
         for (double f : frequenciesInput.get().getValues()) freqSum += f;
@@ -412,8 +404,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                                 .scalarMultiplyBy(system.s[intervalIdx][saNodeType]
                                         * (1 - system.r[intervalIdx][saNodeType]));
 
-//					System.out.println("SA but not rho sampled");
-
                     } else {
                         // TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
                         state.p0[saNodeType] = g.p0[saNodeType]
@@ -523,16 +513,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     /**
      * @return retrieve current set of root type probabilities.
      */
-    public double[] getRootTypeProbs() {
+    double[] getRootTypeProbs() {
         return rootTypeProbs;
     }
 
     /**
      * Compute all initial conditions for all future integrations on p0 equations.
      *
-     * @param tree
+     * @param tree tree to extract leaf times from
      */
-    public void updateInitialConditionsForP(TreeInterface tree) {
+    private void updateInitialConditionsForP(TreeInterface tree) {
 
         P0System p0System = new P0System(parameterization,
                 absoluteToleranceInput.get(), relativeToleranceInput.get());
@@ -613,9 +603,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     /**
      * Perform integration on differential equations p
-     *
-     * @param tEnd
-     * @return
      */
     private void integrateP0(double tStart, double tEnd, P0State state, P0System system) {
 
@@ -656,7 +643,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * @param state    ODE variables at bottom of edge
      * @param system   ODE system to integrate
      */
-    public void integrateP0Ge(Node baseNode, double tTop, P0GeState state, P0GeSystem system) {
+    private void integrateP0Ge(Node baseNode, double tTop, P0GeState state, P0GeSystem system) {
 
         // pgScaled contains the set of initial conditions scaled made to fit
         // the requirements on the values 'double' can represent. It also
@@ -711,9 +698,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * The weights of the subtrees tell us the depth at which parallelization should stop, so as to not parallelize on subtrees that are too small.
      * Results are stored in 'weightOfNodeSubTree' array
      *
-     * @param tree
+     * @param tree tree whose subtree to compute weights of
      */
-    public void getAllSubTreesWeights(TreeInterface tree) {
+    private void getAllSubTreesWeights(TreeInterface tree) {
         Node root = tree.getRoot();
         double weight = 0;
         for (final Node child : root.getChildren()) {
@@ -725,10 +712,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     /**
      * Perform an initial traversal of the subtree to get its 'weight': sum of all its edges.
      *
-     * @param node
-     * @return
+     * @param node root of subtree
+     * @return weight
      */
-    public double getSubTreeWeight(Node node) {
+    private double getSubTreeWeight(Node node) {
 
         // if leaf, stop recursion, get length of branch above and return
         if (node.isLeaf()) {
@@ -758,7 +745,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
     }
 
-    static void executorBootUp() {
+    private static void executorBootUp() {
         ExecutorService executor = Executors.newCachedThreadPool();
         pool = (ThreadPoolExecutor) executor;
     }
@@ -766,12 +753,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     class TraversalService implements Callable<P0GeState> {
 
         int depth;
-        protected Node rootSubtree;
+        Node rootSubtree;
         protected double from;
         protected double to;
-        protected P0GeSystem PG;
+        P0GeSystem PG;
 
-        public TraversalService(Node root, double from, double to, int depth) {
+        TraversalService(Node root, double from, double to, int depth) {
             this.rootSubtree = root;
             this.from = from;
             this.to = to;
@@ -783,7 +770,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         @Override
-        public P0GeState call() throws Exception {
+        public P0GeState call() {
             // traverse the tree in a potentially-parallelized way
             return calculateSubtreeLikelihood(rootSubtree, from, to, PG, depth);
         }
@@ -1009,8 +996,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public void store() {
         super.store();
 
-        for (int i = 0; i < parameterization.getNTypes(); i++)
-            storedRootTypeProbs[i] = rootTypeProbs[i];
+        System.arraycopy(rootTypeProbs, 0, storedRootTypeProbs, 0, parameterization.getNTypes());
     }
 
     @Override
