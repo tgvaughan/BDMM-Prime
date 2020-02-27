@@ -3,15 +3,17 @@ package bdmmprime.parameterization;
 import bdmmprime.util.Utils;
 import beast.core.CalculationNode;
 import beast.core.Input;
+import beast.core.Loggable;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
 
+import java.io.PrintStream;
 import java.util.Arrays;
 
 /**
  * Parameter in which the value of each element corresponds to a particular time.
  */
-public class TimedParameter extends CalculationNode {
+public class TimedParameter extends CalculationNode implements Loggable {
 
     public Input<RealParameter> timesInput = new Input<>(
             "times",
@@ -227,5 +229,54 @@ public class TimedParameter extends CalculationNode {
         isDirty = true;
 
         return true;
+    }
+
+    /*
+     * Loggable implementation
+     */
+
+    @Override
+    public void init(PrintStream out) {
+
+        for (int timeIdx=0; timeIdx<nTimes; timeIdx++) {
+
+            out.print(getID() + "t" + timeIdx + "_time\t");
+
+            if (inputIsScalar) {
+                out.print(getID() + "t" + timeIdx);
+
+            } else {
+                for (int type = 0; type < nTypes; type++) {
+                    out.print(getID() + "t" + timeIdx);
+
+                    if (typeSetInput.get() != null)
+                        out.print(typeSetInput.get().getTypeName(type));
+                    else
+                        out.print("type" + type);
+
+                    out.print("\t");
+                }
+            }
+        }
+    }
+
+    @Override
+    public void log(long sample, PrintStream out) {
+
+        for (int timeIdx=0; timeIdx<nTimes; timeIdx++) {
+            out.print(times[timeIdx] + "\t");
+
+            if (inputIsScalar) {
+                out.print(values[timeIdx][0] + "\t");
+            } else {
+                for (int type = 0; type < nTypes; type++)
+                    out.print(values[timeIdx][type] + "\t");
+            }
+        }
+    }
+
+    @Override
+    public void close(PrintStream out) {
+
     }
 }

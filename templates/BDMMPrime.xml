@@ -51,7 +51,8 @@
                         bdmmprime.distributions.BirthDeathMigrationDistribution.tree,
                         bdmmprime.parameterization.CanonicalParameterization.typeSet,
                         bdmmprime.parameterization.SkylineVectorParameter.origin,
-                        bdmmprime.parameterization.SkylineMatrixParameter.origin"
+                        bdmmprime.parameterization.SkylineMatrixParameter.origin,
+                        bdmmprime.util.ZeroExcludingPrior.x"
                      inlineInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
@@ -141,6 +142,8 @@
                    range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb,rhoSamplingProb"/>
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
                    range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
+            <plate fragment="CanonicalBDMMPrimeSkylineLoggers" var="thisparam"
+                   range="birthRateSV,birthRateAmongDemes,deathRateSV,migrationRateSM,samplingRateSV,removalProbSV,rhoSamplingProbTP"/>
 
             <connect srcID="BDMMPrime.t:$(n)" targetID="prior" inputName="distribution"
                     if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true">

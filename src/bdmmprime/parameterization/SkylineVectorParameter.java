@@ -115,17 +115,32 @@ public class SkylineVectorParameter extends SkylineParameter {
     public void init(PrintStream out) {
 
         for (int interval=0; interval<nIntervals; interval++) {
-            out.print(getID() + "_e" + interval + "_endtime\t");
 
-            for (int type=0; type<nTypes; type++) {
-                out.print(getID() + "_e" + interval + "_type" + "_");
+            if (interval < nIntervals-1)
+                out.print(getID() + "i" + interval + "_endtime\t");
 
-                if (typeSetInput.get() != null)
-                    out.print(typeSetInput.get().getTypeName(type));
-                else
-                    out.print(type);
+            if (inputIsScalar) {
+                out.print(getID());
+
+                if (nIntervals > 1)
+                    out.print("i" + interval);
 
                 out.print("\t");
+
+            } else {
+                for (int type = 0; type < nTypes; type++) {
+                    out.print(getID());
+
+                    if (nIntervals > 1)
+                        out.print("i" + interval + "_");
+
+                    if (typeSetInput.get() != null)
+                        out.print(typeSetInput.get().getTypeName(type));
+                    else
+                        out.print("type" + type);
+
+                    out.print("\t");
+                }
             }
         }
     }
@@ -133,14 +148,17 @@ public class SkylineVectorParameter extends SkylineParameter {
     @Override
     public void log(long sample, PrintStream out) {
 
-        double[] times = getChangeTimes();
-
         for (int interval=0; interval<nIntervals; interval++) {
-            out.print(times[interval] + "\t");
 
-            double[] values = getValuesAtTime(times[interval]);
-            for (int type = 0; type < nTypes; type++)
-                out.print(values[type] + "\t");
+            if (interval<nIntervals-1)
+                out.print(times[interval] + "\t");
+
+            if (inputIsScalar) {
+                out.print(values[interval][0] + "\t");
+            } else {
+                for (int type = 0; type < nTypes; type++)
+                    out.print(values[interval][type] + "\t");
+            }
         }
     }
 

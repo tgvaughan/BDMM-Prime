@@ -1,9 +1,11 @@
 package bdmmprime.parameterization;
 
+import beast.core.Description;
 import beast.core.parameter.RealParameter;
 
 import java.io.PrintStream;
 
+@Description("Skyline parameter representing a matrix containing.  (Diagonals must be zero.)")
 public class SkylineMatrixParameter extends SkylineParameter {
 
     double[][][] values, storedValues;
@@ -129,21 +131,43 @@ public class SkylineMatrixParameter extends SkylineParameter {
 
     @Override
     public void init(PrintStream out) {
+        update();
+
+        if (nTypes == 1)
+            return;
 
         for (int interval=0; interval<nIntervals; interval++) {
-            out.print(getID() + "_e" + interval + "_endtime\t");
 
-            for (int type1=0; type1<nTypes; type1++) {
-                for (int type2=0; type2<nTypes; type2++) {
-                    out.print(getID() + "_e" + interval + "_");
+            if (interval < nIntervals-1)
+                out.print(getID() + "_i" + interval + "_endtime\t");
 
-                    if (typeSetInput.get() != null)
-                        out.print(typeSetInput.get().getTypeName(type1) + "_to_"
-                                + typeSetInput.get().getTypeName(type2));
-                    else
-                        out.print(type1 + "_to_" + type2);
+            if (inputIsScalar) {
+                out.print(getID());
 
-                    out.print("\t");
+                if (nIntervals > 1)
+                    out.print("i" + interval);
+
+                out.print("\t");
+
+            } else {
+                for (int type1=0; type1<nTypes; type1++) {
+                    for (int type2 = 0; type2 < nTypes; type2++) {
+                        if (type2 == type1)
+                            continue;
+
+                        out.print(getID());
+
+                        if (nIntervals > 1)
+                            out.print("i" + interval + "_");
+
+                        if (typeSetInput.get() != null)
+                            out.print(typeSetInput.get().getTypeName(type1) + "_to_"
+                                    + typeSetInput.get().getTypeName(type2));
+                        else
+                            out.print(type1 + "_to_" + type2);
+
+                        out.print("\t");
+                    }
                 }
             }
         }
@@ -152,18 +176,24 @@ public class SkylineMatrixParameter extends SkylineParameter {
     @Override
     public void log(long sample, PrintStream out) {
 
-        double[] times = getChangeTimes();
+        if (nTypes == 1)
+            return;
 
         for (int interval=0; interval<nIntervals; interval++) {
-            out.print(times[interval] + "\t");
 
-            double[][] values = getValuesAtTime(times[interval]);
-            for (int type1 = 0; type1 < nTypes; type1++) {
-                for (int type2 = 0; type1 < nTypes; type2++) {
-                    if (type2 == type1)
-                        continue;
+            if (interval < nIntervals-1)
+                out.print(times[interval] + "\t");
 
-                    out.print(values[type1][type2] + "\t");
+            if (inputIsScalar) {
+                out.print(values[interval][0][1] + "\t");
+            } else {
+                for (int type1 = 0; type1 < nTypes; type1++) {
+                    for (int type2 = 0; type2 < nTypes; type2++) {
+                        if (type2 == type1)
+                            continue;
+
+                        out.print(values[interval][type1][type2] + "\t");
+                    }
                 }
             }
         }
