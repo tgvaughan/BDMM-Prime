@@ -2,7 +2,7 @@
        namespace="beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions">
 
     <mergewith point="misc">
-        <fragment id="SATreeOperators" spec="beast.app.beauti.Fragment">
+        <fragment id="BDMMPrimeSATreeOperators" spec="beast.app.beauti.Fragment">
             <![CDATA[
             <operator id='$(m)LeafToSA.t:$(n)' spec='beast.evolution.operators.LeafToSampledAncestorJump' weight="10" tree="@Tree.t:$(n)"/>
             <operator id='$(m)SAWilsonBalding.t:$(n)' spec='beast.evolution.operators.SAWilsonBalding' weight="10" tree="@Tree.t:$(n)"/>
@@ -147,7 +147,7 @@
                 BDMM prior on tree t:$(n)
             </connect>
 
-            <plate fragment="SATreeOperators" var="m" range="BDMMPrime"/>
+            <plate fragment="BDMMPrimeSATreeOperators" var="m" range="BDMMPrime"/>
 
             <connect srcID="originBDMMPrime.t:$(n)" targetID="state" inputName="stateNode"
                      if="inposterior(BDMMPrime.t:$(n))
