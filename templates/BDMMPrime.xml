@@ -121,13 +121,19 @@
                 <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
 
                 <logger id="typedTreeLogger.t:$(n)"
-                        fileName="$(filebase).$(tree).mapped.trees" logEvery="1000" mode="tree">
+                        fileName="$(filebase).$(tree).typed.trees" logEvery="1000" mode="tree">
                     <log spec="bdmmprime.mapping.TypeMappedTree" id="typeMappedTree.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
                          mapOnInit="false" remapOnLog="true"
                          frequencies="@typeFrequencies.t:$(n)"
                          typeTraitSet="@typeTraitSet.t:$(n)"
                          typeLabel="type"
                          untypedTree="@Tree.t:$(n)"/>
+                </logger>
+
+                <logger id="nodeTypedTreeLogger.t:$(n)"
+                        fileName="$(filebase).$(tree).typed.node.trees" logEvery="1000" mode="tree">
+                   <log spec="bdmmprime.mapping.TypedNodeTreeLogger" id="nodeTypedTree.t:$(n)"
+                        typedTree="@typeMappedTree.t:$(n)"/>
                 </logger>
 
                 <log id="typedTreeStats.t:$(n)"
@@ -183,9 +189,10 @@
                      and typeFrequencies.t:$(n)/estimate=true"/>
 
             <connect srcID="typedTreeLogger.t:$(n)" targetID="mcmc" inputName="logger"
-                     if="inposterior(BDMMPrime.t:$(n))
-                     and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true"/>
+                     if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
+
+            <connect srcID="nodeTypedTreeLogger.t:$(n)" targetID="mcmc" inputName="logger"
+                     if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
 
             <connect srcID="typedTreeStats.t:$(n)" targetID="tracelog" inputName="log"
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
