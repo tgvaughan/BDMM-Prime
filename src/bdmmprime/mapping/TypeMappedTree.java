@@ -616,7 +616,15 @@ public class TypeMappedTree extends Tree {
         ContinuousOutputModel com = integrationResults[node.getNr()];
         com.setInterpolatedTime(adjustedTime);
 
-        return com.getInterpolatedState();
+        double[] y = com.getInterpolatedState();
+
+        // Trim away small negative values due to numerical integration errors
+        for (int i=0; i<y.length; i++) {
+            if (y[i] < 0)
+                y[i] = 0.0;
+        }
+
+        return y;
     }
 
     private int[] sampleChildTypes(Node node, int parentType) {
@@ -680,6 +688,7 @@ public class TypeMappedTree extends Tree {
      */
     private double[] getForwardsRates(int fromType, double time, Node baseNode, double[] result) {
         double[] y = getBackwardsIntegrationResult(baseNode, time);
+
         int interval = param.getIntervalIndex(time);
 
         for (int type=0; type<param.getNTypes(); type++) {
@@ -709,7 +718,7 @@ public class TypeMappedTree extends Tree {
             }
 
             for (int type=0; type<param.getNTypes(); type++)
-                result[type] = type == maxRateIdx ? 1.0 : 0.0 ;
+                result[type] = type == maxRateIdx ? 1e10 : 0.0 ;
 
         } else {
             // Apply source type prob as rate denominator:
