@@ -152,13 +152,19 @@ public class TypeMappedTree extends Tree {
 
         // Simulate type changes down tree
 
-        Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0 , startType);
+        try {
 
-        // Ensure internal nodes are numbered correctly.  (Leaf node numbers and
-        // labels are matched to those in the untyped tree during the simulation.)
-        numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
+            Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0, startType);
 
-        assignFromWithoutID(new Tree(typedRoot));
+            // Ensure internal nodes are numbered correctly.  (Leaf node numbers and
+            // labels are matched to those in the untyped tree during the simulation.)
+            numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
+
+            assignFromWithoutID(new Tree(typedRoot));
+
+        } catch (RuntimeException ex) {
+            System.err.println("Error occurred generating stochastic mapping. Skipping.");
+        }
     }
 
     /**
