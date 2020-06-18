@@ -100,6 +100,65 @@ public class BirthDeathMigrationLikelihoodTest {
 				logL, 1e-5);
 	}
 
+	/**
+	 * Basic test for migration rate change
+	 * Reference from BDMM itself
+	 * Canonical parameterization
+	 */
+	@Test
+	public void testLikelihoodMigRateChangeBasicCanonicalRevTime() {
+
+		// Test for uncoloured tree
+
+		String newick = "(t1[&state=0] : 1.5, t2[&state=1] : 0.5);";
+
+		RealParameter originParam = new RealParameter("2.5");
+
+		Parameterization parameterization = new CanonicalParameterization();
+		parameterization.initByName(
+				"typeSet", new TypeSet(2),
+				"origin", originParam,
+				"birthRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("2.0"), 2),
+				"deathRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("1.0"), 2),
+				"birthRateAmongDemes", new SkylineMatrixParameter(
+						null,
+						new RealParameter("0.0"), 2),
+				"migrationRate", new SkylineMatrixParameter(
+						new RealParameter("1.5"),
+						new RealParameter("0.2 0.1"), 2, originParam),
+				"samplingRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.5"), 2),
+				"removalProb", new SkylineVectorParameter(
+						null,
+						new RealParameter("1.0"), 2));
+
+
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+
+		density.initByName(
+				"parameterization", parameterization,
+				"frequencies", new RealParameter("0.5 0.5"),
+				"conditionOnSurvival", false,
+				"tree", new TreeParser(newick,
+						false, false,
+						true,0),
+				"typeLabel", "state",
+				"parallelize", false);
+
+		double logL = density.calculateLogP();
+
+		System.out.println("Birth-death result: " + logL + "\t- Test LikelihoodMigRateChange 1");
+
+		// Reference BDMM (version 0.2.0) 22/06/2017
+		assertEquals(-6.7022069383966025 - labeledTreeConversionFactor(density),
+				logL, 1e-5);
+	}
+
     /**
 	 * Basic test for migration rate change
 	 * Reference from BDMM itself

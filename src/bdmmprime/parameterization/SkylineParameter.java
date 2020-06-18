@@ -58,10 +58,18 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
 
     public SkylineParameter(RealParameter changeTimesParam,
                             RealParameter skylineValuesParam,
-                            int nTypes) {
+                            int nTypes,
+                            RealParameter origin) {
+
         changeTimesInput.setValue(changeTimesParam, this);
         skylineValuesInput.setValue(skylineValuesParam, this);
         typeSetInput.setValue(new TypeSet(nTypes), this);
+
+        if (origin != null) {
+            this.timesAreAgesInput.setValue(true, this);
+            this.originInput.setValue(origin, this);
+        }
+
         initAndValidate();
     }
 

@@ -1,5 +1,6 @@
 package bdmmprime.parameterization;
 
+import bdmmprime.util.Utils;
 import beast.core.Description;
 import beast.core.parameter.RealParameter;
 
@@ -23,7 +24,13 @@ public class SkylineMatrixParameter extends SkylineParameter {
     public SkylineMatrixParameter(RealParameter changeTimesParam,
                                   RealParameter skylineValuesParam,
                                   int nTypes) {
-        super(changeTimesParam, skylineValuesParam, nTypes);
+        super(changeTimesParam, skylineValuesParam, nTypes, null);
+    }
+
+    public SkylineMatrixParameter(RealParameter changeTimesParam,
+                                  RealParameter skylineValuesParam,
+                                  int nTypes, RealParameter origin) {
+        super(changeTimesParam, skylineValuesParam, nTypes, origin);
     }
 
     @Override
@@ -78,6 +85,9 @@ public class SkylineMatrixParameter extends SkylineParameter {
                 }
             }
         }
+
+        if (timesAreAges)
+            Utils.reverseArray(values);
     }
 
     /**
