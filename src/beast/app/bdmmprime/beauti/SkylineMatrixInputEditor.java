@@ -68,7 +68,7 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         int nTypes = skylineMatrix.typeSetInput.get().getNTypes();
         int nIntervals = skylineMatrix.getChangeCount() + 1;
 
-        RealParameter valuesParam = skylineMatrix.skylineValuesInput.get();
+        RealParameter valuesParam = (RealParameter)skylineMatrix.skylineValuesInput.get();
         int valuesPerInterval = valuesParam.getDimension() / nIntervals;
 
         if (valuesPerInterval == 1 || valuesPerInterval == nTypes*(nTypes-1)) {
@@ -117,8 +117,9 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
     @Override
     void saveToModel() {
         if (skylineMatrix.getNTypes()==1) {
-            skylineMatrix.skylineValuesInput.get().isEstimatedInput.setValue(
-                    false, skylineMatrix.skylineValuesInput.get());
+            RealParameter skylineValues = (RealParameter)skylineMatrix.skylineValuesInput.get();
+            skylineValues.isEstimatedInput.setValue(
+                    false, skylineValues);
         }
 
         super.saveToModel();

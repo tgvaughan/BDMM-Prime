@@ -185,7 +185,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         if (nTimes==0)
             return;
 
-        RealParameter valuesParam = timedParameter.valuesInput.get();
+        RealParameter valuesParam = (RealParameter)timedParameter.valuesInput.get();
         int valuesPerInterval = valuesParam.getDimension() / nTimes;
 
         if (valuesPerInterval == 1 || valuesPerInterval == nTypes) {
@@ -237,15 +237,15 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             }
             timesTableModel.setColumnIdentifiers(columnNames);
 
-            estimateTimesCheckBox.setSelected(timedParameter.timesInput.get().isEstimatedInput.get());
+            RealParameter changeTimesParameter = (RealParameter)timedParameter.timesInput.get();
+            estimateTimesCheckBox.setSelected(changeTimesParameter.isEstimatedInput.get());
 
-            RealParameter changeTimesParameter = timedParameter.timesInput.get();
             for (int i = 0; i < changeTimesParameter.getDimension(); i++)
                 timesTableModel.setValueAt(changeTimesParameter.getValue(i), 0, i);
 
             // Load values
 
-            RealParameter valuesParameter = timedParameter.valuesInput.get();
+            RealParameter valuesParameter = (RealParameter)timedParameter.valuesInput.get();
 
             valuesTableModel.setTimeCount(nTimes);
             valuesTableModel.loadFromParameter(valuesParameter);
@@ -312,8 +312,8 @@ public class TimedParameterInputEditor extends InputEditor.Base {
 
         // Save values and times
 
-        RealParameter valuesParam = timedParameter.valuesInput.get();
-        RealParameter timesParam = timedParameter.timesInput.get();
+        RealParameter valuesParam = (RealParameter)timedParameter.valuesInput.get();
+        RealParameter timesParam = (RealParameter)timedParameter.timesInput.get();
         if (nTimes>0) {
             if (valuesParam == null)
                 valuesParam = getValuesParam();
@@ -361,7 +361,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
     }
 
     RealParameter getValuesParam() {
-        RealParameter changeTimesParam = timedParameter.timesInput.get();
+        RealParameter changeTimesParam = (RealParameter)timedParameter.timesInput.get();
         if (changeTimesParam == null) {
 
             int idx = timedParameter.getID().indexOf("TP");
@@ -380,7 +380,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
     }
 
     RealParameter getTimesParam() {
-        RealParameter changeTimesParam = timedParameter.timesInput.get();
+        RealParameter changeTimesParam = (RealParameter)timedParameter.timesInput.get();
         if (changeTimesParam == null) {
 
             int idx = timedParameter.getID().indexOf("TP");

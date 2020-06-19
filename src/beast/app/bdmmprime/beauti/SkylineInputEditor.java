@@ -9,7 +9,6 @@ import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -199,9 +198,9 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
             changeTimesBox.setVisible(true);
 
-            estimateTimesCheckBox.setSelected(skylineParameter.changeTimesInput.get().isEstimatedInput.get());
+            estimateTimesCheckBox.setSelected(((RealParameter)skylineParameter.changeTimesInput.get()).isEstimatedInput.get());
 
-            RealParameter changeTimesParameter = skylineParameter.changeTimesInput.get();
+            RealParameter changeTimesParameter = (RealParameter)skylineParameter.changeTimesInput.get();
             for (int i=0; i<changeTimesParameter.getDimension(); i++)
                 changeTimesTableModel.setValueAt(changeTimesParameter.getValue(i), 0, i);
 
@@ -215,7 +214,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         // Load values
 
-        RealParameter valuesParameter = skylineParameter.skylineValuesInput.get();
+        RealParameter valuesParameter = (RealParameter)skylineParameter.skylineValuesInput.get();
 
         valuesTableModel.setIntervalCount(nChanges+1);
         valuesTableModel.loadFromParameter(valuesParameter);
@@ -274,7 +273,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         // Save values
 
-        RealParameter skylineValuesParam = skylineParameter.skylineValuesInput.get();
+        RealParameter skylineValuesParam = (RealParameter)skylineParameter.skylineValuesInput.get();
         skylineValuesParam.setDimension(valuesTableModel.getRowCount()*(nChanges+1));
         skylineValuesParam.valuesInput.setValue(valuesTableModel.getParameterString(), skylineValuesParam);
         skylineValuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), skylineValuesParam);
@@ -283,7 +282,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         // Save change times
 
-        RealParameter changeTimesParam = skylineParameter.changeTimesInput.get();
+        RealParameter changeTimesParam = (RealParameter)skylineParameter.changeTimesInput.get();
         if (nChanges>0) {
             if (changeTimesParam == null) {
                 String changeTimeId = getChangeTimesParameterID();

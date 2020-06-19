@@ -39,7 +39,7 @@ public class EpochVisualizerPanel extends JPanel {
         FontMetrics fm = getFontMetrics(getFont());
 
         boolean useAges = param.timesAreAgesInput.get();
-        double origin = param.originInput.get().getValue();
+        double origin = param.originInput.get().getArrayValue();
         TypeSet typeSet = param.typeSetInput.get();
 
         if (origin <= 0.0) {
@@ -198,7 +198,7 @@ public class EpochVisualizerPanel extends JPanel {
         int axisXEnd = getWidth() - charHeight*2;
 
         int scaledTime = (int)Math.round((axisXEnd-axisXStart)
-                *time/param.originInput.get().getValue());
+                *time/param.originInput.get().getArrayValue());
 
         return useAges
                 ? axisXEnd - scaledTime

@@ -64,9 +64,9 @@ public class SkylineVectorParameter extends SkylineParameter {
         for (int interval=0; interval<nIntervals; interval++) {
             for (int i=0; i<nTypes; i++) {
                 if (inputIsScalar)
-                    values[interval][i] = skylineValuesInput.get().getValue(interval);
+                    values[interval][i] = skylineValuesInput.get().getArrayValue(interval);
                 else
-                    values[interval][i] = skylineValuesInput.get().getValue(interval * nTypes + i);
+                    values[interval][i] = skylineValuesInput.get().getArrayValue(interval * nTypes + i);
             }
         }
 

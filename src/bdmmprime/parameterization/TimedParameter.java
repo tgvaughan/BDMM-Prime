@@ -2,6 +2,7 @@ package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
 import beast.core.CalculationNode;
+import beast.core.Function;
 import beast.core.Input;
 import beast.core.Loggable;
 import beast.core.parameter.RealParameter;
@@ -15,7 +16,7 @@ import java.util.Arrays;
  */
 public class TimedParameter extends CalculationNode implements Loggable {
 
-    public Input<RealParameter> timesInput = new Input<>(
+    public Input<Function> timesInput = new Input<>(
             "times",
             "Times associated with probabilities.");
 
@@ -29,7 +30,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
             "True if times are relative to the origin. (Default false.)",
             false);
 
-    public Input<RealParameter> originInput = new Input<>("origin",
+    public Input<Function> originInput = new Input<>("origin",
             "Parameter specifying origin of process.");
 
     public Input<Tree> treeInput = new Input<>("tree",
@@ -40,7 +41,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
                     "single value is to be shared amongst several types.");
 
 
-    public Input<RealParameter> valuesInput = new Input<>(
+    public Input<Function> valuesInput = new Input<>(
             "values",
             "Probability values associated with each time.");
 
@@ -170,11 +171,11 @@ public class TimedParameter extends CalculationNode implements Loggable {
 
     private void updateTimes() {
         for (int i=0; i<nTimes; i++)
-            times[i] = timesInput.get().getValue(i);
+            times[i] = timesInput.get().getArrayValue(i);
 
         if (timesAreRelative) {
             double startAge = originInput.get() != null
-                    ? originInput.get().getValue()
+                    ? originInput.get().getArrayValue()
                     : treeInput.get().getRoot().getHeight();
 
             for (int i=0; i<nTimes; i++)
@@ -185,7 +186,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
             Utils.reverseDoubleArray(times);
 
             double startAge = originInput.get() != null
-                    ? originInput.get().getValue()
+                    ? originInput.get().getArrayValue()
                     : treeInput.get().getRoot().getHeight();
 
             for (int i=0; i<times.length; i++) {
@@ -198,9 +199,9 @@ public class TimedParameter extends CalculationNode implements Loggable {
         for (int timeIdx=0; timeIdx<nTimes; timeIdx++) {
             for (int typeIdx=0; typeIdx<nTypes; typeIdx++) {
                 if (inputIsScalar)
-                    values[timeIdx][typeIdx] = valuesInput.get().getValue(timeIdx);
+                    values[timeIdx][typeIdx] = valuesInput.get().getArrayValue(timeIdx);
                 else
-                    values[timeIdx][typeIdx] = valuesInput.get().getValue(timeIdx*nTypes + typeIdx);
+                    values[timeIdx][typeIdx] = valuesInput.get().getArrayValue(timeIdx*nTypes + typeIdx);
             }
         }
 

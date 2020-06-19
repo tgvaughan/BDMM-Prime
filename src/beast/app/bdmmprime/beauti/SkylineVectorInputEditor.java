@@ -41,7 +41,7 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
         int nTypes = skylineVector.typeSetInput.get().getNTypes();
         int nIntervals = skylineVector.getChangeCount() + 1;
 
-        RealParameter valuesParam = skylineVector.skylineValuesInput.get();
+        RealParameter valuesParam = (RealParameter)skylineVector.skylineValuesInput.get();
         int valuesPerInterval = valuesParam.getDimension() / nIntervals;
 
         if (valuesPerInterval == 1 || valuesPerInterval == nTypes) {

@@ -2,6 +2,7 @@ package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
 import beast.core.Description;
+import beast.core.Function;
 import beast.core.parameter.RealParameter;
 
 import java.io.PrintStream;
@@ -16,20 +17,20 @@ public class SkylineMatrixParameter extends SkylineParameter {
 
     public SkylineMatrixParameter() { }
 
-    public SkylineMatrixParameter(RealParameter changeTimesParam,
-                                  RealParameter skylineValuesParam) {
+    public SkylineMatrixParameter(Function changeTimesParam,
+                                  Function skylineValuesParam) {
         super(changeTimesParam, skylineValuesParam);
     }
 
-    public SkylineMatrixParameter(RealParameter changeTimesParam,
-                                  RealParameter skylineValuesParam,
+    public SkylineMatrixParameter(Function changeTimesParam,
+                                  Function skylineValuesParam,
                                   int nTypes) {
         super(changeTimesParam, skylineValuesParam, nTypes, null);
     }
 
-    public SkylineMatrixParameter(RealParameter changeTimesParam,
-                                  RealParameter skylineValuesParam,
-                                  int nTypes, RealParameter origin) {
+    public SkylineMatrixParameter(Function changeTimesParam,
+                                  Function skylineValuesParam,
+                                  int nTypes, Function origin) {
         super(changeTimesParam, skylineValuesParam, nTypes, origin);
     }
 
@@ -77,9 +78,9 @@ public class SkylineMatrixParameter extends SkylineParameter {
                     }
 
                     if (inputIsScalar)
-                        values[interval][i][j] = skylineValuesInput.get().getValue(interval);
+                        values[interval][i][j] = skylineValuesInput.get().getArrayValue(interval);
                     else
-                        values[interval][i][j] = skylineValuesInput.get().getValue(idx);
+                        values[interval][i][j] = skylineValuesInput.get().getArrayValue(idx);
 
                     idx += 1;
                 }
