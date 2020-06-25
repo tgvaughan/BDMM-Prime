@@ -18,7 +18,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
     public Input<Tree> mappedTreeInput = new Input<>("typeMappedTree",
             "Tree with stochastically mapped types.", Input.Validate.REQUIRED);
 
-    public Input<Parameterization> parameterizationInput = new Input<>("parametermization",
+    public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
             "Multi-type birth-death parameterization.", Input.Validate.REQUIRED);
 
     public Input<Integer> nParticlesInput = new Input<>("nParticles",
@@ -138,6 +138,8 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
     double propagateParticle(Trajectory trajectory, int[] lineageCounts, double t, int interval, Node nextTreeEvent) {
         double logWeight = 0.0;
 
+        System.out.println("Event " + nextTreeEvent.getNr());
+
         while (true) {
             // Compute rates
 
@@ -147,16 +149,18 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
             for (int s=0; s<nTypes; s++) {
                 a_temp = trajectory.currentState[s]*param.getBirthRates()[interval][s];
-                p_obs = lineageCounts[s]*(lineageCounts[s]-1.0)/(trajectory.currentState[s]*(trajectory.currentState[s]+1));
-
-                a_birth[s] = a_temp*(1-p_obs);
-                a_tot += a_birth[s];
-                a_illegal_tot += a_temp*p_obs;
+                if (a_temp > 0) {
+                    p_obs = lineageCounts[s] * (lineageCounts[s] - 1.0) / (trajectory.currentState[s] * (trajectory.currentState[s] + 1));
+                    a_birth[s] = a_temp * (1 - p_obs);
+                    a_tot += a_birth[s];
+                    a_illegal_tot += a_temp * p_obs;
+                } else
+                    a_birth[s] = 0.0;
 
                 a_temp = trajectory.currentState[s] * param.getDeathRates()[interval][s];
                 if (trajectory.currentState[s] > lineageCounts[s]) {
                     a_death[s] = a_temp;
-                    a_tot += a_temp;
+                    a_tot += a_death[s];
                 } else {
                     a_death[s] = 0.0;
                     a_illegal_tot += a_temp;
@@ -175,10 +179,14 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
                     a_illegal_tot += a_temp*p_obs;
 
                     a_temp = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
-                    p_obs = lineageCounts[s]*lineageCounts[sp]/(trajectory.currentState[s]*(trajectory.currentState[sp]+1));
-                    a_crossbirth[s][sp] = a_temp*(1-p_obs);
-                    a_tot += a_crossbirth[s][sp];
-                    a_illegal_tot += a_temp*p_obs;
+                    if (a_temp > 0.0) {
+                        p_obs = lineageCounts[s] * lineageCounts[sp] / (trajectory.currentState[s] * (trajectory.currentState[sp] + 1));
+                        a_crossbirth[s][sp] = a_temp * (1 - p_obs);
+                        a_tot += a_crossbirth[s][sp];
+                        a_illegal_tot += a_temp * p_obs;
+                    } else {
+                        a_crossbirth[s][sp] = 0.0;
+                    }
                 }
             }
 
@@ -211,6 +219,9 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
             // Update weight
             logWeight += -a_illegal_tot*(tprime - t);
+
+            // Update time
+            t = tprime;
 
             // Implement event
 
