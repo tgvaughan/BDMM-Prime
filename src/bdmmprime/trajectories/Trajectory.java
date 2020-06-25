@@ -6,8 +6,8 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Trajectory {
-    List<TrajectoryEvent> events = new ArrayList<>();
-    double[] currentState;
+    public List<TrajectoryEvent> events = new ArrayList<>();
+    public double[] currentState;
 
     public Trajectory(double[] currentState) {
         this.currentState = currentState.clone();
