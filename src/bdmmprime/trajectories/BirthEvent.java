@@ -13,4 +13,9 @@ public class BirthEvent extends TrajectoryEvent {
     public void updateState(double[] state) {
         state[type] += 1;
     }
+
+    @Override
+    public void reverseUpdateState(double[] state) {
+        state[type] -= 1;
+    }
 }

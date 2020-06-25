@@ -14,4 +14,9 @@ public class CrossBirthEvent extends TrajectoryEvent {
     public void updateState(double[] state) {
         state[destType] += 1;
     }
+
+    @Override
+    public void reverseUpdateState(double[] state) {
+        state[destType] -= 1;
+    }
 }
