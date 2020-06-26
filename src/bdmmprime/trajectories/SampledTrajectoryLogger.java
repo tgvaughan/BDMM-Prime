@@ -1,6 +1,7 @@
 package bdmmprime.trajectories;
 
 import bdmmprime.parameterization.Parameterization;
+import bdmmprime.trajectories.trajevents.*;
 import beast.core.BEASTObject;
 import beast.core.Input;
 import beast.core.Loggable;
@@ -367,15 +368,13 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
         }
 
         List<double[]> states = traj.getStateList();
-        List<Double> eventimes = traj.getEventTimes();
+        List<Double> eventTimes = traj.getEventTimes();
 
         for (int i=0; i<states.size(); i++ ) {
-            out.print(",");
-
             if (i==0)
                 out.print(0.0);
             else
-                out.print("," + eventimes.get(i-1));
+                out.print("," + eventTimes.get(i-1));
 
             for (int s=0; s<nTypes; s++) {
                 if (s > 0)

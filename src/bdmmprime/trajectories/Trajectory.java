@@ -1,5 +1,7 @@
 package bdmmprime.trajectories;
 
+import bdmmprime.trajectories.trajevents.TrajectoryEvent;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,5 +46,26 @@ public class Trajectory {
 
     public List<Double> getEventTimes() {
         return this.events.stream().map(e -> e.time).collect(Collectors.toList());
+    }
+
+    public void dump() {
+        List<double[]> states = getStateList();
+        List<Double> eventTimes = getEventTimes();
+
+        for (int i=0; i<states.size(); i++ ) {
+            if (i == 0)
+                System.out.print(0.0);
+            else
+                System.out.print(eventTimes.get(i - 1));
+
+            for (int s = 0; s < currentState.length; s++) {
+                System.out.print("\t" + states.get(i)[s]);
+            }
+
+            if (i == 0)
+                System.out.println("\tSTART");
+            else
+                System.out.println("\t" + events.get(i-1));
+        }
     }
 }

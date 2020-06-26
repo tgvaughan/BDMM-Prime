@@ -62,6 +62,13 @@ public class TimedParameter extends CalculationNode implements Loggable {
         initAndValidate();
     }
 
+    public TimedParameter(RealParameter timesParam, RealParameter valuesParam, int nTypes) {
+        timesInput.setValue(timesParam, this);
+        valuesInput.setValue(valuesParam, this);
+        typeSetInput.setValue(new TypeSet(nTypes), this);
+        initAndValidate();
+    }
+
     public TimedParameter(RealParameter timesParam, RealParameter valuesParam, RealParameter originParam) {
         timesInput.setValue(timesParam, this);
         valuesInput.setValue(valuesParam, this);

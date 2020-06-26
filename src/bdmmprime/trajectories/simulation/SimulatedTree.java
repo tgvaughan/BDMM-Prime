@@ -1,11 +1,14 @@
-package bdmmprime.simulation;
+package bdmmprime.trajectories.simulation;
 
-import bdmmprime.parameterization.Parameterization;
+import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.*;
+import bdmmprime.trajectories.trajevents.*;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
+import beast.math.Binomial;
 import beast.util.Randomizer;
+import cern.jet.random.engine.RandomEngine;
 
 import static org.apache.commons.math3.stat.StatUtils.sum;
 
@@ -55,7 +58,7 @@ public class SimulatedTree extends Tree {
         super.initAndValidate();
     }
 
-    void simulateTrajectory() {
+    Trajectory simulateTrajectory() {
         double t = 0;
         int interval = 0;
 
@@ -79,7 +82,7 @@ public class SimulatedTree extends Tree {
                 a_sampling[s] = traj.currentState[s] * param.getSamplingRates()[interval][s];
                 a_tot += a_birth[s] + a_death[s] + a_sampling[s];
 
-                for (int sp = 0; sp < nTypes; s++) {
+                for (int sp = 0; sp < nTypes; sp++) {
                     if (sp == s)
                         continue;
 
@@ -97,6 +100,25 @@ public class SimulatedTree extends Tree {
             if (param.getIntervalEndTimes()[interval] < simulationTime.getValue()
                     && t > param.getIntervalEndTimes()[interval]) {
                 t = param.getIntervalEndTimes()[interval];
+
+                for (int s=0; s<nTypes; s++) {
+                    double rho = param.getRhoValues()[interval][s];
+                    if (rho > 0) {
+                        int nRemoveSamp = nextBinomial((int)Math.round(traj.currentState[s]),
+                                rho*param.getRemovalProbs()[interval][s]);
+
+                        if (nRemoveSamp>0)
+                            traj.addEvent(new SamplingWithRemoval(t, s, nRemoveSamp));
+
+                        int nNoRemoveSamp = nextBinomial((int)Math.round(traj.currentState[s]),
+                                rho*(1.0 - param.getRemovalProbs()[interval][s]));
+
+                        if (nNoRemoveSamp>0)
+                            traj.addEvent(new SamplingWithoutRemoval(t, s, nNoRemoveSamp));
+                    }
+                }
+
+                interval += 1;
                 continue;
             }
 
@@ -157,9 +179,62 @@ public class SimulatedTree extends Tree {
 
             traj.addEvent(event);
         }
+
+        return traj;
     }
 
-    void simulateTree() {
+    public int nextBinomial(int n, double p) {
+        double u = Randomizer.nextDouble();
+
+        double acc = Math.pow(1-p, n);
+        int m = 0;
+
+        while (u > acc && m <= n) {
+            m += 1;
+            acc += Math.exp(Binomial.logChoose(n, m) + (n - m) * Math.log(1 - p) + m * Math.log(p));
+        }
+
+        return m;
+    }
+
+    /**
+     * Debug method for testing
+     * @param args unused
+     */
+    public static void main(String[] args) {
+
+        Parameterization param = new CanonicalParameterization();
+
+        param.initByName(
+                "typeSet", new TypeSet(2),
+                "origin", "3.0",
+                "birthRate", new SkylineVectorParameter(
+                        new RealParameter("4.0"),
+                        new RealParameter("2.0 0.0"), 2),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.1"), 2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealParameter("0.5"), 2),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("4.0"),
+                        new RealParameter("0.5 0.0"), 2));
+
+        SimulatedTree sim = new SimulatedTree();
+        sim.initByName("parameterization", param,
+                "frequencies", new RealParameter("0.5 0.5"),
+                "simulationTime", "5.0");
+
+        Trajectory traj = sim.simulateTrajectory();
+        traj.dump();
+
     }
 
 }

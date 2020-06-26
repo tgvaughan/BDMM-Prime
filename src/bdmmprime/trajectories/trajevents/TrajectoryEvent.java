@@ -1,7 +1,8 @@
-package bdmmprime.trajectories;
+package bdmmprime.trajectories.trajevents;
 
 public abstract class TrajectoryEvent {
-    double time;
+    public double time;
+    public int multiplicity;
 
     public abstract void updateState(double[] state);
 
