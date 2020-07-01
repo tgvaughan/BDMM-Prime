@@ -5,10 +5,14 @@ import bdmmprime.trajectories.*;
 import bdmmprime.trajectories.trajevents.*;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
+import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.math.Binomial;
 import beast.util.Randomizer;
-import cern.jet.random.engine.RandomEngine;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 import static org.apache.commons.math3.stat.StatUtils.sum;
 
@@ -32,6 +36,10 @@ public class SimulatedTree extends Tree {
             "Time to run simulation for.",
             Input.Validate.REQUIRED);
 
+    public Input<String> typeLabelInput = new Input<>("typeLabel",
+            "Used to label tree nodes with corresponding types.",
+            "type");
+
     Parameterization param;
     RealParameter frequencies;
     RealParameter simulationTime;
@@ -40,6 +48,7 @@ public class SimulatedTree extends Tree {
     double[][] a_migration, a_crossbirth;
 
     int nTypes;
+    String typeLabel;
 
     @Override
     public void initAndValidate() {
@@ -48,6 +57,7 @@ public class SimulatedTree extends Tree {
         simulationTime = simulationTimeInput.get();
 
         nTypes = param.getNTypes();
+        typeLabel = typeLabelInput.get();
 
         a_birth = new double[nTypes];
         a_death = new double[nTypes];
@@ -104,17 +114,12 @@ public class SimulatedTree extends Tree {
                 for (int s=0; s<nTypes; s++) {
                     double rho = param.getRhoValues()[interval][s];
                     if (rho > 0) {
-                        int nRemoveSamp = nextBinomial((int)Math.round(traj.currentState[s]),
-                                rho*param.getRemovalProbs()[interval][s]);
+                        int nRhoSamp = nextBinomial((int)Math.round(traj.currentState[s]), rho);
+                        int nRemoveSamp = nextBinomial(nRhoSamp, param.getRemovalProbs()[interval][s]);
+                        int nNoRemoveSamp = nRhoSamp - nRemoveSamp;
 
-                        if (nRemoveSamp>0)
-                            traj.addEvent(new SamplingWithRemoval(t, s, nRemoveSamp));
-
-                        int nNoRemoveSamp = nextBinomial((int)Math.round(traj.currentState[s]),
-                                rho*(1.0 - param.getRemovalProbs()[interval][s]));
-
-                        if (nNoRemoveSamp>0)
-                            traj.addEvent(new SamplingWithoutRemoval(t, s, nNoRemoveSamp));
+                        if (nRhoSamp > 0)
+                            traj.addEvent(new SamplingEvent(t, s, nRemoveSamp, nNoRemoveSamp));
                     }
                 }
 
@@ -146,9 +151,9 @@ public class SimulatedTree extends Tree {
 
                 if (u < a_sampling[s]) {
                     if (u < param.getRemovalProbs()[interval][s]*a_sampling[s])
-                        event = new SamplingWithRemoval(t, s);
+                        event = new SamplingEvent(t, s, 1, 0);
                     else
-                        event = new SamplingWithoutRemoval(t, s);
+                        event = new SamplingEvent(t, s, 0, 1);
                     break;
                 }
                 u -= a_sampling[s];
@@ -183,7 +188,49 @@ public class SimulatedTree extends Tree {
         return traj;
     }
 
-    public int nextBinomial(int n, double p) {
+    public Tree simulateTree(Trajectory traj) {
+
+
+        List<TrajectoryEvent> events = new ArrayList<>(traj.events);
+        Collections.reverse(events);
+
+        double[] state = traj.currentState.clone();
+
+        List<List<Node>> activeLineages = new ArrayList<>();
+        for (int s=0; s<nTypes; s++)
+            activeLineages.add(new ArrayList<>());
+
+        NodeFactory nodeFactory = new NodeFactory(traj.getFinalSampleTime(), traj.getSampleCount(),
+                typeLabel, param.getTypeSet());
+
+        for (TrajectoryEvent event : events) {
+                event.simulateTreeEvent(state, activeLineages, nodeFactory);
+                event.reverseUpdateState(state);
+        }
+
+        Node root = null;
+        for (int s=0; s<nTypes; s++) {
+            if (!activeLineages.get(s).isEmpty()) {
+                root = activeLineages.get(s).get(0);
+                break;
+            }
+        }
+
+        if (root == null)
+            throw new IllegalStateException("Tree simulation failed.");
+
+        return new Tree(root);
+    }
+
+
+    /**
+     * Inefficient (expected time complexity O(n)) ICDF-based binomial sampler.
+     *
+     * @param n number of trials
+     * @param p success probability
+     * @return sampled number of successes
+     */
+    public static int nextBinomial(int n, double p) {
         double u = Randomizer.nextDouble();
 
         double acc = Math.pow(1-p, n);
@@ -219,22 +266,29 @@ public class SimulatedTree extends Tree {
                         new RealParameter("0.1"), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealParameter("0.1"), 2),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
                         new RealParameter("0.5"), 2),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("4.0"),
-                        new RealParameter("0.5 0.0"), 2));
+                        new RealParameter("2.0 3.0 4.0"),
+                        new RealParameter("0.5 0.5 0.5"), 2));
 
         SimulatedTree sim = new SimulatedTree();
         sim.initByName("parameterization", param,
                 "frequencies", new RealParameter("0.5 0.5"),
                 "simulationTime", "5.0");
 
-        Trajectory traj = sim.simulateTrajectory();
+        Trajectory traj;
+        do {
+            traj = sim.simulateTrajectory();
+        } while (traj.getSampleCount() == 0);
+
         traj.dump();
 
+        Tree tree = sim.simulateTree(traj);
+
+        System.out.println(tree.getRoot().toSortedNewick(new int[1], true));
     }
 
 }

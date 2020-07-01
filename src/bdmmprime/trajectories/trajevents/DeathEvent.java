@@ -1,5 +1,10 @@
 package bdmmprime.trajectories.trajevents;
 
+import bdmmprime.trajectories.simulation.NodeFactory;
+import beast.evolution.tree.Node;
+
+import java.util.List;
+
 public class DeathEvent extends TrajectoryEvent {
 
     int type;
@@ -24,9 +29,15 @@ public class DeathEvent extends TrajectoryEvent {
     }
 
     @Override
+    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory) {
+        // Death events don't affect the tree.
+    }
+
+    @Override
     public String toString() {
         return "DeathEvent{" +
                 "type=" + type +
+                ", multiplicity=" + multiplicity +
                 '}';
     }
 }

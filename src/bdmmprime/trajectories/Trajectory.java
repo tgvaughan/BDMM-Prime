@@ -4,6 +4,7 @@ import bdmmprime.trajectories.trajevents.TrajectoryEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -46,6 +47,17 @@ public class Trajectory {
 
     public List<Double> getEventTimes() {
         return this.events.stream().map(e -> e.time).collect(Collectors.toList());
+    }
+
+    public int getSampleCount() {
+        return (int) this.events.stream().filter(TrajectoryEvent::isSamplingEvent).count();
+    }
+
+    public double getFinalSampleTime() {
+        return this.events.stream()
+                .filter(TrajectoryEvent::isSamplingEvent)
+                .mapToDouble(e -> e.time)
+                .max().getAsDouble();
     }
 
     public void dump() {
