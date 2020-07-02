@@ -1,0 +1,58 @@
+<beast version="2.0"
+       namespace="beast.core
+                 :beast.core.util
+                 :beast.core.parameter
+                 :beast.evolution.alignment
+                 :beast.evolution.likelihood
+                 :beast.evolution.tree
+                 :beast.evolution.tree.coalescent
+                 :beast.evolution.sitemodel
+                 :beast.evolution.substitutionmodel
+                 :beast.evolution.operators
+                 :beast.math.distributions
+                 :feast.simulation
+                 :feast.fileio
+                 :bdmmprime.distribution
+                 :bdmmprime.parameterization
+                 :bdmmprime.trajectories">
+
+    <parameterization id="parameterization" spec="CanonicalParameterization">
+      <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0,1"/>
+      <origin id="origin" spec="RealParameter" value="4.9995"/>
+      <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
+        <!-- <changeTimes spec="RealParameter" value="4"/> -->
+        <skylineValues spec="RealParameter" value="2.5 1.5"/>
+      </birthRate>
+      <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="0.5"/>
+      </deathRate>
+      <samplingRate spec="SkylineVectorParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="0.5"/>
+      </samplingRate>
+      <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="1.0"/>
+      </removalProb>
+      <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="0.2"/>
+      </migrationRate>
+    </parameterization>
+
+    <trajectory id="typedTrajectory"
+                spec="SampledTrajectoryLogger" typeLabel="type">
+      <typeMappedTree spec="TreeFromNewickFile" fileName="simulated_tree.tree"
+                      adjustTipHeights="false"
+                      IsLabelledNewick="true"/>
+      <parameterization idref="parameterization"/>
+    </trajectory>
+
+  <run spec="GPSimulator" nSims="1">
+
+    <simulationObject idref="typedTrajectory"/>
+
+    <logger spec="Logger" logEvery="1">
+      <log idref="typedTrajectory"/>
+    </logger>
+
+  </run>
+
+</beast>

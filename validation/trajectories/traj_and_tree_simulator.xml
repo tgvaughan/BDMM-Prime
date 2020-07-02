@@ -1,0 +1,55 @@
+<beast version="2.0"
+       namespace="beast.core
+                 :beast.core.util
+                 :beast.core.parameter
+                 :beast.evolution.alignment
+                 :beast.evolution.likelihood
+                 :beast.evolution.tree
+                 :beast.evolution.tree.coalescent
+                 :beast.evolution.sitemodel
+                 :beast.evolution.substitutionmodel
+                 :beast.evolution.operators
+                 :beast.math.distributions
+                 :feast.simulation
+                 :bdmmprime.distribution
+                 :bdmmprime.parameterization
+                 :bdmmprime.mapping">
+
+  <simulatedTree spec="bdmmprime.trajectories.simulation.SimulatedTree"
+                 id="simulatedTree"
+                 simulationTime="5"
+                 treeFileName="simulated_tree.tree"
+                 trajFileName="simulated_traj.traj">
+    <parameterization spec="CanonicalParameterization">
+      <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0,1"/>
+      <origin id="origin" spec="RealParameter" value="0"/> <!-- Will be set by simulation -->
+      <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
+        <!-- <changeTimes spec="RealParameter" value="4"/> -->
+        <skylineValues spec="RealParameter" value="2.5 1.5"/>
+      </birthRate>
+      <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="0.5"/>
+      </deathRate>
+      <samplingRate spec="SkylineVectorParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="0.5"/>
+      </samplingRate>
+      <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="1.0"/>
+      </removalProb>
+      <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="0.2"/>
+      </migrationRate>
+    </parameterization>
+
+    <frequencies spec="RealParameter" value="0.5 0.5"/>
+  </simulatedTree>
+
+  <run spec="GPSimulator" nSims="1">
+
+    <simulationObject idref="simulatedTree"/>
+
+    <logger spec="Logger" logEvery="1">
+      <log idref="origin"/>
+    </logger>
+  </run>
+</beast>

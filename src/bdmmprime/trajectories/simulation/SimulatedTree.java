@@ -10,6 +10,8 @@ import beast.evolution.tree.Tree;
 import beast.math.Binomial;
 import beast.util.Randomizer;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,6 +42,12 @@ public class SimulatedTree extends Tree {
             "Used to label tree nodes with corresponding types.",
             "type");
 
+    public Input<String> trajFileNameInput = new Input<>("trajFileName",
+            "Name of file to write simulated trajectory to.");
+
+    public Input<String> treeFileNameInput = new Input<>("treeFileName",
+            "Name of file to write simulated tree to.");
+
     Parameterization param;
     RealParameter frequencies;
     RealParameter simulationTime;
@@ -64,6 +72,36 @@ public class SimulatedTree extends Tree {
         a_sampling = new double[nTypes];
         a_migration = new double[nTypes][nTypes];
         a_crossbirth = new double[nTypes][nTypes];
+
+        Trajectory traj;
+        do {
+            traj = simulateTrajectory();
+        } while (traj.getSampleCount() == 0);
+
+        if (trajFileNameInput.get() != null) {
+            try (PrintStream out = new PrintStream(trajFileNameInput.get())) {
+
+                traj.dump(out, false);
+
+            } catch (FileNotFoundException e) {
+                System.err.println("Error writing trajectory to file.");
+            }
+        }
+
+        Tree tree = simulateTree(traj);
+        assignFromWithoutID(tree);
+
+        if (treeFileNameInput.get() != null) {
+            try (PrintStream out = new PrintStream(treeFileNameInput.get())) {
+
+                out.println(tree);
+
+            } catch (FileNotFoundException e) {
+                System.err.println("Error writing tree to file.");
+            }
+        }
+
+        param.originInput.get().setValue(traj.getFinalSampleTime());
 
         super.initAndValidate();
     }
@@ -250,6 +288,8 @@ public class SimulatedTree extends Tree {
      */
     public static void main(String[] args) {
 
+        Randomizer.setSeed(1);
+
         Parameterization param = new CanonicalParameterization();
 
         param.initByName(
@@ -279,16 +319,6 @@ public class SimulatedTree extends Tree {
                 "frequencies", new RealParameter("0.5 0.5"),
                 "simulationTime", "5.0");
 
-        Trajectory traj;
-        do {
-            traj = sim.simulateTrajectory();
-        } while (traj.getSampleCount() == 0);
-
-        traj.dump();
-
-        Tree tree = sim.simulateTree(traj);
-
-        System.out.println(tree.getRoot().toSortedNewick(new int[1], true));
+        System.out.println(sim.getRoot().toSortedNewick(new int[1], true));
     }
-
 }

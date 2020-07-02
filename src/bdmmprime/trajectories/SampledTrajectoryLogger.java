@@ -1,6 +1,10 @@
 package bdmmprime.trajectories;
 
 import bdmmprime.parameterization.Parameterization;
+import bdmmprime.trajectories.obsevents.CoalescenceEvent;
+import bdmmprime.trajectories.obsevents.ObservedEvent;
+import bdmmprime.trajectories.obsevents.ObservedSamplingEvent;
+import bdmmprime.trajectories.obsevents.TypeChangeEvent;
 import bdmmprime.trajectories.trajevents.*;
 import beast.core.BEASTObject;
 import beast.core.Input;
@@ -10,9 +14,8 @@ import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
 
 import java.io.PrintStream;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
@@ -34,7 +37,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
     Parameterization param;
     int nTypes, nParticles;
 
-    double[] a_birth, a_death, a_sampling;
+    double[] a_birth, a_death;
     double[][] a_migration, a_crossbirth;
     @Override
     public void initAndValidate() {
@@ -47,27 +50,14 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
         a_birth = new double[nTypes];
         a_death = new double[nTypes];
-        a_sampling = new double[nTypes];
         a_migration = new double[nTypes][nTypes];
         a_crossbirth = new double[nTypes][nTypes];
     }
 
     public Trajectory simulateTrajectory() {
-        Node[] treeEvents = new Node[mappedTree.getNodeCount()];
-        System.arraycopy(mappedTree.getNodesAsArray(), 0, treeEvents, 0, treeEvents.length);
-        Arrays.sort(treeEvents, Comparator.comparingDouble(Node::getHeight).reversed());
+        List<ObservedEvent> observedEvents = getObservedEventList(mappedTree);
 
-        int rootType = (int)treeEvents[0].getMetaData(typeLabel);
-        int[][] lineageCounts = new int[treeEvents.length][nTypes];
-        for (int s=0; s<nTypes; s++)
-            lineageCounts[0][s] = s == rootType ? 1 : 0;
-
-        for (int i=1; i<treeEvents.length; i++) {
-            System.arraycopy(lineageCounts[i-1], 0, lineageCounts[i], 0, nTypes);
-            lineageCounts[i][(int)treeEvents[i-1].getMetaData(typeLabel)] -= 1;
-            for (Node child : treeEvents[i-1].getChildren())
-                lineageCounts[i][(int)child.getMetaData(typeLabel)] += 1;
-        }
+        int rootType = observedEvents.get(0).type;
 
         // Initialize particles
         double[] initialState = new double[param.getNTypes()];
@@ -87,9 +77,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
         double t = 0.0;
 
-        for (int i=0; i<treeEvents.length; i++) {
-            if (treeEvents[i].isFake())
-                continue;
+        for (ObservedEvent observedEvent : observedEvents) {
 
             // Propagate particles to next event
 
@@ -97,7 +85,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
             double maxLogWeight = Double.NEGATIVE_INFINITY;
             for (int p=0; p<nParticles; p++) {
-                logParticleWeights[p] = propagateParticle(particleTrajectories[p], lineageCounts[i], t, interval, treeEvents[i]);
+                logParticleWeights[p] = propagateParticle(particleTrajectories[p], t, interval, observedEvent);
 
                 if (logParticleWeights[p] > maxLogWeight)
                     maxLogWeight = logParticleWeights[p];
@@ -128,7 +116,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
             particleTrajectories = particleTrajectoriesPrime;
             particleTrajectoriesPrime = tmp;
 
-            t = param.getNodeTime(treeEvents[i]);
+            t = observedEvent.time;
         }
 
         // WLOG choose 0th particle as the particle to return:
@@ -136,10 +124,8 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
         return particleTrajectories[0];
     }
 
-    double propagateParticle(Trajectory trajectory, int[] lineageCounts, double t, int interval, Node nextTreeEvent) {
+    double propagateParticle(Trajectory trajectory, double t, int interval, ObservedEvent observedEvent) {
         double logWeight = 0.0;
-
-        System.out.println("Event " + nextTreeEvent.getNr());
 
         while (true) {
             // Compute rates
@@ -151,7 +137,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
             for (int s=0; s<nTypes; s++) {
                 a_temp = trajectory.currentState[s]*param.getBirthRates()[interval][s];
                 if (a_temp > 0) {
-                    p_obs = lineageCounts[s] * (lineageCounts[s] - 1.0) / (trajectory.currentState[s] * (trajectory.currentState[s] + 1));
+                    p_obs = observedEvent.lineages[s] * (observedEvent.lineages[s] - 1.0) / (trajectory.currentState[s] * (trajectory.currentState[s] + 1));
                     a_birth[s] = a_temp * (1 - p_obs);
                     a_tot += a_birth[s];
                     a_illegal_tot += a_temp * p_obs;
@@ -159,7 +145,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
                     a_birth[s] = 0.0;
 
                 a_temp = trajectory.currentState[s] * param.getDeathRates()[interval][s];
-                if (trajectory.currentState[s] > lineageCounts[s]) {
+                if (trajectory.currentState[s] > observedEvent.lineages[s]) {
                     a_death[s] = a_temp;
                     a_tot += a_death[s];
                 } else {
@@ -173,15 +159,20 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
                     if (sp == s)
                         continue;
 
-                    a_temp = trajectory.currentState[s]*param.getMigRates()[interval][s][sp];
-                    p_obs = lineageCounts[sp]/(trajectory.currentState[sp]+1);
-                    a_migration[s][sp] = a_temp*(1-p_obs);
-                    a_tot += a_migration[s][sp];
-                    a_illegal_tot += a_temp*p_obs;
+                    a_temp = trajectory.currentState[s] * param.getMigRates()[interval][s][sp];
+                    if (trajectory.currentState[s]>observedEvent.lineages[s]) {
+                        p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1);
+                        a_migration[s][sp] = a_temp * (1 - p_obs);
+                        a_tot += a_migration[s][sp];
+                        a_illegal_tot += a_temp * p_obs;
+                    } else {
+                        a_migration[s][sp] = 0.0;
+                        a_illegal_tot += a_temp;
+                    }
 
                     a_temp = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
                     if (a_temp > 0.0) {
-                        p_obs = lineageCounts[s] * lineageCounts[sp] / (trajectory.currentState[s] * (trajectory.currentState[sp] + 1));
+                        p_obs = observedEvent.lineages[s] * observedEvent.lineages[sp] / (trajectory.currentState[s] * (trajectory.currentState[sp] + 1));
                         a_crossbirth[s][sp] = a_temp * (1 - p_obs);
                         a_tot += a_crossbirth[s][sp];
                         a_illegal_tot += a_temp * p_obs;
@@ -201,7 +192,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
             // Test time
 
-            if (param.getIntervalEndTimes()[interval] < param.getNodeTime(nextTreeEvent)) {
+            if (param.getIntervalEndTimes()[interval] < observedEvent.time) {
                 if (tprime > param.getIntervalEndTimes()[interval]) {
                     // TODO: Add in treatment of rho sampling
 
@@ -211,9 +202,9 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
                     continue;
                 }
             } else {
-                if (t > param.getNodeTime(nextTreeEvent)) {
+                if (t > observedEvent.time) {
                     logWeight += -a_illegal_tot*(tprime - t);
-                    t = param.getNodeTime(nextTreeEvent);
+                    t = observedEvent.time;
                     break;
                 }
             }
@@ -269,86 +260,85 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
             trajectory.addEvent(event);
         }
 
-        // Compute tree event probability
-
-        if (nextTreeEvent.getChildCount() == 0) {
-            // Sample
-
-            int s = (int)nextTreeEvent.getMetaData(typeLabel);
-
-            double sampling_prop = trajectory.currentState[s]*param.getSamplingRates()[interval][s];
-            if (nextTreeEvent.isDirectAncestor()) {
-                logWeight += Math.log((1.0-param.getRemovalProbs()[interval][s])*sampling_prop);
-            } else {
-                logWeight += Math.log(sampling_prop);
-
-                boolean isRemoval = Randomizer.nextDouble() < param.getRemovalProbs()[interval][s];
-                if (isRemoval) {
-                    trajectory.addEvent(new DeathEvent(t, s));
-                } else {
-                    logWeight += Math.log(1.0 - (lineageCounts[s]-1.0)/trajectory.currentState[s]);
-                }
-            }
-
-            // TODO: Add in treatment of rho sampling.
-
-        } else if (nextTreeEvent.getChildCount() == 1) {
-            // Migration or cross-birth
-
-            int s = (int)nextTreeEvent.getMetaData(typeLabel);
-            int sp = (int)nextTreeEvent.getChild(0).getMetaData(typeLabel);
-
-            double migration_prop = trajectory.currentState[s]*param.getMigRates()[interval][s][sp] ;
-            double crossbirth_prop = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
-
-            logWeight += Math.log(migration_prop + crossbirth_prop);
-
-            boolean isMigration;
-            if (migration_prop == 0.0)
-                isMigration = false;
-            else if (crossbirth_prop == 0.0)
-                isMigration = true;
-            else {
-                isMigration = Randomizer.nextDouble()*(migration_prop + crossbirth_prop) < migration_prop;
-            }
-
-            if (isMigration) {
-                logWeight += -Math.log(trajectory.currentState[sp]+1);
-                trajectory.addEvent(new MigrationEvent(t, s, sp));
-
-            } else {
-                logWeight += Math.log(crossbirth_prop*(1.0 - lineageCounts[s]/trajectory.currentState[s]));
-
-                trajectory.addEvent(new CrossBirthEvent(t, s, sp));
-            }
-
-        } else if (nextTreeEvent.getChildCount() == 2) {
-            // Birth or cross-birth
-
-            int s = (int)nextTreeEvent.getMetaData(typeLabel);
-            int sc1 = (int)nextTreeEvent.getChild(0).getMetaData(typeLabel);
-            int sc2 = (int)nextTreeEvent.getChild(1).getMetaData(typeLabel);
-
-            int sp = sc1 != s ? sc1 : sc2;
-
-            if (sp == s) {
-                // Birth
-
-                double birth_prop = trajectory.currentState[s]*param.getBirthRates()[interval][s];
-                logWeight += Math.log(birth_prop) - Math.log(0.5*(trajectory.currentState[s]*(trajectory.currentState[s]+1)));
-
-            } else {
-                // Cross-birth
-
-                double crossbirth_prop = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
-                logWeight += Math.log(crossbirth_prop) - Math.log(trajectory.currentState[s]*trajectory.currentState[sp]);
-
-            }
-
-        }
+        // Compute tree event contribution
+        logWeight += observedEvent.applyToTrajectory(param, interval, trajectory);
 
         return logWeight;
     }
+
+    List<ObservedEvent> getObservedEventList(Tree tree) {
+
+        // Extract sample times first:
+        List<Node> sampleNodes = new ArrayList<>(tree.getExternalNodes());
+        sampleNodes.sort(Comparator.comparingDouble(Node::getHeight));
+        Collections.reverse(sampleNodes);
+
+        List<ObservedEvent> eventList = new ArrayList<>();
+        ObservedSamplingEvent[] thisSamplingEvent = new ObservedSamplingEvent[param.getNTypes()];
+        for (Node node : sampleNodes) {
+            double t = param.getNodeTime(node);
+            int type = getNodeType(node, typeLabel);
+
+            if (thisSamplingEvent[type] == null || Math.abs(t-thisSamplingEvent[type].time) > 1e-10) {
+                thisSamplingEvent[type] = new ObservedSamplingEvent(t, type, 0, 0);
+                eventList.add(thisSamplingEvent[type]);
+            }
+
+            if (node.isDirectAncestor())
+                thisSamplingEvent[type].nSampledAncestors += 1;
+            else
+                thisSamplingEvent[type].nLeaves += 1;
+        }
+
+        List<Node> internalNodes = tree.getInternalNodes().stream()
+                .filter(n -> !n.isFake())
+                .collect(Collectors.toList());
+
+        for (Node node : internalNodes) {
+            if (node.getChildCount() == 1) {
+                // Observed type change
+
+                eventList.add(new TypeChangeEvent(param.getNodeTime(node),
+                        getNodeType(node, typeLabel),
+                        getNodeType(node.getChild(0), typeLabel),1));
+            } else {
+                // Coalescence
+
+                eventList.add(new CoalescenceEvent(param.getNodeTime(node),
+                        getNodeType(node, typeLabel),
+                        getNodeType(node.getChild(0), typeLabel),
+                        getNodeType(node.getChild(1), typeLabel), 1));
+            }
+        }
+
+        eventList.sort(Comparator.comparingDouble(e -> e.time));
+
+        // Compute lineage counts
+
+        ObservedEvent rootEvent = eventList.get(0);
+        int rootType = rootEvent.type;
+        rootEvent.lineages = new int[nTypes];
+        for (int s=0; s<nTypes; s++)
+            rootEvent.lineages[s] = s == rootType ? 1 : 0;
+
+        ObservedEvent prevEvent = null;
+        for (ObservedEvent event : eventList) {
+            if (prevEvent == null) {
+                event.lineages = new int[nTypes];
+                for (int s=0; s<nTypes; s++)
+                    event.lineages[s] = s == event.type ? 1 : 0;
+            } else {
+                event.lineages = prevEvent.getNextLineageCounts();
+            }
+        }
+
+        return eventList;
+    }
+
+    private int getNodeType(Node node, String typeLabel) {
+        return Integer.parseInt((String)node.getMetaData(typeLabel));
+    }
+
 
     @Override
     public void init(PrintStream out) {

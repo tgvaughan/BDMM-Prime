@@ -2,9 +2,9 @@ package bdmmprime.trajectories;
 
 import bdmmprime.trajectories.trajevents.TrajectoryEvent;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -50,7 +50,10 @@ public class Trajectory {
     }
 
     public int getSampleCount() {
-        return (int) this.events.stream().filter(TrajectoryEvent::isSamplingEvent).count();
+        return (int) this.events.stream()
+                .filter(TrajectoryEvent::isSamplingEvent)
+                .mapToInt(e -> e.multiplicity)
+                .sum();
     }
 
     public double getFinalSampleTime() {
@@ -60,24 +63,37 @@ public class Trajectory {
                 .max().getAsDouble();
     }
 
-    public void dump() {
+    public void dump(PrintStream out, boolean includeEvents) {
         List<double[]> states = getStateList();
         List<Double> eventTimes = getEventTimes();
 
+        out.print("t");
+        for (int s=0; s<currentState.length; s++)
+            out.print("\tn" + s);
+
+        if (includeEvents)
+            out.print("\tevent");
+
+        out.println();
+
         for (int i=0; i<states.size(); i++ ) {
             if (i == 0)
-                System.out.print(0.0);
+                out.print(0.0);
             else
-                System.out.print(eventTimes.get(i - 1));
+                out.print(eventTimes.get(i - 1));
 
             for (int s = 0; s < currentState.length; s++) {
-                System.out.print("\t" + states.get(i)[s]);
+                out.print("\t" + states.get(i)[s]);
             }
 
-            if (i == 0)
-                System.out.println("\tSTART");
-            else
-                System.out.println("\t" + events.get(i-1));
+            if (includeEvents) {
+                if (i == 0)
+                    out.print("\tSTART");
+                else
+                    out.print("\t" + events.get(i - 1));
+            }
+
+            out.println();
         }
     }
 }
