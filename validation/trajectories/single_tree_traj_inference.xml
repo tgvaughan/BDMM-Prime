@@ -11,20 +11,17 @@
                  :beast.evolution.operators
                  :beast.math.distributions
                  :feast.simulation
+                 :feast.fileio
                  :bdmmprime.distribution
                  :bdmmprime.parameterization
-                 :bdmmprime.mapping">
+                 :bdmmprime.trajectories">
 
-  <simulatedTree spec="bdmmprime.trajectories.simulation.SimulatedTree"
-                 id="simulatedTree"
-                 simulationTime="5"
-                 minSamples="5">
-    <parameterization spec="CanonicalParameterization">
-      <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0"/>
-      <origin id="origin" spec="RealParameter" value="0"/> <!-- Will be set by simulation -->
+    <parameterization id="parameterization" spec="CanonicalParameterization">
+      <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0,1"/>
+      <origin id="origin" spec="RealParameter" value="4.9961"/>
       <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
         <!-- <changeTimes spec="RealParameter" value="4"/> -->
-        <skylineValues spec="RealParameter" value="2.0"/>
+        <skylineValues spec="RealParameter" value="2.5 1.5"/>
       </birthRate>
       <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
         <skylineValues spec="RealParameter" value="1.0"/>
@@ -35,30 +32,32 @@
       <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
         <skylineValues spec="RealParameter" value="1.0"/>
       </removalProb>
-<!--      <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">-->
-<!--        <skylineValues spec="RealParameter" value="0.5"/>-->
-<!--      </migrationRate>-->
+      <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
+        <skylineValues spec="RealParameter" value="0.5"/>
+      </migrationRate>
     </parameterization>
 
-    <frequencies spec="RealParameter" value="1.0"/>
-  </simulatedTree>
+    <trajectory id="typedTrajectory"
+                nParticles="1000"
+                spec="SampledTrajectory" typeLabel="type">
+      <typeMappedTree spec="TreeFromNewickFile" fileName="simulated_tree.tree"
+                      adjustTipHeights="false"
+                      IsLabelledNewick="true"/>
+      <parameterization idref="parameterization"/>
+    </trajectory>
 
-  <run spec="GPSimulator" nSims="1000">
+  <run spec="GPSimulator" nSims="10">
 
-    <simulationObject idref="simulatedTree"/>
+    <simulationObject idref="typedTrajectory"/>
 
-    <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
-      <log idref="origin"/>
-    </logger>
-
-    <logger spec="Logger" mode="tree" logEvery="1" fileName="$(filebase).trees">
-      <log idref="simulatedTree"/>
+    <logger spec="Logger" logEvery="1">
+      <log idref="typedTrajectory"/>
     </logger>
 
     <logger spec="Logger" logEvery="1" fileName="$(filebase).traj">
-      <log id="trajectory" spec="bdmmprime.trajectories.simulation.SimulatedTrajectoryLogger">
-        <simulatedTree idref="simulatedTree"/>
-      </log>
+      <log idref="typedTrajectory"/>
     </logger>
+
   </run>
+
 </beast>

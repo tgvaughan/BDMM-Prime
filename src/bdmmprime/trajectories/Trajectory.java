@@ -45,6 +45,24 @@ public class Trajectory {
         return states;
     }
 
+    public boolean currentStateValid() {
+        for (double v : currentState) {
+            if (v < 0)
+                return false;
+        }
+
+        return true;
+    }
+
+    public boolean currentStateValid(int[] lineages) {
+        for (int s=0; s<currentState.length; s++) {
+            if (Math.round(currentState[s]) < lineages[s])
+                return false;
+        }
+
+        return true;
+    }
+
     public List<Double> getEventTimes() {
         return this.events.stream().map(e -> e.time).collect(Collectors.toList());
     }
@@ -95,5 +113,27 @@ public class Trajectory {
 
             out.println();
         }
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+
+        List<double[]> states = getStateList();
+        List<Double> eventTimes = getEventTimes();
+
+        for (int i=0; i<states.size(); i++ ) {
+            if (i==0)
+                sb.append(0.0);
+            else
+                sb.append(",").append(eventTimes.get(i - 1));
+
+            for (int s=0; s<currentState.length; s++) {
+                sb.append(":");
+                sb.append(states.get(i)[s]);
+            }
+        }
+
+        return sb.toString();
     }
 }

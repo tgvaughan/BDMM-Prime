@@ -12,47 +12,56 @@
                  :beast.math.distributions
                  :feast.simulation
                  :feast.fileio
+                 :feast.fileio.logfileiterator
                  :bdmmprime.distribution
                  :bdmmprime.parameterization
                  :bdmmprime.trajectories">
 
-    <parameterization id="parameterization" spec="CanonicalParameterization">
-      <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0,1"/>
-      <origin id="origin" spec="RealParameter" value="4.9995"/>
-      <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
-        <!-- <changeTimes spec="RealParameter" value="4"/> -->
-        <skylineValues spec="RealParameter" value="2.5 1.5"/>
-      </birthRate>
-      <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
-        <skylineValues spec="RealParameter" value="0.5"/>
-      </deathRate>
-      <samplingRate spec="SkylineVectorParameter" typeSet="@typeSet">
-        <skylineValues spec="RealParameter" value="0.5"/>
-      </samplingRate>
-      <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
-        <skylineValues spec="RealParameter" value="1.0"/>
-      </removalProb>
-      <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
-        <skylineValues spec="RealParameter" value="0.2"/>
-      </migrationRate>
-    </parameterization>
+  <parameterization id="parameterization" spec="CanonicalParameterization">
+    <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0"/>
+    <origin idref="origin"/>
+    <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
+      <!-- <changeTimes spec="RealParameter" value="4"/> -->
+      <skylineValues spec="RealParameter" value="2.0"/>
+    </birthRate>
+    <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="1.0"/>
+    </deathRate>
+    <samplingRate spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.5"/>
+    </samplingRate>
+    <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="1.0"/>
+    </removalProb>
+<!--    <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">-->
+<!--      <skylineValues spec="RealParameter" value="-2.5"/>-->
+<!--    </migrationRate>-->
+  </parameterization>
 
-    <trajectory id="typedTrajectory"
-                spec="SampledTrajectoryLogger" typeLabel="type">
-      <typeMappedTree spec="TreeFromNewickFile" fileName="simulated_tree.tree"
-                      adjustTipHeights="false"
-                      IsLabelledNewick="true"/>
-      <parameterization idref="parameterization"/>
-    </trajectory>
+  <run spec="LogFileIterator">
 
-  <run spec="GPSimulator" nSims="1">
+    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator.trees">
+      <tree id="tree" spec="Tree"/>
+    </logFileState>
 
-    <simulationObject idref="typedTrajectory"/>
+    <logFileState spec="TraceLogFileState" logFileName="traj_and_tree_simulator.log">
+      <logFileEntry spec="LogFileRealParameter" fieldName="origin">
+        <fieldParameter id="origin" spec="RealParameter" value="0"/>
+      </logFileEntry>
+    </logFileState>
 
     <logger spec="Logger" logEvery="1">
-      <log idref="typedTrajectory"/>
+      <log idref="origin"/>
     </logger>
 
+    <logger spec="Logger" logEvery="1" fileName="$(filebase).traj">
+      <log id="typedTrajectory"
+           nParticles="1000"
+           spec="SampledTrajectory" typeLabel="type"
+           typeMappedTree="@tree">
+        <parameterization idref="parameterization"/>
+      </log>
+    </logger>
   </run>
 
 </beast>

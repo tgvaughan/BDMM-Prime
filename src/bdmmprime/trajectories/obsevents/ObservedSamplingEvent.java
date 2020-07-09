@@ -3,6 +3,7 @@ package bdmmprime.trajectories.obsevents;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.DeathEvent;
+import bdmmprime.trajectories.trajevents.SamplingEvent;
 import beast.util.Randomizer;
 
 public class ObservedSamplingEvent extends ObservedEvent {
@@ -40,15 +41,17 @@ public class ObservedSamplingEvent extends ObservedEvent {
 
             boolean isRemoval = Randomizer.nextDouble() < param.getRemovalProbs()[interval][s];
             if (isRemoval) {
-                trajectory.addEvent(new DeathEvent(time, s));
+                trajectory.addEvent(new SamplingEvent(time, s, 1, 0));
             } else {
                 logWeightContrib += Math.log(1.0 - (lineages[s]-1.0)/trajectory.currentState[s]);
+                trajectory.addEvent(new SamplingEvent(time, s, 0, 1));
             }
         }
 
         for (int i=0; i<nSampledAncestors; i++) {
             double sampling_prop = trajectory.currentState[s]*param.getSamplingRates()[interval][s];
             logWeightContrib += Math.log((1.0-param.getRemovalProbs()[interval][s])*sampling_prop);
+            trajectory.addEvent(new SamplingEvent(time, s, 0, 1));
         }
 
         return logWeightContrib;

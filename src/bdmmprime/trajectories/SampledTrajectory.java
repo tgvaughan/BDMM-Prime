@@ -7,6 +7,7 @@ import bdmmprime.trajectories.obsevents.ObservedSamplingEvent;
 import bdmmprime.trajectories.obsevents.TypeChangeEvent;
 import bdmmprime.trajectories.trajevents.*;
 import beast.core.BEASTObject;
+import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.Loggable;
 import beast.evolution.tree.Node;
@@ -17,7 +18,7 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
+public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public Input<Tree> mappedTreeInput = new Input<>("typeMappedTree",
             "Tree with stochastically mapped types.", Input.Validate.REQUIRED);
@@ -77,6 +78,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
         double t = 0.0;
 
+        ObservedEvent prevEvent = null;
         for (ObservedEvent observedEvent : observedEvents) {
 
             // Propagate particles to next event
@@ -85,6 +87,8 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
 
             double maxLogWeight = Double.NEGATIVE_INFINITY;
             for (int p=0; p<nParticles; p++) {
+                if (!particleTrajectories[p].currentStateValid(observedEvent.lineages))
+                    throw new IllegalStateException("Particle state incompatible with next observation.");
                 logParticleWeights[p] = propagateParticle(particleTrajectories[p], t, interval, observedEvent);
 
                 if (logParticleWeights[p] > maxLogWeight)
@@ -99,6 +103,8 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
             double sumOfScaledWeights = 0.0;
             for (int p=0; p<nParticles; p++) {
                 particleWeights[p] = Math.exp(logParticleWeights[p]-maxLogWeight);
+                if (particleWeights[p] == 0.0)
+                    throw new IllegalStateException("Found zero weight.");
                 sumOfScaledWeights += particleWeights[p];
             }
 
@@ -117,6 +123,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
             particleTrajectoriesPrime = tmp;
 
             t = observedEvent.time;
+            prevEvent = observedEvent;
         }
 
         // WLOG choose 0th particle as the particle to return:
@@ -159,6 +166,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
                     if (sp == s)
                         continue;
 
+                    // Migration
                     a_temp = trajectory.currentState[s] * param.getMigRates()[interval][s][sp];
                     if (trajectory.currentState[s]>observedEvent.lineages[s]) {
                         p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1);
@@ -170,6 +178,7 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
                         a_illegal_tot += a_temp;
                     }
 
+                    // Cross birth
                     a_temp = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
                     if (a_temp > 0.0) {
                         p_obs = observedEvent.lineages[s] * observedEvent.lineages[sp] / (trajectory.currentState[s] * (trajectory.currentState[sp] + 1));
@@ -202,9 +211,8 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
                     continue;
                 }
             } else {
-                if (t > observedEvent.time) {
+                if (tprime > observedEvent.time) {
                     logWeight += -a_illegal_tot*(tprime - t);
-                    t = observedEvent.time;
                     break;
                 }
             }
@@ -258,10 +266,14 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
             }
 
             trajectory.addEvent(event);
+            if (!trajectory.currentStateValid(observedEvent.lineages))
+                throw new IllegalStateException("Unobserved event produced illegal state.");
         }
 
         // Compute tree event contribution
         logWeight += observedEvent.applyToTrajectory(param, interval, trajectory);
+        if (!trajectory.currentStateValid())
+            throw new IllegalStateException("Observed event produced illegal state.");
 
         return logWeight;
     }
@@ -330,6 +342,8 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
             } else {
                 event.lineages = prevEvent.getNextLineageCounts();
             }
+
+            prevEvent = event;
         }
 
         return eventList;
@@ -339,7 +353,6 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
         return Integer.parseInt((String)node.getMetaData(typeLabel));
     }
 
-
     @Override
     public void init(PrintStream out) {
         if (getID() == null)
@@ -348,30 +361,22 @@ public class SampledTrajectoryLogger extends BEASTObject implements Loggable {
             out.print(getID() + "\t");
     }
 
+    Trajectory traj = null;
+    long prevSimulationSample = -1;
+
     @Override
     public void log(long sample, PrintStream out) {
-        Trajectory traj = simulateTrajectory();
-
-        if (traj == null) {
-            out.print("NA\t");
-            return;
+        if (prevSimulationSample != sample) {
+            System.out.println("Sampling traj with origin=" + param.originInput.get().getValue() +
+                    " and a tree with " + mappedTree.getLeafNodeCount() + " leaves");
+            traj = simulateTrajectory();
+            prevSimulationSample = sample;
         }
 
-        List<double[]> states = traj.getStateList();
-        List<Double> eventTimes = traj.getEventTimes();
-
-        for (int i=0; i<states.size(); i++ ) {
-            if (i==0)
-                out.print(0.0);
-            else
-                out.print("," + eventTimes.get(i-1));
-
-            for (int s=0; s<nTypes; s++) {
-                if (s > 0)
-                    out.print(":");
-                out.print(states.get(0)[s]);
-            }
-        }
+        if (traj == null)
+            out.print("NA");
+        else
+            out.print(traj);
 
         out.print("\t");
     }

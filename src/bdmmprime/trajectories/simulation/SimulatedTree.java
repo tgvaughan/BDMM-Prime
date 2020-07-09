@@ -38,6 +38,9 @@ public class SimulatedTree extends Tree {
             "Time to run simulation for.",
             Input.Validate.REQUIRED);
 
+    public Input<Integer> minSamplesInput = new Input<>("minSamples",
+            "Minimum number of samples to accept in simulated trajectory.", 1);
+
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Used to label tree nodes with corresponding types.",
             "type");
@@ -58,11 +61,17 @@ public class SimulatedTree extends Tree {
     int nTypes;
     String typeLabel;
 
+    int minSamples;
+
+    public Trajectory traj;
+
     @Override
     public void initAndValidate() {
         param = parameterizationInput.get();
         frequencies = frequenciesInput.get();
         simulationTime = simulationTimeInput.get();
+
+        minSamples = minSamplesInput.get();
 
         nTypes = param.getNTypes();
         typeLabel = typeLabelInput.get();
@@ -73,10 +82,10 @@ public class SimulatedTree extends Tree {
         a_migration = new double[nTypes][nTypes];
         a_crossbirth = new double[nTypes][nTypes];
 
-        Trajectory traj;
+        traj = null;
         do {
             traj = simulateTrajectory();
-        } while (traj.getSampleCount() == 0);
+        } while (traj.getSampleCount() < Math.max(minSamples,1));
 
         if (trajFileNameInput.get() != null) {
             try (PrintStream out = new PrintStream(trajFileNameInput.get())) {
@@ -88,7 +97,7 @@ public class SimulatedTree extends Tree {
             }
         }
 
-        Tree tree = simulateTree(traj);
+        Tree tree = simulateTree();
         assignFromWithoutID(tree);
 
         if (treeFileNameInput.get() != null) {
@@ -226,7 +235,7 @@ public class SimulatedTree extends Tree {
         return traj;
     }
 
-    public Tree simulateTree(Trajectory traj) {
+    public Tree simulateTree() {
 
 
         List<TrajectoryEvent> events = new ArrayList<>(traj.events);
@@ -280,6 +289,18 @@ public class SimulatedTree extends Tree {
         }
 
         return m;
+    }
+
+    @Override
+    public void log(long sample, PrintStream out) {
+        Tree tree = (Tree) getCurrent();
+        out.print("tree STATE_" + sample + " = ");
+        // Don't sort, this can confuse CalculationNodes relying on the tree
+        //tree.getRoot().sort();
+        final int[] dummy = new int[1];
+        final String newick = tree.getRoot().toSortedNewick(new int[1], true);
+        out.print(newick);
+        out.print(";");
     }
 
     /**
