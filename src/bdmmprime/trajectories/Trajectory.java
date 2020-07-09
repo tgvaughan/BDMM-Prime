@@ -122,11 +122,16 @@ public class Trajectory {
         List<double[]> states = getStateList();
         List<Double> eventTimes = getEventTimes();
 
+        double finalSampleTime = getFinalSampleTime();
+
         for (int i=0; i<states.size(); i++ ) {
+
             if (i==0)
                 sb.append(0.0);
-            else
+            else if (eventTimes.get(i-1) <= finalSampleTime)
                 sb.append(",").append(eventTimes.get(i - 1));
+            else
+                break;
 
             for (int s=0; s<currentState.length; s++) {
                 sb.append(":");
