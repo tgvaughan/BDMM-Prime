@@ -79,11 +79,13 @@ df <- loadTrajectories("traj_inference.traj", burninFrac=0)
 
 dftrue <- loadTrajectories("traj_and_tree_simulator.traj", burninFrac=0)
 
-df_compare <- bind_rows(gridTrajectories(df, seq(1,4)) %>% mutate(ensemble="filter"),
-                        gridTrajectories(dftrue, seq(1,4)) %>% mutate(ensemble="direct"))
+times <- seq(0,5,length.out=51)
+df_compare <- bind_rows(gridTrajectories(df, times) %>% mutate(ensemble="filter"),
+                        gridTrajectories(dftrue, times) %>% mutate(ensemble="direct"))
 
-ggplot(df_compare %>% filter(time==3)) +
-    geom_freqpoly(aes(I, colour=factor(type), linetype=ensemble)) +
-    facet_grid(cols=vars(time)) +
-    xlim(c(0, 50))
-    ## scale_y_log10() # + scale_x_log10()
+ggplot(df_compare %>%
+       group_by(time, ensemble) %>%
+       summarize(Imed=median(I), Ilow=quantile(I,0.25), Ihigh=quantile(I,0.75))) +
+    geom_ribbon(aes(time, ymin=Ilow, ymax=Ihigh, fill=ensemble), alpha=0.5) +
+    geom_line(aes(time, Imed, colour=ensemble)) +
+    scale_y_log10()

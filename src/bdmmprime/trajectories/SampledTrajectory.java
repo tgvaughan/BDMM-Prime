@@ -6,7 +6,6 @@ import bdmmprime.trajectories.obsevents.ObservedEvent;
 import bdmmprime.trajectories.obsevents.ObservedSamplingEvent;
 import bdmmprime.trajectories.obsevents.TypeChangeEvent;
 import bdmmprime.trajectories.trajevents.*;
-import beast.core.BEASTObject;
 import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.Loggable;
@@ -15,7 +14,10 @@ import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
 
 import java.io.PrintStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class SampledTrajectory extends CalculationNode implements Loggable {
@@ -144,7 +146,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             for (int s=0; s<nTypes; s++) {
                 a_temp = trajectory.currentState[s]*param.getBirthRates()[interval][s];
                 if (a_temp > 0) {
-                    p_obs = observedEvent.lineages[s] * (observedEvent.lineages[s] - 1.0) / (trajectory.currentState[s] * (trajectory.currentState[s] + 1));
+                    p_obs = observedEvent.lineages[s] * (observedEvent.lineages[s] - 1.0)
+                            / (trajectory.currentState[s] * (trajectory.currentState[s] + 1.0));
                     a_birth[s] = a_temp * (1 - p_obs);
                     a_tot += a_birth[s];
                     a_illegal_tot += a_temp * p_obs;
@@ -205,14 +208,15 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                 if (tprime > param.getIntervalEndTimes()[interval]) {
                     // TODO: Add in treatment of rho sampling
 
+                    tprime = param.getIntervalEndTimes()[interval];
                     logWeight += -a_illegal_tot*(tprime - t);
-                    t = param.getIntervalEndTimes()[interval];
+                    t = tprime;
                     interval += 1;
                     continue;
                 }
             } else {
                 if (tprime > observedEvent.time) {
-                    logWeight += -a_illegal_tot*(tprime - t);
+                    logWeight += -a_illegal_tot*(observedEvent.time - t);
                     break;
                 }
             }
