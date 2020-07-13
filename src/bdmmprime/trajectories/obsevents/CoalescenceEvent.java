@@ -42,7 +42,8 @@ public class CoalescenceEvent extends ObservedEvent {
             // Birth
 
             double birth_prop = trajectory.currentState[s]*param.getBirthRates()[interval][s];
-            logWeightContrib += Math.log(birth_prop) - Math.log(0.5*(trajectory.currentState[s]*(trajectory.currentState[s]+1)));
+            logWeightContrib += Math.log(birth_prop)
+                    - Math.log(0.5*(trajectory.currentState[s]*(trajectory.currentState[s] + 1.0)));
 
             trajectory.addEvent(new BirthEvent(time, s));
 
@@ -50,7 +51,8 @@ public class CoalescenceEvent extends ObservedEvent {
             // Cross-birth
 
             double crossbirth_prop = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
-            logWeightContrib += Math.log(crossbirth_prop) - Math.log(trajectory.currentState[s]*trajectory.currentState[sp]);
+            logWeightContrib += Math.log(crossbirth_prop)
+                    - Math.log(trajectory.currentState[s]*(trajectory.currentState[sp] + 1.0));
 
             trajectory.addEvent(new CrossBirthEvent(time, s, sp));
         }

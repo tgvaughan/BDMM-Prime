@@ -89,3 +89,11 @@ ggplot(df_compare %>%
     geom_ribbon(aes(time, ymin=Ilow, ymax=Ihigh, fill=ensemble), alpha=0.5) +
     geom_line(aes(time, Imed, colour=ensemble)) +
     scale_y_log10()
+
+df_comb <- bind_rows(dftrue %>% mutate(ensemble="direct"),
+                     df %>% mutate(ensemble="filter"))
+
+ggplot(df_comb %>% filter(traj==20)) +
+    geom_step(aes(time, I, col=ensemble)) +
+    geom_vline(aes(xintercept=max(time)), linetype="dashed")
+

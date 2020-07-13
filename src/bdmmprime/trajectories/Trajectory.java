@@ -63,6 +63,15 @@ public class Trajectory {
         return true;
     }
 
+    public boolean currentStateEmpty() {
+        for (int s=0; s<currentState.length; s++) {
+            if (Math.round(currentState[s]) > 0)
+                return false;
+        }
+
+        return true;
+    }
+
     public List<Double> getEventTimes() {
         return this.events.stream().map(e -> e.time).collect(Collectors.toList());
     }
@@ -79,6 +88,13 @@ public class Trajectory {
                 .filter(TrajectoryEvent::isSamplingEvent)
                 .mapToDouble(e -> e.time)
                 .max().getAsDouble();
+    }
+
+    public double getFirstSampleTime() {
+        return this.events.stream()
+                .filter(TrajectoryEvent::isSamplingEvent)
+                .mapToDouble(e -> e.time)
+                .min().getAsDouble();
     }
 
     public void dump(PrintStream out, boolean includeEvents) {

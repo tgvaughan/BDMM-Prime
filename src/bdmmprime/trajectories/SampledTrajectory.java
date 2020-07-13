@@ -57,7 +57,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         a_crossbirth = new double[nTypes][nTypes];
     }
 
-    public Trajectory simulateTrajectory() {
+    public Trajectory sampleTrajectory() {
         List<ObservedEvent> observedEvents = getObservedEventList(mappedTree);
 
         int rootType = observedEvents.get(0).type;
@@ -80,7 +80,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
         double t = 0.0;
 
-        ObservedEvent prevEvent = null;
         for (ObservedEvent observedEvent : observedEvents) {
 
             // Propagate particles to next event
@@ -91,6 +90,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             for (int p=0; p<nParticles; p++) {
                 if (!particleTrajectories[p].currentStateValid(observedEvent.lineages))
                     throw new IllegalStateException("Particle state incompatible with next observation.");
+
+                if (particleTrajectories[p].currentStateEmpty())
+                    throw new IllegalStateException("Particle simulation begining with empty state.");
+
                 logParticleWeights[p] = propagateParticle(particleTrajectories[p], t, interval, observedEvent);
 
                 if (logParticleWeights[p] > maxLogWeight)
@@ -125,7 +128,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             particleTrajectoriesPrime = tmp;
 
             t = observedEvent.time;
-            prevEvent = observedEvent;
         }
 
         // WLOG choose 0th particle as the particle to return:
@@ -151,8 +153,9 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                     a_birth[s] = a_temp * (1 - p_obs);
                     a_tot += a_birth[s];
                     a_illegal_tot += a_temp * p_obs;
-                } else
+                } else {
                     a_birth[s] = 0.0;
+                }
 
                 a_temp = trajectory.currentState[s] * param.getDeathRates()[interval][s];
                 if (trajectory.currentState[s] > observedEvent.lineages[s]) {
@@ -172,8 +175,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                     // Migration
                     a_temp = trajectory.currentState[s] * param.getMigRates()[interval][s][sp];
                     if (trajectory.currentState[s]>observedEvent.lineages[s]) {
-                        p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1);
-                        a_migration[s][sp] = a_temp * (1 - p_obs);
+                        p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1.0);
+                        a_migration[s][sp] = a_temp * (1.0 - p_obs);
                         a_tot += a_migration[s][sp];
                         a_illegal_tot += a_temp * p_obs;
                     } else {
@@ -184,8 +187,9 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                     // Cross birth
                     a_temp = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
                     if (a_temp > 0.0) {
-                        p_obs = observedEvent.lineages[s] * observedEvent.lineages[sp] / (trajectory.currentState[s] * (trajectory.currentState[sp] + 1));
-                        a_crossbirth[s][sp] = a_temp * (1 - p_obs);
+                        p_obs = observedEvent.lineages[s] * observedEvent.lineages[sp]
+                                / (trajectory.currentState[s] * (trajectory.currentState[sp] + 1.0));
+                        a_crossbirth[s][sp] = a_temp * (1.0 - p_obs);
                         a_tot += a_crossbirth[s][sp];
                         a_illegal_tot += a_temp * p_obs;
                     } else {
@@ -202,30 +206,26 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             else
                 tprime = Double.POSITIVE_INFINITY;
 
-            // Test time
+            double tnew = Math.min(tprime, Math.min(param.getIntervalEndTimes()[interval], observedEvent.time));
+
+            // Update weight and time
+
+            logWeight += -a_illegal_tot*(tnew - t);
+            t = tnew;
+
+            // Test for end of interval or simulation
 
             if (param.getIntervalEndTimes()[interval] < observedEvent.time) {
                 if (tprime > param.getIntervalEndTimes()[interval]) {
                     // TODO: Add in treatment of rho sampling
-
-                    tprime = param.getIntervalEndTimes()[interval];
-                    logWeight += -a_illegal_tot*(tprime - t);
-                    t = tprime;
                     interval += 1;
                     continue;
                 }
             } else {
                 if (tprime > observedEvent.time) {
-                    logWeight += -a_illegal_tot*(observedEvent.time - t);
                     break;
                 }
             }
-
-            // Update weight
-            logWeight += -a_illegal_tot*(tprime - t);
-
-            // Update time
-            t = tprime;
 
             // Implement event
 
@@ -276,6 +276,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
         // Compute tree event contribution
         logWeight += observedEvent.applyToTrajectory(param, interval, trajectory);
+
         if (!trajectory.currentStateValid())
             throw new IllegalStateException("Observed event produced illegal state.");
 
@@ -373,7 +374,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         if (prevSimulationSample != sample) {
             System.out.println("Sampling traj with origin=" + param.originInput.get().getValue() +
                     " and a tree with " + mappedTree.getLeafNodeCount() + " leaves");
-            traj = simulateTrajectory();
+            traj = sampleTrajectory();
             prevSimulationSample = sample;
         }
 

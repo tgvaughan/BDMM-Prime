@@ -39,7 +39,8 @@ public class ObservedSamplingEvent extends ObservedEvent {
             double sampling_prop = trajectory.currentState[s]*param.getSamplingRates()[interval][s];
             logWeightContrib += Math.log(sampling_prop);
 
-            boolean isRemoval = Randomizer.nextDouble() < param.getRemovalProbs()[interval][s];
+            boolean isRemoval = (param.getRemovalProbs()[interval][s] == 1.0) ||
+                    (Randomizer.nextDouble() < param.getRemovalProbs()[interval][s]);
             if (isRemoval) {
                 trajectory.addEvent(new SamplingEvent(time, s, 1, 0));
             } else {
