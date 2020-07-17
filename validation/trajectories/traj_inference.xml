@@ -19,7 +19,7 @@
 
   <parameterization id="parameterization" spec="CanonicalParameterization">
     <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0"/>
-    <origin idref="origin"/>
+    <origin id="origin" spec="RealParameter" value="5.0"/>
     <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
       <!-- <changeTimes spec="RealParameter" value="4"/> -->
       <skylineValues spec="RealParameter" value="2.0"/>
@@ -45,20 +45,22 @@
     </logFileState>
 
     <logFileState spec="TraceLogFileState" logFileName="traj_and_tree_simulator.log">
-      <logFileEntry spec="LogFileRealParameter" fieldName="origin">
-        <fieldParameter id="origin" spec="RealParameter" value="0"/>
+      <logFileEntry spec="LogFileRealParameter" fieldName="finalSampleOffset">
+        <fieldParameter id="finalSampleOffset" spec="RealParameter" value="0"/>
       </logFileEntry>
     </logFileState>
 
     <logger spec="Logger" logEvery="1">
       <log idref="origin"/>
+      <log idref="finalSampleOffset"/>
     </logger>
 
     <logger spec="Logger" logEvery="1" fileName="$(filebase).traj">
       <log id="typedTrajectory"
            nParticles="1000"
            spec="SampledTrajectory" typeLabel="type"
-           typeMappedTree="@tree">
+           typeMappedTree="@tree"
+           finalSampleOffset="@finalSampleOffset">
         <parameterization idref="parameterization"/>
       </log>
     </logger>

@@ -9,6 +9,10 @@ public abstract class ObservedEvent {
     public int type, multiplicity;
     public int[] lineages; // before the event
 
+    public boolean isFinalEvent() {
+        return false;
+    }
+
     public abstract int[] getNextLineageCounts();
 
     public abstract double applyToTrajectory(Parameterization param, int interval, Trajectory trajectory);

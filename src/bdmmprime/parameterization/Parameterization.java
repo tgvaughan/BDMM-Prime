@@ -155,7 +155,7 @@ public abstract class Parameterization extends CalculationNode {
         addTimes(getRemovalProbChangeTimes());
         addTimes(getRhoSamplingTimes());
 
-        intervalEndTimesSet.add(Double.POSITIVE_INFINITY); // End time of final interval
+        intervalEndTimesSet.add(getTotalProcessLength()); // End time of final interval
 
         if (intervalEndTimes == null) {
             intervalEndTimes = new double[intervalEndTimesSet.size()];

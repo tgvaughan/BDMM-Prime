@@ -34,9 +34,6 @@ public class SimulatedTree extends Tree {
             "The equilibrium frequencies for each type",
             Input.Validate.REQUIRED);
 
-    public Input<RealParameter> simulationTimeInput = new Input<>("simulationTime",
-            "Time to run simulation for.",
-            Input.Validate.REQUIRED);
 
     public Input<Integer> minSamplesInput = new Input<>("minSamples",
             "Minimum number of samples to accept in simulated trajectory.", 1);
@@ -51,9 +48,13 @@ public class SimulatedTree extends Tree {
     public Input<String> treeFileNameInput = new Input<>("treeFileName",
             "Name of file to write simulated tree to.");
 
+    public Input<RealParameter> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+            "Will be set to the time between the final sample and the end of the simulation.",
+            Input.Validate.REQUIRED);
+
     Parameterization param;
     RealParameter frequencies;
-    RealParameter simulationTime;
+    double simulationTime;
 
     double[] a_birth, a_death, a_sampling;
     double[][] a_migration, a_crossbirth;
@@ -69,7 +70,7 @@ public class SimulatedTree extends Tree {
     public void initAndValidate() {
         param = parameterizationInput.get();
         frequencies = frequenciesInput.get();
-        simulationTime = simulationTimeInput.get();
+        simulationTime = param.originInput.get().getValue();
 
         minSamples = minSamplesInput.get();
 
@@ -86,6 +87,8 @@ public class SimulatedTree extends Tree {
         do {
             traj = simulateTrajectory();
         } while (traj.getSampleCount() < Math.max(minSamples,1));
+
+        finalSampleOffsetInput.get().setValue(param.originInput.get().getValue() - traj.getFinalSampleTime());
 
         if (trajFileNameInput.get() != null) {
             try (PrintStream out = new PrintStream(trajFileNameInput.get())) {
@@ -109,8 +112,6 @@ public class SimulatedTree extends Tree {
                 System.err.println("Error writing tree to file.");
             }
         }
-
-        param.originInput.get().setValue(traj.getFinalSampleTime());
 
         super.initAndValidate();
     }
@@ -154,7 +155,7 @@ public class SimulatedTree extends Tree {
             else
                 t += Double.POSITIVE_INFINITY;
 
-            if (param.getIntervalEndTimes()[interval] < simulationTime.getValue()
+            if (param.getIntervalEndTimes()[interval] < simulationTime
                     && t > param.getIntervalEndTimes()[interval]) {
                 t = param.getIntervalEndTimes()[interval];
 
@@ -174,10 +175,8 @@ public class SimulatedTree extends Tree {
                 continue;
             }
 
-            if (t > simulationTime.getValue()) {
-                t = simulationTime.getValue();
+            if (t > simulationTime)
                 break;
-            }
 
             u = Randomizer.nextDouble()*a_tot;
 
@@ -254,6 +253,13 @@ public class SimulatedTree extends Tree {
                 event.simulateTreeEvent(state, activeLineages, nodeFactory);
                 event.reverseUpdateState(state);
         }
+
+        int nRemainingLineages = 0;
+        for (int s=0; s<nTypes; s++)
+            nRemainingLineages += activeLineages.get(s).size();
+
+        if (nRemainingLineages != 1)
+            throw new IllegalStateException("Number of remaining lineages not equal to 1.");
 
         Node root = null;
         for (int s=0; s<nTypes; s++) {

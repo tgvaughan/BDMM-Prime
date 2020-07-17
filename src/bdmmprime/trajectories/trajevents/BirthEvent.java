@@ -32,9 +32,6 @@ public class BirthEvent extends TrajectoryEvent {
 
     @Override
     public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory) {
-        if (activeLineages.get(type).isEmpty())
-            return;
-
         double probCoal = activeLineages.get(type).size()*(activeLineages.get(type).size()-1)
                 /(state[type]*(state[type]-1));
 

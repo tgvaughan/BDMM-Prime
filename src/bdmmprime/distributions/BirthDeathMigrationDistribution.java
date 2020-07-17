@@ -109,6 +109,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     private TreeInterface tree;
 
+    private int originalLeafCount;
+
     @Override
     public void initAndValidate() {
         parameterization = parameterizationInput.get();
@@ -153,10 +155,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 }
             }
         }
+
+        originalLeafCount = tree.getLeafNodeCount();
     }
 
     @Override
     public double calculateTreeLogLikelihood(TreeInterface tree) {
+
+        if (tree.getLeafNodeCount() != originalLeafCount) {
+            initAndValidate();
+        }
 
         Node root = tree.getRoot();
 

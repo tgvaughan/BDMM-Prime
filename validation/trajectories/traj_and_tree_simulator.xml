@@ -17,13 +17,12 @@
 
   <simulatedTree spec="bdmmprime.trajectories.simulation.SimulatedTree"
                  id="simulatedTree"
-                 simulationTime="5"
-                 minSamples="5">
+                 minSamples="2">
+      <finalSampleOffset id="finalSampleOffset" spec="RealParameter" value="0"/> <!-- Will be set by simulation -->
     <parameterization spec="CanonicalParameterization">
+      <origin id="origin" spec="RealParameter" value="5"/> <!-- Length of simulation -->
       <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0"/>
-      <origin id="origin" spec="RealParameter" value="0"/> <!-- Will be set by simulation -->
       <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
-        <!-- <changeTimes spec="RealParameter" value="4"/> -->
         <skylineValues spec="RealParameter" value="2.0"/>
       </birthRate>
       <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
@@ -35,20 +34,22 @@
       <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
         <skylineValues spec="RealParameter" value="1.0"/>
       </removalProb>
-<!--      <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">-->
-<!--        <skylineValues spec="RealParameter" value="0.5"/>-->
-<!--      </migrationRate>-->
     </parameterization>
 
     <frequencies spec="RealParameter" value="1.0"/>
   </simulatedTree>
 
-  <run spec="GPSimulator" nSims="1000">
+  <run spec="GPSimulator" nSims="10000">
 
     <simulationObject idref="simulatedTree"/>
 
+    <logger spec="Logger" logEvery="1">
+      <log idref="finalSampleOffset"/>
+    </logger>
+
     <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
-      <log idref="origin"/>
+      <log idref="finalSampleOffset"/>
+      <log spec="TreeStatLogger" tree="@simulatedTree"/>
     </logger>
 
     <logger spec="Logger" mode="tree" logEvery="1" fileName="$(filebase).trees">
