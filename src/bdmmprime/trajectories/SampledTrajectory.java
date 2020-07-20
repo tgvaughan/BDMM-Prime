@@ -10,7 +10,6 @@ import beast.core.Loggable;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
-import org.apache.commons.math.special.Gamma;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -30,13 +29,20 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     public Input<Integer> nParticlesInput = new Input<>("nParticles",
             "Number of particles to use in filtering calculation.", 1000);
 
+    public Input<Double> resampThreshInput = new Input<>("resampThresh",
+            "Particle distribution resampling occurs when the relative effective particle count " +
+                    "drops below this values.", 0.5);
+
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Type label used for traits in generated metadata.",
             Input.Validate.REQUIRED);
+
     public Input<Boolean> resampleOnLogInput = new Input<>("resampleOnLog",
             "If true, trajectory simulations will be killed off at the loggin stage.",
             true);
 
+    // The following offset should eventually be moved to the parameterization and incorporated into all
+    // tree prior computations.  It is currently mostly used for validation testing.
     public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
             "Time between end of sampling period and final sample.");
 
@@ -44,6 +50,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     String typeLabel;
     Parameterization param;
     int nTypes, nParticles;
+    double resampThresh;
 
     boolean resampleOnLog;
 
@@ -60,6 +67,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         param = parameterizationInput.get();
         nTypes = param.getNTypes();
         nParticles = nParticlesInput.get();
+        resampThresh = resampThreshInput.get();
 
         resampleOnLog = resampleOnLogInput.get();
 
@@ -71,16 +79,17 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         finalSampleOffset = finalSampleOffsetInput.get();
     }
 
-    public double lastLogTreeProbEstimiate;
+    public double logTreeProbEstimate;
 
     public Trajectory sampleTrajectory() {
-        lastLogTreeProbEstimiate = 0.0;
+        logTreeProbEstimate = 0.0;
 
         List<ObservedEvent> observedEvents = getObservedEventList(mappedTree);
 
         int rootType = observedEvents.get(0).type;
 
         // Initialize particles
+
         double[] initialState = new double[param.getNTypes()];
         initialState[rootType] = 1.0;
 
@@ -94,7 +103,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             particleTrajectories[p] = new Trajectory(initialState);
             logParticleWeights[p] = 0.0;
         }
-
 
         // Iterate over tree events:
 
@@ -111,9 +119,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                 if (!particleTrajectories[p].currentStateValid(observedEvent.lineages))
                     throw new IllegalStateException("Particle state incompatible with next observation.");
 
-//                if (particleTrajectories[p].currentStateEmpty())
-//                    throw new IllegalStateException("Particle simulation beginning with empty state.");
-
                 if (logParticleWeights[p] > Double.NEGATIVE_INFINITY)
                     logParticleWeights[p] += propagateParticle(particleTrajectories[p], t, interval, observedEvent);
 
@@ -121,21 +126,22 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                     maxLogWeight = logParticleWeights[p];
             }
 
-            if (maxLogWeight == Double.NEGATIVE_INFINITY) {
+            if (maxLogWeight == Double.NEGATIVE_INFINITY)
                 throw new IllegalStateException("Particle ensemble depleted.");
+
+            // Compute sum of scaled weights:
+            double sumOfScaledWeights = 0.0, sumOfSquaredScaledWeights = 0.0;
+            for (int p = 0; p < nParticles; p++) {
+                particleWeights[p] = Math.exp(logParticleWeights[p] - maxLogWeight);
+                sumOfScaledWeights += particleWeights[p];
+                sumOfSquaredScaledWeights += particleWeights[p]*particleWeights[p];
             }
 
-            if (observedEvent.isFinalEvent()) {
-                // Compute sum of scaled weights:
-                double sumOfScaledWeights = 0.0;
-                for (int p = 0; p < nParticles; p++) {
-                    particleWeights[p] = Math.exp(logParticleWeights[p] - maxLogWeight);
-//                    if (particleWeights[p] == 0.0)
-//                        throw new IllegalStateException("Found zero weight.");
-                    sumOfScaledWeights += particleWeights[p];
-                }
+            double Neff = sumOfScaledWeights*sumOfScaledWeights/sumOfSquaredScaledWeights;
 
-                lastLogTreeProbEstimiate = Math.log(sumOfScaledWeights) - Math.log(nParticles) + maxLogWeight;
+            if (observedEvent.isFinalEvent() || Neff < resampThresh*nParticles) {
+
+                logTreeProbEstimate += Math.log(sumOfScaledWeights/nParticles) + maxLogWeight;
 
                 // Normalize weights:
                 for (int p = 0; p < nParticles; p++)
@@ -143,13 +149,16 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
                 // Resample particle ensemble
 
-//                ReplacementSampler sampler = new ReplacementSampler(particleWeights);
-                for (int p = 0; p < nParticles; p++)
-                    particleTrajectoriesPrime[p] = particleTrajectories[badSampler(particleWeights)].copy();
+                ReplacementSampler sampler = new ReplacementSampler(particleWeights);
+                for (int p = 0; p < nParticles; p++) {
+                    particleTrajectoriesPrime[p] = particleTrajectories[sampler.next()].copy();
+                    logParticleWeights[p] = 0.0;
+                }
 
                 Trajectory[] tmp = particleTrajectories;
                 particleTrajectories = particleTrajectoriesPrime;
                 particleTrajectoriesPrime = tmp;
+
             }
 
             t = observedEvent.time;
@@ -158,17 +167,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         // WLOG choose 0th particle as the particle to return:
 
         return particleTrajectories[0];
-    }
-
-    int badSampler(double[] probs) {
-        double u = Randomizer.nextDouble();
-        for (int i=0; i<probs.length; i++) {
-            if (u < probs[i])
-                return i;
-            u -= probs[i];
-        }
-
-        throw new IllegalStateException("Sampling loop fell through.");
     }
 
     double propagateParticle(Trajectory trajectory, double t, int interval, ObservedEvent observedEvent) {
@@ -402,11 +400,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         return Integer.parseInt((String)node.getMetaData(typeLabel));
     }
 
-    public double getTreeProbEstimate() {
-        traj = sampleTrajectory();
-        return lastLogTreeProbEstimiate -Gamma.logGamma(mappedTree.getLeafNodeCount() + 1);
-    }
-
     @Override
     public void init(PrintStream out) {
         if (getID() == null)
@@ -421,8 +414,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     @Override
     public void log(long sample, PrintStream out) {
         if (resampleOnLog && prevSimulationSample != sample) {
-            System.out.println("Sampling traj with origin=" + param.originInput.get().getValue() +
-                    " and a tree with " + mappedTree.getLeafNodeCount() + " leaves");
+//            System.out.println("Sampling traj with origin=" + param.originInput.get().getValue() +
+//                    " and a tree with " + mappedTree.getLeafNodeCount() + " leaves");
             traj = sampleTrajectory();
             prevSimulationSample = sample;
         }
