@@ -1,0 +1,79 @@
+<beast version="2.0"
+       namespace="beast.core
+                 :beast.core.util
+                 :beast.core.parameter
+                 :beast.evolution.alignment
+                 :beast.evolution.likelihood
+                 :beast.evolution.tree
+                 :beast.evolution.tree.coalescent
+                 :beast.evolution.sitemodel
+                 :beast.evolution.substitutionmodel
+                 :beast.evolution.operators
+                 :beast.math.distributions
+                 :feast.simulation
+                 :feast.fileio
+                 :feast.fileio.logfileiterator
+                 :bdmmprime.distributions
+                 :bdmmprime.parameterization
+                 :bdmmprime.trajectories">
+
+  <parameterization id="parameterization" spec="CanonicalParameterization">
+    <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0"/>
+    <origin idref="origin"/>
+    <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
+      <!-- <changeTimes spec="RealParameter" value="4"/> -->
+      <skylineValues spec="RealParameter" value="2.0"/>
+    </birthRate>
+    <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="1.0"/>
+    </deathRate>
+    <samplingRate spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.5"/>
+    </samplingRate>
+    <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="1.0"/>
+    </removalProb>
+  </parameterization>
+
+  <run spec="LogFileIterator">
+
+    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator.trees">
+      <tree id="tree" spec="Tree"/>
+    </logFileState>
+
+    <logFileState spec="TraceLogFileState" logFileName="traj_and_tree_simulator.log">
+      <logFileEntry spec="LogFileRealParameter" fieldName="origin">
+        <fieldParameter id="origin" spec="RealParameter" value="0"/>
+      </logFileEntry>
+    </logFileState>
+
+    <logger spec="Logger" logEvery="1">
+      <log idref="origin"/>
+      <log idref="analyticTreeProb"/>
+      <log idref="filterTreeProb"/>
+    </logger>
+
+    <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
+      <log idref="origin"/>
+      <log id="analyticTreeProb" spec="BirthDeathMigrationDistribution" typeLabel="type" tree="@tree"
+           conditionOnSurvival="false">
+           <parameterization idref="parameterization"/>
+           <frequencies spec="RealParameter" value="1.0"/>
+      </log>
+      <log id="filterTreeProb" spec="TreeProbEstimateLogger">
+        <sampledTrajectory id="sampledTraj"
+                           nParticles="10000"
+                           spec="SampledTrajectory" typeLabel="type"
+                           typeMappedTree="@tree"
+                           resampleOnLog="false">
+          <parameterization idref="parameterization"/>
+        </sampledTrajectory>
+      </log>
+    </logger>
+
+    <logger spec="Logger" logEvery="1" fileName="$(filebase).traj">
+      <log idref="sampledTraj"/>
+    </logger>
+  </run>
+
+</beast>
