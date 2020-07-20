@@ -38,7 +38,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             Input.Validate.REQUIRED);
 
     public Input<Boolean> resampleOnLogInput = new Input<>("resampleOnLog",
-            "If true, trajectory simulations will be killed off at the loggin stage.",
+            "If true, trajectory simulations will be performed at the logging stage.",
             true);
 
     // The following offset should eventually be moved to the parameterization and incorporated into all
@@ -221,8 +221,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                     // Cross birth
                     a_temp = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
                     if (a_temp > 0.0) {
-                        p_obs = observedEvent.lineages[s] * observedEvent.lineages[sp]
-                                / (trajectory.currentState[s] * (trajectory.currentState[sp] + 1.0));
+                        // The following probability is for _any_ observable event produced as a result
+                        // of a cross-birth, either a type change or a coalescence.
+                        // This is why we don't include a factor lineages[s]/currentState[s].
+                        p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1.0);
                         a_crossbirth[s][sp] = a_temp * (1.0 - p_obs);
                         a_tot += a_crossbirth[s][sp];
                         a_illegal_tot += a_temp * p_obs;
@@ -318,6 +320,13 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         return logWeight;
     }
 
+    /**
+     * Condense tree down into a list of observed events for use by the particle filter.
+     *
+     * @param tree Input tree.
+     * @return List of observed event objects.
+     *
+     */
     List<ObservedEvent> getObservedEventList(Tree tree) {
 
         double offset = finalSampleOffset != null ? finalSampleOffset.getArrayValue() : 0.0;
@@ -397,7 +406,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     }
 
     private int getNodeType(Node node, String typeLabel) {
-        return Integer.parseInt((String)node.getMetaData(typeLabel));
+        if (param.getNTypes()>1)
+            return Integer.parseInt((String)node.getMetaData(typeLabel));
+        else
+            return 0;
     }
 
     @Override

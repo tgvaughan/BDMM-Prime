@@ -34,7 +34,6 @@ public class ObservedSamplingEvent extends ObservedEvent {
 
         int s = type;
 
-
         for (int i=0; i<nLeaves; i++) {
             double sampling_prop = trajectory.currentState[s]*param.getSamplingRates()[interval][s];
             logWeightContrib += Math.log(sampling_prop);

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<beast namespace="beast.core
+                  :beast.core.parameter
+                  :beast.evolution.tree
+                  :feast.expressions
+                  :feast.function
+                  :feast.fileio.logfileiterator" version="2.0">
+
+  <run spec="LogFileIterator">
+    <logFileState spec="TraceLogFileState" logFileName="traj_and_tree_simulator.log">
+      <logFileEntry spec="LogFileRealParameter" fieldName="origin">
+        <fieldParameter id="origin" spec="RealParameter" value="0.0"/>
+      </logFileEntry>
+    </logFileState>
+
+    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator.trees">
+      <tree spec="beast.evolution.tree.Tree" id="tree"/>
+    </logFileState>
+
+    <logger spec="Logger"
+            logEvery="1">
+      <log idref="origin"/>
+      <log id="treestat" spec="TreeStatLogger" tree="@tree"/>
+    </logger>
+
+    <logger spec="Logger"
+            fileName="epiinf_results.traj"
+            logEvery="1">
+      <log spec="epiinf.TrajectoryLogger"
+           logMostRecentTrajectory="true">
+        <treeDensity id="treePrior" spec="epiinf.distribs.SMCTreeDensity"
+                     tree="@tree"
+                     nParticles="1000"
+                     useTauLeaping="false"
+                     resampThresh="0">
+          
+          <model spec="epiinf.models.BirthDeathModel"
+                 origin="@origin"
+                 usePsiSamplingProportion="false">
+
+            <infectionRate spec="RealParameter" value="2.0"/>
+            <recoveryRate spec="RealParameter" value="1.0"/>
+            <psiSamplingVariable spec="RealParameter" value="0.5"/>
+            <removalProb spec="parameter.RealParameter" value="1.0"/>
+          </model>
+          
+          <finalTreeSampleOffset spec="parameter.RealParameter" value="0.0"/>
+        </treeDensity>
+      </log>
+    </logger>
+  </run>
+</beast>

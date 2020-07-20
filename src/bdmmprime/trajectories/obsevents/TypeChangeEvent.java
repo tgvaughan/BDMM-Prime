@@ -54,7 +54,8 @@ public class TypeChangeEvent extends ObservedEvent {
                 trajectory.addEvent(new MigrationEvent(time, s, sp));
 
             } else {
-                logWeightContrib += Math.log(crossbirth_prop * (1.0 - lineages[s] / trajectory.currentState[s]));
+                logWeightContrib += Math.log(1.0 - lineages[s] / trajectory.currentState[s])
+                        - Math.log(trajectory.currentState[sp] + 1);
 
                 trajectory.addEvent(new CrossBirthEvent(time, s, sp));
             }

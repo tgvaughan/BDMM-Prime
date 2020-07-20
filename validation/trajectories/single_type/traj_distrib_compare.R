@@ -3,6 +3,8 @@
 
 library(tidyverse)
 
+source("traj_simulator.R")
+
 parseTrajectory <- function(trajStr) {
   values <- apply(str_split(str_split(trajStr, ",")[[1]], ":", simplify = TRUE), 2, as.numeric)
   time <- values[,1]
@@ -86,39 +88,36 @@ gridTrajectories <- function(trajdf, times) {
 
 
 
+dftrue <- loadTrajectories("traj_and_tree_simulator.traj", burninFrac=0)
+
 df <- loadTrajectories("traj_inference.traj", burninFrac=0)
-## df <- loadTrajectories("tree_prior_estimates.traj", burninFrac=0)
-
-origins <- read.table("traj_and_tree_simulator.log", header=T)$origin
-
-dfepi <- loadTrajectories("epiinf_results.traj", burninFrac=0, origins=origins)
 
 dfsim <- simBDensemble(2, 1, 0.5, 5, 2, 1000)
 
-dftrue <- loadTrajectories("traj_and_tree_simulator.traj", burninFrac=0)
+## df <- loadTrajectories("tree_prior_estimates.traj", burninFrac=0)
+## origins <- read.table("traj_and_tree_simulator.log", header=T)$origin
+## dfepi <- loadTrajectories("epiinf_results.traj", burninFrac=0, origins=origins)
 
 times <- seq(0,5,length.out=51)
 df_compare <- bind_rows(gridTrajectories(df, times) %>% mutate(ensemble="filter"),
                         gridTrajectories(dftrue, times) %>% mutate(ensemble="true"),
-                        gridTrajectories(dfepi, times) %>% mutate(ensemble="epiinf"),
+                        ## gridTrajectories(dfepi, times) %>% mutate(ensemble="epiinf"),
                         gridTrajectories(dfsim, times) %>% mutate(ensemble="R sim"))
 
 df_comb <- bind_rows(dftrue %>% mutate(ensemble="direct"),
                      df %>% mutate(ensemble="filter"),
-                     dfepi %>% mutate(ensemble="epiinf"),
+                     ## dfepi %>% mutate(ensemble="epiinf"),
                      dfsim %>% mutate(ensemble="R sim"))
 
 
 p <- ggplot(df_compare %>%
-       ## filter(ensemble != "R sim", ensemble != "true") %>%
-       ## filter(ensemble != "epiinf", ensemble != "filter") %>%
-       filter(ensemble != "R sim", ensemble != "epiinf") %>%
+       ## filter(ensemble != "R sim", ensemble != "epiinf") %>%
        group_by(time, ensemble) %>%
        summarize(Imed=mean(I), Ilow=quantile(I,0.25), Ihigh=quantile(I,0.75))) +
     geom_ribbon(aes(time, ymin=Ilow, ymax=Ihigh, fill=ensemble, color=ensemble), alpha=0.5) +
     geom_line(aes(time, Imed, colour=ensemble)) +
-    ylab("Population size")  +
-    scale_y_log10()
+    ylab("Population size")#  +
+    ## scale_y_log10()
 p
 ggsave("trajectory_comparison.png", p, width=20, height=15, units="cm")
 
