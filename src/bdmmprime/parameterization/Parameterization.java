@@ -1,6 +1,7 @@
 package bdmmprime.parameterization;
 
 import beast.core.CalculationNode;
+import beast.core.Function;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
@@ -29,7 +30,10 @@ public abstract class Parameterization extends CalculationNode {
             Input.Validate.REQUIRED);
 
     public Input<RealParameter> originInput = new Input<>("origin",
-            "Time between start of process and most recent sample.");
+            "Time between start of process and the end.");
+
+    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+            "Time between the final sample and the end of the process (Defaults to zero.).");
 
     public Input<Tree> treeInput = new Input<>("tree",
             "If specified, condition on root time rather than origin time.",
@@ -98,6 +102,12 @@ public abstract class Parameterization extends CalculationNode {
             return originInput.get().getValue();
         else
             return treeInput.get().getRoot().getHeight();
+    }
+
+    public double getFinalSampleOffset() {
+        return finalSampleOffsetInput.get() != null
+                ? finalSampleOffsetInput.get().getArrayValue()
+                : 0.0;
     }
 
     public boolean conditionedOnRoot() {
@@ -268,7 +278,7 @@ public abstract class Parameterization extends CalculationNode {
      * @return time of node.
      */
     public double getNodeTime(Node node) {
-        return getTotalProcessLength() - node.getHeight();
+        return getTotalProcessLength() - node.getHeight() - getFinalSampleOffset();
     }
 
     /**

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import static bdmmprime.util.Utils.nextBinomial;
 import static org.apache.commons.math3.stat.StatUtils.sum;
 
 /**
@@ -276,26 +277,6 @@ public class SimulatedTree extends Tree {
     }
 
 
-    /**
-     * Inefficient (expected time complexity O(n)) ICDF-based binomial sampler.
-     *
-     * @param n number of trials
-     * @param p success probability
-     * @return sampled number of successes
-     */
-    public static int nextBinomial(int n, double p) {
-        double u = Randomizer.nextDouble();
-
-        double acc = Math.pow(1-p, n);
-        int m = 0;
-
-        while (u > acc && m <= n) {
-            m += 1;
-            acc += Math.exp(Binomial.logChoose(n, m) + (n - m) * Math.log(1 - p) + m * Math.log(p));
-        }
-
-        return m;
-    }
 
     @Override
     public void log(long sample, PrintStream out) {

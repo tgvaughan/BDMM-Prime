@@ -41,11 +41,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             "If true, trajectory simulations will be performed at the logging stage.",
             true);
 
-    // The following offset should eventually be moved to the parameterization and incorporated into all
-    // tree prior computations.  It is currently mostly used for validation testing.
-    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
-            "Time between end of sampling period and final sample.");
-
     Tree mappedTree;
     String typeLabel;
     Parameterization param;
@@ -56,8 +51,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     double[] a_birth, a_death;
     double[][] a_migration, a_crossbirth;
-
-    Function finalSampleOffset;
 
     @Override
     public void initAndValidate() {
@@ -75,8 +68,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         a_death = new double[nTypes];
         a_migration = new double[nTypes][nTypes];
         a_crossbirth = new double[nTypes][nTypes];
-
-        finalSampleOffset = finalSampleOffsetInput.get();
     }
 
     public double logTreeProbEstimate;
@@ -253,7 +244,13 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
             if (param.getIntervalEndTimes()[interval] < observedEvent.time) {
                 if (tprime > param.getIntervalEndTimes()[interval]) {
-                    // TODO: Add in treatment of rho sampling
+
+                    // Include probability of seeing no rho-samples:
+                    for (int s = 0; s<nTypes; s++) {
+                        if(param.getRhoValues()[interval][s] > 0.0)
+                            logWeight += trajectory.currentState[s]*Math.log(1.0 - param.getRhoValues()[interval][s]);
+                    }
+
                     interval += 1;
                     continue;
                 }
@@ -329,8 +326,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
      */
     List<ObservedEvent> getObservedEventList(Tree tree) {
 
-        double offset = finalSampleOffset != null ? finalSampleOffset.getArrayValue() : 0.0;
-
         // Extract sample times first:
         List<Node> sampleNodes = new ArrayList<>(tree.getExternalNodes());
         sampleNodes.sort(Comparator.comparingDouble(Node::getHeight));
@@ -339,7 +334,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         List<ObservedEvent> eventList = new ArrayList<>();
         ObservedSamplingEvent[] thisSamplingEvent = new ObservedSamplingEvent[param.getNTypes()];
         for (Node node : sampleNodes) {
-            double t = param.getNodeTime(node) - offset;
+            double t = param.getNodeTime(node);
             int type = getNodeType(node, typeLabel);
 
             if (thisSamplingEvent[type] == null || Math.abs(t-thisSamplingEvent[type].time) > 1e-10) {
@@ -361,13 +356,13 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             if (node.getChildCount() == 1) {
                 // Observed type change
 
-                eventList.add(new TypeChangeEvent(param.getNodeTime(node) - offset,
+                eventList.add(new TypeChangeEvent(param.getNodeTime(node),
                         getNodeType(node, typeLabel),
                         getNodeType(node.getChild(0), typeLabel),1));
             } else {
                 // Coalescence
 
-                eventList.add(new CoalescenceEvent(param.getNodeTime(node) - offset,
+                eventList.add(new CoalescenceEvent(param.getNodeTime(node),
                         getNodeType(node, typeLabel),
                         getNodeType(node.getChild(0), typeLabel),
                         getNodeType(node.getChild(1), typeLabel), 1));
