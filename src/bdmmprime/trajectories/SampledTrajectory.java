@@ -160,6 +160,17 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         return particleTrajectories[0];
     }
 
+    /**
+     * Use the particle filter to estimate the marginal probability of the coloured tree.
+     * Used for testing/validation.
+     *
+     * @return log tree probability
+     */
+    public double getLogTreeProbEstimate() {
+        sampleTrajectory();
+        return logTreeProbEstimate;
+    }
+
     double propagateParticle(Trajectory trajectory, double t, int interval, ObservedEvent observedEvent) {
         double logWeight = 0.0;
 

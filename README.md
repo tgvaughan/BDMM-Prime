@@ -8,10 +8,13 @@ performing phylodynamic inference under a structured birth-death model.
 
 The BDMM-Prime project is a fork of the original
 [BDMM project](https://github.com/denisekuehnert/bdmm).  The intention is to
-maintain exactly the same the functionaility of the original package,
-while improving its flexibility and ease of use. To this end, the fork
-employs an exact stochastic mapping algorithm rather than MCMC in
-order to sample state changes along tree lineages.
+maintain exactly the same the functionality of the original package,
+while improving its flexibility and ease of use.  It incorporates the following enhancements:
+- an improved BEAUti interface that allows a much more diverse range of analyses to be configured,
+- automatic fall-back to analytical solutions for unstructured (single type) analyses,
+- use of stochastic mapping for sampling ancestral states,
+- a particle filtering algorithm allowing joint sampling of population trajectories,
+- a heavily refactored code base intended to make the package easier to extend and maintain.
 
 As a result of the many changes that were required in making this transition,
 BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
