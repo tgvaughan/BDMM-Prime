@@ -49,10 +49,6 @@ public class SimulatedTree extends Tree {
     public Input<String> treeFileNameInput = new Input<>("treeFileName",
             "Name of file to write simulated tree to.");
 
-    public Input<RealParameter> finalSampleOffsetInput = new Input<>("finalSampleOffset",
-            "Will be set to the time between the final sample and the end of the simulation.",
-            Input.Validate.REQUIRED);
-
     Parameterization param;
     RealParameter frequencies;
     double simulationTime;
@@ -89,7 +85,8 @@ public class SimulatedTree extends Tree {
             traj = simulateTrajectory();
         } while (traj.getSampleCount() < Math.max(minSamples,1));
 
-        finalSampleOffsetInput.get().setValue(param.originInput.get().getValue() - traj.getFinalSampleTime());
+        RealParameter fso = (RealParameter) param.finalSampleOffsetInput.get();
+        fso.setValue(param.originInput.get().getValue() - traj.getFinalSampleTime());
 
         if (trajFileNameInput.get() != null) {
             try (PrintStream out = new PrintStream(trajFileNameInput.get())) {

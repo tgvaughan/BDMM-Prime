@@ -18,6 +18,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static org.apache.commons.math.special.Gamma.logGamma;
+
 public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public Input<Tree> mappedTreeInput = new Input<>("typeMappedTree",
@@ -35,7 +37,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Type label used for traits in generated metadata.",
-            Input.Validate.REQUIRED);
+            "type");
 
     public Input<Boolean> resampleOnLogInput = new Input<>("resampleOnLog",
             "If true, trajectory simulations will be performed at the logging stage.",
@@ -168,7 +170,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
      */
     public double getLogTreeProbEstimate() {
         sampleTrajectory();
-        return logTreeProbEstimate;
+        return logTreeProbEstimate - logGamma(mappedTree.getLeafNodeCount() + 1);
     }
 
     double propagateParticle(Trajectory trajectory, double t, int interval, ObservedEvent observedEvent) {
