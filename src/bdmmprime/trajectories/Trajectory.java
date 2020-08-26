@@ -8,6 +8,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * A simulated birth-death trajectory.
+ *
+ * At bare minimum, objects of this class have a list of events and the state following the final event.
+ * This is sufficient to (a) continue simulating, or (b) reconstruct all previous states.
+ */
 public class Trajectory {
     public List<TrajectoryEvent> events = new ArrayList<>();
     public double[] currentState;
@@ -21,13 +27,22 @@ public class Trajectory {
         this.events = new ArrayList<>(events);
     }
 
-    public Trajectory copy() {
-        return new Trajectory(currentState, events);
-    }
-
     public void addEvent(TrajectoryEvent event) {
         events.add(event);
         event.updateState(currentState);
+    }
+
+    /**
+     * Replace current trajectory events and state with those from
+     * another trajectory.
+     *
+     * @param other Trajectory whose events and state will replace the current values.
+     */
+    public void assignFrom(Trajectory other) {
+        events.clear();
+        events.addAll(other.events);
+
+        System.arraycopy(other.currentState, 0, currentState, 0, currentState.length);
     }
 
     public List<double[]> getStateList() {

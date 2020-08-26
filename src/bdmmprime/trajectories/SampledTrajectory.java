@@ -35,6 +35,9 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             "Particle distribution resampling occurs when the relative effective particle count " +
                     "drops below this values.", 0.5);
 
+    public Input<Boolean> useTauLeapingInput = new Input<>("useTauLeaping",
+            "If true, use tau-leaping to speed up trajectory simulation.", false);
+
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Type label used for traits in generated metadata.",
             "type");
@@ -51,6 +54,12 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     boolean resampleOnLog;
 
+    boolean useTauLeaping;
+
+    /**
+     * Arrays which hold propensities during BD simulations.
+     * Fields because we don't want to reallocate these for each particle step.
+     */
     double[] a_birth, a_death;
     double[][] a_migration, a_crossbirth;
 
@@ -65,6 +74,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         resampThresh = resampThreshInput.get();
 
         resampleOnLog = resampleOnLogInput.get();
+
+        useTauLeaping = useTauLeapingInput.get();
 
         a_birth = new double[nTypes];
         a_death = new double[nTypes];
@@ -86,15 +97,14 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         double[] initialState = new double[param.getNTypes()];
         initialState[rootType] = 1.0;
 
-        Trajectory[] particleTrajectories = new Trajectory[nParticles];
-        Trajectory[] particleTrajectoriesPrime = new Trajectory[nParticles];
+        Particle[] particles = new Particle[nParticles];
+        Particle[] particlesPrime = new Particle[nParticles];
 
-        double[] logParticleWeights = new double[nParticles];
         double[] particleWeights = new double[nParticles];
 
         for (int p=0; p<nParticles; p++) {
-            particleTrajectories[p] = new Trajectory(initialState);
-            logParticleWeights[p] = 0.0;
+            particles[p] = new Particle(param, initialState, useTauLeaping);
+            particlesPrime[p] = new Particle(param, initialState, useTauLeaping);
         }
 
         // Iterate over tree events:
@@ -109,14 +119,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
             double maxLogWeight = Double.NEGATIVE_INFINITY;
             for (int p=0; p<nParticles; p++) {
-                if (!particleTrajectories[p].currentStateValid(observedEvent.lineages))
-                    throw new IllegalStateException("Particle state incompatible with next observation.");
+                particles[p].propagateParticle(t, interval, observedEvent);
 
-                if (logParticleWeights[p] > Double.NEGATIVE_INFINITY)
-                    logParticleWeights[p] += propagateParticle(particleTrajectories[p], t, interval, observedEvent);
-
-                if (logParticleWeights[p] > maxLogWeight)
-                    maxLogWeight = logParticleWeights[p];
+                if (particles[p].logWeight > maxLogWeight)
+                    maxLogWeight = particles[p].logWeight;
             }
 
             if (maxLogWeight == Double.NEGATIVE_INFINITY)
@@ -125,7 +131,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             // Compute sum of scaled weights:
             double sumOfScaledWeights = 0.0, sumOfSquaredScaledWeights = 0.0;
             for (int p = 0; p < nParticles; p++) {
-                particleWeights[p] = Math.exp(logParticleWeights[p] - maxLogWeight);
+                particleWeights[p] = Math.exp(particles[p].logWeight - maxLogWeight);
                 sumOfScaledWeights += particleWeights[p];
                 sumOfSquaredScaledWeights += particleWeights[p]*particleWeights[p];
             }
@@ -143,14 +149,12 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                 // Resample particle ensemble
 
                 ReplacementSampler sampler = new ReplacementSampler(particleWeights);
-                for (int p = 0; p < nParticles; p++) {
-                    particleTrajectoriesPrime[p] = particleTrajectories[sampler.next()].copy();
-                    logParticleWeights[p] = 0.0;
-                }
+                for (int p = 0; p < nParticles; p++)
+                    particlesPrime[p].assignFrom(particles[sampler.next()]);
 
-                Trajectory[] tmp = particleTrajectories;
-                particleTrajectories = particleTrajectoriesPrime;
-                particleTrajectoriesPrime = tmp;
+                Particle[] tmp = particles;
+                particles = particlesPrime;
+                particlesPrime = tmp;
 
             }
 
@@ -159,7 +163,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
         // WLOG choose 0th particle as the particle to return:
 
-        return particleTrajectories[0];
+        return particles[0].trajectory;
     }
 
     /**
@@ -171,163 +175,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     public double getLogTreeProbEstimate() {
         sampleTrajectory();
         return logTreeProbEstimate - logGamma(mappedTree.getLeafNodeCount() + 1);
-    }
-
-    double propagateParticle(Trajectory trajectory, double t, int interval, ObservedEvent observedEvent) {
-        double logWeight = 0.0;
-
-        while (true) {
-            // Compute rates
-
-            double a_temp, p_obs;
-            double a_tot = 0.0;
-            double a_illegal_tot = 0.0;
-
-            for (int s=0; s<nTypes; s++) {
-                a_temp = trajectory.currentState[s]*param.getBirthRates()[interval][s];
-                if (a_temp > 0) {
-                    p_obs = observedEvent.lineages[s] * (observedEvent.lineages[s] - 1.0)
-                            / (trajectory.currentState[s] * (trajectory.currentState[s] + 1.0));
-                    a_birth[s] = a_temp * (1 - p_obs);
-                    a_tot += a_birth[s];
-                    a_illegal_tot += a_temp * p_obs;
-                } else {
-                    a_birth[s] = 0.0;
-                }
-
-                a_temp = trajectory.currentState[s] * param.getDeathRates()[interval][s];
-                if (trajectory.currentState[s] > observedEvent.lineages[s]) {
-                    a_death[s] = a_temp;
-                    a_tot += a_death[s];
-                } else {
-                    a_death[s] = 0.0;
-                    a_illegal_tot += a_temp;
-                }
-
-                a_illegal_tot += trajectory.currentState[s]*param.getSamplingRates()[interval][s];
-
-                for (int sp=0; sp<nTypes; sp++) {
-                    if (sp == s)
-                        continue;
-
-                    // Migration
-                    a_temp = trajectory.currentState[s] * param.getMigRates()[interval][s][sp];
-                    if (trajectory.currentState[s]>observedEvent.lineages[s]) {
-                        p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1.0);
-                        a_migration[s][sp] = a_temp * (1.0 - p_obs);
-                        a_tot += a_migration[s][sp];
-                        a_illegal_tot += a_temp * p_obs;
-                    } else {
-                        a_migration[s][sp] = 0.0;
-                        a_illegal_tot += a_temp;
-                    }
-
-                    // Cross birth
-                    a_temp = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
-                    if (a_temp > 0.0) {
-                        // The following probability is for _any_ observable event produced as a result
-                        // of a cross-birth, either a type change or a coalescence.
-                        // This is why we don't include a factor lineages[s]/currentState[s].
-                        p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1.0);
-                        a_crossbirth[s][sp] = a_temp * (1.0 - p_obs);
-                        a_tot += a_crossbirth[s][sp];
-                        a_illegal_tot += a_temp * p_obs;
-                    } else {
-                        a_crossbirth[s][sp] = 0.0;
-                    }
-                }
-            }
-
-            // Sample time
-
-            double tprime;
-            if (a_tot > 0.0)
-                tprime = t + Randomizer.nextExponential(a_tot);
-            else
-                tprime = Double.POSITIVE_INFINITY;
-
-            double tnew = Math.min(tprime, Math.min(param.getIntervalEndTimes()[interval], observedEvent.time));
-
-            // Update weight and time
-
-            logWeight += -a_illegal_tot*(tnew - t);
-            t = tnew;
-
-            // Test for end of interval or simulation
-
-            if (param.getIntervalEndTimes()[interval] < observedEvent.time) {
-                if (tprime > param.getIntervalEndTimes()[interval]) {
-
-                    // Include probability of seeing no rho-samples:
-                    for (int s = 0; s<nTypes; s++) {
-                        if(param.getRhoValues()[interval][s] > 0.0)
-                            logWeight += trajectory.currentState[s]*Math.log(1.0 - param.getRhoValues()[interval][s]);
-                    }
-
-                    interval += 1;
-                    continue;
-                }
-            } else {
-                if (tprime > observedEvent.time) {
-                    break;
-                }
-            }
-
-            // Implement event
-
-            double u = Randomizer.nextDouble()*a_tot;
-
-            TrajectoryEvent event = null;
-            for (int s = 0; s<nTypes; s++) {
-                if (u < a_birth[s]) {
-                    event = new BirthEvent(t, s);
-                    break;
-                }
-                u -= a_birth[s];
-
-                if (u < a_death[s]) {
-                    event = new DeathEvent(t, s);
-                    break;
-                }
-                u -= a_death[s];
-
-                for (int sp=0; sp<nTypes; sp++) {
-                    if (sp == s)
-                        continue;
-
-                    if (u < a_migration[s][sp]) {
-                        event = new MigrationEvent(t, s, sp);
-                        break;
-                    }
-                    u -= a_migration[s][sp];
-
-                    if (u < a_crossbirth[s][sp]) {
-                        event = new CrossBirthEvent(t, s, sp);
-                        break;
-                    }
-                    u -= a_crossbirth[s][sp];
-                }
-                if (event != null)
-                    break;
-            }
-
-            if (event == null) {
-                throw new IllegalStateException("Event selection loop fell through.");
-            }
-
-            trajectory.addEvent(event);
-            if (!trajectory.currentStateValid(observedEvent.lineages))
-                throw new IllegalStateException("Unobserved event produced illegal state.");
-        }
-
-        // Compute tree event contribution
-        if (!observedEvent.isFinalEvent())
-            logWeight += observedEvent.applyToTrajectory(param, interval, trajectory);
-
-        if (!trajectory.currentStateValid())
-            throw new IllegalStateException("Observed event produced illegal state.");
-
-        return logWeight;
     }
 
     /**
