@@ -20,6 +20,7 @@
   <parameterization id="parameterization" spec="CanonicalParameterization">
     <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0"/>
     <origin id="origin" spec="RealParameter" value="5.0"/>
+    <finalSampleOffset idref="finalSampleOffset"/>
     <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
       <!-- <changeTimes spec="RealParameter" value="4"/> -->
       <skylineValues spec="RealParameter" value="2.0"/>
@@ -33,9 +34,10 @@
     <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
       <skylineValues spec="RealParameter" value="1.0"/>
     </removalProb>
-<!--    <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">-->
-<!--      <skylineValues spec="RealParameter" value="-2.5"/>-->
-<!--    </migrationRate>-->
+    <!-- <rhoSampling spec="TimedParameter" typeSet="@typeSet"> -->
+    <!--   <times spec="RealParameter" value="4.0"/> -->
+    <!--   <values spec="RealParameter" value="0.5"/> -->
+    <!-- </rhoSampling> -->
   </parameterization>
 
   <run spec="LogFileIterator">
@@ -59,8 +61,7 @@
       <log id="typedTrajectory"
            nParticles="1000"
            spec="SampledTrajectory" typeLabel="type"
-           typeMappedTree="@tree"
-           finalSampleOffset="@finalSampleOffset">
+           typeMappedTree="@tree">
         <parameterization idref="parameterization"/>
       </log>
     </logger>

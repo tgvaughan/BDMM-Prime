@@ -18,7 +18,6 @@ public class ObservedSamplingEvent extends ObservedEvent {
         this.type = type;
         this.nLeaves = nLeaves;
         this.nSampledAncestors = nSampledAncestors;
-        this.multiplicity = nLeaves + nSampledAncestors;
     }
 
     @Override
@@ -35,6 +34,7 @@ public class ObservedSamplingEvent extends ObservedEvent {
         double logWeightContrib = 0;
 
         int s = type;
+        int totalSamples = nSampledAncestors + nLeaves;
 
         if (Utils.equalWithPrecision(time, param.getIntervalEndTimes()[interval]) && param.getRhoValues()[interval][s]>0) {
             // Rho sampling
@@ -42,11 +42,11 @@ public class ObservedSamplingEvent extends ObservedEvent {
             // TODO Test this!
 
             // Probability of sample count
-            logWeightContrib += multiplicity*Math.log(param.getRhoValues()[interval][s])
-                    + (trajectory.currentState[s]-multiplicity)*Math.log(1.0-param.getRhoValues()[interval][s])
+            logWeightContrib += totalSamples*Math.log(param.getRhoValues()[interval][s])
+                    + (trajectory.currentState[s]-totalSamples)*Math.log(1.0-param.getRhoValues()[interval][s])
                     + Gamma.logGamma(trajectory.currentState[s] + 1)
-                    - Gamma.logGamma(multiplicity + 1)
-                    - Gamma.logGamma(trajectory.currentState[s] - multiplicity + 1);
+                    - Gamma.logGamma(totalSamples + 1)
+                    - Gamma.logGamma(trajectory.currentState[s] - totalSamples + 1);
 
             // Probability of known non-removal count:
             if (nSampledAncestors > 0)

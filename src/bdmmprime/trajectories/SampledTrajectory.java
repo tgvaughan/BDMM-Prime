@@ -3,8 +3,8 @@ package bdmmprime.trajectories;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.*;
 import bdmmprime.trajectories.trajevents.*;
+import bdmmprime.util.Utils;
 import beast.core.CalculationNode;
-import beast.core.Function;
 import beast.core.Input;
 import beast.core.Loggable;
 import beast.evolution.tree.Node;
@@ -350,7 +350,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             double t = param.getNodeTime(node);
             int type = getNodeType(node, typeLabel);
 
-            if (thisSamplingEvent[type] == null || Math.abs(t-thisSamplingEvent[type].time) > 1e-10) {
+            if (thisSamplingEvent[type] == null || !Utils.equalWithPrecision(t,thisSamplingEvent[type].time)) {
                 thisSamplingEvent[type] = new ObservedSamplingEvent(t, type, 0, 0);
                 eventList.add(thisSamplingEvent[type]);
             }

@@ -149,7 +149,7 @@ public class TrajectorySamplerTest {
                 "frequencies", new RealParameter("1.0"),
                 "minSamples", 2);
 
-//        System.out.println(simulatedTree);
+        System.out.println(simulatedTree);
         System.out.println("Final sample offset: " + parameterization.getFinalSampleOffset());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
