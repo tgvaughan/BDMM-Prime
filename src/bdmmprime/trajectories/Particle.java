@@ -5,11 +5,13 @@ import bdmmprime.trajectories.obsevents.ObservedEvent;
 import bdmmprime.trajectories.trajevents.*;
 import beast.util.Randomizer;
 
+import java.util.Random;
+
 /**
  * This class wraps up the particle trajectories with the state required to simulate their evolution.
  *
- * It's pretty ugly, honestly.  The simulation algorithm itself is composed of a bunch of side-effect-only
- * methods that (ab)use fields to hold the shared state.
+ * It's pretty ugly, honestly.  The simulation algorithm itself is composed
+ * of a bunch of side-effect-only methods that (ab)use fields to hold the shared state.
  *
  * However, this is the structure I find easiest to debug and maintain.
  */
@@ -29,11 +31,13 @@ public class Particle {
     double[][] a_migration, a_crossbirth;
 
     boolean useTauLeaping;
+    int stepsPerInterval;
 
-    public Particle(Parameterization param, double[] initialState, boolean useTauLeaping) {
+    public Particle(Parameterization param, double[] initialState, boolean useTauLeaping, int stepsPerInterval) {
         this.param = param;
         nTypes = param.getNTypes();
         this.useTauLeaping = useTauLeaping;
+        this.stepsPerInterval = stepsPerInterval;
 
         a_birth = new double[nTypes];
         a_death = new double[nTypes];
@@ -70,29 +74,33 @@ public class Particle {
            return;
 
         while (true) {
-            // Compute rates
-            computePropensities(observedEvent);
 
             // Step particle
             double tmax = Math.min(param.getIntervalEndTimes()[interval], observedEvent.time);
-            stepParticleGillespie(tmax);
+
+            if (useTauLeaping)
+                stepParticleTauLeaping(observedEvent, tmax);
+            else
+                stepParticleGillespie(observedEvent, tmax);
+
+            if (logWeight == Double.NEGATIVE_INFINITY)
+                return;
 
             if (!trajectory.currentStateValid(observedEvent.lineages))
                 throw new IllegalStateException("Unobserved event produced illegal state.");
 
             // Test for end of interval or simulation
-            if (t == tmax) {
-                if (param.getIntervalEndTimes()[interval] < observedEvent.time) {
-                        // Include probability of seeing no rho-samples:
-                        for (int s = 0; s < nTypes; s++) {
-                            if (param.getRhoValues()[interval][s] > 0.0)
-                                logWeight += trajectory.currentState[s] * Math.log(1.0 - param.getRhoValues()[interval][s]);
-                        }
-
-                        interval += 1;
-                } else {
-                    break;
+            if (param.getIntervalEndTimes()[interval] < observedEvent.time) {
+                // Include probability of seeing no rho-samples:
+                for (int s = 0; s < nTypes; s++) {
+                    if (param.getRhoValues()[interval][s] > 0.0)
+                        logWeight += trajectory.currentState[s]
+                                * Math.log(1.0 - param.getRhoValues()[interval][s]);
                 }
+
+                interval += 1;
+            } else {
+                break;
             }
         }
 
@@ -167,66 +175,122 @@ public class Particle {
         }
     }
 
-    public void stepParticleGillespie(double tmax) {
+    public void stepParticleGillespie(ObservedEvent observedEvent, double tmax) {
 
-        double tprime;
-        if (a_tot > 0.0)
-            tprime = t + Randomizer.nextExponential(a_tot);
-        else
-            tprime = Double.POSITIVE_INFINITY;
+        while (true) {
+            // Compute rates
+            computePropensities(observedEvent);
 
-        double tnew = Math.min(tprime, tmax);
+            double tprime;
+            if (a_tot > 0.0)
+                tprime = t + Randomizer.nextExponential(a_tot);
+            else
+                tprime = Double.POSITIVE_INFINITY;
 
-        // Update weight and time
+            double tnew = Math.min(tprime, tmax);
 
-        logWeight += -a_illegal_tot*(tnew - t);
-        t = tnew;
+            // Update weight and time
 
-        if (tprime > tmax)
-            return;
+            logWeight += -a_illegal_tot * (tnew - t);
+            t = tnew;
 
-        // Implement event
+            if (tprime > tmax)
+                return;
 
-        double u = Randomizer.nextDouble()*a_tot;
+            // Implement event
 
-        TrajectoryEvent event = null;
-        for (int s = 0; s<nTypes; s++) {
-            if (u < a_birth[s]) {
-                event = new BirthEvent(t, s);
-                break;
-            }
-            u -= a_birth[s];
+            double u = Randomizer.nextDouble() * a_tot;
 
-            if (u < a_death[s]) {
-                event = new DeathEvent(t, s);
-                break;
-            }
-            u -= a_death[s];
-
-            for (int sp=0; sp<nTypes; sp++) {
-                if (sp == s)
-                    continue;
-
-                if (u < a_migration[s][sp]) {
-                    event = new MigrationEvent(t, s, sp);
+            TrajectoryEvent event = null;
+            for (int s = 0; s < nTypes; s++) {
+                if (u < a_birth[s]) {
+                    event = new BirthEvent(t, s);
                     break;
                 }
-                u -= a_migration[s][sp];
+                u -= a_birth[s];
 
-                if (u < a_crossbirth[s][sp]) {
-                    event = new CrossBirthEvent(t, s, sp);
+                if (u < a_death[s]) {
+                    event = new DeathEvent(t, s);
                     break;
                 }
-                u -= a_crossbirth[s][sp];
+                u -= a_death[s];
+
+                for (int sp = 0; sp < nTypes; sp++) {
+                    if (sp == s)
+                        continue;
+
+                    if (u < a_migration[s][sp]) {
+                        event = new MigrationEvent(t, s, sp);
+                        break;
+                    }
+                    u -= a_migration[s][sp];
+
+                    if (u < a_crossbirth[s][sp]) {
+                        event = new CrossBirthEvent(t, s, sp);
+                        break;
+                    }
+                    u -= a_crossbirth[s][sp];
+                }
+                if (event != null)
+                    break;
             }
-            if (event != null)
-                break;
+
+            if (event == null) {
+                throw new IllegalStateException("Event selection loop fell through.");
+            }
+
+            trajectory.addEvent(event);
         }
 
-        if (event == null) {
-            throw new IllegalStateException("Event selection loop fell through.");
-        }
+    }
 
-        trajectory.addEvent(event);
+    public void stepParticleTauLeaping(ObservedEvent observedEvent, double tmax) {
+
+        double t0 = t;
+        double dt = (tmax - t0) / stepsPerInterval;
+        for (int step = 1; step <= stepsPerInterval; step += 1) {
+            t = t0 + step*dt;
+
+            computePropensities(observedEvent);
+
+            logWeight += -dt*a_illegal_tot;
+
+            for (int s = 0; s < nTypes; s++) {
+                if (a_birth[s] > 0) {
+                    int nBirths = (int)Randomizer.nextPoisson(a_birth[s]*dt);
+                    if (nBirths > 0)
+                        trajectory.addEvent(new BirthEvent(t, s, nBirths));
+                }
+
+                if (a_death[s] > 0) {
+                    int nDeaths = (int)Randomizer.nextPoisson(a_death[s]*dt);
+                    if (nDeaths > 0)
+                        trajectory.addEvent(new DeathEvent(t, s, nDeaths));
+                }
+
+                for (int sp = 0; sp < nTypes; sp++) {
+                    if (sp == s)
+                        continue;
+
+                    if (a_migration[s][sp] > 0) {
+                        int nMigs = (int)Randomizer.nextPoisson(a_migration[s][sp]*dt);
+                        if (nMigs > 0)
+                            trajectory.addEvent(new MigrationEvent(t, s, sp, nMigs));
+                    }
+
+                    if (a_crossbirth[s][sp] > 0) {
+                        int nCrossBirths = (int)Randomizer.nextPoisson(a_crossbirth[s][sp]*dt);
+                        if (nCrossBirths > 0)
+                            trajectory.addEvent(new CrossBirthEvent(t, s, sp, nCrossBirths));
+                    }
+                }
+            }
+
+            if (!trajectory.currentStateValid(observedEvent.lineages)) {
+                logWeight = Double.NEGATIVE_INFINITY;
+                return;
+            }
+
+        }
     }
 }

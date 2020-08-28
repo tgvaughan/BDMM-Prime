@@ -2,14 +2,12 @@ package bdmmprime.trajectories;
 
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.*;
-import bdmmprime.trajectories.trajevents.*;
 import bdmmprime.util.Utils;
 import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.Loggable;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -38,6 +36,9 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     public Input<Boolean> useTauLeapingInput = new Input<>("useTauLeaping",
             "If true, use tau-leaping to speed up trajectory simulation.", false);
 
+    public Input<Integer> stepsPerIntervalInput = new Input<>("stepsPerInterval",
+            "Number of tau-leaping steps per inter-observation interval.", 10);
+
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Type label used for traits in generated metadata.",
             "type");
@@ -55,6 +56,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     boolean resampleOnLog;
 
     boolean useTauLeaping;
+    int stepsPerInterval;
 
     /**
      * Arrays which hold propensities during BD simulations.
@@ -76,6 +78,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         resampleOnLog = resampleOnLogInput.get();
 
         useTauLeaping = useTauLeapingInput.get();
+        stepsPerInterval = stepsPerIntervalInput.get();
 
         a_birth = new double[nTypes];
         a_death = new double[nTypes];
@@ -103,8 +106,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         double[] particleWeights = new double[nParticles];
 
         for (int p=0; p<nParticles; p++) {
-            particles[p] = new Particle(param, initialState, useTauLeaping);
-            particlesPrime[p] = new Particle(param, initialState, useTauLeaping);
+            particles[p] = new Particle(param, initialState, useTauLeaping, stepsPerInterval);
+            particlesPrime[p] = new Particle(param, initialState, useTauLeaping, stepsPerInterval);
         }
 
         // Iterate over tree events:
