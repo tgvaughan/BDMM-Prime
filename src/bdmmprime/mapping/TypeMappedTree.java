@@ -558,7 +558,7 @@ public class TypeMappedTree extends Tree {
             if (integrationStep == FORWARD_INTEGRATION_STEPS)
                 break;
 
-            currentNode.setHeight(param.getTotalProcessLength() - currentTime);
+            currentNode.setHeight(param.getAge(currentTime));
 
             // Sample event type
 
@@ -573,7 +573,7 @@ public class TypeMappedTree extends Tree {
             currentNode = newNode;
         }
 
-        currentNode.setHeight(param.getTotalProcessLength() - endTime);
+        currentNode.setHeight(param.getAge(endTime));
 
         switch(getNodeKind(subtreeRoot)) {
             case LEAF:
