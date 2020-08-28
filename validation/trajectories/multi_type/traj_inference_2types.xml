@@ -20,6 +20,7 @@
   <parameterization id="parameterization" spec="CanonicalParameterization">
     <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0,1"/>
     <origin id="origin" spec="RealParameter" value="5.0"/>
+    <finalSampleOffset idref="finalSampleOffset"/>
     <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
       <skylineValues spec="RealParameter" value="2.0 1.0"/>
     </birthRate>
@@ -55,14 +56,23 @@
     </logger>
 
     <logger spec="Logger" logEvery="1" fileName="$(filebase).traj">
-      <log id="typedTrajectory"
+      <log id="typedTrajectory" spec="SampledTrajectory"
            nParticles="1000"
-           spec="SampledTrajectory" typeLabel="type"
+           typeLabel="type"
            typeMappedTree="@tree"
-           finalSampleOffset="@finalSampleOffset">
-        <parameterization idref="parameterization"/>
-      </log>
+           parameterization="@parameterization"/>
     </logger>
+
+    <logger spec="Logger" logEvery="1" fileName="$(filebase).TL.traj">
+      <log id="typedTrajectoryTL" spec="SampledTrajectory"
+           nParticles="1000"
+           useTauLeaping="true"
+           stepsPerInterval="10"
+           typeLabel="type"
+           typeMappedTree="@tree"
+           parameterization="@parameterization"/>
+    </logger>
+
   </run>
 
 </beast>

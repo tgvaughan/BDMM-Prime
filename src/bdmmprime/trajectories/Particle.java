@@ -66,12 +66,11 @@ public class Particle {
         t = tStart;
         interval = intervalStart;
 
+        if (logWeight == Double.NEGATIVE_INFINITY)
+            return;
+
         if (!trajectory.currentStateValid(observedEvent.lineages))
             throw new IllegalStateException("Particle state incompatible with next observation.");
-
-
-        if (logWeight == Double.NEGATIVE_INFINITY)
-           return;
 
         while (true) {
 

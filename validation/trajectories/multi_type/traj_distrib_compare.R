@@ -92,6 +92,8 @@ dftrue <- loadTrajectories("traj_and_tree_simulator_2types.traj", burninFrac=0)
 
 df <- loadTrajectories("traj_inference_2types.traj", burninFrac=0)
 
+dfTL <- loadTrajectories("traj_inference_2types.TL.traj", burninFrac=0)
+
 ## dfsim <- simBDensemble(2, 1, 0.5, 5, 2, 1000)
 
 ## df <- loadTrajectories("tree_prior_estimates.traj", burninFrac=0)
@@ -100,12 +102,14 @@ df <- loadTrajectories("traj_inference_2types.traj", burninFrac=0)
 
 times <- seq(0,5,length.out=51)
 df_compare <- bind_rows(gridTrajectories(df, times) %>% mutate(ensemble="filter"),
-                        gridTrajectories(dftrue, times) %>% mutate(ensemble="true"))
+                        gridTrajectories(dftrue, times) %>% mutate(ensemble="true"),
+                        gridTrajectories(dfTL, times) %>% mutate(ensemble="filterTL"))
                         ## gridTrajectories(dfepi, times) %>% mutate(ensemble="epiinf"),
                         ## gridTrajectories(dfsim, times) %>% mutate(ensemble="R sim"))
 
 df_comb <- bind_rows(dftrue %>% mutate(ensemble="direct"),
-                     df %>% mutate(ensemble="filter"))
+                     df %>% mutate(ensemble="filter"),
+                     dfTL %>% mutate(ensemble="filterTL"))
                      ## dfepi %>% mutate(ensemble="epiinf"),
                      ## dfsim %>% mutate(ensemble="R sim"))
 
@@ -122,6 +126,12 @@ p <- ggplot(df_compare %>%
     scale_y_log10()
 p
 ggsave("trajectory_comparison.png", p, width=20, height=15, units="cm")
+
+ggplot(df_compare %>% filter(time==times[length(times)])) +
+    geom_freqpoly(aes(I, col=factor(type), linetype=ensemble)) +
+    scale_y_log10()
+
+ggplot(df_comb %>% filter(traj<=1000, type==0)) + geom_step(aes(time, I, col=ensemble), alpha=0.1)
 
 for (i in 1:1000) {
     p <- ggplot(df_comb %>% filter(traj==i)) +
