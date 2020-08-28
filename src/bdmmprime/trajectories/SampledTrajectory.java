@@ -58,13 +58,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     boolean useTauLeaping;
     int stepsPerInterval;
 
-    /**
-     * Arrays which hold propensities during BD simulations.
-     * Fields because we don't want to reallocate these for each particle step.
-     */
-    double[] a_birth, a_death;
-    double[][] a_migration, a_crossbirth;
-
     @Override
     public void initAndValidate() {
 
@@ -79,11 +72,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
         useTauLeaping = useTauLeapingInput.get();
         stepsPerInterval = stepsPerIntervalInput.get();
-
-        a_birth = new double[nTypes];
-        a_death = new double[nTypes];
-        a_migration = new double[nTypes][nTypes];
-        a_crossbirth = new double[nTypes][nTypes];
     }
 
     public double logTreeProbEstimate;
@@ -264,9 +252,15 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     }
 
     private int getNodeType(Node node, String typeLabel) {
-        if (param.getNTypes()>1)
-            return Integer.parseInt((String)node.getMetaData(typeLabel));
-        else
+        if (param.getNTypes()>1) {
+            Object metaData = node.getMetaData(typeLabel);
+            if (metaData instanceof Integer)
+                return (Integer) metaData;
+            else if (metaData instanceof String)
+                return Integer.parseInt((String) metaData);
+            else
+                throw new RuntimeException("Error parsing node type in type-mapped tree.");
+        } else
             return 0;
     }
 
