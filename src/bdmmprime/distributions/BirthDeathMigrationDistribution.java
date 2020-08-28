@@ -147,7 +147,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         isRhoTip = new boolean[tree.getLeafNodeCount()];
         for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++) {
             isRhoTip[nodeNr] = false;
-            double nodeTime = parameterization.getTotalProcessLength() - tree.getNode(nodeNr).getHeight();
+            double nodeTime = parameterization.getNodeTime(tree.getNode(nodeNr));
+//            double nodeTime = parameterization.getTotalProcessLength() - tree.getNode(nodeNr).getHeight();
             for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
                 if (Utils.equalWithPrecision(rhoSampTime, nodeTime)) {
                     isRhoTip[nodeNr] = true;
@@ -168,7 +169,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         Node root = tree.getRoot();
 
-        if (tree.getRoot().getHeight() > parameterization.getTotalProcessLength()) {
+        if (parameterization.getNodeTime(tree.getRoot()) < 0.0) {
             logP = Double.NEGATIVE_INFINITY;
             return logP;
         }
@@ -220,9 +221,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             Node child1 = root.getChild(1);
 
             P0GeState child1state = calculateSubtreeLikelihood(child0, 0,
-                    parameterization.getTotalProcessLength() - child0.getHeight(), system, 0);
+                    parameterization.getNodeTime(child0),
+//                    parameterization.getTotalProcessLength() - child0.getHeight(),
+                    system, 0);
             P0GeState child2state = calculateSubtreeLikelihood(child1, 0,
-                    parameterization.getTotalProcessLength() - child1.getHeight(), system, 0);
+                    parameterization.getNodeTime(child1),
+//                    parameterization.getTotalProcessLength() - child1.getHeight(),
+                    system, 0);
 
             for (int type=0; type<parameterization.getNTypes(); type++) {
                 finalP0Ge.ge[type] = child1state.ge[type].multiplyBy(child2state.ge[type]);
@@ -234,7 +239,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             // Condition on origin time, as usual:
 
             finalP0Ge = calculateSubtreeLikelihood(root, 0,
-                    parameterization.getTotalProcessLength() - tree.getRoot().getHeight(), system, 0);
+                    parameterization.getNodeTime(tree.getRoot()),
+//                    parameterization.getTotalProcessLength() - tree.getRoot().getHeight(),
+                    system, 0);
         }
 
         if (debug) System.out.print("Final state: " + finalP0Ge);
@@ -382,7 +389,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 P0GeState g = calculateSubtreeLikelihood(
                         node.getChild(childIndex), tBottom,
-                        parameterization.getTotalProcessLength() - node.getChild(childIndex).getHeight(),
+                        parameterization.getNodeTime(node.getChild(childIndex)),
+//                        parameterization.getTotalProcessLength() - node.getChild(childIndex).getHeight(),
                         system, depth + 1);
 
                 int saNodeType = getNodeType(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
@@ -442,12 +450,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                         // start a new thread to take care of the second subtree
                         Future<P0GeState> secondChildTraversal = pool.submit(
                                 new TraversalService(node.getChild(indexSecondChild), tBottom,
-                                        parameterization.getTotalProcessLength() - node.getChild(indexSecondChild).getHeight(),
+                                        parameterization.getNodeTime(node.getChild(indexSecondChild)),
+//                                        parameterization.getTotalProcessLength() - node.getChild(indexSecondChild).getHeight(),
                                         depth + 1));
 
                         childState1 = calculateSubtreeLikelihood(
                                 node.getChild(indexFirstChild), tBottom,
-                                parameterization.getTotalProcessLength() - node.getChild(indexFirstChild).getHeight(),
+                                parameterization.getNodeTime(node.getChild(indexFirstChild)),
+//                                parameterization.getTotalProcessLength() - node.getChild(indexFirstChild).getHeight(),
                                 system, depth + 1);
                         childState2 = secondChildTraversal.get();
                     } catch (InterruptedException | ExecutionException e) {
@@ -459,10 +469,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 } else {
                     childState1 = calculateSubtreeLikelihood(node.getChild(
                             indexFirstChild), tBottom,
-                            parameterization.getTotalProcessLength() - node.getChild(indexFirstChild).getHeight(),
+                            parameterization.getNodeTime(node.getChild(indexFirstChild)),
+//                            parameterization.getTotalProcessLength() - node.getChild(indexFirstChild).getHeight(),
                             system, depth + 1);
                     childState2 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), tBottom,
-                            parameterization.getTotalProcessLength() - node.getChild(indexSecondChild).getHeight(),
+                            parameterization.getNodeTime(node.getChild(indexSecondChild)),
+//                            parameterization.getTotalProcessLength() - node.getChild(indexSecondChild).getHeight(),
                             system, depth + 1);
                 }
 
@@ -540,7 +552,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         int[] indicesSortedByLeafTime = new int[leafCount];
 
         for (int i = 0; i < leafCount; i++) { // get all leaf times
-            leafTimes[i] = parameterization.getTotalProcessLength() - tree.getNode(i).getHeight();
+            leafTimes[i] = parameterization.getNodeTime(tree.getNode(i));
+//            leafTimes[i] = parameterization.getTotalProcessLength() - tree.getNode(i).getHeight();
             indicesSortedByLeafTime[i] = i;
         }
 
@@ -658,7 +671,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // contains the factor by which the numbers were multiplied.
         ScaledNumbers pgScaled = state.getScaledState();
 
-        double thisTime = system.totalProcessLength - baseNode.getHeight();
+        double thisTime = parameterization.getNodeTime(baseNode);
+//        system.totalProcessLength - baseNode.getHeight();
         int thisInterval = parameterization.getIntervalIndex(thisTime);
         int endInterval = parameterization.getIntervalIndex(tTop);
         double oneMinusRho;

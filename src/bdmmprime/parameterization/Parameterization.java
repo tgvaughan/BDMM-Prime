@@ -282,6 +282,16 @@ public abstract class Parameterization extends CalculationNode {
     }
 
     /**
+     * Return the age corresponding to the given time relative to the most recent sample.
+     *
+     * @param time time to query age for
+     * @return age corresponding to time
+     */
+    public double getAge(double time) {
+        return getTotalProcessLength() - time - getFinalSampleOffset();
+    }
+
+    /**
      * Retrieve index of interval containing node.
      *
      * @param node node whose interval to query.
