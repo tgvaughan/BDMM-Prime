@@ -49,6 +49,10 @@ public class SimulatedTree extends Tree {
     public Input<String> treeFileNameInput = new Input<>("treeFileName",
             "Name of file to write simulated tree to.");
 
+    public Input<Boolean> simulateUntypedTreeInput = new Input<>("simulateUntypedTree",
+            "If true, an untyped tree will be simulated (i.e. migration events will be removed).",
+            false);
+
     Parameterization param;
     RealParameter frequencies;
     double simulationTime;
@@ -60,6 +64,8 @@ public class SimulatedTree extends Tree {
     String typeLabel;
 
     int minSamples;
+
+    boolean simulateUntypedTree;
 
     public Trajectory traj;
 
@@ -73,6 +79,8 @@ public class SimulatedTree extends Tree {
 
         nTypes = param.getNTypes();
         typeLabel = typeLabelInput.get();
+
+        simulateUntypedTree = simulateUntypedTreeInput.get();
 
         a_birth = new double[nTypes];
         a_death = new double[nTypes];
@@ -248,7 +256,7 @@ public class SimulatedTree extends Tree {
                 typeLabel, param.getTypeSet());
 
         for (TrajectoryEvent event : events) {
-                event.simulateTreeEvent(state, activeLineages, nodeFactory);
+                event.simulateTreeEvent(state, activeLineages, nodeFactory, simulateUntypedTree);
                 event.reverseUpdateState(state);
         }
 

@@ -29,7 +29,8 @@ public class DeathEvent extends TrajectoryEvent {
     }
 
     @Override
-    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory) {
+    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory,
+                                        Boolean untypedTree) {
         // Death events don't affect the tree.
     }
 

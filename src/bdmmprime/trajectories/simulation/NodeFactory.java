@@ -23,9 +23,12 @@ public class NodeFactory {
         Node node = new Node(String.valueOf(nextLeafNr));
         node.setNr(nextNodeNr);
 
-        node.setMetaData(typeLabel, type);
         node.setHeight(origin-time);
-        node.metaDataString = String.format("%s=\"%s\"", typeLabel, typeSet.getTypeName(type));
+
+        if (type >= 0) {
+            node.setMetaData(typeLabel, type);
+            node.metaDataString = String.format("%s=\"%s\"", typeLabel, typeSet.getTypeName(type));
+        }
 
         return node;
     }

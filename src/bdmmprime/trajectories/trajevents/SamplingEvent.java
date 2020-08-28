@@ -31,7 +31,8 @@ public class SamplingEvent extends TrajectoryEvent {
     }
 
     @Override
-    public void simulateTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory factory) {
+    public void simulateTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory factory,
+                                  Boolean untypedTree) {
 
         // Add nodes corresponding to sampling WITHOUT removal
 
@@ -46,7 +47,7 @@ public class SamplingEvent extends TrajectoryEvent {
                 Node child = unsampledLineages.remove(Randomizer.nextInt(unsampledLineages.size()));
                 activeLineages.get(type).remove(child);
 
-                Node fake = factory.newIntNode(type, time);
+                Node fake = factory.newIntNode(untypedTree ? -1 : type, time);
                 fake.addChild(child);
                 fake.addChild(sampledNode);
 

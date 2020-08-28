@@ -17,12 +17,14 @@ public abstract class TrajectoryEvent {
         return false;
     }
 
-    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory factory) {
+    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory factory,
+                                        Boolean untypedTree) {
         throw new UnsupportedOperationException("Tree event simulation unsupported for this event type.");
     }
 
-    public void simulateTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory factory) {
+    public void simulateTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory factory,
+                                  Boolean untypedTree) {
         for (int i=0; i<multiplicity; i++)
-            simulateSingleTreeEvent(state, activeLineages, factory);
+            simulateSingleTreeEvent(state, activeLineages, factory, untypedTree);
     }
 }

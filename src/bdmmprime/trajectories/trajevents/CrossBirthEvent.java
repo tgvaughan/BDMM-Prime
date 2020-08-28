@@ -32,24 +32,40 @@ public class CrossBirthEvent extends TrajectoryEvent {
     }
 
     @Override
-    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory) {
+    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory,
+                                        Boolean untypedTree) {
         if (activeLineages.get(destType).isEmpty() || activeLineages.get(srcType).isEmpty())
             return;
 
-        double pCoal = activeLineages.get(destType).size()*activeLineages.get(srcType).size()
-                / (state[destType]*state[srcType]);
+        double pObsStateChange = activeLineages.get(destType).size()/state[destType];
+        double pCoal = pObsStateChange*activeLineages.get(srcType).size()/state[srcType];
 
-        if (Randomizer.nextDouble() >= pCoal)
-            return;
+        double u = Randomizer.nextDouble();
 
-        Node child1 = activeLineages.get(srcType).remove(Randomizer.nextInt(activeLineages.get(srcType).size()));
-        Node child2 = activeLineages.get(destType).remove(Randomizer.nextInt(activeLineages.get(destType).size()));
+        if (u < pCoal) {
+            // Coalescence
 
-        Node parent = nodeFactory.newIntNode(srcType, time);
-        parent.addChild(child1);
-        parent.addChild(child2);
+            Node child1 = activeLineages.get(srcType).remove(Randomizer.nextInt(activeLineages.get(srcType).size()));
+            Node child2 = activeLineages.get(destType).remove(Randomizer.nextInt(activeLineages.get(destType).size()));
 
-        activeLineages.get(srcType).add(parent);
+            Node parent = nodeFactory.newIntNode(untypedTree ? -1 : srcType, time);
+            parent.addChild(child1);
+            parent.addChild(child2);
+
+            activeLineages.get(srcType).add(parent);
+
+        } else if (u < pObsStateChange) {
+            // Lineage state change
+
+            Node child = activeLineages.get(destType).remove(Randomizer.nextInt(activeLineages.get(destType).size()));
+            if (untypedTree) {
+                activeLineages.get(srcType).add(child);
+            } else {
+                Node parent = nodeFactory.newIntNode(srcType, time);
+                parent.addChild(child);
+                activeLineages.get(srcType).add(parent);
+            }
+        }
     }
 
     @Override

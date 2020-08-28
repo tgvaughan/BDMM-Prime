@@ -34,7 +34,8 @@ public class MigrationEvent extends TrajectoryEvent {
     }
 
     @Override
-    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory) {
+    public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory,
+                                        Boolean untypedTree) {
         if (activeLineages.get(destType).isEmpty())
             return;
 
@@ -45,10 +46,15 @@ public class MigrationEvent extends TrajectoryEvent {
 
         Node child = activeLineages.get(destType).remove(Randomizer.nextInt(activeLineages.get(destType).size()));
 
-        Node parent = nodeFactory.newIntNode(srcType, time);
-        parent.addChild(child);
+        if (untypedTree) {
+            activeLineages.get(srcType).add(child);
 
-        activeLineages.get(srcType).add(parent);
+        } else {
+            Node parent = nodeFactory.newIntNode(srcType, time);
+            parent.addChild(child);
+
+            activeLineages.get(srcType).add(parent);
+        }
     }
 
     @Override
