@@ -4,8 +4,10 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.*;
 import bdmmprime.util.Utils;
 import beast.core.CalculationNode;
+import beast.core.Function;
 import beast.core.Input;
 import beast.core.Loggable;
+import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
@@ -25,6 +27,9 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
             "Multi-type birth-death parameterization.", Input.Validate.REQUIRED);
+
+    public Input<Function> frequenciesInput = new Input<>("frequencies",
+            "The equilibrium frequencies for each type. Only needed for testing tree prob estimates.");
 
     public Input<Integer> nParticlesInput = new Input<>("nParticles",
             "Number of particles to use in filtering calculation.", 1000);
@@ -164,7 +169,22 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
      * @return log tree probability
      */
     public double getLogTreeProbEstimate() {
+//        System.out.println(mappedTree + ";");
         sampleTrajectory();
+
+        // Contribution of root type to log likelihood:
+        if (nTypes > 1 && frequenciesInput.get() == null)
+            throw new IllegalArgumentException("Must provide frequency argument to calculate multi-type tree prob.");
+
+        int rootType = getNodeType(mappedTree.getRoot(), typeLabel);
+
+        // This is actually the initial weight of the particles accounting for
+        // the probability of a trajectory initialized with the chosen origin state
+        // distribution having the observed state.  However because _all_ of the
+        // particles have this initial value, it doesn't affect the weight distribution.
+        // It affects the tree prob estimate though, which is important for testing.
+        logTreeProbEstimate += Math.log(frequenciesInput.get().getArrayValue(rootType));
+
         return logTreeProbEstimate - logGamma(mappedTree.getLeafNodeCount() + 1);
     }
 
