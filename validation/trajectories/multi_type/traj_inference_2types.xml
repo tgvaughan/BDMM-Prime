@@ -22,7 +22,7 @@
     <origin id="origin" spec="RealParameter" value="5.0"/>
     <finalSampleOffset idref="finalSampleOffset"/>
     <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
-      <skylineValues spec="RealParameter" value="2.0 1.0"/>
+      <skylineValues spec="RealParameter" value="2.0 2.0"/>
     </birthRate>
     <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
       <skylineValues spec="RealParameter" value="1.0"/>
@@ -34,7 +34,7 @@
       <skylineValues spec="RealParameter" value="1.0"/>
     </removalProb>
     <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
-      <skylineValues spec="RealParameter" value="0.2"/>
+      <skylineValues spec="RealParameter" value="0.5 0.1"/>
     </migrationRate>
   </parameterization>
 

@@ -119,9 +119,9 @@ p <- ggplot(df_compare %>%
        group_by(time, type, ensemble)  %>%
        summarize(Imean=mean(I), Ilow=quantile(I,0.25), Ihigh=quantile(I,0.75))) +
     ## geom_ribbon(aes(time, ymin=Ilow, ymax=Ihigh, fill=factor(type), color=factor(type)), alpha=0.5) +
-    geom_line(aes(time, Ihigh, colour=factor(type), linetype=ensemble)) +
+    ## geom_line(aes(time, Ihigh, colour=factor(type), linetype=ensemble)) +
     geom_line(aes(time, Imean, colour=factor(type), linetype=ensemble)) +
-    geom_line(aes(time, Ilow, colour=factor(type), linetype=ensemble)) +
+    ## geom_line(aes(time, Ilow, colour=factor(type), linetype=ensemble)) +
     ylab("Population size") +
     scale_y_log10()
 p
