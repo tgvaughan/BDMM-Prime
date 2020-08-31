@@ -54,7 +54,7 @@ public class Particle {
      *
      * @param other Particle to assign from
      */
-    public void assignFrom(Particle other) {
+    public void assignTrajAndZeroWeight(Particle other) {
         trajectory.assignFrom(other.trajectory);
         logWeight = 0.0;
     }
