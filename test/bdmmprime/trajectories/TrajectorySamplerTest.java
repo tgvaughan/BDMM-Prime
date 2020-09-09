@@ -316,7 +316,7 @@ public class TrajectorySamplerTest {
                         new RealParameter("1.0"), nTypes),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("1.0"), nTypes));
+                        new RealParameter("0.0"), nTypes));
 
 //        SimulatedTree simulatedTree = new SimulatedTree();
 //        simulatedTree.initByName(
@@ -366,7 +366,7 @@ public class TrajectorySamplerTest {
                 "useTauLeaping", false,
                 "stepsPerInterval", 5);
 
-        double [] logProbEsts = new double[5];
+        double [] logProbEsts = new double[100];
         double maxLogProbEst = Double.NEGATIVE_INFINITY;
         for (int i=0; i<logProbEsts.length; i++) {
             typeMappedTree.initAndValidate();
@@ -407,7 +407,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(nTypes),
-                "origin", new RealParameter("1.0"),
+                "origin", new RealParameter("1.2"),
                 "finalSampleOffset", new RealParameter("0.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
@@ -425,9 +425,7 @@ public class TrajectorySamplerTest {
                         null,
                         new RealParameter("1.0"), nTypes));
 
-//        TreeParser typedTree = new TreeParser("((0[&type=\"0\"]:0.75)2[&type=\"1\"]:0.25,1[&type=\"1\"]:0.5)3[&type=\"1\"]:0.2;",
-//                false, true, true, 0);
-        TreeParser typedTree = new TreeParser("(0[&type=\"0\"]:0.75)1[&type=\"1\"]:0.25",
+        TreeParser typedTree = new TreeParser("((0[&type=\"0\"]:0.75)2[&type=\"1\"]:0.25,1[&type=\"1\"]:0.5)3[&type=\"1\"]:0.2;",
                 false, true, true, 0);
 
         System.out.println(typedTree);
@@ -436,7 +434,7 @@ public class TrajectorySamplerTest {
         sampledTrajectory.initByName("typeMappedTree", typedTree,
                 "parameterization", parameterization,
                 "frequencies", frequencies,
-                "nParticles", 5,
+                "nParticles", 1000000,
                 "resampThresh", 0.0,
                 "useTauLeaping", false,
                 "stepsPerInterval", 5);
@@ -444,10 +442,10 @@ public class TrajectorySamplerTest {
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
         System.out.println("Log probability estimate: " + logProbEst);
 
-        double logProbTrue = -8.847311; // From R
+        double logProbTrue = -4.365784; // From R script validation/trajectories/multi_type/mttree_prob.R
         System.out.println("Log probability true: " + logProbTrue);
 
-        assertEquals(logProbEst, logProbTrue, 1e-1);
+        assertEquals(logProbTrue, logProbEst, 1e-1);
     }
 
 }
