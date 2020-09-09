@@ -8,6 +8,7 @@ import bdmmprime.trajectories.simulation.UntypedTreeFromTypedTree;
 import beast.core.parameter.RealParameter;
 import beast.util.Randomizer;
 import beast.util.TreeParser;
+import org.apache.commons.math.special.Gamma;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -290,115 +291,6 @@ public class TrajectorySamplerTest {
     }
 
     @Test
-    public void typedSimpleLikelihoodTest() {
-//        Randomizer.setSeed(1);
-        System.out.println(Randomizer.getSeed());
-
-        RealParameter frequencies = new RealParameter("0.5 0.5");
-        int nTypes = 2;
-
-        Parameterization parameterization = new CanonicalParameterization();
-        parameterization.initByName(
-                "typeSet", new TypeSet(nTypes),
-                "origin", new RealParameter("5.0"),
-                "finalSampleOffset", new RealParameter("0.0"), // To be set by simulation
-                "birthRate", new SkylineVectorParameter(
-                        null,
-                        new RealParameter("2.0"), nTypes),
-                "deathRate", new SkylineVectorParameter(
-                        null,
-                        new RealParameter("1.0"), nTypes),
-                "samplingRate", new SkylineVectorParameter(
-                        null,
-                        new RealParameter("0.5"), nTypes),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealParameter("1.0"), nTypes),
-                "migrationRate", new SkylineMatrixParameter(
-                        null,
-                        new RealParameter("0.0"), nTypes));
-
-//        SimulatedTree simulatedTree = new SimulatedTree();
-//        simulatedTree.initByName(
-//                "parameterization", parameterization,
-//                "frequencies", frequencies,
-//                "minSamples", 2,
-//                "simulateUntypedTree", false);
-
-        TreeParser simulatedTree = new TreeParser("(0[&type=0]:1.0,1[&type=0]:0.5)2[&type=0]:0.0;",
-                false, true, true, 0);
-
-
-        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + parameterization.getFinalSampleOffset());
-
-        UntypedTreeFromTypedTree untypedSimulatedTree = new UntypedTreeFromTypedTree();
-        untypedSimulatedTree.initByName(
-                "typedTree", simulatedTree,
-                "typeLabel", "type");
-        System.out.println(untypedSimulatedTree);
-
-//        SampledTrajectory sampledTrajTrueTree = new SampledTrajectory();
-//        sampledTrajTrueTree.initByName(
-//                "typeMappedTree", simulatedTree,
-//                "parameterization", parameterization,
-//                "frequencies", frequencies,
-//                "nParticles", 1000,
-//                "useTauLeaping", false,
-//                "stepsPerInterval", 5);
-//
-//        System.out.println("Estimate from true typed tree:");
-//        System.out.println(sampledTrajTrueTree.getLogTreeProbEstimate());
-
-        TypeMappedTree typeMappedTree = new TypeMappedTree();
-        typeMappedTree.initByName(
-                "parameterization", parameterization,
-                "frequencies", frequencies,
-                "typeLabel", "type",
-                "untypedTree", untypedSimulatedTree);
-
-        SampledTrajectory sampledTrajectory = new SampledTrajectory();
-        sampledTrajectory.initByName("typeMappedTree", typeMappedTree,
-                "parameterization", parameterization,
-                "frequencies", frequencies,
-                "nParticles", 1000,
-                "resampThresh", 0.5,
-                "useTauLeaping", false,
-                "stepsPerInterval", 5);
-
-        double [] logProbEsts = new double[100];
-        double maxLogProbEst = Double.NEGATIVE_INFINITY;
-        for (int i=0; i<logProbEsts.length; i++) {
-            typeMappedTree.initAndValidate();
-            double thisEst = sampledTrajectory.getLogTreeProbEstimate();
-            if (thisEst > maxLogProbEst)
-                maxLogProbEst = thisEst;
-            logProbEsts[i] = thisEst;
-            System.out.println(thisEst);
-        }
-
-        double logProbEst = 0.0;
-        for (int i=0; i<logProbEsts.length; i++)
-            logProbEst += Math.exp(logProbEsts[i]-maxLogProbEst);
-        logProbEst = Math.log(logProbEst/logProbEsts.length) + maxLogProbEst;
-
-        System.out.println("Log probability estimate: " + logProbEst);
-
-        BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
-        bdmm.initByName("parameterization", parameterization,
-                "frequencies", frequencies,
-                "typeLabel", "type",
-                "conditionOnSurvival", false,
-                "tree", untypedSimulatedTree);
-
-        double logProbTrue = bdmm.calculateLogP();
-
-        System.out.println("BDMM: Log probability true: " + logProbTrue);
-
-        assertEquals(logProbEst, logProbTrue, 1e-1);
-    }
-
-    @Test
     public void tinyTypedTreeLikelihoodTest() {
 
         RealParameter frequencies = new RealParameter("0.5 0.5");
@@ -434,7 +326,7 @@ public class TrajectorySamplerTest {
         sampledTrajectory.initByName("typeMappedTree", typedTree,
                 "parameterization", parameterization,
                 "frequencies", frequencies,
-                "nParticles", 1000000,
+                "nParticles", 100000,
                 "resampThresh", 0.0,
                 "useTauLeaping", false,
                 "stepsPerInterval", 5);
