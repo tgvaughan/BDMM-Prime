@@ -118,14 +118,14 @@ Now let’s look at the distribution of the actual trajectories.
            summarize(mean=mean(N), low=quantile(N, 0.25), high=quantile(N, 0.75))) +
         geom_ribbon(aes(time, ymin=low, ymax=high, fill=ensemble, color=ensemble), alpha=0.5) +
         geom_line(aes(time, mean, color=ensemble)) +
-        ylab("Population size") +
+        ylab("Population sizes") +
         scale_y_log10()
 
 ![](validation_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 Apart from noise due to the finite number of samples, these two
-distributions appear to be equivalent, indicating that - for this model
-- the implementation is correct.
+distributions appear to be equivalent indicating that, for this model,
+the implementation is correct.
 
 Sampled-ancestor validation
 ---------------------------
