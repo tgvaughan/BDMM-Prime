@@ -1,7 +1,7 @@
 ## Scripts useful for plotting and manipulating trajectory data
 ## using ggplot and friends.
 
-library(tidyverse)
+require(tidyverse)
 
 source("traj_simulator.R")
 

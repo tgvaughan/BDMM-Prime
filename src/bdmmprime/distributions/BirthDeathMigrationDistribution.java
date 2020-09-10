@@ -222,11 +222,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             P0GeState child1state = calculateSubtreeLikelihood(child0, 0,
                     parameterization.getNodeTime(child0),
-//                    parameterization.getTotalProcessLength() - child0.getHeight(),
                     system, 0);
             P0GeState child2state = calculateSubtreeLikelihood(child1, 0,
                     parameterization.getNodeTime(child1),
-//                    parameterization.getTotalProcessLength() - child1.getHeight(),
                     system, 0);
 
             for (int type=0; type<parameterization.getNTypes(); type++) {
@@ -240,7 +238,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             finalP0Ge = calculateSubtreeLikelihood(root, 0,
                     parameterization.getNodeTime(tree.getRoot()),
-//                    parameterization.getTotalProcessLength() - tree.getRoot().getHeight(),
                     system, 0);
         }
 

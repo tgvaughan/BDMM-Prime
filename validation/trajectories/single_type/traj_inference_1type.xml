@@ -13,7 +13,7 @@
                  :feast.simulation
                  :feast.fileio
                  :feast.fileio.logfileiterator
-                 :bdmmprime.distribution
+                 :bdmmprime.distributions
                  :bdmmprime.parameterization
                  :bdmmprime.trajectories">
 
@@ -22,7 +22,6 @@
     <origin id="origin" spec="RealParameter" value="5.0"/>
     <finalSampleOffset idref="finalSampleOffset"/>
     <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
-      <!-- <changeTimes spec="RealParameter" value="4"/> -->
       <skylineValues spec="RealParameter" value="2.0"/>
     </birthRate>
     <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
@@ -34,10 +33,6 @@
     <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
       <skylineValues spec="RealParameter" value="1.0"/>
     </removalProb>
-    <!-- <rhoSampling spec="TimedParameter" typeSet="@typeSet"> -->
-    <!--   <times spec="RealParameter" value="4.0"/> -->
-    <!--   <values spec="RealParameter" value="0.5"/> -->
-    <!-- </rhoSampling> -->
   </parameterization>
 
   <run spec="LogFileIterator">
@@ -52,9 +47,24 @@
       </logFileEntry>
     </logFileState>
 
-    <logger spec="Logger" logEvery="1">
+    <logger spec="Logger" logEvery="100">
       <log idref="origin"/>
       <log idref="finalSampleOffset"/>
+    </logger>
+
+    <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
+      <log idref="origin"/>
+      <log idref="finalSampleOffset"/>
+      <log id="logProb" spec="BirthDeathMigrationDistribution"
+           tree="@tree"
+           parameterization="@parameterization"
+           typeLabel="type"
+           conditionOnSurvival="false">
+        <frequencies spec="RealParameter" value="1.0"/>
+      </log>
+      <log id="logProbEst" spec="TreeProbEstimateLogger"
+           sampledTrajectory="@typedTrajectory"/>
+        
     </logger>
 
     <logger spec="Logger" logEvery="1" fileName="$(filebase).traj">
