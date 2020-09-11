@@ -22,12 +22,12 @@ public class BirthEvent extends TrajectoryEvent {
 
     @Override
     public void updateState(double[] state) {
-        state[type] += 1;
+        state[type] += multiplicity;
     }
 
     @Override
     public void reverseUpdateState(double[] state) {
-        state[type] -= 1;
+        state[type] -= multiplicity;
     }
 
     @Override

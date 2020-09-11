@@ -40,8 +40,11 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     public Input<Boolean> useTauLeapingInput = new Input<>("useTauLeaping",
             "If true, use tau-leaping to speed up trajectory simulation.", false);
 
-    public Input<Integer> stepsPerIntervalInput = new Input<>("stepsPerInterval",
-            "Number of tau-leaping steps per inter-observation interval.", 10);
+    public Input<Integer> minLeapCountInput = new Input<>("minLeapCount",
+            "Minimum number of of tau-leaping steps executed over the tree.", 100);
+
+    public Input<Double> epsilonInput = new Input<>("epsilon",
+            "Tolerance parameter for selecting tau leap length.", 0.03);
 
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Type label used for traits in generated metadata.",
@@ -60,7 +63,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     boolean resampleOnLog;
 
     boolean useTauLeaping;
-    int stepsPerInterval;
+    int minLeapCount;
+    double epsilon;
 
     @Override
     public void initAndValidate() {
@@ -75,7 +79,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         resampleOnLog = resampleOnLogInput.get();
 
         useTauLeaping = useTauLeapingInput.get();
-        stepsPerInterval = stepsPerIntervalInput.get();
+        minLeapCount = minLeapCountInput.get();
+        epsilon = epsilonInput.get();
     }
 
     public double logTreeProbEstimate;
@@ -98,8 +103,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         double[] particleWeights = new double[nParticles];
 
         for (int p=0; p<nParticles; p++) {
-            particles[p] = new Particle(param, initialState, useTauLeaping, stepsPerInterval);
-            particlesPrime[p] = new Particle(param, initialState, useTauLeaping, stepsPerInterval);
+            particles[p] = new Particle(param, initialState, useTauLeaping, minLeapCount, epsilon);
+            particlesPrime[p] = new Particle(param, initialState, useTauLeaping, minLeapCount, epsilon);
         }
 
         // Iterate over tree events:

@@ -106,7 +106,8 @@ public class TrajectorySamplerTest {
                 "parameterization", parameterization,
                 "nParticles", 10000,
                 "useTauLeaping", true,
-                "stepsPerInterval", 100);
+                "minLeapCount", 100,
+                "epsilon", 0.01);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
         System.out.println("Log probability estimate: " + logProbEst);
@@ -122,7 +123,7 @@ public class TrajectorySamplerTest {
 
         System.out.println("Log probability true: " + logProbTrue);
 
-        assertEquals(logProbEst, logProbTrue, 1e-1);
+        assertEquals(logProbTrue, logProbEst, 1e-1);
     }
 
     @Test
@@ -215,7 +216,8 @@ public class TrajectorySamplerTest {
                 "parameterization", parameterization,
                 "nParticles", 10000,
                 "useTauLeaping", true,
-                "stepsPerInterval", 100);
+                "epsilon", 0.01,
+                "minLeapCount", 100);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
         System.out.println("Log probability estimate: " + logProbEst);
@@ -231,7 +233,7 @@ public class TrajectorySamplerTest {
 
         System.out.println("Log probability true: " + logProbTrue);
 
-        assertEquals(logProbEst, logProbTrue, 1e-1);
+        assertEquals(logProbTrue, logProbEst, 1e-1);
     }
 
     @Test
@@ -328,8 +330,7 @@ public class TrajectorySamplerTest {
                 "frequencies", frequencies,
                 "nParticles", 100000,
                 "resampThresh", 0.0,
-                "useTauLeaping", false,
-                "stepsPerInterval", 5);
+                "useTauLeaping", false);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
         System.out.println("Log probability estimate: " + logProbEst);

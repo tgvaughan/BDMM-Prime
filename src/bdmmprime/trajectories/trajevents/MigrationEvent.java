@@ -23,14 +23,14 @@ public class MigrationEvent extends TrajectoryEvent {
 
     @Override
     public void updateState(double[] state) {
-        state[srcType] -= 1;
-        state[destType] += 1;
+        state[srcType] -= multiplicity;
+        state[destType] += multiplicity;
     }
 
     @Override
     public void reverseUpdateState(double[] state) {
-        state[srcType] += 1;
-        state[destType] -= 1;
+        state[srcType] += multiplicity;
+        state[destType] -= multiplicity;
     }
 
     @Override

@@ -67,7 +67,8 @@
       <log id="typedTrajectoryTL" spec="SampledTrajectory"
            nParticles="1000"
            useTauLeaping="true"
-           stepsPerInterval="10"
+           minLeapCount="100"
+           epsilon="0.03"
            typeLabel="type"
            typeMappedTree="@tree"
            parameterization="@parameterization"/>

@@ -5,8 +5,6 @@ import bdmmprime.trajectories.obsevents.ObservedEvent;
 import bdmmprime.trajectories.trajevents.*;
 import beast.util.Randomizer;
 
-import java.util.Random;
-
 /**
  * This class wraps up the particle trajectories with the state required to simulate their evolution.
  *
@@ -31,13 +29,16 @@ public class Particle {
     double[][] a_migration, a_crossbirth;
 
     boolean useTauLeaping;
-    int stepsPerInterval;
+    int minLeapCount;
+    double epsilon;
 
-    public Particle(Parameterization param, double[] initialState, boolean useTauLeaping, int stepsPerInterval) {
+    public Particle(Parameterization param, double[] initialState, boolean useTauLeaping, int minLeapCount,
+                    double epsilon) {
         this.param = param;
         nTypes = param.getNTypes();
         this.useTauLeaping = useTauLeaping;
-        this.stepsPerInterval = stepsPerInterval;
+        this.minLeapCount = minLeapCount;
+        this.epsilon = epsilon;
 
         a_birth = new double[nTypes];
         a_death = new double[nTypes];
@@ -243,14 +244,53 @@ public class Particle {
 
     }
 
+    double[] mu, sigma2;
+    /**
+     * Estimate tau-leaping step size for a given epsilon using the approach
+     * from Cao et al., JCP 124, 044109 (2006), doi:10.1063/1.2159468
+     *
+     * @return
+     */
+    public double getTau() {
+
+        double tau = Double.POSITIVE_INFINITY;
+
+       if (mu == null)
+           mu = new double[nTypes];
+
+       if (sigma2 == null)
+           sigma2 = new double[nTypes];
+
+       for (int i=0; i<nTypes; i++) {
+           mu[i] = a_birth[i] - a_death[i];
+           sigma2[i] = a_birth[i] + a_death[i];
+           for (int j=0; j<nTypes; j++)  {
+               if (i == j)
+                   continue;
+
+               mu[i] += a_migration[j][i] - a_migration[i][j] + a_crossbirth[j][i];
+               sigma2[i] += a_migration[j][i] + a_migration[i][j] + a_crossbirth[j][i];
+           }
+
+           if (mu[i] != 0)
+               tau = Math.min(tau, Math.max(epsilon*trajectory.currentState[i], 1)/Math.abs(mu[i]));
+
+           if (sigma2[i] >= 0)
+               tau = Math.min(tau, Math.pow(Math.max(epsilon*trajectory.currentState[i], 1),2)/sigma2[i]);
+       }
+
+       return Math.min(tau, param.getTotalProcessLength()/minLeapCount);
+    }
+
     public void stepParticleTauLeaping(ObservedEvent observedEvent, double tmax) {
 
-        double t0 = t;
-        double dt = (tmax - t0) / stepsPerInterval;
-        for (int step = 1; step <= stepsPerInterval; step += 1) {
-            t = t0 + step*dt;
+        while (t < tmax) {
 
             computePropensities(observedEvent);
+
+            double tnext = Math.min(tmax, t + getTau());
+            double dt = tnext - t;
+            t = tnext;
 
             logWeight += -dt*a_illegal_tot;
 

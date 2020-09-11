@@ -23,12 +23,12 @@ public class CrossBirthEvent extends TrajectoryEvent {
 
     @Override
     public void updateState(double[] state) {
-        state[destType] += 1;
+        state[destType] += multiplicity;
     }
 
     @Override
     public void reverseUpdateState(double[] state) {
-        state[destType] -= 1;
+        state[destType] -= multiplicity;
     }
 
     @Override
