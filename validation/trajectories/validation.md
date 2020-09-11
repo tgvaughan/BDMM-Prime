@@ -1,6 +1,9 @@
 Validation of trajectory sampler
 ================
 
+    library(tidyverse)
+    library(plotly)
+
 This document describes several validation tests that have been
 performed on the trajectory sampling system of bdmm-prime. This system
 allows for post-MCMC sampling of birth-death trajectories. Ideally it
@@ -36,9 +39,13 @@ procedure is hard-coded).
 
 The second strategy is in some ways superior, as it directly tests the
 validity of the conditional trajectory distribution sampled by the
-algorithm. However it is slightly harder to detect deviations from the
-truth, as it requires comparing two distributions of highly
-multi-dimensional samples.
+algorithm, and is based on the simple fact that
+
+*P*(*η*\|*θ*) = ∑<sub>*τ*</sub>*P*(*η*\|*τ*, *θ*)*P*(*τ*\|*θ*).
+
+However it is slightly harder to detect deviations from the truth, as it
+requires comparing two distributions of highly multi-dimensional
+samples.
 
 Single-type trajectories
 ========================
@@ -136,5 +143,56 @@ Multi-*ρ*-sampling validation
 Multi-type trajectories
 =======================
 
+In this section we adopt the same validation approaches as in the
+previous section, but emphasize the trajectory distribution comparison.
+
 Simple sampling strategy validation
 -----------------------------------
+
+Our first multi-type model will consist of only 2 types, with the
+following parameters:
+
+-   *λ*<sub>*i*</sub> = 2
+-   *μ*<sub>*i*</sub> = 1
+-   *ψ*<sub>*i*</sub> = 0.5
+
+for *i* ∈ {1, 2}, and
+
+-   *M* = \[0, 0.5; 0.1, 0\].
+
+We use another pair of XML files to run these analyses:
+
+    pushd multi_type
+    java -jar ../../../out/artifacts/bdmm_prime_jar/bdmm-prime.jar \
+         -overwrite traj_and_tree_simulator_2types.xml 
+    java -jar ../../../out/artifacts/bdmm_prime_jar/bdmm-prime.jar \
+         -overwrite traj_inference_2types.xml 
+    popd
+
+We then use the following to load an process the trajectories:
+
+    source("../../scripts/trajProcessing.R")
+
+    trajTrue <- loadTrajectories("multi_type/traj_and_tree_simulator_2types.traj")
+    trajSamp <- loadTrajectories("multi_type/traj_inference_2types.traj")
+    trajSampTL <- loadTrajectories("multi_type/traj_inference_2types.TL.traj")
+
+    times <- seq(0, 5, length.out=51)
+
+    traj <- bind_rows(gridTrajectories(trajTrue, times) %>% mutate(ensemble="Original"),
+                      gridTrajectories(trajSamp, times) %>% mutate(ensemble="Filter"),
+                      gridTrajectories(trajSampTL, times) %>% mutate(ensemble="FilterTL"))
+
+Visualizing the results yields the following.
+
+    ggplot(traj %>%
+           group_by(time, ensemble, type) %>%
+           summarize(mean=mean(N), low=quantile(N, 0.25), high=quantile(N, 0.75))) +
+        geom_ribbon(aes(time, ymin=low, ymax=high, fill=factor(type), linetype=ensemble), color='black', alpha=0.5) +
+        geom_line(aes(time, mean, color=factor(type), linetype=ensemble)) +
+        ylab("Population sizes") +
+        scale_y_log10()
+
+![](validation_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+Again we have close agreement between the two distributions.

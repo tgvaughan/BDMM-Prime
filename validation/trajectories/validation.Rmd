@@ -1,5 +1,6 @@
 ---
 title: Validation of trajectory sampler
+output: rmarkdown::github_document
 ---
 
 ```{r message=FALSE}
@@ -166,7 +167,7 @@ popd
 ```
 
 We then use the following to load an process the trajectories:
-```{r message=TRUE, cache=TRUE}
+```{r message=FALSE, cache=TRUE}
 source("../../scripts/trajProcessing.R")
 
 trajTrue <- loadTrajectories("multi_type/traj_and_tree_simulator_2types.traj")
@@ -184,7 +185,6 @@ Visualizing the results yields the following.
 
 ```{r warning=FALSE, message=FALSE}
 ggplot(traj %>%
-       ## filter(ensemble != "FilterTL") %>%
        group_by(time, ensemble, type) %>%
        summarize(mean=mean(N), low=quantile(N, 0.25), high=quantile(N, 0.75))) +
     geom_ribbon(aes(time, ymin=low, ymax=high, fill=factor(type), linetype=ensemble), color='black', alpha=0.5) +

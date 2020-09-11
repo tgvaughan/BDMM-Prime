@@ -264,6 +264,7 @@ public class Particle {
        for (int i=0; i<nTypes; i++) {
            mu[i] = a_birth[i] - a_death[i];
            sigma2[i] = a_birth[i] + a_death[i];
+
            for (int j=0; j<nTypes; j++)  {
                if (i == j)
                    continue;
