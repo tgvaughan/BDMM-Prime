@@ -1,5 +1,7 @@
 package bdmmprime.trajectories;
 
+import bdmmprime.distributions.BirthDeathMigrationDistribution;
+import bdmmprime.mapping.TypeMappedTree;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.*;
 import bdmmprime.util.Utils;
@@ -54,6 +56,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             "If true, trajectory simulations will be performed at the logging stage.",
             true);
 
+    public Input<BirthDeathMigrationDistribution> bdmmDistribInput = new Input<>("bdmmDistrib",
+            "If provided, extract the parameterization from here.",
+            Input.Validate.XOR, parameterizationInput);
+
     Tree mappedTree;
     String typeLabel;
     Parameterization param;
@@ -66,12 +72,19 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     int minLeapCount;
     double epsilon;
 
+    Particle[] particles, particlesPrime;
+    double[] particleWeights;
+
     @Override
     public void initAndValidate() {
 
+        if (parameterizationInput.get() != null)
+            param = parameterizationInput.get();
+        else
+            param = bdmmDistribInput.get().parameterizationInput.get();
+
         mappedTree = mappedTreeInput.get();
         typeLabel = typeLabelInput.get();
-        param = parameterizationInput.get();
         nTypes = param.getNTypes();
         nParticles = nParticlesInput.get();
         resampThresh = resampThreshInput.get();
@@ -81,6 +94,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         useTauLeaping = useTauLeapingInput.get();
         minLeapCount = minLeapCountInput.get();
         epsilon = epsilonInput.get();
+
+        particles = new Particle[nParticles];
+        particlesPrime = new Particle[nParticles];
+        particleWeights = new double[nParticles];
     }
 
     public double logTreeProbEstimate;
@@ -97,14 +114,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         double[] initialState = new double[param.getNTypes()];
         initialState[rootType] = 1.0;
 
-        Particle[] particles = new Particle[nParticles];
-        Particle[] particlesPrime = new Particle[nParticles];
-
-        double[] particleWeights = new double[nParticles];
-
         for (int p=0; p<nParticles; p++) {
             particles[p] = new Particle(param, initialState, useTauLeaping, minLeapCount, epsilon);
             particlesPrime[p] = new Particle(param, initialState, useTauLeaping, minLeapCount, epsilon);
+            particleWeights[p] = 0.0;
         }
 
         // Iterate over tree events:
@@ -303,9 +316,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     @Override
     public void log(long sample, PrintStream out) {
+        if (mappedTree instanceof TypeMappedTree)
+            ((TypeMappedTree) mappedTree).remapForLog(sample);
+
         if (resampleOnLog && prevSimulationSample != sample) {
-//            System.out.println("Sampling traj with origin=" + param.originInput.get().getValue() +
-//                    " and a tree with " + mappedTree.getLeafNodeCount() + " leaves");
             traj = sampleTrajectory();
             prevSimulationSample = sample;
         }
