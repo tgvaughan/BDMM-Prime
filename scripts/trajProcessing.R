@@ -46,6 +46,8 @@ loadTrajectories <- function(filename, burninFrac=0.1, origins=NULL) {
             }
         }
     }
+
+    df <- df %>% group_by(traj) %>% mutate(age=max(time)-time)
     
     message("done.")
     
@@ -56,7 +58,6 @@ gridTrajectories <- function(trajdf, times) {
     df_grid <- NULL
 
     for (grid_time in times) {
-
         time_summary <- trajdf %>%
             group_by(traj, type) %>%
             summarize(
@@ -65,6 +66,23 @@ gridTrajectories <- function(trajdf, times) {
 
         time_summary$time <- grid_time
         df_grid <- bind_rows(df_grid, time_summary)
+    }
+
+    return(df_grid)
+}
+
+gridTrajectoriesByAge <- function(trajdf, ages) {
+    df_grid <- NULL
+
+    for (grid_age in ages) {
+        age_summary <- trajdf %>%
+            group_by(traj, type) %>%
+            summarize(
+                N=N[max(which(age>=grid_age))],
+                .groups = "drop_last")
+
+        time_summary$time <- grid_age
+        df_grid <- bind_rows(df_grid, age_summary)
     }
 
     return(df_grid)
