@@ -50,6 +50,7 @@
                         bdmmprime.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
                         bdmmprime.distributions.BirthDeathMigrationDistribution.tree,
                         bdmmprime.parameterization.CanonicalParameterization.typeSet,
+                        bdmmprime.parameterization.CanonicalParameterization.finalSampleOffset,
                         bdmmprime.parameterization.SkylineVectorParameter.origin,
                         bdmmprime.parameterization.SkylineMatrixParameter.origin,
                         bdmmprime.util.ZeroExcludingPrior.x"
@@ -142,6 +143,17 @@
                      typeSet="@typeSetBDMMPrime.t:$(n)"
                      typeLabel="type"
                      includeRootEdgeChanges="true"/>
+
+                <logger id="trajLogger.t:$(n)"
+                        fileName="$(filebase).$(tree).traj" logEvery="1000">
+                        <log spec="bdmmprime.trajectories.SampledTrajectory" id="typedTraj.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
+                            frequencies="@typeFrequencies.t:$(n)"
+                            typeMappedTree="@typeMappedTree.t:$(n)"
+                            typeLabel="type"
+                            useTauLeaping="true"
+                            epsilon="0.03"
+                            resampleOnLog="true"/>
+                </logger>
             ]]>
 
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
@@ -195,6 +207,9 @@
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
 
             <connect srcID="typedTreeStats.t:$(n)" targetID="tracelog" inputName="log"
+                     if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
+
+            <connect srcID="trajLogger.t:$(n)" targetID="mcmc" inputName="logger"
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
         </subtemplate>
 
