@@ -1,0 +1,86 @@
+package bdmmprime.util;
+
+import beast.core.Description;
+import beast.core.Input;
+import beast.core.Operator;
+import beast.core.parameter.RealParameter;
+import beast.util.Randomizer;
+
+import java.util.*;
+
+@Description("Scale operator which scales identical values together.")
+public class SmartScaleOperator extends Operator {
+
+    public Input<Double> scaleFactorInput = new Input<>("scaleFactor",
+            "Scale factor will be chosen between scaleFactor and 1/scaleFactor.", 0.75);
+
+    public Input<List<RealParameter>> parametersInput = new Input("parameter",
+            "One or more parameters to operate on", new ArrayList<>());
+
+    List<RealParameter> parameters;
+    Map<RealParameter, Integer[]> groups;
+
+    int nClasses;
+
+    @Override
+    public void initAndValidate() {
+
+        parameters = parametersInput.get();
+
+        SortedSet<Double> seenValuesSet = new TreeSet<>();
+
+        for (RealParameter param : parameters) {
+            for (int i=0; i<param.getDimension(); i++) {
+                if (param.getValue(i) != 0.0)
+                    seenValuesSet.add(param.getValue(i));
+            }
+        }
+
+        List<Double> seenValues = new ArrayList<>(seenValuesSet);
+        nClasses = seenValues.size();
+
+        groups = new HashMap<>();
+
+        for (RealParameter param : parameters) {
+            Integer[] groupIDs = new Integer[param.getDimension()];
+
+            for (int i = 0; i < param.getDimension(); i++)
+                groupIDs[i] = seenValues.indexOf(param.getValue(i));
+
+            groups.put(param, groupIDs);
+        }
+    }
+
+    @Override
+    public double proposal() {
+
+        // Select class at random
+
+        int classIdx = Randomizer.nextInt(nClasses);
+
+        // Choose scale factor
+
+        double minf = Math.min(scaleFactorInput.get(), 1.0/scaleFactorInput.get());
+        double f = minf + Randomizer.nextDouble()*(1.0/minf - minf);
+
+        // Scale selected elements:
+
+        for (RealParameter param : parameters) {
+            Integer[] group = groups.get(param);
+
+            for (int i=0; i<param.getDimension(); i++) {
+                if (group[i] == classIdx) {
+                    double newVal = f * param.getValue(i);
+                    if (newVal < param.getLower() || newVal > param.getUpper())
+                        return Double.NEGATIVE_INFINITY;
+                    else
+                        param.setValue(i, newVal);
+                }
+            }
+        }
+
+        // Hastings ratio for x -> f*x with f ~ [alpha,1/alpha] is 1/f.
+
+        return -Math.log(f);
+    }
+}
