@@ -9,6 +9,7 @@ import beast.core.CalculationNode;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.Loggable;
+import beast.core.util.Log;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
@@ -138,8 +139,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                     maxLogWeight = particles[p].logWeight;
             }
 
-            if (maxLogWeight == Double.NEGATIVE_INFINITY)
-                throw new IllegalStateException("Particle ensemble depleted.");
+            if (maxLogWeight == Double.NEGATIVE_INFINITY) {
+                Log.warning.println("Particle ensemble depleted. Consider re-running with a larger number of particles.");
+                return null;
+            }
 
             // Compute sum of scaled weights:
             double sumOfScaledWeights = 0.0, sumOfSquaredScaledWeights = 0.0;
@@ -187,7 +190,11 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
      */
     public double getLogTreeProbEstimate() {
 //        System.out.println(mappedTree + ";");
+
         sampleTrajectory();
+
+        if (traj == null)
+            return Double.NaN;
 
         int rootType = getNodeType(mappedTree.getRoot(), typeLabel);
 
