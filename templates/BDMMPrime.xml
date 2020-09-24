@@ -53,7 +53,8 @@
                         bdmmprime.parameterization.CanonicalParameterization.finalSampleOffset,
                         bdmmprime.parameterization.SkylineVectorParameter.origin,
                         bdmmprime.parameterization.SkylineMatrixParameter.origin,
-                        bdmmprime.util.ZeroExcludingPrior.x"
+                        bdmmprime.util.ZeroExcludingPrior.x,
+                        bdmmprime.util.OptionalLogger.model"
                      inlineInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
@@ -121,8 +122,9 @@
                 <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
                 <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
 
-                <logger id="typedTreeLogger.t:$(n)"
-                        fileName="$(filebase).$(tree).typed.trees" logEvery="1000" mode="tree">
+                <logger spec="bdmmprime.util.OptionalLogger" id="typedTreeLogger.t:$(n)"
+                        fileName="$(filebase).$(tree).typed.trees" logEvery="1000" mode="tree"
+                        enableLogger="true">
                     <log spec="bdmmprime.mapping.TypeMappedTree" id="typeMappedTree.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
                          mapOnInit="false" remapOnLog="true"
                          frequencies="@typeFrequencies.t:$(n)"
@@ -131,8 +133,9 @@
                          untypedTree="@Tree.t:$(n)"/>
                 </logger>
 
-                <logger id="nodeTypedTreeLogger.t:$(n)"
-                        fileName="$(filebase).$(tree).typed.node.trees" logEvery="1000" mode="tree">
+                <logger spec="bdmmprime.util.OptionalLogger" id="nodeTypedTreeLogger.t:$(n)"
+                        fileName="$(filebase).$(tree).typed.node.trees" logEvery="1000" mode="tree"
+                        enableLogger="true">
                    <log spec="bdmmprime.mapping.TypedNodeTreeLogger" id="nodeTypedTree.t:$(n)"
                         typedTree="@typeMappedTree.t:$(n)"/>
                 </logger>
@@ -144,8 +147,9 @@
                      typeLabel="type"
                      includeRootEdgeChanges="true"/>
 
-                <logger id="trajLogger.t:$(n)"
-                        fileName="$(filebase).$(tree).traj" logEvery="1000">
+                <logger spec="bdmmprime.util.OptionalLogger" id="trajLogger.t:$(n)"
+                        fileName="$(filebase).$(tree).traj" logEvery="1000"
+                        enableLogger="false">
                         <log spec="bdmmprime.trajectories.SampledTrajectory" id="typedTraj.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
                             frequencies="@typeFrequencies.t:$(n)"
                             typeMappedTree="@typeMappedTree.t:$(n)"
