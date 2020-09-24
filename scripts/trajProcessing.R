@@ -12,7 +12,7 @@ parseTrajectory <- function(trajStr) {
   return(res)
 }
 
-loadTrajectories <- function(filename, burninFrac=0.1, origins=NULL) {
+loadTrajectories <- function(filename, burninFrac=0.1, subsample=NA) {
     df <- NULL
 
     message("Loading ", filename,"...", appendLF = FALSE)
@@ -21,6 +21,11 @@ loadTrajectories <- function(filename, burninFrac=0.1, origins=NULL) {
     if (burninFrac>0) {
         n <- dim(df_in)[1]
         df_in <- df_in[-(1:ceiling(burninFrac*n)),]
+    }
+
+    if (!is.na(subsample)) {
+        indices <- unique(round(seq(1, dim(df_in)[1], length.out=subsample)))
+        df_in <- df_in[indices,]
     }
     
     for (row in 1:(dim(df_in)[1])) {
@@ -81,7 +86,7 @@ gridTrajectoriesByAge <- function(trajdf, ages) {
                 N=N[max(which(age>=grid_age))],
                 .groups = "drop_last")
 
-        time_summary$time <- grid_age
+        age_summary$age <- grid_age
         df_grid <- bind_rows(df_grid, age_summary)
     }
 
