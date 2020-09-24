@@ -17,6 +17,17 @@ public class SmartScaleOperator extends Operator {
     public Input<List<RealParameter>> parametersInput = new Input("parameter",
             "One or more parameters to operate on", new ArrayList<>());
 
+    final public Input<Boolean> optimiseInput = new Input<>("optimise",
+            "flag to indicate that the scale factor is automatically changed " +
+                    "in order to achieve a good acceptance rate (default true)", true);
+
+    public Input<Double> scaleFactorUpperLimitInput = new Input<>("scaleFactorUpperLimit",
+            "Upper Limit of scale factor", 1.0 - 1e-8);
+    public Input<Double> scaleFactorLowerLimitInput = new Input<>("scaleFactorLowerLimit",
+            "Lower limit of scale factor", 1e-8);
+
+    double scaleFactor, scaleFactorLowerLimit, scaleFactorUpperLimit;
+
     List<RealParameter> parameters;
     Map<RealParameter, Integer[]> groups;
 
@@ -26,6 +37,10 @@ public class SmartScaleOperator extends Operator {
     public void initAndValidate() {
 
         parameters = parametersInput.get();
+        scaleFactor = scaleFactorInput.get();
+
+        scaleFactorLowerLimit = scaleFactorLowerLimitInput.get();
+        scaleFactorUpperLimit = scaleFactorUpperLimitInput.get();
 
         SortedSet<Double> seenValuesSet = new TreeSet<>();
 
@@ -60,7 +75,7 @@ public class SmartScaleOperator extends Operator {
 
         // Choose scale factor
 
-        double minf = Math.min(scaleFactorInput.get(), 1.0/scaleFactorInput.get());
+        double minf = Math.min(scaleFactor, 1.0/scaleFactor);
         double f = minf + Randomizer.nextDouble()*(1.0/minf - minf);
 
         // Scale selected elements:
@@ -82,5 +97,24 @@ public class SmartScaleOperator extends Operator {
         // Hastings ratio for x -> f*x with f ~ [alpha,1/alpha] is 1/f.
 
         return -Math.log(f);
+    }
+
+    @Override
+    public void optimize(double logAlpha) {
+        if (optimiseInput.get()) {
+            double delta = calcDelta(logAlpha);
+            delta += Math.log(1.0/scaleFactor - 1.0);
+            setCoercableParameterValue(1.0/(Math.exp(delta) + 1.0));
+        }
+    }
+
+    @Override
+    public double getCoercableParameterValue() {
+        return scaleFactor;
+    }
+
+    @Override
+    public void setCoercableParameterValue(double value) {
+        scaleFactor = Math.max(Math.min(value, scaleFactorUpperLimit), scaleFactorLowerLimit);
     }
 }
