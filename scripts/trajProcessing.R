@@ -3,11 +3,21 @@
 require(tidyverse)
 
 parseTrajectory <- function(trajStr) {
-  values <- apply(str_split(str_split(trajStr, ",")[[1]], ":", simplify = TRUE), 2, as.numeric)
+  strValues <- str_split(str_split(trajStr, ",")[[1]], ":", simplify = TRUE)
+  values <- apply(strValues[,-2], 2, as.numeric)
   time <- values[,1]
-  N <- values[,-1]
+  src <- values[,2]
+  dest <- values[,3]
+  mult <- values[,4]
+  N <- values[,-(1:4)]
+  event<- strValues[,2]
 
-  res <- list(time=time, N = N)
+  res <- list(time = time,
+              N = N,
+              event = event,
+              src = src,
+              dest = dest,
+              mult = mult)
 
   return(res)
 }
@@ -38,7 +48,11 @@ loadTrajectories <- function(filename, burninFrac=0.1, subsample=NA) {
                             tibble(traj=row,
                                    type=0,
                                    time=trajStates$time,
-                                   N=trajStates$N))
+                                   N=trajStates$N,
+                                   event=trajStates$event,
+                                   src=trajStates$src,
+                                   dest=trajStates$dest,
+                                   mult=trajStates$mult))
         } else {
             ntypes <- dim(trajStates$N)[2]
             for (s in 1:ntypes) {
@@ -47,7 +61,11 @@ loadTrajectories <- function(filename, burninFrac=0.1, subsample=NA) {
                                 tibble(traj=row,
                                        type=s-1,
                                        time=trajStates$time,
-                                       N=trajStates$N[,s]))
+                                       N=trajStates$N[,s],
+                                       event=trajStates$event,
+                                       src=trajStates$src,
+                                       dest=trajStates$dest,
+                                       mult=trajStates$mult))
             }
         }
     }

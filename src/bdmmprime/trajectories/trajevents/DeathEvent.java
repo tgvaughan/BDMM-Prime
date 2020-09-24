@@ -41,4 +41,9 @@ public class DeathEvent extends TrajectoryEvent {
                 ", multiplicity=" + multiplicity +
                 '}';
     }
+
+    @Override
+    public String getEventCode() {
+        return "D" + ":" + type + "::" + multiplicity;
+    }
 }

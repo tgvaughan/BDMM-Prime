@@ -56,4 +56,9 @@ public class BirthEvent extends TrajectoryEvent {
                 ", multiplicity=" + multiplicity +
                 '}';
     }
+
+    @Override
+    public String getEventCode() {
+        return "B" + ":" +  type + "::" + multiplicity;
+    }
 }

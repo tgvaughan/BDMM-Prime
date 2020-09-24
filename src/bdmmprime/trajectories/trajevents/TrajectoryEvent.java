@@ -27,4 +27,6 @@ public abstract class TrajectoryEvent {
         for (int i=0; i<multiplicity; i++)
             simulateSingleTreeEvent(state, activeLineages, factory, untypedTree);
     }
+
+    public abstract String getEventCode();
 }

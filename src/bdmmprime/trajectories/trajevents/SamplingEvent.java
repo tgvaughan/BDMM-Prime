@@ -78,4 +78,9 @@ public class SamplingEvent extends TrajectoryEvent {
                 ", nNoRemoveSamp=" + nNoRemoveSamp +
                 '}';
     }
+
+    @Override
+    public String getEventCode() {
+        return "S" + ":" + type + "::" + (nRemoveSamp + nNoRemoveSamp);
+    }
 }

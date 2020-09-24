@@ -160,10 +160,13 @@ public class Trajectory {
             else
                 sb.append(",").append(eventTimes.get(i - 1));
 
+            sb.append(":").append(i == 0 ? "O:::" : events.get(i-1).getEventCode());
+
             for (int s=0; s<currentState.length; s++) {
                 sb.append(":");
                 sb.append(states.get(i)[s]);
             }
+
         }
 
         return sb.toString();

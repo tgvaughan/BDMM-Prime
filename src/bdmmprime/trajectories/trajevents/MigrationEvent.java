@@ -65,4 +65,9 @@ public class MigrationEvent extends TrajectoryEvent {
                 ", multiplicity=" + multiplicity +
                 '}';
     }
+
+    @Override
+    public String getEventCode() {
+        return "M" + ":" + srcType + ":" + destType + ":" + multiplicity;
+    }
 }
