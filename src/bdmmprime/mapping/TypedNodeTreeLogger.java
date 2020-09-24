@@ -19,12 +19,12 @@ import java.io.PrintStream;
  */
 public class TypedNodeTreeLogger extends BEASTObject implements Loggable {
 
-    public Input<Tree> typedTreeInput = new Input<>(
+    public Input<TypeMappedTree> typedTreeInput = new Input<>(
             "typedTree",
             "Typed tree whose node types to log.",
             Input.Validate.REQUIRED);
 
-    private Tree typedTree;
+    private TypeMappedTree typedTree;
 
     @Override
     public void initAndValidate() {
@@ -38,6 +38,8 @@ public class TypedNodeTreeLogger extends BEASTObject implements Loggable {
 
     @Override
     public void log(long nSample, PrintStream out) {
+
+        typedTree.remapForLog(nSample);
 
         // Set up metadata string
         out.print("tree STATE_" + nSample + " = ");
