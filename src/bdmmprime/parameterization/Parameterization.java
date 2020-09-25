@@ -27,7 +27,7 @@ public abstract class Parameterization extends CalculationNode {
 
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
             "Type set containing types in model.",
-            Input.Validate.REQUIRED);
+            new TypeSet(1));
 
     public Input<RealParameter> originInput = new Input<>("origin",
             "Time between start of process and the end.");

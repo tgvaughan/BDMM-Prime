@@ -43,14 +43,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     public Input<RealParameter> frequenciesInput = new Input<>("frequencies",
             "The equilibrium frequencies for each type",
-            Input.Validate.REQUIRED);
+            new RealParameter("1.0"));
 
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
             "Trait set specifying sample trait values.");
 
-    public Input<String> typeLabel = new Input<>("typeLabel",
-            "Attribute key used to specify sample trait values in tree.",
-            Input.Validate.XOR, typeTraitSetInput);
+    public Input<String> typeLabelInput = new Input<>("typeLabel",
+            "Attribute key used to specify sample trait values in tree.");
 
     public Input<Boolean> conditionOnSurvival = new Input<>("conditionOnSurvival",
             "Condition on at least one surviving lineage. (Default true.)",
@@ -120,10 +119,18 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         finalSampleOffset = finalSampleOffsetInput.get();
 
+        if (parameterization.getNTypes() != 1 && (typeTraitSetInput.get() == null && typeLabelInput.get() == null))
+            throw new RuntimeException("Error: For models with >1 type, either typeTraitSet or typeLabel must be specified.");
+
+        if (frequenciesInput.get().getDimension() != parameterization.getNTypes())
+            throw new RuntimeException("Error: dimension of equilibrium frequencies " +
+                    "parameter must match number of types.");
+
         double freqSum = 0;
         for (double f : frequenciesInput.get().getValues()) freqSum += f;
         if (Math.abs(1.0 - freqSum) > 1e-10)
-            throw new RuntimeException("Error: equilibrium frequencies must add up to 1 but currently add to " + freqSum + ".");
+            throw new RuntimeException("Error: equilibrium frequencies must add " +
+                    "up to 1 but currently add to " + freqSum + ".");
 
         int nLeaves = tree.getLeafNodeCount();
 
@@ -287,24 +294,35 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     private int getNodeType(Node node, Boolean init) {
 
-        if (!storeNodeTypes.get() || init) {
 
+        if (storeNodeTypes.get() && !init)
+            return nodeStates[node.getNr()];
+
+        int nodeType;
+
+        if (parameterization.getNTypes()>1) {
             String nodeTypeName;
 
             if (typeTraitSetInput.get() != null)
                 nodeTypeName = typeTraitSetInput.get().getStringValue(node.getID());
             else {
-                Object metaData = node.getMetaData(typeLabel.get());
-
+                Object metaData = node.getMetaData(typeLabelInput.get());
                 if (metaData instanceof Double)
                     nodeTypeName = String.valueOf(Math.round((double)metaData));
                 else
                     nodeTypeName = metaData.toString();
             }
 
-            return parameterization.getTypeSet().getTypeIndex(nodeTypeName);
+            nodeType = parameterization.getTypeSet().getTypeIndex(nodeTypeName);
 
-        } else return nodeStates[node.getNr()];
+        } else {
+            nodeType = 0;
+        }
+
+        if (storeNodeTypes.get())
+            nodeStates[node.getNr()] = nodeType;
+
+        return nodeType;
     }
 
 

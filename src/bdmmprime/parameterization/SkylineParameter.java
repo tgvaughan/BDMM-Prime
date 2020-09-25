@@ -21,7 +21,7 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
             false);
 
     public Input<Boolean> timesAreAgesInput = new Input<>("timesAreAges",
-            "True if times are ages (before most recent sample) instead " +
+            "True if times are ages (before the end of the sampling process) instead " +
                     "of times after birth-death process start.",
             false);
 
