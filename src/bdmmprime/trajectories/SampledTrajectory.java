@@ -1,6 +1,6 @@
 package bdmmprime.trajectories;
 
-import bdmmprime.distributions.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.mapping.TypeMappedTree;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.*;

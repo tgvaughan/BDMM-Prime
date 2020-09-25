@@ -1,4 +1,4 @@
-package bdmmprime.util;
+package bdmmprime.util.operators;
 
 import beast.core.Description;
 import beast.core.Input;

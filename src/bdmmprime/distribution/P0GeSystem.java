@@ -1,4 +1,4 @@
-package bdmmprime.distributions;
+package bdmmprime.distribution;
 
 
 import bdmmprime.parameterization.Parameterization;

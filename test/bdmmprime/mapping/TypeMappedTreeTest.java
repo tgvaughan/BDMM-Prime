@@ -1,6 +1,6 @@
 package bdmmprime.mapping;
 
-import bdmmprime.distributions.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;

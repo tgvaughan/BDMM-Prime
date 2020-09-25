@@ -1,9 +1,8 @@
-package bdmmprime.distributions;
+package bdmmprime.distribution;
 
 import bdmmprime.parameterization.*;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeInterface;
 import beast.util.TreeParser;
 import org.apache.commons.math.special.Gamma;
 import org.junit.Test;

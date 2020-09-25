@@ -1,4 +1,4 @@
-package bdmmprime.util;
+package bdmmprime.util.priors;
 
 import beast.core.Description;
 import beast.core.Function;

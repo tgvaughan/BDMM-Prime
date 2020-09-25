@@ -13,7 +13,7 @@
                  :feast.simulation
                  :feast.fileio
                  :feast.fileio.logfileiterator
-                 :bdmmprime.distributions
+                 :bdmmprime.distribution
                  :bdmmprime.parameterization
                  :bdmmprime.trajectories">
 

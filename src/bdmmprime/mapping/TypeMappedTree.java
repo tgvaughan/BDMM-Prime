@@ -1,6 +1,6 @@
 package bdmmprime.mapping;
 
-import bdmmprime.distributions.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
 import beast.core.Input;

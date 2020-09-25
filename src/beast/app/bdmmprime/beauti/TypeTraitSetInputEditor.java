@@ -16,7 +16,7 @@
  */
 package beast.app.bdmmprime.beauti;
 
-import bdmmprime.distributions.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.TypeSet;
 import bdmmprime.util.InitializedTraitSet;
 import beast.app.beauti.BeautiDoc;

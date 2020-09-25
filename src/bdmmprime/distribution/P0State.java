@@ -1,4 +1,4 @@
-package bdmmprime.distributions;
+package bdmmprime.distribution;
 
 /**
  * Class containing the values of P0.

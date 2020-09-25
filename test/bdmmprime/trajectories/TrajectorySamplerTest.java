@@ -1,14 +1,11 @@
 package bdmmprime.trajectories;
 
-import bdmmprime.distributions.BirthDeathMigrationDistribution;
-import bdmmprime.mapping.TypeMappedTree;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.simulation.SimulatedTree;
-import bdmmprime.trajectories.simulation.UntypedTreeFromTypedTree;
 import beast.core.parameter.RealParameter;
 import beast.util.Randomizer;
 import beast.util.TreeParser;
-import org.apache.commons.math.special.Gamma;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

@@ -45,17 +45,17 @@
 
     <mergewith point="treePriorTemplates">
 
-        <subtemplate id="BDMMPrime" class="bdmmprime.distributions.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
-                     suppressInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.typeLabel,
-                        bdmmprime.distributions.BirthDeathMigrationDistribution.storeNodeTypes,
-                        bdmmprime.distributions.BirthDeathMigrationDistribution.tree,
+        <subtemplate id="BDMMPrime" class="bdmmprime.distribution.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
+                     suppressInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.typeLabel,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.storeNodeTypes,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.tree,
                         bdmmprime.parameterization.CanonicalParameterization.typeSet,
                         bdmmprime.parameterization.CanonicalParameterization.finalSampleOffset,
                         bdmmprime.parameterization.SkylineVectorParameter.origin,
                         bdmmprime.parameterization.SkylineMatrixParameter.origin,
-                        bdmmprime.util.ZeroExcludingPrior.x,
+                        bdmmprime.util.priors.ZeroExcludingPrior.x,
                         bdmmprime.util.OptionalLogger.model"
-                     inlineInputs="bdmmprime.distributions.BirthDeathMigrationDistribution.parameterization">
+                     inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
                 <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distributions.BirthDeathMigrationDistribution"

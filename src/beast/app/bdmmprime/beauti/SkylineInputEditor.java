@@ -1,6 +1,6 @@
 package beast.app.bdmmprime.beauti;
 
-import bdmmprime.distributions.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.SkylineParameter;
 import beast.app.beauti.BeautiDoc;
 import beast.app.draw.InputEditor;
