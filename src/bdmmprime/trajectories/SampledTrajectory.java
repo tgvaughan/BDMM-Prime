@@ -200,9 +200,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     public double getLogTreeProbEstimate() {
 //        System.out.println(mappedTree + ";");
 
-        sampleTrajectory();
 
-        if (traj == null)
+        if (sampleTrajectory() == null)
             return Double.NaN;
 
         int rootType = getNodeType(mappedTree.getRoot(), typeLabel);
