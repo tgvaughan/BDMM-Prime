@@ -3,6 +3,7 @@ package bdmmprime.mapping;
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
+import beast.core.Function;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
@@ -53,6 +54,10 @@ public class TypeMappedTree extends Tree {
             "The frequencies for each type",
             Input.Validate.REQUIRED);
 
+    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+            "If provided, the difference in time between the final sample and the end of the BD process.",
+            new RealParameter("0.0"));
+
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
             "Trait information for initializing traits " +
                     "(like node types/locations) in the tree. If this is " +
@@ -80,6 +85,7 @@ public class TypeMappedTree extends Tree {
             Input.Validate.XOR, parameterizationInput);
 
     private Parameterization param;
+    private Function finalSampleOffset;
     private Tree untypedTree;
 
     private ODESystem odeSystem;
@@ -113,6 +119,8 @@ public class TypeMappedTree extends Tree {
             param = bdmmDistribInput.get().parameterizationInput.get();
 
         untypedTree = treeInput.get();
+
+        finalSampleOffset = finalSampleOffsetInput.get();
 
         if (mapOnInitInput.get())
             doStochasticMapping();
@@ -212,7 +220,7 @@ public class TypeMappedTree extends Tree {
         rhoSamplingIndex = new int[untypedTree.getLeafNodeCount()];
 
         for (int nodeNr=0; nodeNr < treeInput.get().getLeafNodeCount(); nodeNr++) {
-            double nodeTime = param.getNodeTime(untypedTree.getNode(nodeNr));
+            double nodeTime = param.getNodeTime(untypedTree.getNode(nodeNr), finalSampleOffset.getArrayValue());
             rhoSampled[nodeNr] = false;
             for (double rhoSamplingTime : param.getRhoSamplingTimes()) {
                 if (Utils.equalWithPrecision(nodeTime, rhoSamplingTime)) {
@@ -312,7 +320,7 @@ public class TypeMappedTree extends Tree {
 
         double delta = 2*Utils.globalPrecisionThreshold;
 
-        double timeOfSubtreeRootEdgeBottom = param.getNodeTime(untypedSubtreeRoot);
+        double timeOfSubtreeRootEdgeBottom = param.getNodeTime(untypedSubtreeRoot, finalSampleOffset.getArrayValue());
 
         odeIntegrator.addEventHandler(odeSystem,
                 (timeOfSubtreeRootEdgeTop-timeOfSubtreeRootEdgeBottom)/RATE_CHANGE_CHECKS_PER_EDGE,
@@ -340,7 +348,7 @@ public class TypeMappedTree extends Tree {
             y[param.getNTypes()+type] = 0.0;
         }
 
-        double leafTime = param.getNodeTime(leafNode);
+        double leafTime = param.getNodeTime(leafNode, finalSampleOffset.getArrayValue());
         double T = param.getTotalProcessLength();
 
         if (Utils.lessThanWithPrecision(leafTime, T)) {
@@ -377,7 +385,7 @@ public class TypeMappedTree extends Tree {
 
         } else {
 
-            int nodeInterval = param.getNodeIntervalIndex(leafNode);
+            int nodeInterval = param.getNodeIntervalIndex(leafNode, finalSampleOffset.getArrayValue());
 
             for (int type = 0; type< param.getNTypes(); type++) {
                 double psi = param.getSamplingRates()[nodeInterval][type];
@@ -398,7 +406,7 @@ public class TypeMappedTree extends Tree {
 
     private double[] getSAState(Node saNode) {
 
-        double saNodeTime = param.getNodeTime(saNode);
+        double saNodeTime = param.getNodeTime(saNode, finalSampleOffset.getArrayValue());
 
         double[] y = backwardsIntegrateSubtree(saNode.getNonDirectAncestorChild(), saNodeTime);
 
@@ -421,7 +429,7 @@ public class TypeMappedTree extends Tree {
 
         } else {
 
-            int nodeInterval = param.getNodeIntervalIndex(saNode);
+            int nodeInterval = param.getNodeIntervalIndex(saNode, finalSampleOffset.getArrayValue());
 
             for (int type = 0; type< param.getNTypes(); type++) {
                 double psi = param.getSamplingRates()[nodeInterval][type];
@@ -442,7 +450,7 @@ public class TypeMappedTree extends Tree {
 
     private double[] getInternalState(Node internalNode) {
 
-        double internalNodeTime = param.getNodeTime(internalNode);
+        double internalNodeTime = param.getNodeTime(internalNode, finalSampleOffset.getArrayValue());
 
         double[] yLeft = backwardsIntegrateSubtree(internalNode.getChild(0), internalNodeTime);
         double[] yRight = backwardsIntegrateSubtree(internalNode.getChild(1), internalNodeTime);
@@ -452,7 +460,7 @@ public class TypeMappedTree extends Tree {
 
         double[] y = new double[param.getNTypes()*2];
 
-        int nodeInterval = param.getNodeIntervalIndex(internalNode);
+        int nodeInterval = param.getNodeIntervalIndex(internalNode, finalSampleOffset.getArrayValue());
 
         int N = param.getNTypes();
 
@@ -517,7 +525,7 @@ public class TypeMappedTree extends Tree {
         int currentType = startType;
         double currentTime = startTime;
 
-        double endTime = param.getNodeTime(subtreeRoot);
+        double endTime = param.getNodeTime(subtreeRoot, finalSampleOffset.getArrayValue());
 
         double[] rates = new double[param.getNTypes()];
         double[] ratesPrime = new double[param.getNTypes()];
@@ -558,7 +566,7 @@ public class TypeMappedTree extends Tree {
             if (integrationStep == FORWARD_INTEGRATION_STEPS)
                 break;
 
-            currentNode.setHeight(param.getAge(currentTime));
+            currentNode.setHeight(param.getAge(currentTime, finalSampleOffset.getArrayValue()));
 
             // Sample event type
 
@@ -573,7 +581,7 @@ public class TypeMappedTree extends Tree {
             currentNode = newNode;
         }
 
-        currentNode.setHeight(param.getAge(endTime));
+        currentNode.setHeight(param.getAge(endTime, finalSampleOffset.getArrayValue()));
 
         switch(getNodeKind(subtreeRoot)) {
             case LEAF:
@@ -616,7 +624,7 @@ public class TypeMappedTree extends Tree {
      * @return backward-time integration result at this point on the tree
      */
     private double[] getBackwardsIntegrationResult(Node node, double time) {
-        double parentTime = node.isRoot() ? 0.0 : param.getNodeTime(node.getParent());
+        double parentTime = node.isRoot() ? 0.0 : param.getNodeTime(node.getParent(), finalSampleOffset.getArrayValue());
         double adjustedTime = Math.max(time, parentTime + 2*Utils.globalPrecisionThreshold);
 
         ContinuousOutputModel com = integrationResults[node.getNr()];
@@ -635,7 +643,7 @@ public class TypeMappedTree extends Tree {
 
     private int[] sampleChildTypes(Node node, int parentType) {
 
-        double t = param.getNodeTime(node);
+        double t = param.getNodeTime(node, finalSampleOffset.getArrayValue());
         int interval = param.getIntervalIndex(t);
 
         double[] y1 = getBackwardsIntegrationResult(node.getChild(0), t);

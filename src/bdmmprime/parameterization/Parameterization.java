@@ -32,9 +32,6 @@ public abstract class Parameterization extends CalculationNode {
     public Input<RealParameter> originInput = new Input<>("origin",
             "Time between start of process and the end.");
 
-    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
-            "Time between the final sample and the end of the process (Defaults to zero.).");
-
     public Input<Tree> treeInput = new Input<>("tree",
             "If specified, condition on root time rather than origin time.",
             Input.Validate.XOR, originInput);
@@ -102,12 +99,6 @@ public abstract class Parameterization extends CalculationNode {
             return originInput.get().getValue();
         else
             return treeInput.get().getRoot().getHeight();
-    }
-
-    public double getFinalSampleOffset() {
-        return finalSampleOffsetInput.get() != null
-                ? finalSampleOffsetInput.get().getArrayValue()
-                : 0.0;
     }
 
     public boolean conditionedOnRoot() {
@@ -277,8 +268,8 @@ public abstract class Parameterization extends CalculationNode {
      * @param node node whose time to query.
      * @return time of node.
      */
-    public double getNodeTime(Node node) {
-        return getTotalProcessLength() - node.getHeight() - getFinalSampleOffset();
+    public double getNodeTime(Node node, double finalSampleOffset) {
+        return getTotalProcessLength() - node.getHeight() - finalSampleOffset;
     }
 
     /**
@@ -287,8 +278,8 @@ public abstract class Parameterization extends CalculationNode {
      * @param time time to query age for
      * @return age corresponding to time
      */
-    public double getAge(double time) {
-        return getTotalProcessLength() - time - getFinalSampleOffset();
+    public double getAge(double time, double finalSampleOffset) {
+        return getTotalProcessLength() - time - finalSampleOffset;
     }
 
     /**
@@ -297,8 +288,8 @@ public abstract class Parameterization extends CalculationNode {
      * @param node node whose interval to query.
      * @return index of interval.
      */
-    public int getNodeIntervalIndex(Node node) {
-        return getIntervalIndex(getNodeTime(node));
+    public int getNodeIntervalIndex(Node node, double finalSampleOffset) {
+        return getIntervalIndex(getNodeTime(node, finalSampleOffset));
     }
 
 

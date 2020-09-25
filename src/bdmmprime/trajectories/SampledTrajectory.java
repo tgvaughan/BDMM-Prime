@@ -9,6 +9,7 @@ import beast.core.CalculationNode;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.Loggable;
+import beast.core.parameter.RealParameter;
 import beast.core.util.Log;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
@@ -29,6 +30,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
             "Multi-type birth-death parameterization.", Input.Validate.REQUIRED);
+
+    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+            "If provided, the difference in time between the final sample and the end of the BD process.",
+            new RealParameter("0.0"));
 
     public Input<Function> frequenciesInput = new Input<>("frequencies",
             "The equilibrium frequencies for each type. Only needed for testing tree prob estimates.");
@@ -64,6 +69,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     Tree mappedTree;
     String typeLabel;
     Parameterization param;
+    Function finalSampleOffset;
+
     int nTypes, nParticles;
     double resampThresh;
 
@@ -83,6 +90,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             param = parameterizationInput.get();
         else
             param = bdmmDistribInput.get().parameterizationInput.get();
+
+        finalSampleOffset = finalSampleOffsetInput.get();
 
         mappedTree = mappedTreeInput.get();
         typeLabel = typeLabelInput.get();
@@ -231,7 +240,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         List<ObservedEvent> eventList = new ArrayList<>();
         ObservedSamplingEvent[] thisSamplingEvent = new ObservedSamplingEvent[param.getNTypes()];
         for (Node node : sampleNodes) {
-            double t = param.getNodeTime(node);
+            double t = param.getNodeTime(node, finalSampleOffset.getArrayValue());
             int type = getNodeType(node, typeLabel);
 
             if (thisSamplingEvent[type] == null || !Utils.equalWithPrecision(t,thisSamplingEvent[type].time)) {
@@ -253,13 +262,13 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             if (node.getChildCount() == 1) {
                 // Observed type change
 
-                eventList.add(new TypeChangeEvent(param.getNodeTime(node),
+                eventList.add(new TypeChangeEvent(param.getNodeTime(node, finalSampleOffset.getArrayValue()),
                         getNodeType(node, typeLabel),
                         getNodeType(node.getChild(0), typeLabel),1));
             } else {
                 // Coalescence
 
-                eventList.add(new CoalescenceEvent(param.getNodeTime(node),
+                eventList.add(new CoalescenceEvent(param.getNodeTime(node, finalSampleOffset.getArrayValue()),
                         getNodeType(node, typeLabel),
                         getNodeType(node.getChild(0), typeLabel),
                         getNodeType(node.getChild(1), typeLabel), 1));

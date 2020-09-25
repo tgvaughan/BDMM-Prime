@@ -3,6 +3,7 @@ package bdmmprime.trajectories.simulation;
 import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.*;
 import bdmmprime.trajectories.trajevents.*;
+import beast.core.Function;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
@@ -31,10 +32,13 @@ public class SimulatedTree extends Tree {
             "BDMM parameterization",
             Input.Validate.REQUIRED);
 
+    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+            "The difference in time between the final sample and the end of the BD process. " +
+                    "Will be set by the simulator.", Input.Validate.REQUIRED);
+
     public Input<RealParameter> frequenciesInput = new Input<>("frequencies",
             "The equilibrium frequencies for each type",
             Input.Validate.REQUIRED);
-
 
     public Input<Integer> minSamplesInput = new Input<>("minSamples",
             "Minimum number of samples to accept in simulated trajectory.", 1);
@@ -93,7 +97,7 @@ public class SimulatedTree extends Tree {
             traj = simulateTrajectory();
         } while (traj.getSampleCount() < Math.max(minSamples,1));
 
-        RealParameter fso = (RealParameter) param.finalSampleOffsetInput.get();
+        RealParameter fso = (RealParameter) finalSampleOffsetInput.get();
         fso.setValue(param.originInput.get().getValue() - traj.getFinalSampleTime());
 
         if (trajFileNameInput.get() != null) {

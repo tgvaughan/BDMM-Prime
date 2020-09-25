@@ -21,7 +21,6 @@ public class TrajectorySamplerTest {
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "origin", new RealParameter("5.0"),
-                "finalSampleOffset", new RealParameter("0.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -35,14 +34,17 @@ public class TrajectorySamplerTest {
                         null,
                         new RealParameter("1.0")));
 
+        RealParameter finalSampleOffset = new RealParameter("0.0");
+
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + parameterization.getFinalSampleOffset());
+        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -75,7 +77,6 @@ public class TrajectorySamplerTest {
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "origin", new RealParameter("5.0"),
-                "finalSampleOffset", new RealParameter("0.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -89,14 +90,17 @@ public class TrajectorySamplerTest {
                         null,
                         new RealParameter("1.0")));
 
+        RealParameter finalSampleOffset = new RealParameter("0.0");
+
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + parameterization.getFinalSampleOffset());
+        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -131,7 +135,6 @@ public class TrajectorySamplerTest {
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "origin", new RealParameter("5.0"),
-                "finalSampleOffset", new RealParameter("0.0"),
                 "birthRate", new SkylineVectorParameter(
                         new RealParameter("2.5"),
                         new RealParameter("2.0 1.0"), 1),
@@ -145,14 +148,18 @@ public class TrajectorySamplerTest {
                         null,
                         new RealParameter("1.0")));
 
+
+        RealParameter finalSampleOffset = new RealParameter("0.0");
+
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + parameterization.getFinalSampleOffset());
+        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -185,7 +192,6 @@ public class TrajectorySamplerTest {
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "origin", new RealParameter("5.0"),
-                "finalSampleOffset", new RealParameter("0.0"),
                 "birthRate", new SkylineVectorParameter(
                         new RealParameter("2.5"),
                         new RealParameter("2.0 1.0"), 1),
@@ -199,14 +205,18 @@ public class TrajectorySamplerTest {
                         null,
                         new RealParameter("1.0")));
 
+
+        RealParameter finalSampleOffset = new RealParameter("0.0");
+
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + parameterization.getFinalSampleOffset());
+        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -241,7 +251,6 @@ public class TrajectorySamplerTest {
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "origin", new RealParameter("5.0"),
-                "finalSampleOffset", new RealParameter("0.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -258,14 +267,17 @@ public class TrajectorySamplerTest {
                         null,
                         new RealParameter("1.0")));
 
+        RealParameter finalSampleOffset = new RealParameter("0.0");
+
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", new RealParameter("1.0"),
                 "minSamples", 2);
 
         System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + parameterization.getFinalSampleOffset());
+        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -299,7 +311,6 @@ public class TrajectorySamplerTest {
         parameterization.initByName(
                 "typeSet", new TypeSet(nTypes),
                 "origin", new RealParameter("1.2"),
-                "finalSampleOffset", new RealParameter("0.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0"), nTypes),
@@ -321,9 +332,12 @@ public class TrajectorySamplerTest {
 
         System.out.println(typedTree);
 
+        RealParameter finalSampleOffset =  new RealParameter("0.0");
+
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", typedTree,
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", frequencies,
                 "nParticles", 100000,
                 "resampThresh", 0.0,
