@@ -23,7 +23,8 @@ parseTrajectory <- function(trajStr) {
 }
 
 loadTrajectories <- function(filename, burninFrac=0.1, subsample=NA) {
-    df <- NULL
+    states <- NULL
+    events <- NULL
 
     message("Loading ", filename,"...", appendLF = FALSE)
     df_in <- read_tsv(filename, col_types="ic")
@@ -42,46 +43,48 @@ loadTrajectories <- function(filename, burninFrac=0.1, subsample=NA) {
         trajStr <- df_in[row,2]
         trajStates <- parseTrajectory(trajStr)
         Ndim <- dim(trajStates$N)
+
         if (length(Ndim)==0) {
             ntypes <- 1
-            df <- bind_rows(df,
-                            tibble(traj=row,
-                                   type=0,
-                                   time=trajStates$time,
-                                   N=trajStates$N,
-                                   event=trajStates$event,
-                                   src=trajStates$src,
-                                   dest=trajStates$dest,
-                                   mult=trajStates$mult))
+            states <- bind_rows(states,
+                                tibble(traj=row,
+                                       type=0,
+                                       time=trajStates$time,
+                                       N=trajStates$N))
         } else {
             ntypes <- dim(trajStates$N)[2]
             for (s in 1:ntypes) {
                 
-                df <- bind_rows(df,
-                                tibble(traj=row,
-                                       type=s-1,
-                                       time=trajStates$time,
-                                       N=trajStates$N[,s],
-                                       event=trajStates$event,
-                                       src=trajStates$src,
-                                       dest=trajStates$dest,
-                                       mult=trajStates$mult))
+                states <- bind_rows(states,
+                                    tibble(traj=row,
+                                           type=s-1,
+                                           time=trajStates$time,
+                                           N=trajStates$N[,s]))
             }
         }
+
+        events <- bind_rows(events,
+                            tibble(traj=row,
+                                   time=trajStates$time,
+                                   event=trajStates$event,
+                                   src=trajStates$src,
+                                   dest=trajStates$dest,
+                                   mult=trajStates$mult))
     }
 
-    df <- df %>% group_by(traj) %>% mutate(age=max(time)-time)
+    states <- states %>% group_by(traj) %>% mutate(age=max(time)-time)
+    events <- events %>% group_by(traj) %>% mutate(age=max(time)-time)
     
     message("done.")
     
-    return(df)
+    return(list(states=states, events=events))
 }
 
-gridTrajectories <- function(trajdf, times) {
+gridTrajectories <- function(trajStates, times) {
     df_grid <- NULL
 
     for (grid_time in times) {
-        time_summary <- trajdf %>%
+        time_summary <- trajStates %>%
             group_by(traj, type) %>%
             summarize(
                 N=N[max(which(time<=grid_time))],
@@ -94,11 +97,11 @@ gridTrajectories <- function(trajdf, times) {
     return(df_grid)
 }
 
-gridTrajectoriesByAge <- function(trajdf, ages) {
+gridTrajectoriesByAge <- function(trajStates, ages) {
     df_grid <- NULL
 
     for (grid_age in ages) {
-        age_summary <- trajdf %>%
+        age_summary <- trajStates %>%
             group_by(traj, type) %>%
             summarize(
                 N=N[max(which(age>=grid_age))],
