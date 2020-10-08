@@ -1,5 +1,16 @@
 <beast version="2.0"
-       namespace="beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions">
+       namespace="beast.app.beauti
+                  :beast.core
+                  :beast.evolution.branchratemodel
+                  :beast.evolution.speciation
+                  :beast.evolution.tree.coalescent
+                  :beast.core.util
+                  :beast.evolution.nuc
+                  :beast.evolution.operators
+                  :beast.evolution.sitemodel
+                  :beast.evolution.substitutionmodel
+                  :beast.evolution.likelihood
+                  :beast.evolution:beast.math.distributions">
 
     <mergewith point="misc">
         <fragment id="BDMMPrimeSATreeOperators" spec="beast.app.beauti.Fragment">
@@ -58,7 +69,7 @@
                      inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
-                <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distributions.BirthDeathMigrationDistribution"
+                <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distribution.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
 
                     <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
