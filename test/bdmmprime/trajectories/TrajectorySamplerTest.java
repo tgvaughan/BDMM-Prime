@@ -49,7 +49,7 @@ public class TrajectorySamplerTest {
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
                 "parameterization", parameterization,
-                "nParticles", 100000);
+                "nParticles", 10000);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
         System.out.println("Log probability estimate: " + logProbEst);
@@ -164,7 +164,7 @@ public class TrajectorySamplerTest {
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
                 "parameterization", parameterization,
-                "nParticles", 100000);
+                "nParticles", 10000);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
         System.out.println("Log probability estimate: " + logProbEst);
@@ -282,7 +282,7 @@ public class TrajectorySamplerTest {
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
                 "parameterization", parameterization,
-                "nParticles", 100000);
+                "nParticles", 10000);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
         System.out.println("Log probability estimate: " + logProbEst);
@@ -339,7 +339,7 @@ public class TrajectorySamplerTest {
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
                 "frequencies", frequencies,
-                "nParticles", 100000,
+                "nParticles", 10000,
                 "resampThresh", 0.0,
                 "useTauLeaping", false);
 
