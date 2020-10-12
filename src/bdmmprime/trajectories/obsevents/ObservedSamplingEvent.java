@@ -96,7 +96,10 @@ public class ObservedSamplingEvent extends ObservedEvent {
             }
 
             for (int i = 0; i < nSampledAncestors; i++) {
-                double sampling_prop = trajectory.currentState[s] * param.getSamplingRates()[interval][s];
+                // The absence of N[s] in the following sampling propensity
+                // is due to it being cancelled out by a 1/N[s] factor in the
+                // tree event probability.
+                double sampling_prop = param.getSamplingRates()[interval][s];
                 logWeightContrib += Math.log((1.0 - param.getRemovalProbs()[interval][s]) * sampling_prop);
                 trajectory.addEvent(new SamplingEvent(time, s, 0, 1));
             }
