@@ -30,18 +30,18 @@
       <skylineValues spec="RealParameter" value="0.5"/>
     </samplingRate>
     <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
-      <skylineValues spec="RealParameter" value="1.0"/>
+      <skylineValues spec="RealParameter" value="0.5"/>
     </removalProb>
   </parameterization>
 
   <run spec="LogFileIterator">
 
-    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator_1type.trees"
+    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator_1type_SA.trees"
                   readTaxonSet="false">
       <tree id="tree" spec="Tree"/>
     </logFileState>
 
-    <logFileState spec="TraceLogFileState" logFileName="traj_and_tree_simulator_1type.log">
+    <logFileState spec="TraceLogFileState" logFileName="traj_and_tree_simulator_1type_SA.log">
       <logFileEntry spec="LogFileRealParameter" fieldName="finalSampleOffset">
         <fieldParameter id="finalSampleOffset" spec="RealParameter" value="0"/>
       </logFileEntry>
