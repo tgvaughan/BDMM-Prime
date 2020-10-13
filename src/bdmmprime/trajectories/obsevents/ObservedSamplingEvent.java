@@ -2,7 +2,6 @@ package bdmmprime.trajectories.obsevents;
 
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
-import bdmmprime.trajectories.trajevents.DeathEvent;
 import bdmmprime.trajectories.trajevents.SamplingEvent;
 import bdmmprime.util.Utils;
 import beast.math.Binomial;
@@ -73,11 +72,11 @@ public class ObservedSamplingEvent extends ObservedEvent {
 
                 int k = lineages[s] - nLeaves;
                 int S = nUnremovedLeaves + nSampledAncestors;
-                double N = trajectory.currentState[s];
+                int N = (int)Math.round(trajectory.currentState[s]);
 
-                logWeightContrib += Gamma.logGamma(N-k+1) - Gamma.logGamma(N+1)
-                        + Gamma.logGamma(S + 1) - Gamma.logGamma(S - nSampledAncestors + 1)
-                        + Gamma.logGamma(N - S + 1) - Gamma.logGamma(N - S - k + 1);
+                logWeightContrib += Binomial.logChoose(S, nSampledAncestors)
+                        + Binomial.logChoose(N - S, k-nSampledAncestors)
+                        - Binomial.logChoose(N, k);
             }
 
         } else {
