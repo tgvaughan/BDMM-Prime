@@ -70,7 +70,7 @@ To begin, let's look at a very simple single-type birth-death-sampling model wit
 where $T$ is the length of the trajectory simulation.
 
 First we run the simulations and sample the trajectories:
-```{bash results=FALSE}
+```{bash results=FALSE, include=FALSE}
 pushd single_type
 java -jar ../../../out/artifacts/bdmm_prime_jar/bdmm-prime.jar \
      -overwrite traj_and_tree_simulator_1type.xml 
@@ -139,7 +139,7 @@ Now let's consider the same setup, but including sampling without removal:
 * $r = 0.5$
 
 Again we run the simulations and sample the trajectories:
-```{bash results=FALSE}
+```{bash results=FALSE, include=FALSE}
 pushd single_type
 java -jar ../../../out/artifacts/bdmm_prime_jar/bdmm-prime.jar \
      -overwrite traj_and_tree_simulator_1type_SA.xml 
@@ -183,6 +183,7 @@ ggplot(dat) + geom_point(aes(logProb, logProb-logProbEst))
 The actual trajectories look like this:
 ```{r }
 trajTrue <- loadTrajectories("single_type/traj_and_tree_simulator_1type_rho.traj")
+
 trajSamp <- loadTrajectories("single_type/traj_inference_1type_rho.traj")
 times <- seq(0, 5, length.out=51)
 traj <- bind_rows(gridTrajectories(trajTrue$states, times) %>% mutate(ensemble="Original"),
@@ -197,7 +198,7 @@ ggplot(traj %>%
     geom_line(aes(time, mean, color=ensemble)) +
     ylab("Population sizes") +
     scale_y_log10()
-``
+```
 
 ## $\rho$-sampling validation (sampled-ancestors)
 

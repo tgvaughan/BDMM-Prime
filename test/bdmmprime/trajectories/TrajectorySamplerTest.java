@@ -363,8 +363,8 @@ public class TrajectorySamplerTest {
     }
 
     @Test
-    public void untypedRhoSamplingLikelihoodTest() {
-        Randomizer.setSeed(53);
+    public void untypedMultiRhoSamplingLikelihoodTest() {
+        Randomizer.setSeed(2);
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
@@ -380,8 +380,8 @@ public class TrajectorySamplerTest {
                         null,
                         new RealParameter("0.5")),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("4.0"),
-                        new RealParameter("0.5")),
+                        new RealParameter("2.5 5.0"),
+                        new RealParameter("0.3 0.5")),
                 "removalProb", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.0")));
@@ -401,6 +401,7 @@ public class TrajectorySamplerTest {
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "nParticles", 10000);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
@@ -408,6 +409,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
