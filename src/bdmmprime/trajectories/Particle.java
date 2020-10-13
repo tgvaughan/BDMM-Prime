@@ -5,6 +5,9 @@ import bdmmprime.trajectories.obsevents.ObservedEvent;
 import bdmmprime.trajectories.trajevents.*;
 import beast.util.Randomizer;
 
+import static bdmmprime.util.Utils.equalWithPrecision;
+import static bdmmprime.util.Utils.lessThanWithPrecision;
+
 /**
  * This class wraps up the particle trajectories with the state required to simulate their evolution.
  *
@@ -67,6 +70,12 @@ public class Particle {
         t = tStart;
         interval = intervalStart;
 
+        // Skip over interval boundaries coincident with observed events.
+        // (These are rho sampling times that are already handled by
+        // ObservedSamplingEvent::applyToTrajectory.)
+        if (equalWithPrecision(tStart, param.getIntervalEndTimes()[interval]))
+            interval += 1;
+
         if (logWeight == Double.NEGATIVE_INFINITY)
             return;
 
@@ -90,7 +99,7 @@ public class Particle {
                 throw new IllegalStateException("Unobserved event produced illegal state.");
 
             // Test for end of interval or simulation
-            if (param.getIntervalEndTimes()[interval] < observedEvent.time) {
+            if (lessThanWithPrecision(param.getIntervalEndTimes()[interval], observedEvent.time)) {
                 // Include probability of seeing no rho-samples:
                 for (int s = 0; s < nTypes; s++) {
                     if (param.getRhoValues()[interval][s] > 0.0)

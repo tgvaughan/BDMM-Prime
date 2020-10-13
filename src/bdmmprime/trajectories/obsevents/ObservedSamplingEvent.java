@@ -5,6 +5,7 @@ import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.DeathEvent;
 import bdmmprime.trajectories.trajevents.SamplingEvent;
 import bdmmprime.util.Utils;
+import beast.math.Binomial;
 import beast.util.Randomizer;
 import org.apache.commons.math.special.Gamma;
 
@@ -42,15 +43,16 @@ public class ObservedSamplingEvent extends ObservedEvent {
             // TODO Test this!
 
             // Probability of sample count
-            logWeightContrib += totalSamples*Math.log(param.getRhoValues()[interval][s])
-                    + (trajectory.currentState[s]-totalSamples)*Math.log(1.0-param.getRhoValues()[interval][s])
-                    + Gamma.logGamma(trajectory.currentState[s] + 1)
-                    - Gamma.logGamma(totalSamples + 1)
-                    - Gamma.logGamma(trajectory.currentState[s] - totalSamples + 1);
+            logWeightContrib +=
+                    Binomial.logChoose((int)Math.round(trajectory.currentState[s]), totalSamples) +
+                    totalSamples*Math.log(param.getRhoValues()[interval][s])
+                    + (trajectory.currentState[s]-totalSamples)*Math.log(1.0-param.getRhoValues()[interval][s]);
+
+            logWeightContrib += Gamma.logGamma(totalSamples + 1);
 
             // Probability of known non-removal count:
             if (nSampledAncestors > 0)
-                logWeightContrib += nSampledAncestors*Math.log(1.0 - param.getRhoValues()[interval][s]);
+                logWeightContrib += nSampledAncestors*Math.log(1.0 - param.getRemovalProbs()[interval][s]);
 
             if (logWeightContrib == Double.NEGATIVE_INFINITY)
                 return logWeightContrib; // May happen if we saw sampled ancestors that we weren't meant to.
@@ -79,7 +81,7 @@ public class ObservedSamplingEvent extends ObservedEvent {
             }
 
         } else {
-            // Psi
+            // Psi sampling
 
             for (int i = 0; i < nLeaves; i++) {
                 double sampling_prop = trajectory.currentState[s] * param.getSamplingRates()[interval][s];
