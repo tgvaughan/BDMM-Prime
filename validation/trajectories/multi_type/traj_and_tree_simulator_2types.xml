@@ -20,7 +20,6 @@
                  minSamples="2">
     <parameterization spec="CanonicalParameterization">
       <origin id="origin" spec="RealParameter" value="5"/> <!-- Length of simulation -->
-      <finalSampleOffset id="finalSampleOffset" spec="RealParameter" value="0"/> <!-- Will be set by simulation -->
       <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0,1"/>
       <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
         <skylineValues spec="RealParameter" value="2.0 2.0"/>
@@ -39,6 +38,7 @@
       </migrationRate>
     </parameterization>
 
+      <finalSampleOffset id="finalSampleOffset" spec="RealParameter" value="0"/> <!-- Will be set by simulation -->
     <frequencies spec="RealParameter" value="0.5 0.5"/>
   </simulatedTree>
 

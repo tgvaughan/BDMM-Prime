@@ -160,13 +160,15 @@ public class SimulatedTree extends Tree {
                 }
             }
 
+            double tnew;
             if (a_tot > 0)
-                t += Randomizer.nextExponential(a_tot);
+                tnew = t + Randomizer.nextExponential(a_tot);
             else
-                t += Double.POSITIVE_INFINITY;
+                tnew = Double.POSITIVE_INFINITY;
 
-            if (param.getIntervalEndTimes()[interval] < simulationTime
-                    && t > param.getIntervalEndTimes()[interval]) {
+            if (param.getIntervalEndTimes()[interval] <= simulationTime
+                    && tnew > param.getIntervalEndTimes()[interval]
+                    && t < param.getIntervalEndTimes()[interval]) {
                 t = param.getIntervalEndTimes()[interval];
 
                 for (int s=0; s<nTypes; s++) {
@@ -181,12 +183,18 @@ public class SimulatedTree extends Tree {
                     }
                 }
 
-                interval += 1;
-                continue;
+                if (t == simulationTime) {
+                    break;
+                } else {
+                    interval += 1;
+                    continue;
+                }
             }
 
-            if (t > simulationTime)
+            if (tnew > simulationTime)
                 break;
+
+            t = tnew;
 
             u = Randomizer.nextDouble()*a_tot;
 

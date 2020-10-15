@@ -938,7 +938,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                         A[i + 1], B[i + 1], parameterization.getIntervalEndTimes()[i+1], t_node)
                         : 1.0;
 
-                logP += Math.log(rho_i*(r_iplus1 - (1 - r_iplus1) * p_iplus1));
+                logP += Math.log(rho_i*(r_iplus1 + (1 - r_iplus1) * p_iplus1));
 
             } else {
 

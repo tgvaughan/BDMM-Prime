@@ -86,7 +86,7 @@ public class Utils {
         double acc = Math.pow(1-p, n);
         int m = 0;
 
-        while (u > acc && m <= n) {
+        while (u > acc && m < n) {
             m += 1;
             acc += Math.exp(Binomial.logChoose(n, m) + (n - m) * Math.log(1 - p) + m * Math.log(p));
         }

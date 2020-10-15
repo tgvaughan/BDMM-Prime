@@ -20,7 +20,6 @@
   <parameterization id="parameterization" spec="CanonicalParameterization">
     <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0,1"/>
     <origin id="origin" spec="RealParameter" value="5.0"/>
-    <finalSampleOffset idref="finalSampleOffset"/>
     <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
       <skylineValues spec="RealParameter" value="2.0 2.0"/>
     </birthRate>
@@ -40,7 +39,8 @@
 
   <run spec="LogFileIterator">
 
-    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator_2types.trees">
+    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator_2types.trees"
+                  readTaxonSet="false">
       <tree id="tree" spec="Tree"/>
     </logFileState>
 
@@ -60,7 +60,8 @@
            nParticles="1000"
            typeLabel="type"
            typeMappedTree="@tree"
-           parameterization="@parameterization"/>
+           parameterization="@parameterization"
+           finalSampleOffset="@finalSampleOffset"/>
     </logger>
 
     <logger spec="Logger" logEvery="1" fileName="$(filebase).TL.traj">
@@ -71,7 +72,8 @@
            epsilon="0.03"
            typeLabel="type"
            typeMappedTree="@tree"
-           parameterization="@parameterization"/>
+           parameterization="@parameterization"
+           finalSampleOffset="@finalSampleOffset"/>
     </logger>
 
   </run>

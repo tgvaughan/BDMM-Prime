@@ -363,8 +363,8 @@ public class TrajectorySamplerTest {
     }
 
     @Test
-    public void untypedRhoSamplingLikelihoodTest() {
-        Randomizer.setSeed(53);
+    public void untypedMultiRhoSamplingLikelihoodTest() {
+        Randomizer.setSeed(2);
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
@@ -380,8 +380,8 @@ public class TrajectorySamplerTest {
                         null,
                         new RealParameter("0.5")),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("4.0"),
-                        new RealParameter("0.5")),
+                        new RealParameter("2.5 5.0"),
+                        new RealParameter("0.3 0.5")),
                 "removalProb", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.0")));
@@ -401,6 +401,7 @@ public class TrajectorySamplerTest {
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "nParticles", 10000);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
@@ -408,9 +409,71 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
+                "tree", simulatedTree);
+
+        double logProbTrue = bdmm.calculateLogP();
+
+        System.out.println("Log probability true: " + logProbTrue);
+
+        assertEquals(logProbEst, logProbTrue, 1e-1);
+    }
+
+    @Test
+    public void untypedMultiRhoSASamplingLikelihoodTest() {
+        Randomizer.setSeed(26);
+
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "typeSet", new TypeSet(1),
+                "origin", new RealParameter("5.0"),
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("2.0")),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0")),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.0")),
+                "rhoSampling", new TimedParameter(
+                        new RealParameter("2.5 5.0"),
+                        new RealParameter("0.3 0.5")),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.0")));
+
+        RealParameter finalSampleOffset = new RealParameter("0.0");
+
+        SimulatedTree simulatedTree = new SimulatedTree();
+        simulatedTree.initByName(
+                "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
+                "frequencies", new RealParameter("1.0"),
+                "minSamples", 2);
+
+        System.out.println(simulatedTree);
+        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+
+        SampledTrajectory sampledTrajectory = new SampledTrajectory();
+        sampledTrajectory.initByName("typeMappedTree", simulatedTree,
+                "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
+                "nParticles", 10000);
+
+        double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
+        System.out.println("Log probability estimate: " + logProbEst);
+
+        BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
+        bdmm.initByName("parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
+                "frequencies", new RealParameter("1.0"),
+                "typeLabel", "type",
+                "conditionOnSurvival", false,
+//                "useAnalyticalSingleTypeSolution", false,
                 "tree", simulatedTree);
 
         double logProbTrue = bdmm.calculateLogP();
