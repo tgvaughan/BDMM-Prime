@@ -6,6 +6,7 @@ output: rmarkdown::github_document
 ```{r message=FALSE}
 library(tidyverse)
 library(plotly)
+source("../../scripts/trajProcessing.R")
 ```
 
 This document describes several validation tests that have been performed
@@ -102,8 +103,6 @@ the particle filter is correctly implemented for this model type.
 Now let's look at the distribution of the actual trajectories.
 
 ```{r message=FALSE}
-source("../../scripts/trajProcessing.R")
-
 trajTrue <- loadTrajectories("single_type/traj_and_tree_simulator_1type.traj")
 trajSamp <- loadTrajectories("single_type/traj_inference_1type.traj")
 
@@ -219,6 +218,29 @@ Again we see very little deviation, even in absolute terms:
 ```{r }
 ggplot(dat) + geom_point(aes(logProb, logProb-logProbEst))
 ```
+
+
+The actual trajectories look like this:
+```{r }
+trajTrue <- loadTrajectories("single_type/traj_and_tree_simulator_1type_rhoSA.traj")
+
+trajSamp <- loadTrajectories("single_type/traj_inference_1type_rhoSA.traj")
+
+times <- seq(0, 5, length.out=51)
+traj <- bind_rows(gridTrajectories(trajTrue$states, times) %>% mutate(ensemble="Original"),
+                  gridTrajectories(trajSamp$states, times) %>% mutate(ensemble="Filter"))
+```
+
+```{r warning=FALSE, message=FALSE}
+ggplot(traj %>%
+       group_by(time, ensemble) %>%
+       summarize(mean=mean(N), low=quantile(N, 0.25), high=quantile(N, 0.75))) +
+    geom_ribbon(aes(time, ymin=low, ymax=high, fill=ensemble, color=ensemble), alpha=0.5) +
+    geom_line(aes(time, mean, color=ensemble)) +
+    ylab("Population sizes") #+
+    ## scale_y_log10()
+```
+
 
 
 # Multi-type trajectories

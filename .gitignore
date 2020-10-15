@@ -27,6 +27,7 @@
 /*.nexus
 /src/beast/math/*Temp.java
 /src/treeSimulator/
+/debugging
 
 # MacOS cruft
 .DS_Store
