@@ -1,6 +1,7 @@
 package bdmmprime.mapping;
 
 import beast.core.BEASTObject;
+import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.Loggable;
 import beast.evolution.tree.Node;
@@ -17,7 +18,7 @@ import java.io.PrintStream;
  *
  * @author Tim Vaughan <tgvaughan@gmail.com>
  */
-public class TypedNodeTreeLogger extends BEASTObject implements Loggable {
+public class TypedNodeTreeLogger extends CalculationNode implements Loggable {
 
     public Input<TypeMappedTree> typedTreeInput = new Input<>(
             "typedTree",
