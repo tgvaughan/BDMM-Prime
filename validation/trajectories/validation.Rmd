@@ -71,7 +71,7 @@ To begin, let's look at a very simple single-type birth-death-sampling model wit
 where $T$ is the length of the trajectory simulation.
 
 First we run the simulations and sample the trajectories:
-```{bash results=FALSE, cache=TRUE, eval=FALSE}
+```{bash results=FALSE, eval=FALSE}
 pushd single_type
 java -jar ../../../out/artifacts/bdmm_prime_jar/bdmm-prime.jar \
      -overwrite traj_and_tree_simulator_1type.xml 
@@ -138,7 +138,7 @@ Now let's consider the same setup, but including sampling without removal:
 * $r = 0.5$
 
 Again we run the simulations and sample the trajectories:
-```{bash results=FALSE, cache=TRUE, eval=FALSE}
+```{bash results=FALSE, eval=FALSE}
 pushd single_type
 java -jar ../../../out/artifacts/bdmm_prime_jar/bdmm-prime.jar \
      -overwrite traj_and_tree_simulator_1type_SA.xml 
@@ -262,7 +262,7 @@ for $i \in \{1,2\}$, and
 * $M = [0, 0.5; 0.1, 0]$.
 
 We use another pair of XML files to run these analyses:
-```{bash results=FALSE, cache=TRUE, eval=FALSE}
+```{bash results=FALSE, eval=FALSE}
 pushd multi_type
 java -jar ../../../out/artifacts/bdmm_prime_jar/bdmm-prime.jar \
      -overwrite traj_and_tree_simulator_2types.xml 

@@ -20,8 +20,8 @@
                  minSamples="2">
     <finalSampleOffset id="finalSampleOffset" spec="RealParameter" value="0"/> <!-- Will be set by simulation -->
     <parameterization spec="CanonicalParameterization">
-      <origin id="origin" spec="RealParameter" value="5"/> <!-- Length of simulation -->
       <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0"/>
+      <origin id="origin" spec="RealParameter" value="5.0"/> <!-- Length of simulation -->
       <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
         <skylineValues spec="RealParameter" value="2.0"/>
       </birthRate>

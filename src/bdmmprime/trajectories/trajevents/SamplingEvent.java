@@ -37,11 +37,11 @@ public class SamplingEvent extends TrajectoryEvent {
         // Add nodes corresponding to sampling WITHOUT removal
 
         List<Node> unsampledLineages = new ArrayList<>(activeLineages.get(type));
-        double unusedLineages = state[type];
+        double N = state[type];
 
         for (int i=0; i<nNoRemoveSamp; i++) {
             Node sampledNode = factory.newLeafNode(type, time);
-            double pSampledAncestor = unsampledLineages.size() / unusedLineages;
+            double pSampledAncestor = unsampledLineages.size() / N;
 
             if (pSampledAncestor == 1.0 || (pSampledAncestor > 0.0 && Randomizer.nextDouble() < pSampledAncestor)) {
                 Node child = unsampledLineages.remove(Randomizer.nextInt(unsampledLineages.size()));
@@ -56,7 +56,7 @@ public class SamplingEvent extends TrajectoryEvent {
                 activeLineages.get(type).add(sampledNode);
             }
 
-            unusedLineages -= 1;
+            N -= 1;
         }
 
         // Add nodes corresponding to sampling WITH removal

@@ -1,6 +1,6 @@
 package bdmmprime.util;
 
-import beast.math.Binomial;
+import beast.math.GammaFunction;
 import beast.util.Randomizer;
 
 /**
@@ -88,9 +88,27 @@ public class Utils {
 
         while (u > acc && m < n) {
             m += 1;
-            acc += Math.exp(Binomial.logChoose(n, m) + (n - m) * Math.log(1 - p) + m * Math.log(p));
+            acc += Math.exp(logChoose(n, m) + (n - m) * Math.log(1 - p) + m * Math.log(p));
         }
 
         return m;
+    }
+
+    /**
+     * Compute (log) Binomial coefficients n choose k in the case that
+     * n and k are integers, but generalizes to real valued n and k.
+     *
+     * I'm using this in place of Binomial.logChoose(int n, int k) which
+     * has exactly the same definition but takes integer arguments for some
+     * reason.
+     *
+     * @param n coefficient parameter
+     * @param k coefficient parameter
+     * @return  log n choose k
+     */
+    public static double logChoose(double n, double k) {
+        return GammaFunction.lnGamma(n + 1.0)
+                - GammaFunction.lnGamma(k + 1.0)
+                - GammaFunction.lnGamma(n - k + 1.0);
     }
 }
