@@ -113,3 +113,24 @@ gridTrajectoriesByAge <- function(trajStates, ages) {
 
     return(df_grid)
 }
+
+
+gridEventsByAge <- function(trajEvents, ages) {
+  df_grid <- NULL
+  
+  for (i in 1:length(ages)) {
+    if (i == 1) upper = Inf
+    else upper = ages[i-1]
+    lower = ages[i]
+    age_summary <- trajEvents %>%
+      group_by(traj, src, dest, event) %>%
+      summarize(
+        N = sum(mult[(which(age >= lower & age < upper))]), 
+        .groups = "drop_last") %>%
+      ungroup()
+    age_summary$age <- lower
+    df_grid <- bind_rows(df_grid, age_summary)
+  }
+  
+  return(df_grid)
+}
