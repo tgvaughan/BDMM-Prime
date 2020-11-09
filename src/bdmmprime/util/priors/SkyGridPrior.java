@@ -43,7 +43,9 @@ public class SkyGridPrior extends Distribution {
             double el = Math.log(x.getArrayValue(i));
             double delta = el - prevEl;
 
-            logP += logGausNorm - 0.5*delta*delta/sigma2;
+            logP += logGausNorm - 0.5*delta*delta/sigma2 - el;
+
+            prevEl = el;
         }
 
         return logP;
