@@ -252,8 +252,13 @@ public class SimulatedTree extends Tree {
         return traj;
     }
 
+    /**
+     * Simulate tree by iterating over simulated trajectory events
+     * in reverse.
+     *
+     * @return simulated tree
+     */
     public Tree simulateTree() {
-
 
         List<TrajectoryEvent> events = new ArrayList<>(traj.events);
         Collections.reverse(events);
@@ -293,14 +298,10 @@ public class SimulatedTree extends Tree {
         return new Tree(root);
     }
 
-
-
     @Override
     public void log(long sample, PrintStream out) {
         Tree tree = (Tree) getCurrent();
         out.print("tree STATE_" + sample + " = ");
-        // Don't sort, this can confuse CalculationNodes relying on the tree
-        //tree.getRoot().sort();
         final int[] dummy = new int[1];
         final String newick = tree.getRoot().toSortedNewick(new int[1], true);
         out.print(newick);

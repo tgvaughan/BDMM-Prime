@@ -4,10 +4,10 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.SamplingEvent;
 import bdmmprime.util.Utils;
-import beast.math.Binomial;
 import beast.util.Randomizer;
 import org.apache.commons.math.special.Gamma;
 
+import static bdmmprime.util.Utils.logChoose;
 import static bdmmprime.util.Utils.nextBinomial;
 
 public class ObservedSamplingEvent extends ObservedEvent {
@@ -43,7 +43,7 @@ public class ObservedSamplingEvent extends ObservedEvent {
 
             // Probability of sample count
             logWeightContrib +=
-                    Binomial.logChoose((int)Math.round(trajectory.currentState[s]), totalSamples) +
+                    logChoose(trajectory.currentState[s], totalSamples) +
                     totalSamples*Math.log(param.getRhoValues()[interval][s])
                     + (trajectory.currentState[s]-totalSamples)*Math.log(1.0-param.getRhoValues()[interval][s]);
 
@@ -72,11 +72,11 @@ public class ObservedSamplingEvent extends ObservedEvent {
 
                 int k = lineages[s] - nLeaves;
                 int S = nUnremovedLeaves + nSampledAncestors;
-                int N = (int)Math.round(trajectory.currentState[s]);
+                double N = trajectory.currentState[s];
 
-                logWeightContrib += Binomial.logChoose(S, nSampledAncestors)
-                        + Binomial.logChoose(N - S, k-nSampledAncestors)
-                        - Binomial.logChoose(N, k);
+                logWeightContrib += logChoose(S, nSampledAncestors)
+                        + logChoose(N - S, k-nSampledAncestors)
+                        - logChoose(N, k);
             }
 
         } else {

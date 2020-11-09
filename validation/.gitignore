@@ -1,0 +1,11 @@
+*.traj
+*.trees
+*.log
+*.state
+**/.Rhistory
+*.png
+*.html
+*-exported*
+*_cache
+
+debugging
