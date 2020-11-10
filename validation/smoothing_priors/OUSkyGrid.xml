@@ -22,7 +22,7 @@
         </state>
 
         <distribution spec="CompoundDistribution">
-        <distribution spec="bdmmprime.util.priors.OUSkyGridPrior"
+            <distribution spec="bdmmprime.util.priors.OUSkyGridPrior"
                       x="@x"
                       M="-2" S="0.5" theta="10"/>
             <distribution spec="beast.math.distributions.Prior" x="@y">
