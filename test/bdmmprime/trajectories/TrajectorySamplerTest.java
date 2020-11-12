@@ -502,16 +502,7 @@ public class TrajectorySamplerTest {
         treeParser.initByName(
                 "IsLabelledNewick", true,
                 "adjustTipHeights", false,
-//                "newick", "((t0:1,t1:1):0.5,t3:2.5):0.0;"
-//                "newick", "((t2:1,(t1:0,t4:1):1):0.5,t3:2.5):0.0;"
-//                "newick", "((t3:0,t1:1):1.5,t2:2.5):0.0;" // works
-//                "newick", "((t3:0,t1:1):1.5,(t4:0,t2:1):1.5):0.0;" // works
-//                "newick", "((t3:0,t1:1):1.5,((t4:0,t2:1):1.0, t5:2):0.5):0.0;" // works
-//                "newick", "((t3:0,t1:1):1.5,t4:1.5):0.0;" // works
-//                "newick", "((t3:0,t1:1):1.5,((t4:0,t2:1):1.0, t5:1):0.5):0.0;" // works
                 "newick", "((t3:0,t1:1):1.5,((t4:0,t2:1):1.0, (t5:0.5,t6:1.5):0.5):0.5):0.0;"
-//                "newick", "(t1:2.5,t2:2.5):0.0;" // works
-//                "newick", "(t1:0,t4:1):0.0;"            // works
         );
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -540,7 +531,7 @@ public class TrajectorySamplerTest {
         sampledTrajectory.initByName("typeMappedTree", treeParser,
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "nParticles", 1000000);
+                "nParticles", 10000);
 
         double logProbEst = sampledTrajectory.getLogTreeProbEstimate();
         System.out.println("Log probability estimate: " + logProbEst);
@@ -557,6 +548,8 @@ public class TrajectorySamplerTest {
 
         double logProbTrue = bdmm.calculateLogP();
         System.out.println("Log probability true (analytical): " + logProbTrue);
+
+        assertEquals(logProbTrue, logProbEst, 1e-1);
     }
 
     @Test
