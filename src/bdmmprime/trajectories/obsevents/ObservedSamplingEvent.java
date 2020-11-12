@@ -4,6 +4,7 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.SamplingEvent;
 import bdmmprime.util.Utils;
+import beast.math.Binomial;
 import beast.util.Randomizer;
 import org.apache.commons.math.special.Gamma;
 
@@ -39,8 +40,6 @@ public class ObservedSamplingEvent extends ObservedEvent {
         if (Utils.equalWithPrecision(time, param.getIntervalEndTimes()[interval]) && param.getRhoValues()[interval][s]>0) {
             // Rho sampling
 
-            // TODO Test this!
-
             // Probability of sample count
             logWeightContrib +=
                     logChoose(trajectory.currentState[s], totalSamples) +
@@ -74,9 +73,11 @@ public class ObservedSamplingEvent extends ObservedEvent {
                 int S = nUnremovedLeaves + nSampledAncestors;
                 double N = trajectory.currentState[s];
 
-                logWeightContrib += logChoose(S, nSampledAncestors)
-                        + logChoose(N - S, k-nSampledAncestors)
-                        - logChoose(N, k);
+                logWeightContrib += Gamma.logGamma(1 + N - S)
+                        - Gamma.logGamma(1 + N)
+                        + Gamma.logGamma(1 + N - k)
+                        - Gamma.logGamma(1 + (N - k) - (S - nSampledAncestors));
+
             }
 
         } else {

@@ -51,9 +51,11 @@
       </logFileEntry>
     </logFileState>
 
-    <logger spec="Logger" logEvery="100">
+    <logger spec="Logger" logEvery="1">
       <log idref="origin"/>
       <log idref="finalSampleOffset"/>
+      <log idref="logProb"/>
+      <log idref="logProbEst"/>
     </logger>
 
     <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
