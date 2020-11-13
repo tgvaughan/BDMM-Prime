@@ -268,10 +268,8 @@ java -jar ../../../out/artifacts/bdmm_prime_jar/bdmm-prime.jar \
 popd
 ```
 
-We then use the following to load an process the trajectories:
+We then use the following to load and process the trajectories:
 ```{r message=FALSE}
-source("../../scripts/trajProcessing.R")
-
 trajTrue <- loadTrajectories("multi_type/traj_and_tree_simulator_2types.traj")
 
 trajSamp <- loadTrajectories("multi_type/traj_inference_2types.traj")
@@ -300,3 +298,48 @@ ggplot(traj %>%
 ```
 
 Again we have close agreement between the two distributions.
+
+## Multi-rho sampling strategy validation
+
+Our next multi-type model is the same as the previous one, but with multi-rho
+sampling rather than psi-sampling:
+
+* $\lambda_i = 2$
+* $\mu_i = 1$
+* $\psi_i = 0.0$
+* $\rho_i = 0.5$ (times 4 and 5).
+
+for $i \in \{1,2\}$, and
+
+* $M = [0, 0.5; 0.1, 0]$.
+
+We again use the following to load and process the trajectories:
+```{r message=FALSE}
+trajTrue <- loadTrajectories("multi_type/traj_and_tree_simulator_2types_rhoSA.traj")
+
+trajSamp <- loadTrajectories("multi_type/traj_inference_2types_rhoSA.traj")
+
+trajSampTL <- loadTrajectories("multi_type/traj_inference_2types_rhoSA.TL.traj")
+
+times <- seq(0, 5, length.out=51)
+
+traj <- bind_rows(gridTrajectories(trajTrue$states, times) %>% mutate(ensemble="Original"),
+                  gridTrajectories(trajSamp$states, times) %>% mutate(ensemble="Filter"),
+                  gridTrajectories(trajSampTL$states, times) %>% mutate(ensemble="FilterTL"))
+```
+
+Visualizing the results yields the following.
+
+```{r warning=FALSE, message=FALSE}
+ggplot(traj %>%
+       ## filter(type==1) %>%
+       group_by(time, ensemble, type) %>%
+       summarize(mean=mean(N), low=quantile(N, 0.25), high=quantile(N, 0.75))) +
+    geom_ribbon(aes(time, ymin=low, ymax=high, fill=ensemble, color=ensemble), alpha=0.25) +
+    geom_line(aes(time, mean, color=ensemble)) +
+    ylab("Population sizes") +
+    ## scale_y_log10() +
+    facet_grid(rows=vars(factor(type)))
+```
+
+This close agreement again suggests the trajectory sampling is working correctly.
