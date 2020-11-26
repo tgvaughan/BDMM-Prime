@@ -18,10 +18,10 @@
                  :bdmmprime.trajectories">
 
   <parameterization id="parameterization" spec="CanonicalParameterization">
-    <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0"/>
+    <typeSet id="typeSet" spec="bdmmprime.parameterization.TypeSet" value="0,1"/>
     <origin id="origin" spec="RealParameter" value="5.0"/>
     <birthRate spec="SkylineVectorParameter" typeSet="@typeSet">
-      <skylineValues spec="RealParameter" value="2.0"/>
+      <skylineValues spec="RealParameter" value="2.0 2.0"/>
     </birthRate>
     <deathRate spec="SkylineVectorParameter" typeSet="@typeSet">
       <skylineValues spec="RealParameter" value="1.0"/>
@@ -32,20 +32,23 @@
     <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
       <skylineValues spec="RealParameter" value="0.5"/>
     </removalProb>
-    <rhoSampling spec="TimedParameter" typeSet="@typeSet">
-      <times spec="RealParameter" value="4.0 5.0"/>
-      <values spec="RealParameter" value="0.5 0.5"/>
-    </rhoSampling>
+    <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.5 0.1"/>
+    </migrationRate>
+      <rhoSampling spec="TimedParameter" typeSet="@typeSet">
+        <times spec="RealParameter" value="4.0 5.0"/>
+        <values spec="RealParameter" value="0.5 0.5"/>
+      </rhoSampling>
   </parameterization>
 
   <run spec="LogFileIterator">
 
-    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator_1type_rhoSA.trees"
+    <logFileState spec="TreeLogFileState" logFileName="traj_and_tree_simulator_2types_rhoSA.trees"
                   readTaxonSet="false">
       <tree id="tree" spec="Tree"/>
     </logFileState>
 
-    <logFileState spec="TraceLogFileState" logFileName="traj_and_tree_simulator_1type_rhoSA.log">
+    <logFileState spec="TraceLogFileState" logFileName="traj_and_tree_simulator_2types_rhoSA.log">
       <logFileEntry spec="LogFileRealParameter" fieldName="finalSampleOffset">
         <fieldParameter id="finalSampleOffset" spec="RealParameter" value="0"/>
       </logFileEntry>
@@ -54,35 +57,29 @@
     <logger spec="Logger" logEvery="1">
       <log idref="origin"/>
       <log idref="finalSampleOffset"/>
-      <log idref="logProb"/>
-      <log idref="logProbEst"/>
-    </logger>
-
-    <logger spec="Logger" logEvery="1" fileName="$(filebase).log">
-      <log idref="origin"/>
-      <log idref="finalSampleOffset"/>
-      <log id="logProb" spec="BirthDeathMigrationDistribution"
-           tree="@tree"
-           parameterization="@parameterization"
-           typeLabel="type"
-           conditionOnSurvival="false">
-        <frequencies spec="RealParameter" value="1.0"/>
-        <finalSampleOffset idref="finalSampleOffset"/>
-      </log>
-      <log id="logProbEst" spec="TreeProbEstimateLogger"
-           sampledTrajectory="@typedTrajectory"/>
-        
     </logger>
 
     <logger spec="Logger" logEvery="1" fileName="$(filebase).traj">
-      <log id="typedTrajectory"
+      <log id="typedTrajectory" spec="SampledTrajectory"
            nParticles="1000"
-           spec="SampledTrajectory" typeLabel="type"
-           typeMappedTree="@tree">
-        <parameterization idref="parameterization"/>
-        <finalSampleOffset idref="finalSampleOffset"/>
-      </log>
+           typeLabel="type"
+           typeMappedTree="@tree"
+           parameterization="@parameterization"
+           finalSampleOffset="@finalSampleOffset"/>
     </logger>
+
+    <logger spec="Logger" logEvery="1" fileName="$(filebase).TL.traj">
+      <log id="typedTrajectoryTL" spec="SampledTrajectory"
+           nParticles="1000"
+           useTauLeaping="true"
+           minLeapCount="100"
+           epsilon="0.03"
+           typeLabel="type"
+           typeMappedTree="@tree"
+           parameterization="@parameterization"
+           finalSampleOffset="@finalSampleOffset"/>
+    </logger>
+
   </run>
 
 </beast>

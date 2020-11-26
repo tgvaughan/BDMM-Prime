@@ -1,0 +1,54 @@
+<beast version="2.0"
+       namespace="beast.core
+                 :beast.core.util
+                 :beast.core.parameter
+                 :beast.evolution.alignment
+                 :beast.evolution.likelihood
+                 :beast.evolution.tree
+                 :beast.evolution.tree.coalescent
+                 :beast.evolution.sitemodel
+                 :beast.evolution.substitutionmodel
+                 :beast.evolution.operators
+                 :beast.math.distributions
+                 :feast.simulation
+                 :bdmmprime.distribution
+                 :bdmmprime.parameterization
+                 :bdmmprime.mapping">
+
+    <run spec="MCMC" chainLength="10000000">
+        <state>
+            <stateNode id="x" spec="RealParameter" dimension="5" value="1"/>
+            <stateNode id="y" spec="RealParameter" dimension="1" value="1"/>
+            <stateNode id="z" spec="RealParameter" dimension="1" value="1"/>
+        </state>
+
+        <distribution spec="CompoundDistribution">
+            <distribution spec="bdmmprime.util.priors.SkyGridPrior"
+                      x="@x"
+                      M="-2" S="0.5" sigma="1"/>
+            <distribution spec="beast.math.distributions.Prior" x="@y">
+                <distr spec="LogNormalDistributionModel" M="-2" S="0.5"/>
+            </distribution>
+            <distribution spec="beast.math.distributions.Prior" x="@z">
+                <distr spec="LogNormalDistributionModel" M="-2" S="2.061553"/>
+            </distribution>
+        </distribution>
+
+        <operator spec="ScaleOperator" scaleFactor="0.8" parameter="@x" weight="1"/>
+        <operator spec="ScaleOperator" scaleFactor="0.8" scaleAll="true" parameter="@x" weight="1"/>
+        <operator spec="ScaleOperator" scaleFactor="0.8" parameter="@y" weight="1"/>
+        <operator spec="ScaleOperator" scaleFactor="0.8" parameter="@z" weight="1"/>
+
+        <logger logEvery="100000">
+            <log idref="x"/>
+            <log idref="y"/>
+            <log idref="z"/>
+        </logger>
+
+        <logger fileName="$(filebase).log" logEvery="1000">
+            <log idref="x"/>
+            <log idref="y"/>
+            <log idref="z"/>
+        </logger>
+    </run>
+</beast>

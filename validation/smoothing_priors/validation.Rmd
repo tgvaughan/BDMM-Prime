@@ -1,0 +1,59 @@
+---
+title: Validation for Skygrid priors
+---
+
+```{r libraries, message=FALSE}
+library(tidyverse)
+```
+
+# Regular Skygrid Prior
+
+```{r message=FALSE}
+data <- read_tsv("SkyGrid.log") %>% slice_tail(prop=0.9) %>%
+    pivot_longer(cols=c(paste0("x.", seq(0, 4)), "y", "z"),
+                 names_to="Var", values_to="Val")
+```
+
+If the regular SkyGrid prior is implemented correctly, the distribution
+of the log of the first element should be normal with a mean of -2 and
+a standard deviation of 0.5:
+
+```{r }
+data %>% filter(Var %in% c("x.0", "y")) %>%
+    ggplot(aes(log(Val), col=Var)) +
+    geom_freqpoly(aes(y=..density..), binwidth=0.1) +
+    coord_cartesian(xlim=c(-4, 0))
+```
+
+(Here the variable `y` is sampled from the correct distribution for comparison.)
+
+Similarly, the distribution of log of the 5th element should be normal with
+a mean of -2 and a standard deviation of $\sqrt{(5-1)\times (1/2)^2}$:
+
+```{r }
+data %>% filter(Var %in% c("x.4", "z")) %>%
+    ggplot(aes(log(Val), col=Var)) +
+    geom_freqpoly(aes(y=..density..), binwidth=0.1) +
+    coord_cartesian(xlim=c(-10, 5))
+```
+
+(Here the variable `z` is sampled from the correct distribution for comparison.)
+
+# OU Skygrid Prior
+
+If the OU SkyGrid prior is implemented correctly, all elements of the
+RealParameter X should be distributed according to a LogNormal distribution
+with M=-2 and S=0.5.
+
+```{r }
+data <- read_tsv("OUSkyGrid.log") %>% slice_tail(prop=0.9) %>%
+    pivot_longer(cols=c(paste0("x.", seq(0, 19)), "y"), names_to="Var")
+
+data %>% filter(Var %in% c("x.0", "x.1", "x.19", "y")) %>%
+    ggplot(aes(value, col=Var)) +
+    geom_freqpoly(aes(y=..density..), binwidth=0.01) +
+    coord_cartesian(xlim=c(0, 0.6))
+```
+
+In the above figure, the variable `y` is sampled directly from LogNormal(-2,0.5) for
+comparison.
