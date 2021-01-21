@@ -23,8 +23,7 @@ public class MigRateGLM extends CalculationNode implements Function {
 //    public Input<Function> errorInput = new Input<>("errorTerm",
 //            "Error term.", Input.Validate.OPTIONAL);
 
-    Function covariateList, scalerParam, indicatorParam;
-    double globalScalerParam;
+    Function covariateList, scalerParam, indicatorParam, globalScalerParam;
     int covariateSize;
 
     @Override
@@ -33,7 +32,7 @@ public class MigRateGLM extends CalculationNode implements Function {
         scalerParam = scalerParamInput.get();
         indicatorParam = indicatorParamInput.get();
 
-        globalScalerParam = globalScalerParamInput.get().getArrayValue();
+        globalScalerParam = globalScalerParamInput.get();
 //        errorTerm = errorInput.get();
 
         covariateSize = covariateList.getDimension()/(scalerParam.getDimension());
@@ -56,6 +55,6 @@ public class MigRateGLM extends CalculationNode implements Function {
 //        if (errorTerm!=null)
 //            lograte += errorTerm.getArrayValue(i);
 
-        return globalScalerParam * Math.exp(lograte);
+        return globalScalerParam.getArrayValue() * Math.exp(lograte);
     }
 }
