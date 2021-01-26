@@ -26,6 +26,10 @@ public class SmartScaleOperator extends Operator {
     public Input<Double> scaleFactorLowerLimitInput = new Input<>("scaleFactorLowerLimit",
             "Lower limit of scale factor", 1e-8);
 
+    public Input<List<Double>> classesToExcludeInput = new Input<>("classToExclude",
+            "Elements with this value will not be operated on.",
+            new ArrayList<>());
+
     double scaleFactor, scaleFactorLowerLimit, scaleFactorUpperLimit;
 
     List<RealParameter> parameters;
@@ -50,6 +54,9 @@ public class SmartScaleOperator extends Operator {
                     seenValuesSet.add(param.getValue(i));
             }
         }
+
+        // Explicitly exclude certain classes (identified by the element value)
+        seenValuesSet.removeAll(classesToExcludeInput.get());
 
         List<Double> seenValues = new ArrayList<>(seenValuesSet);
         nClasses = seenValues.size();
