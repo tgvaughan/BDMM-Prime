@@ -4,7 +4,6 @@ import beast.core.Input;
 
 public class CanonicalParameterization extends Parameterization {
 
-
     public Input<SkylineVectorParameter> birthRateInput = new Input<>("birthRate",
             "Birth rate skyline.", Input.Validate.REQUIRED);
 

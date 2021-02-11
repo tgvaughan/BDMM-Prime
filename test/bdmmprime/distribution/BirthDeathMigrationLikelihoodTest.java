@@ -936,6 +936,58 @@ public class BirthDeathMigrationLikelihoodTest {
 	}
 
 	/**
+	 * 1-dim and 1 rate-change test
+	 * reference from BDSKY
+	 */
+	@Test
+	public void testLikelihoodRateChangeCondOnSampling1dim() {
+
+		Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
+				false);
+
+		Parameterization parameterization = new EpiParameterization();
+		parameterization.initByName(
+				"origin", new RealParameter("6.0"),
+				"typeSet", new TypeSet(1),
+				"R0", new SkylineVectorParameter(
+						new RealParameter("3.0"),
+						new RealParameter("0.6666666667 1.3333333334")),
+				"becomeUninfectiousRate", new SkylineVectorParameter(
+						new RealParameter("3.0"),
+						new RealParameter("4.5 1.5")),
+				"samplingProportion", new SkylineVectorParameter(
+						new RealParameter("2.4"),
+						new RealParameter("0.0 0.33333333333")),
+				"removalProb", new SkylineVectorParameter(
+						null,
+						new RealParameter("1.0")));
+
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName("parameterization", parameterization,
+				"frequencies", new RealParameter("1.0"),
+				"conditionOnSurvival", true,
+				"tree", tree,
+				"typeLabel", "state",
+				"parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
+
+		double logPnumeric = density.calculateLogP();
+		System.out.println("Numerical solution: " + logPnumeric);
+
+//		assertEquals(-33.7573 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // Reference BDSKY
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
+
+		double logPanalytic = density.calculateLogP();
+		System.out.println("Analytical solution: " + logPnumeric);
+
+		assertEquals(logPnumeric, logPanalytic, 1e-4);
+
+//		assertEquals(-33.7573 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // Reference BDSKY
+	}
+
+	/**
 	 * Basic tests on 2 types situations with migration or birth among demes
 	 * reference from R
 	 * @throws Exception
