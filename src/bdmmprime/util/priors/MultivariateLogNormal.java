@@ -5,9 +5,12 @@ import beast.core.Function;
 import beast.core.Input;
 import beast.core.State;
 import beast.core.parameter.RealParameter;
+import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
 import cern.colt.matrix.linalg.Algebra;
+import cern.colt.matrix.linalg.EigenvalueDecomposition;
+import cern.colt.matrix.linalg.Property;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -78,6 +81,17 @@ public class MultivariateLogNormal extends Distribution {
                 sigma.setQuick(j,k, S.getArrayValue(j*n + k));
             }
         }
+
+        // Check that sigma is symmetric (required for covariance matrices):
+        if (!Property.DEFAULT.isSymmetric(sigma))
+            throw new IllegalArgumentException("Covariance matrix is not symmetric.");
+
+        // Check that sigma is positive definite (required for covariance matrices):
+        EigenvalueDecomposition ed = new EigenvalueDecomposition(sigma);
+        DoubleMatrix1D evals = ed.getRealEigenvalues();
+        for (int i=0; i<evals.size(); i++)
+            if (evals.getQuick(i) < 0.0)
+                return Double.NEGATIVE_INFINITY;
 
         DoubleMatrix2D sigmaInv = Algebra.DEFAULT.inverse(sigma);
 
