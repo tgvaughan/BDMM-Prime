@@ -11,6 +11,7 @@ import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
 import beast.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
+import org.apache.commons.math3.complex.Complex;
 
 import java.util.List;
 import java.util.Random;
@@ -1003,6 +1004,114 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         return logP;
+    }
+
+    /**
+     * Computes the generating function for the probability of the number of samples before
+     * time t.
+     *
+     * @param r generating function variable
+     * @param dt time following the start of the BD process
+     * @return complex value of generating function evaluated at this point
+     */
+    private Complex propagate_s(Complex s, Complex r, double lambda, double mu, double psi, double dt) {
+
+        Complex x = new Complex((lambda + mu + psi)/(2*lambda));
+        Complex y = x.pow(2).subtract(r.multiply(psi).add(mu).divide(lambda)).pow(0.5);
+
+        Complex s1 = x.add(y);
+        Complex s2 = x.subtract(y);
+        Complex delta = s1.subtract(s2).multiply(-lambda);
+
+        Complex comp_t = new Complex(dt);
+        Complex num = s2.multiply(s.subtract(s1))
+                .subtract(
+                        s1.multiply(s.subtract(s2))
+                                .multiply(delta.multiply(comp_t).exp())
+                );
+        Complex den = s.subtract(s1)
+                .subtract(s.subtract(s2).multiply(delta.multiply(comp_t).exp())
+                );
+
+        return num.divide(den);
+    }
+
+    private Complex calculateH(Complex r, double t) {
+
+        Complex s = Complex.ONE;
+        double thist = t;
+        int i = parameterization.getIntervalIndex(t);
+        double nextt = parameterization.getIntervalEndTimes()[i];
+
+        while (i >= 0) {
+            s = propagate_s(s, r,
+                    parameterization.getBirthRates()[i][0],
+                    parameterization.getDeathRates()[i][0],
+                    parameterization.getSamplingRates()[i][0],
+                    thist - nextt);
+            thist = nextt;
+            i -= 1;
+            nextt = parameterization.getIntervalEndTimes()[i];
+        }
+
+        return s;
+    }
+
+    /**
+     * Use numerical generating function inversion to compute the probability
+     * of seeing exactly k psi samples by time t.
+     *
+     * @param k number of psi samples
+     * @param t time following start of process
+     * @return probability of number of samples
+     */
+    public double calculateLogSampleProb(int k, double t, int prec) {
+        double rad = Math.pow(10,-prec/(2.0*k));
+
+        if (k == 0)
+            return Math.log(calculateH(Complex.ZERO, t).getReal());
+
+        double acc = calculateH(new Complex(rad), t).getReal()
+                + Math.pow(-1,k) * calculateH(new Complex(-rad), t).getReal();
+
+        if (k > 1) {
+            for (int j=1; j<=k-1; j++) {
+                acc = acc + 2*Math.pow(-1, j)
+                        * calculateH(Complex.I.multiply(Math.PI*j/(double)k).exp().multiply(rad), t).getReal();
+            }
+        }
+
+        return Math.log(Math.max(0.0, acc)) - (Math.log(2*k) + k*Math.log(rad));
+    }
+
+    /**
+     * Get probability of seeing _at least_ k samples by time t after
+     * the start of the process.
+     * @param k number of samples
+     * @param t time
+     * @return probability of seeing k or more samples.
+     */
+    public double calculateLogMinSampleProb(int k, double t) {
+        int prec=5;
+        double res;
+        while (true) {
+            double sum = 1.0;
+            for (int j = 0; j <= k - 1; j++)
+                sum -= Math.exp(calculateLogSampleProb(j, t, prec));
+
+            res = Math.log(sum);
+
+            if (!Double.isNaN(res) && res <= 0.0 && res > Double.NEGATIVE_INFINITY)
+                break;
+
+            if (prec > 50) {
+                System.out.println("Sample prob calculation failed to converge for " + getID() + ".");
+                break;
+            }
+            prec += 1;
+        }
+
+        return res;
     }
 
     /* StateNode implementation */
