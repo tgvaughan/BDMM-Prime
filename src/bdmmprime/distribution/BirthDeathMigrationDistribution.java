@@ -1,6 +1,8 @@
 package bdmmprime.distribution;
 
+import bdmmprime.parameterization.EpiParameterization;
 import bdmmprime.parameterization.Parameterization;
+import bdmmprime.parameterization.SkylineVectorParameter;
 import bdmmprime.util.Utils;
 import beast.core.*;
 import beast.core.parameter.RealParameter;
@@ -10,9 +12,12 @@ import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.Tree;
 import beast.evolution.tree.TreeInterface;
 import beast.util.HeapSort;
+import beast.util.TreeParser;
 import org.apache.commons.math.special.Gamma;
 import org.apache.commons.math3.complex.Complex;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
@@ -55,6 +60,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public Input<Boolean> conditionOnSurvival = new Input<>("conditionOnSurvival",
             "Condition on at least one surviving lineage. (Default true.)",
             true);
+
+    public Input<Integer> conditionOnMinPsiSamplesInput = new Input<>(
+            "conditionOnMinPsiSamples",
+            "Condition on at least this many psi samples " +
+                    "(single-type models with analytical solution only, default 0)",
+            0);
 
     public Input<Boolean> useAnalyticalSingleTypeSolutionInput = new Input<>("useAnalyticalSingleTypeSolution",
             "Use the analytical SABDSKY tree prior when the model has only one type.",
@@ -885,7 +896,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        if (conditionOnSurvival.get()) {
+        if (conditionOnSurvival.get() && conditionOnMinPsiSamplesInput.get()<1) {
             int i = parameterization.getIntervalIndex(0.0);
             logP -= Math.log(1.0 -
                     get_p_i(parameterization.getBirthRates()[i][0],
@@ -893,6 +904,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                             parameterization.getSamplingRates()[i][0],
                             A[i], B[i],
                             parameterization.getIntervalEndTimes()[i], 0.0));
+        } else {
+            logP -= calculateLogMinSampleProb(conditionOnMinPsiSamplesInput.get(),
+                    parameterization.getTotalProcessLength());
         }
 
         // Account for possible label permutations
@@ -1041,9 +1055,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         Complex s = Complex.ONE;
         double thist = t;
         int i = parameterization.getIntervalIndex(t);
-        double nextt = parameterization.getIntervalEndTimes()[i];
 
         while (i >= 0) {
+            double nextt = i > 0
+                    ? parameterization.getIntervalEndTimes()[i-1]
+                    : 0.0;
             s = propagate_s(s, r,
                     parameterization.getBirthRates()[i][0],
                     parameterization.getDeathRates()[i][0],
@@ -1051,7 +1067,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     thist - nextt);
             thist = nextt;
             i -= 1;
-            nextt = parameterization.getIntervalEndTimes()[i];
         }
 
         return s;
@@ -1108,7 +1123,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 System.out.println("Sample prob calculation failed to converge for " + getID() + ".");
                 break;
             }
+
             prec += 1;
+            System.out.println("Increasing precision to " + prec);
         }
 
         return res;
