@@ -3,7 +3,6 @@ package bdmmprime.util.priors;
 import beast.core.Description;
 import beast.core.Function;
 import beast.core.Input;
-import beast.core.parameter.IntegerParameter;
 import beast.core.parameter.RealParameter;
 import beast.math.distributions.Prior;
 
@@ -27,7 +26,7 @@ public class SmartZeroExcludingPrior extends Prior {
 
         indices = new ArrayList<>();
 
-        // Making the clossesToExclude values already "seen" causes them not
+        // Making the classesToExclude values already "seen" causes them not
         // to be added to the index list:
         Set<Double> seenValues = new HashSet<>(classesToExcludeInput.get());
 

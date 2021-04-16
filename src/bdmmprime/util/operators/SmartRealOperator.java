@@ -8,7 +8,7 @@ import java.util.*;
 
 public abstract class SmartRealOperator extends Operator {
 
-    public Input<List<RealParameter>> parametersInput = new Input("parameter",
+    public Input<List<RealParameter>> parametersInput = new Input<>("parameter",
             "One or more parameters to operate on", new ArrayList<>());
 
     public Input<List<Double>> classesToExcludeInput = new Input<>("classToExclude",
