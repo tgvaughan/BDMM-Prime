@@ -12,7 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-@Description("Like ZeroExcludingPrior, but only applies the prior to unique nonzero elements of the parameter")
+@Description("Like ZeroExcludingPrior, but only applies the prior to unique " +
+        "nonzero elements of the parameter")
 public class SmartZeroExcludingPrior extends Prior {
 
     public Input<List<Double>> classesToExcludeInput = new Input<>("classToExclude",

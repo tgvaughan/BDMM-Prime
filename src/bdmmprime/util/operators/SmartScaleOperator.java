@@ -9,13 +9,10 @@ import beast.util.Randomizer;
 import java.util.*;
 
 @Description("Scale operator which scales identical values together.")
-public class SmartScaleOperator extends Operator {
+public class SmartScaleOperator extends SmartRealOperator {
 
     public Input<Double> scaleFactorInput = new Input<>("scaleFactor",
             "Scale factor will be chosen between scaleFactor and 1/scaleFactor.", 0.75);
-
-    public Input<List<RealParameter>> parametersInput = new Input("parameter",
-            "One or more parameters to operate on", new ArrayList<>());
 
     final public Input<Boolean> optimiseInput = new Input<>("optimise",
             "flag to indicate that the scale factor is automatically changed " +
@@ -26,51 +23,16 @@ public class SmartScaleOperator extends Operator {
     public Input<Double> scaleFactorLowerLimitInput = new Input<>("scaleFactorLowerLimit",
             "Lower limit of scale factor", 1e-8);
 
-    public Input<List<Double>> classesToExcludeInput = new Input<>("classToExclude",
-            "Elements with this value will not be operated on.",
-            new ArrayList<>());
-
     double scaleFactor, scaleFactorLowerLimit, scaleFactorUpperLimit;
-
-    List<RealParameter> parameters;
-    Map<RealParameter, Integer[]> groups;
-
-    int nClasses;
 
     @Override
     public void initAndValidate() {
+        super.initAndValidate();
 
-        parameters = parametersInput.get();
         scaleFactor = scaleFactorInput.get();
 
         scaleFactorLowerLimit = scaleFactorLowerLimitInput.get();
         scaleFactorUpperLimit = scaleFactorUpperLimitInput.get();
-
-        SortedSet<Double> seenValuesSet = new TreeSet<>();
-
-        for (RealParameter param : parameters) {
-            for (int i=0; i<param.getDimension(); i++) {
-                if (param.getValue(i) != 0.0)
-                    seenValuesSet.add(param.getValue(i));
-            }
-        }
-
-        // Explicitly exclude certain classes (identified by the element value)
-        seenValuesSet.removeAll(classesToExcludeInput.get());
-
-        List<Double> seenValues = new ArrayList<>(seenValuesSet);
-        nClasses = seenValues.size();
-
-        groups = new HashMap<>();
-
-        for (RealParameter param : parameters) {
-            Integer[] groupIDs = new Integer[param.getDimension()];
-
-            for (int i = 0; i < param.getDimension(); i++)
-                groupIDs[i] = seenValues.indexOf(param.getValue(i));
-
-            groups.put(param, groupIDs);
-        }
     }
 
     @Override
