@@ -230,6 +230,16 @@ public class TimedParameter extends CalculationNode implements Loggable {
     @Override
     protected void restore() {
         super.restore();
+
+        double [] tmpTimes;
+        tmpTimes = times;
+        times = storedTimes;
+        storedTimes = tmpTimes;
+
+        double [][] tmpVals;
+        tmpVals = values;
+        values = storedValues;
+        storedValues = tmpVals;
     }
 
     @Override
