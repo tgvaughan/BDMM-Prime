@@ -258,14 +258,14 @@ public class TimedParameter extends CalculationNode implements Loggable {
 
         for (int timeIdx=0; timeIdx<nTimes; timeIdx++) {
 
-            out.print(getID() + "t" + timeIdx + "_time\t");
+            out.print(getID() + "e" + timeIdx + "_time\t");
 
             if (inputIsScalar) {
-                out.print(getID() + "t" + timeIdx);
+                out.print(getID() + "e" + timeIdx + "\t");
 
             } else {
                 for (int type = 0; type < nTypes; type++) {
-                    out.print(getID() + "t" + timeIdx);
+                    out.print(getID() + "e" + timeIdx);
 
                     if (typeSetInput.get() != null)
                         out.print(typeSetInput.get().getTypeName(type));
