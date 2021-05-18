@@ -1,7 +1,7 @@
 package bdmmprime.parameterization;
 
+import bdmmprime.util.Utils;
 import beast.core.CalculationNode;
-import beast.core.Function;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
@@ -38,7 +38,7 @@ public abstract class Parameterization extends CalculationNode {
 
     private boolean dirty;
 
-    private SortedSet<Double> intervalEndTimesSet = new TreeSet<>();
+    private SortedSet<Double> intervalEndTimesSet = new TreeSet<>(Utils::precisionLimitedComparator);
 
     private double[] intervalEndTimes, storedIntervalEndTimes;
 
@@ -293,7 +293,7 @@ public abstract class Parameterization extends CalculationNode {
     }
 
 
-    protected SortedSet<Double> changeTimeSet = new TreeSet<>();
+    protected SortedSet<Double> changeTimeSet = new TreeSet<>(Utils::precisionLimitedComparator);
 
     /**
      * Combine times from individual time arrays, removing duplicates.
