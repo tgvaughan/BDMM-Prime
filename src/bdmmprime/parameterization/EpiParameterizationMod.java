@@ -2,6 +2,11 @@ package bdmmprime.parameterization;
 
 import beast.core.Input;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 public class EpiParameterizationMod extends Parameterization {
 
     public Input<SkylineVectorParameter> R0Input = new Input<>("R0",
@@ -182,6 +187,9 @@ public class EpiParameterizationMod extends Parameterization {
     protected void validateParameterTypeCounts() {
         if (R0Input.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("R0 skyline type count does not match type count of model.");
+
+        if (R0modInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("R0mod skyline type count does not match type count of model.");
 
         if (becomeUninfectiousRateInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Become uninfectious rate skyline type count does not match type count of model.");
