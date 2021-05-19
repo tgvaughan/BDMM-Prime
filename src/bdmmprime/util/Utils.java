@@ -47,6 +47,26 @@ public class Utils {
     }
 
     /**
+     * This is a comparison method that can be used (for example) to construct
+     * ordered sets where elements are guaranteed to differ by at least
+     * Utils.globalPrecisionThreshold.
+     *
+     * Note: this comparitor imposes orderings that are inconsistent with equals.
+     *
+     * @param a first value to compare
+     * @param b second value to compare
+     * @return 0 a==b to the global precision, or sign(b-a) otherwise
+     */
+    public static int precisionLimitedComparator(Double a, Double b) {
+        if (equalWithPrecision(a,b))
+            return 0;
+        if (a<b)
+            return -1;
+        else
+            return 1;
+    }
+
+    /**
      * In-place reversal of array of (little d) doubles.
      * @param array array to reverse
      */

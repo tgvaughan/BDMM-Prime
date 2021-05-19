@@ -35,6 +35,7 @@ public class NodeFactory {
 
     public Node newLeafNode(int type, double time) {
         Node node = newNode(type, time, nextLeafNr);
+        node.setID(String.valueOf(nextLeafNr));
         nextLeafNr += 1;
         return node;
     }
