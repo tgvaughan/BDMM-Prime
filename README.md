@@ -54,8 +54,8 @@ original BDMM paper:
 
 * Kühnert, et al., "Phylodynamics with Migration: A
   ComputationalFramework to Quantify Population Structure from Genomic
-  Data", MBE, 33:2102 (2016),
-  [doi:10.1098/rsif.2013.1106](http://dx.doi.org/10.1098/rsif.2013.1106).
+  Data", MBE, 33:8, 2102-2116 (2016),
+  [doi:10.1093/molbev/msw064](https://doi.org/10.1093/molbev/msw064).
 
 License
 -------
