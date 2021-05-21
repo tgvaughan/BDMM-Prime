@@ -19,6 +19,10 @@ public class OUSkyGridPrior extends Distribution {
     public Input<Function> SInput = new Input<>("S",
             "S parameter for log-normal distribution.", Input.Validate.REQUIRED);
 
+    public Input<Boolean> meanInRealSpaceInput = new Input<>("meanInRealSpace",
+            "Same as meanInRealSpace input for log normal distribution.",
+            false);
+
     public Input<Function> thetaInput = new Input<>("theta",
             "Relaxation parameter for O-U process.", Input.Validate.REQUIRED);
 
@@ -43,6 +47,9 @@ public class OUSkyGridPrior extends Distribution {
         double M = MInput.get().getArrayValue();
         double S = SInput.get().getArrayValue();
         double theta = thetaInput.get().getArrayValue();
+
+        if (meanInRealSpaceInput.get())
+            M = Math.log(M);
 
         double expNegTheta = Math.exp(-theta);
         double S2 = S*S;
