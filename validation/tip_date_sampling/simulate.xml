@@ -1,0 +1,55 @@
+<beast version="2.0"
+       namespace="beast.core
+                 :beast.core.parameter
+                 :beast.evolution.sitemodel
+                 :beast.evolution.substitutionmodel
+                 :bdmmprime.distribution
+                 :bdmmprime.parameterization
+                 :bdmmprime.trajectories.simulation
+                 :feast.simulation">
+
+  <run spec="GPSimulator" nSims="1">
+
+    <simulationObject spec="SimulatedAlignment" id="align"
+                      sequenceLength="1000"
+                      outputFileName="simulated_alignment.nexus">
+      
+      <tree spec="SimulatedTree" id="tree">
+        <finalSampleOffset id="finalSampleOffset" spec="RealParameter" value="0.0"/>
+        <frequencies spec="RealParameter" value="1.0"/>
+        <parameterization spec="EpiParameterization">
+          <origin spec="RealParameter" value="5.0"/> <!-- Duration of simulation -->
+          <R0 spec="SkylineVectorParameter">
+            <skylineValues spec="RealParameter" value="2.0"/>
+          </R0>
+          <becomeUninfectiousRate spec="SkylineVectorParameter">
+            <skylineValues spec="RealParameter" value="1.0"/>
+          </becomeUninfectiousRate>
+          <samplingProportion spec="SkylineVectorParameter">
+            <skylineValues spec="RealParameter" value="0.1"/>
+          </samplingProportion>
+          <removalProb spec="SkylineVectorParameter">
+            <skylineValues spec="RealParameter" value="1.0"/>
+          </removalProb>
+        </parameterization>
+      </tree>
+
+      <siteModel spec="SiteModel" mutationRate="1e-2">
+        <substModel spec="JukesCantor"/>
+      </siteModel>
+    </simulationObject>
+   
+    <logger spec="Logger">
+      <log idref="finalSampleOffset"/>
+    </logger>
+
+    <logger spec="Logger" fileName="simulated_FSOs.log">
+      <log idref="finalSampleOffset"/>
+    </logger>
+
+    <logger spec="Logger" fileName="simulated_trees.nexus">
+      <log idref="tree"/>
+    </logger>
+
+  </run>
+</beast>
