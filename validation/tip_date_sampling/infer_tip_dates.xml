@@ -1,0 +1,95 @@
+<beast version="2.0"
+       namespace="beast.core
+                 :beast.core.util
+                 :beast.core.parameter
+                 :beast.evolution.likelihood
+                 :beast.evolution.tree
+                 :beast.evolution.tree.coalescent
+                 :beast.evolution.sitemodel
+                 :beast.evolution.substitutionmodel
+                 :beast.evolution.operators
+                 :beast.evolution.alignment
+                 :bdmmprime.distribution
+                 :bdmmprime.parameterization
+                 :bdmmprime.trajectories.simulation
+                 :bdmmprime.util.operators
+                 :feast.simulation
+                 :feast.fileio">
+
+  <data spec="AlignmentFromNexus" id="align" fileName="simulated_alignment.nexus"/>
+
+  <run spec="MCMC" chainLength="1000000">
+    <state>
+      <stateNode spec="RandomTree" id="tree" taxa="@align">
+        <populationModel spec="ConstantPopulation" popSize="0.1"/>
+      </stateNode>
+
+      <stateNode id="finalSampleOffset" spec="RealParameter" value="0.1"/>
+      <stateNode id="origin" spec="RealParameter" value="5.0"/>
+    </state>
+
+    <distribution id="posterior" spec="CompoundDistribution">
+      <distribution id="likelihood" spec="TreeLikelihood" tree="@tree" data="@align">
+        <siteModel spec="SiteModel" mutationRate="1e-2">
+          <substModel spec="JukesCantor"/>
+        </siteModel>
+      </distribution>
+
+      <distribution id="prior" spec="CompoundDistribution">
+
+        <distribution spec="BirthDeathMigrationDistribution" tree="@tree">
+          <finalSampleOffset idref="finalSampleOffset"/>
+          <parameterization spec="EpiParameterization">
+            <origin idref="origin" /> <!-- Duration of simulation -->
+            <R0 spec="SkylineVectorParameter">
+              <skylineValues spec="RealParameter" value="2.0"/>
+            </R0>
+            <becomeUninfectiousRate spec="SkylineVectorParameter">
+              <skylineValues spec="RealParameter" value="1.0"/>
+            </becomeUninfectiousRate>
+            <samplingProportion spec="SkylineVectorParameter">
+              <skylineValues spec="RealParameter" value="0.1"/>
+            </samplingProportion>
+            <removalProb spec="SkylineVectorParameter">
+              <skylineValues spec="RealParameter" value="1.0"/>
+            </removalProb>
+          </parameterization>
+        </distribution>
+
+        <distribution spec="beast.math.distributions.Prior" x="@origin">
+          <distr spec="beast.math.distributions.OneOnX"/>
+        </distribution>
+
+      </distribution>
+    </distribution>
+
+    <operator spec="ScaleOperator" parameter="@finalSampleOffset" weight="1.0"/>
+    <operator spec="ScaleOperator" parameter="@origin" weight="1.0"/>
+
+    <operator spec="ScaleOperator" tree="@tree" weight="1.0"/>
+    <operator spec="WilsonBalding" tree="@tree" weight="1.0"/>
+    <operator spec="SubtreeSlide" tree="@tree" weight="1.0"/>
+    <operator spec="Exchange" isNarrow="true" tree="@tree" weight="1.0"/>
+    <operator spec="Exchange" isNarrow="false" tree="@tree" weight="1.0"/>
+    <operator spec="Uniform" tree="@tree" weight="1.0"/>
+
+    <operator spec="TipDateOperator" tree="@tree"
+              finalSampleOffset="@finalSampleOffset" weight="1.0"/>
+
+    <logger spec="Logger" logEvery="100000">
+      <log idref="origin"/>
+      <log idref="finalSampleOffset"/>
+    </logger>
+
+    <logger spec="Logger" fileName="$(filebase).log" logEvery="1000">
+      <log idref="origin"/>
+      <log idref="finalSampleOffset"/>
+    </logger>
+
+    <logger spec="Logger" fileName="$(filebase).trees" logEvery="1000">
+      <log idref="tree"/>
+    </logger>
+      
+  </run>
+
+</beast>
