@@ -97,7 +97,7 @@ public class SkylineMatrixParameter extends SkylineParameter {
      * @param time when to evaluate the parameter.
      * @return the matrix value at the chosen time.
      */
-    protected double[][] getValuesAtTime(double time) {
+    public double[][] getValuesAtTime(double time) {
         update();
 
         int intervalIdx = getIntervalIdx(time);
