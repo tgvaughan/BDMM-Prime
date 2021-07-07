@@ -26,7 +26,7 @@
             <skylineValues spec="RealParameter" value="1.0"/>
           </becomeUninfectiousRate>
           <samplingProportion spec="SkylineVectorParameter">
-            <skylineValues spec="RealParameter" value="0.1"/>
+            <skylineValues spec="RealParameter" value="0.2"/>
           </samplingProportion>
           <removalProb spec="SkylineVectorParameter">
             <skylineValues spec="RealParameter" value="1.0"/>

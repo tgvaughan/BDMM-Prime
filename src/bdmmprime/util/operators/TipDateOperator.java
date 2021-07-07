@@ -2,9 +2,9 @@ package bdmmprime.util.operators;
 
 import beast.core.Description;
 import beast.core.Input;
-import beast.core.Operator;
 import beast.core.parameter.RealParameter;
 import beast.evolution.alignment.TaxonSet;
+import beast.evolution.operators.TreeOperator;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 import beast.util.Randomizer;
@@ -14,11 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Description("Operator that allows ")
-public class TipDateOperator extends Operator {
-
-    public Input<Tree> treeInput = new Input<>("tree",
-            "Tree on which to operate.",
-            Input.Validate.REQUIRED);
+public class TipDateOperator extends TreeOperator {
 
     public Input<TaxonSet> taxonSetInput = new Input<>("taxonSet",
             "Taxon set containing taxa specifying leaves on which to operate");

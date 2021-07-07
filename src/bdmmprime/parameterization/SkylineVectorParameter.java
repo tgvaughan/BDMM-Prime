@@ -80,7 +80,7 @@ public class SkylineVectorParameter extends SkylineParameter {
      * @param time when to evaluate the skyline parameter.
      * @return value of the vector at the chosen time.
      */
-    protected double[] getValuesAtTime(double time) {
+    public double[] getValuesAtTime(double time) {
         update();
 
         int intervalIdx = getIntervalIdx(time);
