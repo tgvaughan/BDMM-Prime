@@ -52,7 +52,6 @@ public class OUSkyGridPrior2 extends Distribution {
             double thisValue = x.getArrayValue(i);
             if (thisValue != 0.0 && !seenValues.contains(thisValue)) {
                 indices.add(i);
-                seenValues.add(thisValue);
             }
         }
     }
@@ -81,8 +80,8 @@ public class OUSkyGridPrior2 extends Distribution {
         // Log normal distribution for initial value
         logP +=  logOneOnSqrt2Pi - Math.log(S) - 0.5*(prevEl-M)*(prevEl-M)/S2 - prevEl;
 
-        for (int i : indices) {
-            double el = Math.log(x.getArrayValue(i));
+        for (int i=1; i< indices.size(); i++) {
+            double el = Math.log(x.getArrayValue(indices.get(i)));
             double mean = prevEl*expNegTheta + M*(1.0 - expNegTheta);
             double delta = el - mean;
 
