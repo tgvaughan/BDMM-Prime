@@ -14,7 +14,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Description("Operator that allows ")
-public class TipDateOperator extends TreeOperator {
+public class TipEdgeScaleOperator extends TreeOperator {
 
     public Input<TaxonSet> taxonSetInput = new Input<>("taxonSet",
             "Taxon set containing taxa specifying leaves on which to operate");
@@ -23,15 +23,15 @@ public class TipDateOperator extends TreeOperator {
             "Final sample offset parameter from BD model.",
             Input.Validate.REQUIRED);
 
-    public Input<Double> windowSizeInput = new Input<>("windowSize",
-            "Width of window (in time) used to draw new node times from.",
-            1.0);
+    public Input<Double> scaleFactorInput = new Input<>("scaleFactor",
+            "Edge length is scaled by a value chosen from [sf,1/sf].",
+            0.8);
 
     Tree tree;
     List<String> taxaNames;
 
     RealParameter finalSampleOffset;
-    double windowSize;
+    double scaleFactor;
 
     @Override
     public void initAndValidate() {
@@ -43,7 +43,7 @@ public class TipDateOperator extends TreeOperator {
             taxaNames = Arrays.asList(tree.getTaxaNames());
 
         finalSampleOffset = finalSampleOffsetInput.get();
-        windowSize = windowSizeInput.get();
+        scaleFactor = scaleFactorInput.get();
     }
 
     @Override
@@ -55,15 +55,16 @@ public class TipDateOperator extends TreeOperator {
         Node node = tree.getExternalNodes().stream().
                 filter(n->n.getID().equals(taxonID)).findFirst().get();
 
-
         double oldHeight = node.getHeight();
+        double oldEdgeLength = node.getParent().getHeight() - oldHeight;
+
+        double minf = Math.min(scaleFactor, 1.0/scaleFactor);
+        double maxf = 1.0/minf;
+        double f = minf + (maxf - minf)*Randomizer.nextDouble();
 
         // Select new height:
-        double newHeight = oldHeight + windowSize*(Randomizer.nextDouble() - 0.5);
-
-        if (newHeight > node.getParent().getHeight())
-            // Reflect back down off of parent height
-            newHeight = node.getParent().getHeight() - (newHeight - node.getParent().getHeight());
+        double newEdgeLength = oldEdgeLength*f;
+        double newHeight = node.getParent().getHeight() - newEdgeLength;
 
         node.setHeight(newHeight);
 
@@ -71,7 +72,7 @@ public class TipDateOperator extends TreeOperator {
             if (updateHeights())
                 return Double.NEGATIVE_INFINITY;
 
-        return 0;
+        return -Math.log(f);
     }
 
     /**
