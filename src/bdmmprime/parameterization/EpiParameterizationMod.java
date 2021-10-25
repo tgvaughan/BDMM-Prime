@@ -63,6 +63,7 @@ public class EpiParameterizationMod extends Parameterization {
 
         crossBirthRateChangeTimes = combineAndSortTimes(crossBirthRateChangeTimes,
                 R0AmongDemesInput.get().getChangeTimes(),
+                R0modInput.get().getChangeTimes(),
                 becomeUninfectiousRateInput.get().getChangeTimes());
 
         return crossBirthRateChangeTimes;
@@ -131,6 +132,7 @@ public class EpiParameterizationMod extends Parameterization {
             return ZERO_VALUE_MATRIX;
 
         double[][] res = R0AmongDemesInput.get().getValuesAtTime(time);
+        double[] mod = R0modInput.get().getValuesAtTime(time);
         double[] buVals = becomeUninfectiousRateInput.get().getValuesAtTime(time);
 
         for (int sourceType=0; sourceType<nTypes; sourceType++) {
@@ -138,7 +140,7 @@ public class EpiParameterizationMod extends Parameterization {
                 if (sourceType==destType)
                     continue;
 
-                res[sourceType][destType] *= buVals[sourceType];
+                res[sourceType][destType] *= mod[sourceType]*buVals[sourceType];
             }
         }
 
@@ -186,7 +188,10 @@ public class EpiParameterizationMod extends Parameterization {
     @Override
     protected void validateParameterTypeCounts() {
         if (R0Input.get().getNTypes() != getNTypes())
-            throw new IllegalArgumentException("R0 skyline type count does not match type count of model.");
+            throw new IllegalArgumentException("R0 skyline type count ("
+                    + R0Input.get().getNTypes()
+                    + ") does not match type count of model (" +
+                    + getNTypes() + ").");
 
         if (R0modInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("R0mod skyline type count does not match type count of model.");

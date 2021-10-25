@@ -4,6 +4,7 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
 import beast.core.*;
 import beast.core.parameter.RealParameter;
+import beast.core.util.Log;
 import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
@@ -119,8 +120,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         finalSampleOffset = finalSampleOffsetInput.get();
 
-        if (parameterization.getNTypes() != 1 && (typeTraitSetInput.get() == null && typeLabelInput.get() == null))
-            throw new RuntimeException("Error: For models with >1 type, either typeTraitSet or typeLabel must be specified.");
+//        if (parameterization.getNTypes() != 1 && (typeTraitSetInput.get() == null && typeLabelInput.get() == null))
+//            throw new RuntimeException("Error: For models with >1 type, either typeTraitSet or typeLabel must be specified.");
 
         if (frequenciesInput.get().getDimension() != parameterization.getNTypes())
             throw new RuntimeException("Error: dimension of equilibrium frequencies " +
@@ -159,7 +160,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++) {
             isRhoTip[nodeNr] = false;
             double nodeTime = parameterization.getNodeTime(tree.getNode(nodeNr), finalSampleOffset.getArrayValue());
-//            double nodeTime = parameterization.getTotalProcessLength() - tree.getNode(nodeNr).getHeight();
             for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
                 if (Utils.equalWithPrecision(rhoSampTime, nodeTime)) {
                     isRhoTip[nodeNr] = true;
@@ -294,26 +294,33 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     private int getNodeType(Node node, Boolean init) {
 
-
         if (storeNodeTypes.get() && !init)
             return nodeStates[node.getNr()];
 
         int nodeType;
 
         if (parameterization.getNTypes()>1) {
-            String nodeTypeName;
+            String nodeTypeName = null;
 
             if (typeTraitSetInput.get() != null)
                 nodeTypeName = typeTraitSetInput.get().getStringValue(node.getID());
             else {
-                Object metaData = node.getMetaData(typeLabelInput.get());
-                if (metaData instanceof Double)
-                    nodeTypeName = String.valueOf(Math.round((double)metaData));
-                else
-                    nodeTypeName = metaData.toString();
+                if (typeLabelInput.get() != null) {
+                    Object metaData = node.getMetaData(typeLabelInput.get());
+                    if (metaData != null) {
+                        if (metaData instanceof Double)
+                            nodeTypeName = String.valueOf(Math.round((double) metaData));
+                        else
+                            nodeTypeName = metaData.toString();
+                    }
+                }
             }
 
-            nodeType = parameterization.getTypeSet().getTypeIndex(nodeTypeName);
+            if (nodeTypeName != null) {
+                nodeType = parameterization.getTypeSet().getTypeIndex(nodeTypeName);
+            } else {
+                nodeType = -1; // Node is of unknown type.
+            }
 
         } else {
             nodeType = 0;
