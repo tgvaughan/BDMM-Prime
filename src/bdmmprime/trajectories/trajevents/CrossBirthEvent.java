@@ -34,7 +34,7 @@ public class CrossBirthEvent extends TrajectoryEvent {
     @Override
     public void simulateSingleTreeEvent(double[] state, List<List<Node>> activeLineages, NodeFactory nodeFactory,
                                         Boolean untypedTree) {
-        if (activeLineages.get(destType).isEmpty() || activeLineages.get(srcType).isEmpty())
+        if (activeLineages.get(destType).isEmpty())
             return;
 
         double pObsStateChange = activeLineages.get(destType).size()/state[destType];
