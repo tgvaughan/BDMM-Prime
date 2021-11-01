@@ -17,7 +17,6 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
 
     private Parameterization param;
     private int interval;
-    private double nextIntevalBoundaryTime;
 
     public ODESystem(Parameterization parameterization) {
         this.param = parameterization;
@@ -25,9 +24,6 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
 
     public void setInterval(int interval) {
         this.interval = interval;
-
-        if (this.interval>0)
-            this.nextIntevalBoundaryTime = param.getIntervalEndTimes()[interval-1];
     }
 
 
@@ -92,7 +88,11 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
 
     @Override
     public double g(double v, double[] doubles) {
-        return v - nextIntevalBoundaryTime;
+        double res = 1.0;
+        for (double boundary : param.getIntervalEndTimes())
+            res *= v - boundary;
+
+        return res;
     }
 
     @Override
