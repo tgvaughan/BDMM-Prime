@@ -145,6 +145,9 @@ public class TypeMappedTree extends Tree {
         integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
         geScaleFactors = new double[untypedTree.getNodeCount()];
 
+        // Update leaf rho sampling status:
+        computeRhoSampledLeafStatus();
+
         // Perform the backward-time integration.
         double[] y = backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
@@ -239,9 +242,6 @@ public class TypeMappedTree extends Tree {
      * @return true if node time coincides with rho sampling time.
      */
     private boolean nodeIsRhoSampled(Node node) {
-        if (rhoSampled == null)
-            computeRhoSampledLeafStatus();
-
         return rhoSampled[node.getNr()];
     }
 
