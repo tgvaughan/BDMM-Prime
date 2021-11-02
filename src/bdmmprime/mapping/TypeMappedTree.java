@@ -323,7 +323,7 @@ public class TypeMappedTree extends Tree {
         double timeOfSubtreeRootEdgeBottom = param.getNodeTime(untypedSubtreeRoot, finalSampleOffset.getArrayValue());
 
         odeIntegrator.addEventHandler(odeSystem,
-                (timeOfSubtreeRootEdgeTop-timeOfSubtreeRootEdgeBottom)/RATE_CHANGE_CHECKS_PER_EDGE,
+                (timeOfSubtreeRootEdgeBottom-timeOfSubtreeRootEdgeTop)/RATE_CHANGE_CHECKS_PER_EDGE,
                 RATE_CHANGE_CHECK_CONVERGENCE, RATE_CHANGE_MAX_ITERATIONS);
 
         odeSystem.setInterval(param.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
