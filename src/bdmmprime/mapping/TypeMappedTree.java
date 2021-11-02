@@ -571,11 +571,11 @@ public class TypeMappedTree extends Tree {
             }
 
             if (integrationStep == FORWARD_INTEGRATION_STEPS) {
-                if (Utils.greaterThanWithPrecision(nextRateShiftTime,endTime))
-                    break;
-                else {
+                if (nextRateShiftTime < endTime) {
                     currentTime = nextRateShiftTime;
                     continue;
+                } else {
+                    break;
                 }
             }
 
