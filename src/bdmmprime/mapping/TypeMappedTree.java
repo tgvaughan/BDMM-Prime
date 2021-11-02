@@ -533,18 +533,25 @@ public class TypeMappedTree extends Tree {
 
         while (true) {
 
+            // Determine time of next rate shift
+
+            double delta = Utils.globalPrecisionThreshold;
+            int interval = param.getIntervalIndex(currentTime + 2*delta);
+            double nextRateShiftTime = param.getIntervalEndTimes()[interval];
+            double integrationEndTime = Math.min(endTime, nextRateShiftTime);
+
             // Determine time of next event
 
             double K = -Math.log(Randomizer.nextDouble());
             double I = 0.0;
 
             double t = currentTime;
-            double dt = (endTime-currentTime)/ FORWARD_INTEGRATION_STEPS;
+            double dt = (integrationEndTime-currentTime)/ FORWARD_INTEGRATION_STEPS;
             totalRate = getTotalFowardsRate(currentType, currentTime, subtreeRoot, rates);
 
             int integrationStep;
             for (integrationStep=0; integrationStep< FORWARD_INTEGRATION_STEPS; integrationStep++) {
-                double tprime = currentTime + (endTime-currentTime)*(integrationStep+1)/ FORWARD_INTEGRATION_STEPS;
+                double tprime = currentTime + (integrationEndTime-currentTime)*(integrationStep+1)/ FORWARD_INTEGRATION_STEPS;
 
                 totalRatePrime = getTotalFowardsRate(currentType, tprime, subtreeRoot, ratesPrime);
 
@@ -563,8 +570,14 @@ public class TypeMappedTree extends Tree {
                 t = tprime;
             }
 
-            if (integrationStep == FORWARD_INTEGRATION_STEPS)
-                break;
+            if (integrationStep == FORWARD_INTEGRATION_STEPS) {
+                if (Utils.greaterThanWithPrecision(nextRateShiftTime,endTime))
+                    break;
+                else {
+                    currentTime = nextRateShiftTime;
+                    continue;
+                }
+            }
 
             currentNode.setHeight(param.getAge(currentTime, finalSampleOffset.getArrayValue()));
 
