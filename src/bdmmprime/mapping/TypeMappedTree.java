@@ -163,19 +163,13 @@ public class TypeMappedTree extends Tree {
 
         // Simulate type changes down tree
 
-        try {
+        Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0, startType);
 
-            Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0, startType);
+        // Ensure internal nodes are numbered correctly.  (Leaf node numbers and
+        // labels are matched to those in the untyped tree during the simulation.)
+        numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
 
-            // Ensure internal nodes are numbered correctly.  (Leaf node numbers and
-            // labels are matched to those in the untyped tree during the simulation.)
-            numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
-
-            assignFromWithoutID(new Tree(typedRoot));
-
-        } catch (RuntimeException ex) {
-            System.err.println("Error occurred generating stochastic mapping. Skipping.");
-        }
+        assignFromWithoutID(new Tree(typedRoot));
     }
 
     /**
@@ -304,9 +298,6 @@ public class TypeMappedTree extends Tree {
             case INTERNAL:
                 y = getInternalState(untypedSubtreeRoot);
                 break;
-
-            default:
-                throw new RuntimeException("Node kind switch fell through!");
         }
 
         ContinuousOutputModel results = new ContinuousOutputModel();
@@ -620,9 +611,6 @@ public class TypeMappedTree extends Tree {
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(0), endTime, childTypes[0]));
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(1), endTime, childTypes[1]));
                 break;
-
-            default:
-                throw new IllegalArgumentException("Switch fell through in forward simulation.");
         }
 
         return root;
