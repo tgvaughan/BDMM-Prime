@@ -151,6 +151,12 @@ public class TypeMappedTree extends Tree {
         // Perform the backward-time integration.
         double[] y = backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
+//        try (PrintStream ps = new PrintStream("states.txt")) {
+//            printLongestPathState(ps);
+//        } catch (FileNotFoundException e) {
+//            e.printStackTrace();
+//        }
+
         // Sample starting type
 
         double[] startTypeProbs = new double[param.getNTypes()];
@@ -789,6 +795,44 @@ public class TypeMappedTree extends Tree {
     /*
      * Loggable implementation
      */
+
+    public void printLongestPathState(PrintStream ps) {
+//        Node thisNode = untypedTree.getExternalNodes().stream().min(Comparator.comparingDouble(Node::getHeight)).get();
+//        Node thisNode = untypedTree.getExternalNodes().stream()
+//                .filter(n -> getLeafType(n)==0)
+//                .min(Comparator.comparingDouble(Node::getHeight)).get();
+        Node thisNode = untypedTree.getNode(165);
+
+        ps.print("t node");
+        for (int type=0; type<param.getNTypes(); type++)
+            ps.print(" p" + type);
+        for (int type=0; type<param.getNTypes(); type++)
+            ps.print(" g" + type);
+        ps.println();
+
+        while (!thisNode.isRoot()) {
+
+            double nodeTime = param.getNodeTime(thisNode, finalSampleOffset.getArrayValue());
+            double parentTime = param.getNodeTime(thisNode.getParent(), finalSampleOffset.getArrayValue());
+            double dt = (nodeTime - parentTime)/100.0;
+            for (int i=0; i<100; i++) {
+                double time = nodeTime - dt*i;
+                ContinuousOutputModel res = integrationResults[thisNode.getNr()];
+                res.setInterpolatedTime(time);
+                double[] y = res.getInterpolatedState();
+                double scaleFac  = geScaleFactors[thisNode.getNr()];
+
+                ps.print(time + " " + thisNode.getNr());
+                for (int type=0; type<param.getNTypes(); type++)
+                    ps.print(" " + y[type]);
+                for (int type=0; type<param.getNTypes(); type++)
+                    ps.print(" " + y[param.getNTypes() + type]*Math.exp(scaleFac));
+                ps.println();
+            }
+
+            thisNode = thisNode.getParent();
+        }
+    }
 
     private long lastRemapSample = -1;
 
