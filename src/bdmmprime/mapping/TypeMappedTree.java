@@ -298,6 +298,9 @@ public class TypeMappedTree extends Tree {
             case INTERNAL:
                 y = getInternalState(untypedSubtreeRoot);
                 break;
+
+            default:
+                throw new IllegalStateException("Node kind switch fell through. (Should be impossible.)");
         }
 
         ContinuousOutputModel results = new ContinuousOutputModel();
