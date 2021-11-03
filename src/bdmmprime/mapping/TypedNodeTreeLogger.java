@@ -20,12 +20,12 @@ import java.io.PrintStream;
  */
 public class TypedNodeTreeLogger extends CalculationNode implements Loggable {
 
-    public Input<TypeMappedTree> typedTreeInput = new Input<>(
+    public Input<Tree> typedTreeInput = new Input<>(
             "typedTree",
             "Typed tree whose node types to log.",
             Input.Validate.REQUIRED);
 
-    private TypeMappedTree typedTree;
+    private Tree typedTree;
 
     @Override
     public void initAndValidate() {
@@ -40,7 +40,8 @@ public class TypedNodeTreeLogger extends CalculationNode implements Loggable {
     @Override
     public void log(long nSample, PrintStream out) {
 
-        typedTree.remapForLog(nSample);
+        if (typedTree instanceof TypeMappedTree)
+            ((TypeMappedTree)typedTree).remapForLog(nSample);
 
         // Set up metadata string
         out.print("tree STATE_" + nSample + " = ");
