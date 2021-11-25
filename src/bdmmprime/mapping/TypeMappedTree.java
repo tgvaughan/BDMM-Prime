@@ -145,6 +145,9 @@ public class TypeMappedTree extends Tree {
         integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
         geScaleFactors = new double[untypedTree.getNodeCount()];
 
+        // Update leaf rho sampling status:
+        computeRhoSampledLeafStatus();
+
         // Perform the backward-time integration.
         double[] y = backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
@@ -160,19 +163,13 @@ public class TypeMappedTree extends Tree {
 
         // Simulate type changes down tree
 
-        try {
+        Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0, startType);
 
-            Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0, startType);
+        // Ensure internal nodes are numbered correctly.  (Leaf node numbers and
+        // labels are matched to those in the untyped tree during the simulation.)
+        numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
 
-            // Ensure internal nodes are numbered correctly.  (Leaf node numbers and
-            // labels are matched to those in the untyped tree during the simulation.)
-            numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
-
-            assignFromWithoutID(new Tree(typedRoot));
-
-        } catch (RuntimeException ex) {
-            System.err.println("Error occurred generating stochastic mapping. Skipping.");
-        }
+        assignFromWithoutID(new Tree(typedRoot));
     }
 
     /**
@@ -239,9 +236,6 @@ public class TypeMappedTree extends Tree {
      * @return true if node time coincides with rho sampling time.
      */
     private boolean nodeIsRhoSampled(Node node) {
-        if (rhoSampled == null)
-            computeRhoSampledLeafStatus();
-
         return rhoSampled[node.getNr()];
     }
 
@@ -306,7 +300,7 @@ public class TypeMappedTree extends Tree {
                 break;
 
             default:
-                throw new RuntimeException("Node kind switch fell through!");
+                throw new IllegalStateException("Node kind switch fell through. (Should be impossible.)");
         }
 
         ContinuousOutputModel results = new ContinuousOutputModel();
@@ -323,7 +317,7 @@ public class TypeMappedTree extends Tree {
         double timeOfSubtreeRootEdgeBottom = param.getNodeTime(untypedSubtreeRoot, finalSampleOffset.getArrayValue());
 
         odeIntegrator.addEventHandler(odeSystem,
-                (timeOfSubtreeRootEdgeTop-timeOfSubtreeRootEdgeBottom)/RATE_CHANGE_CHECKS_PER_EDGE,
+                (timeOfSubtreeRootEdgeBottom-timeOfSubtreeRootEdgeTop)/RATE_CHANGE_CHECKS_PER_EDGE,
                 RATE_CHANGE_CHECK_CONVERGENCE, RATE_CHANGE_MAX_ITERATIONS);
 
         odeSystem.setInterval(param.getIntervalIndex(timeOfSubtreeRootEdgeBottom-delta));
@@ -533,18 +527,25 @@ public class TypeMappedTree extends Tree {
 
         while (true) {
 
+            // Determine time of next rate shift
+
+            double delta = Utils.globalPrecisionThreshold;
+            int interval = param.getIntervalIndex(currentTime + 2*delta);
+            double nextRateShiftTime = param.getIntervalEndTimes()[interval];
+            double integrationEndTime = Math.min(endTime, nextRateShiftTime);
+
             // Determine time of next event
 
             double K = -Math.log(Randomizer.nextDouble());
             double I = 0.0;
 
             double t = currentTime;
-            double dt = (endTime-currentTime)/ FORWARD_INTEGRATION_STEPS;
+            double dt = (integrationEndTime-currentTime)/ FORWARD_INTEGRATION_STEPS;
             totalRate = getTotalFowardsRate(currentType, currentTime, subtreeRoot, rates);
 
             int integrationStep;
             for (integrationStep=0; integrationStep< FORWARD_INTEGRATION_STEPS; integrationStep++) {
-                double tprime = currentTime + (endTime-currentTime)*(integrationStep+1)/ FORWARD_INTEGRATION_STEPS;
+                double tprime = currentTime + (integrationEndTime-currentTime)*(integrationStep+1)/ FORWARD_INTEGRATION_STEPS;
 
                 totalRatePrime = getTotalFowardsRate(currentType, tprime, subtreeRoot, ratesPrime);
 
@@ -563,8 +564,14 @@ public class TypeMappedTree extends Tree {
                 t = tprime;
             }
 
-            if (integrationStep == FORWARD_INTEGRATION_STEPS)
-                break;
+            if (integrationStep == FORWARD_INTEGRATION_STEPS) {
+                if (nextRateShiftTime < endTime) {
+                    currentTime = nextRateShiftTime;
+                    continue;
+                } else {
+                    break;
+                }
+            }
 
             currentNode.setHeight(param.getAge(currentTime, finalSampleOffset.getArrayValue()));
 
@@ -607,9 +614,6 @@ public class TypeMappedTree extends Tree {
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(0), endTime, childTypes[0]));
                 currentNode.addChild(forwardSimulateSubtree(subtreeRoot.getChild(1), endTime, childTypes[1]));
                 break;
-
-            default:
-                throw new IllegalArgumentException("Switch fell through in forward simulation.");
         }
 
         return root;
@@ -664,9 +668,9 @@ public class TypeMappedTree extends Tree {
                     probs[type1][type1] = param.getBirthRates()[interval][type1]
                             *y1[param.getNTypes()+type1]*y2[param.getNTypes()+type1];
                 } else {
-                    probs[type1][type2] = param.getCrossBirthRates()[interval][type1][type2]
-                            * 0.5 * (y1[param.getNTypes()+type1]*y2[param.getNTypes()+type2]
-                            + y1[param.getNTypes()+type2]*y2[param.getNTypes()+type1]);
+                    int newType = type1 != parentType ? type1 : type2;
+                    probs[type1][type2] = param.getCrossBirthRates()[interval][parentType][newType]
+                            * 0.5 * y1[param.getNTypes()+type1]*y2[param.getNTypes()+type2];
                 }
 
                 totalMass += probs[type1][type2];

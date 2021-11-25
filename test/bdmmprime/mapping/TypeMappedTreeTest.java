@@ -2,8 +2,10 @@ package bdmmprime.mapping;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
+import bdmmprime.trajectories.simulation.SimulatedTree;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Tree;
+import beast.util.Randomizer;
 import beast.util.TreeParser;
 import org.apache.commons.math.special.Gamma;
 import org.junit.Test;
@@ -281,5 +283,141 @@ public class TypeMappedTreeTest {
                 - Gamma.logGamma(tree.getLeafNodeCount() + 1);
 
         assertEquals(logProbTrue, logProb, 1e-5); // result from BEAST, not checked in R
+    }
+
+    @Test
+    public void testBackwardIntegrationMigRateChange() {
+        Randomizer.setSeed(42);
+
+        TypeSet typeSet = new TypeSet(2);
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "typeSet", typeSet,
+                "origin", new RealParameter("5.0"),
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("2.0"), 2),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5"), 2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        new RealParameter("3.5 4.0"),
+                        new RealParameter("0.0 0.0 1.0 1.0 0.0 0.0"), 2)
+        );
+
+        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealParameter frequencies = new RealParameter("0.5 0.5");
+
+        SimulatedTree simulatedTree = new SimulatedTree();
+        simulatedTree.initByName(
+                "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
+                "frequencies", frequencies,
+                "minSamples", 2,
+                "simulateUntypedTree", true);
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", frequencies,
+                "conditionOnSurvival", false,
+                "tree", simulatedTree,
+                "typeLabel", "type",
+                "parallelize", false);
+
+        double logProbTrue = density.calculateLogP();
+
+        TypeMappedTree typeMappedTree = new TypeMappedTree();
+        typeMappedTree.initByName(
+                "parameterization", parameterization,
+                "frequencies", frequencies,
+                "untypedTree", simulatedTree,
+                "typeLabel", "type");
+
+        double[] y = typeMappedTree.backwardsIntegrateSubtree(simulatedTree.getRoot(), 0.0);
+        double logScaleFactor = typeMappedTree.geScaleFactors[simulatedTree.getRoot().getNr()];
+
+        double logProb = 0.0;
+        for (int type = 0; type < parameterization.getNTypes(); type++) {
+            logProb += y[type + parameterization.getNTypes()] * frequencies.getValue(type);
+        }
+        logProb = Math.log(logProb) + logScaleFactor
+                + Math.log(2) * (simulatedTree.getInternalNodeCount() - simulatedTree.getDirectAncestorNodeCount())
+                - Gamma.logGamma(simulatedTree.getLeafNodeCount() + 1);
+
+        assertEquals(logProbTrue, logProb, 1e-5); // result from BEAST, not checked in R
+    }
+
+    @Test
+    public void testBackwardIntegrationCrossBirthRateChange() {
+        Randomizer.setSeed(42);
+
+        TypeSet typeSet = new TypeSet(2);
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "typeSet", typeSet,
+                "origin", new RealParameter("5.0"),
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("2.0"), 2),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("0.5"), 2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealParameter("1.0"), 2),
+                "birthRateAmongDemes", new SkylineMatrixParameter(
+                        new RealParameter("3.9 4.0"),
+                        new RealParameter("0.0 0.0 1.0 1.0 0.0 0.0"), 2)
+        );
+
+        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealParameter frequencies = new RealParameter("0.5 0.5");
+
+        SimulatedTree simulatedTree = new SimulatedTree();
+        simulatedTree.initByName(
+                "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
+                "frequencies", frequencies,
+                "minSamples", 2,
+                "simulateUntypedTree", true);
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "frequencies", frequencies,
+                "conditionOnSurvival", false,
+                "tree", simulatedTree,
+                "typeLabel", "type",
+                "parallelize", false);
+
+        double logProbTrue = density.calculateLogP();
+
+        TypeMappedTree typeMappedTree = new TypeMappedTree();
+        typeMappedTree.initByName(
+                "parameterization", parameterization,
+                "frequencies", frequencies,
+                "untypedTree", simulatedTree,
+                "typeLabel", "type");
+
+        double[] y = typeMappedTree.backwardsIntegrateSubtree(simulatedTree.getRoot(), 0.0);
+        double logScaleFactor = typeMappedTree.geScaleFactors[simulatedTree.getRoot().getNr()];
+
+        double logProb = 0.0;
+        for (int type = 0; type < parameterization.getNTypes(); type++) {
+            logProb += y[type + parameterization.getNTypes()] * frequencies.getValue(type);
+        }
+        logProb = Math.log(logProb) + logScaleFactor
+                + Math.log(2) * (simulatedTree.getInternalNodeCount() - simulatedTree.getDirectAncestorNodeCount())
+                - Gamma.logGamma(simulatedTree.getLeafNodeCount() + 1);
+
+        assertEquals(logProbTrue, logProb, 1e-4); // result from BEAST, not checked in R
     }
 }
