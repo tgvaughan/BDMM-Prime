@@ -162,8 +162,24 @@ public class TypeMappedTree extends Tree {
         int startType = Randomizer.randomChoicePDF(startTypeProbs);
 
         // Simulate type changes down tree
+        // As tiny numerical errors can very occasionally lead to this failing,
+        // the mapping is attempted up to 3 times, with additional failures leading
+        // to a runtime exception.
 
-        Node typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0, startType);
+        int failures = 0;
+        boolean success = false;
+        Node typedRoot = null;
+        while (!success && failures<3) {
+            try {
+                typedRoot = forwardSimulateSubtree(untypedTree.getRoot(), 0.0, startType);
+                success = true;
+            } catch (java.lang.Error ex) {
+                System.err.println("Exception encountered in stochastic mapping calculation. Retrying...");
+                failures += 1;
+            }
+        }
+        if (!success)
+            throw new IllegalStateException("Too many failures (3) encountered attempting stochastic trait mapping.");
 
         // Ensure internal nodes are numbered correctly.  (Leaf node numbers and
         // labels are matched to those in the untyped tree during the simulation.)
