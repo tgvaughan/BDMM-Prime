@@ -29,7 +29,7 @@ public class TypedTreeStatsLogger extends CalculationNode implements Loggable {
 
     public Input<Boolean> includeRootEdgeInput = new Input<>(
             "includeRootEdge",
-            "If true, include changes occurring on root edge in count.",
+            "If true, include root edge in summary stats calculations.",
             false);
 
     int[][] countMatrix;
