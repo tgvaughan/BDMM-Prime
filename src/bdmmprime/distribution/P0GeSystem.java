@@ -33,40 +33,36 @@ public class P0GeSystem extends P0System {
 
 			/*  p0 equations (0 .. dim-1) */
 
-			yDot[i] = + (b[interval][i]+d[interval][i]+s[interval][i]
-					- b[interval][i] * y[i]) * y[i]
-					- d[interval][i] ;
+			yDot[i] = (d[interval][i]+s[interval][i])*y[i] - d[interval][i];
 
 			for (int j = 0; j < nTypes; j++){
 
-			    if (i==j)
-			        continue;
+			    if (i != j) {
+                    yDot[i] += M[interval][i][j] * y[i];
+                    yDot[i] -= M[interval][i][j] * y[j];
+                }
 
-
-                yDot[i] += b_ij[interval][i][j]*y[i];
-                yDot[i] -= b_ij[interval][i][j]*y[i]*y[j];
-
-                yDot[i] += M[interval][i][j] * y[i];
-                yDot[i] -= M[interval][i][j] * y[j];
+                for (int k=0; k<nTypes; k++) {
+                    yDot[i] += b[interval][i][j][k] * y[i];
+                    yDot[i] -= b[interval][i][j][k] * y[j] * y[k];
+                }
 			}
 
 			/*  ge equations: (dim .. 2*dim-1) */
 
-			yDot[nTypes + i] = + (b[interval][i]+d[interval][i]+s[interval][i]
-					- 2*b[interval][i]*y[i])*y[nTypes + i];
+			yDot[nTypes + i] = (d[interval][i]+s[interval][i])*y[nTypes+i];
 
+			for (int j = 0; j<nTypes; j++) {
+                if (j!=i) {
+                    yDot[nTypes+i] += M[interval][i][j]*y[nTypes+i]
+                            - M[interval][i][j]*y[nTypes+j];
+                }
 
-			for (int j = 0; j< nTypes; j++){
+                for (int k=0; k<nTypes; k++) {
+                    yDot[nTypes+i] += b[interval][i][j][k]*y[nTypes+i]
+                            - b[interval][i][j][k]*(y[j]*y[nTypes+k] + y[k]*y[nTypes+j]);
+                }
 
-                if (i==j)
-			        continue;
-
-                yDot[nTypes + i] += b_ij[interval][i][j]*y[nTypes + i];
-                yDot[nTypes + i] -= b_ij[interval][i][j] *
-                        (y[i]*y[nTypes + j] + y[j]*y[nTypes + i]);
-
-                yDot[nTypes + i] += M[interval][i][j] * y[nTypes + i];
-                yDot[nTypes + i] -= M[interval][i][j] * y[nTypes + j];
 			}
 		}
 	}

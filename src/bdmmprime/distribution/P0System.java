@@ -14,8 +14,9 @@ import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
 public class P0System implements FirstOrderDifferentialEquations {
 
-	public double[][] b, d, s, r,rho;
-	public double[][][] M, b_ij;
+	public double[][] d, s, r,rho;
+	public double[][][] M;
+	public double[][][][] b;
 
     public double totalProcessLength;
 
@@ -41,7 +42,6 @@ public class P0System implements FirstOrderDifferentialEquations {
 		this.rho = parameterization.getRhoValues();
 
 		this.M = parameterization.getMigRates();
-        this.b_ij = parameterization.getCrossBirthRates();
 
         this.totalProcessLength = parameterization.getTotalProcessLength();
 
@@ -70,18 +70,19 @@ public class P0System implements FirstOrderDifferentialEquations {
 
 		for (int i = 0; i< nTypes; i++){
 
-			yDot[i] = + (b[interval][i]+d[interval][i]+s[interval][i])*y[i] - d[interval][i] - b[interval][i]*y[i]*y[i] ;
+			yDot[i] = (d[interval][i]+s[interval][i])*y[i] - d[interval][i];
 
-			for (int j = 0; j< nTypes; j++){
+			for (int j = 0; j<nTypes; j++) {
 
-			    if (j==i)
-			        continue;
+				if (j != i) {
+					yDot[i] += M[interval][i][j] * y[i];
+					yDot[i] -= M[interval][i][j] * y[j];
+				}
 
-                yDot[i] += b_ij[interval][i][j]*y[i];
-                yDot[i] -= b_ij[interval][i][j]*y[i]*y[j];
-
-                yDot[i] += M[interval][i][j] * y[i];
-                yDot[i] -= M[interval][i][j] * y[j];
+				for (int k=0; k<nTypes; k++) {
+					yDot[i] += b[interval][i][j][k] * y[i];
+					yDot[i] -= b[interval][i][j][k] * y[j] * y[k];
+				}
 			}
 		}
 

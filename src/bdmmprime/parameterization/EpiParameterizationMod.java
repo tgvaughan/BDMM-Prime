@@ -45,30 +45,22 @@ public class EpiParameterizationMod extends Parameterization {
 
     @Override
     public double[] getBirthRateChangeTimes() {
-        birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
-                R0Input.get().getChangeTimes(),
-                R0modInput.get().getChangeTimes(),
-                becomeUninfectiousRateInput.get().getChangeTimes());
+
+        if (R0AmongDemesInput.get() != null) {
+            birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
+                    R0Input.get().getChangeTimes(),
+                    R0AmongDemesInput.get().getChangeTimes(),
+                    R0modInput.get().getChangeTimes(),
+                    becomeUninfectiousRateInput.get().getChangeTimes());
+        } else {
+            birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
+                    R0Input.get().getChangeTimes(),
+                    R0modInput.get().getChangeTimes(),
+                    becomeUninfectiousRateInput.get().getChangeTimes());
+        }
 
         return birthRateChangeTimes;
     }
-
-
-    private double[] crossBirthRateChangeTimes;
-
-    @Override
-    public double[] getCrossBirthRateChangeTimes() {
-        if (R0AmongDemesInput.get() == null)
-            return EMPTY_TIME_ARRAY;
-
-        crossBirthRateChangeTimes = combineAndSortTimes(crossBirthRateChangeTimes,
-                R0AmongDemesInput.get().getChangeTimes(),
-                R0modInput.get().getChangeTimes(),
-                becomeUninfectiousRateInput.get().getChangeTimes());
-
-        return crossBirthRateChangeTimes;
-    }
-
 
     private double[] deathRateChangeTimes;
 
@@ -114,37 +106,35 @@ public class EpiParameterizationMod extends Parameterization {
         return migRateInput.get().getValuesAtTime(time);
     }
 
+    private double[][][] birthRateValues;
+
     @Override
-    protected double[] getBirthRateValues(double time) {
-        double[] res = R0Input.get().getValuesAtTime(time);
+    protected double[][][] getBirthRateValues(double time) {
+        if (birthRateValues == null)
+            birthRateValues = new double[nTypes][nTypes][nTypes];
+
+        double[] r0 = R0Input.get().getValuesAtTime(time);
         double[] mod = R0modInput.get().getValuesAtTime(time);
-        double[] buVals = becomeUninfectiousRateInput.get().getValuesAtTime(time);
+        double[] bu = becomeUninfectiousRateInput.get().getValuesAtTime(time);
 
         for (int type=0; type<nTypes; type++)
-            res[type] *= mod[type]*buVals[type];
+            birthRateValues[type][type][type] = r0[type]*mod[type]*bu[type];
 
-        return res;
-    }
+        if (R0AmongDemesInput.get() != null) {
+            double[][] r0AD = R0AmongDemesInput.get().getValuesAtTime(time);
 
-    @Override
-    protected double[][] getCrossBirthRateValues(double time) {
-        if (R0AmongDemesInput.get() == null)
-            return ZERO_VALUE_MATRIX;
+            for (int sourceType=0; sourceType<nTypes; sourceType++) {
+                for (int destType=0; destType<nTypes; destType++) {
+                    if (sourceType==destType)
+                        continue;
 
-        double[][] res = R0AmongDemesInput.get().getValuesAtTime(time);
-        double[] mod = R0modInput.get().getValuesAtTime(time);
-        double[] buVals = becomeUninfectiousRateInput.get().getValuesAtTime(time);
-
-        for (int sourceType=0; sourceType<nTypes; sourceType++) {
-            for (int destType=0; destType<nTypes; destType++) {
-                if (sourceType==destType)
-                    continue;
-
-                res[sourceType][destType] *= mod[sourceType]*buVals[sourceType];
+                    birthRateValues[sourceType][sourceType][destType] =
+                            r0AD[sourceType][destType]*mod[sourceType]*bu[sourceType];
+                }
             }
         }
 
-        return res;
+        return birthRateValues;
     }
 
     @Override

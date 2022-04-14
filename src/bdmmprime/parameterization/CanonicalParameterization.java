@@ -33,17 +33,20 @@ public class CanonicalParameterization extends Parameterization {
         return migRateInput.get().getChangeTimes();
     }
 
+    private double[] birthRateChangeTimes;
+
     @Override
     public double[] getBirthRateChangeTimes() {
-        return birthRateInput.get().getChangeTimes();
-    }
 
-    @Override
-    public double[] getCrossBirthRateChangeTimes() {
-        if (crossBirthRateInput.get() == null)
-            return EMPTY_TIME_ARRAY;
+        if (crossBirthRateInput.get() != null)
+            birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
+                    birthRateInput.get().getChangeTimes(),
+                    crossBirthRateInput.get().getChangeTimes());
+        else
+            birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
+                    birthRateInput.get().getChangeTimes());
 
-        return crossBirthRateInput.get().getChangeTimes();
+        return birthRateChangeTimes;
     }
 
     @Override
@@ -77,17 +80,32 @@ public class CanonicalParameterization extends Parameterization {
         return migRateInput.get().getValuesAtTime(time);
     }
 
-    @Override
-    protected double[] getBirthRateValues(double time) {
-        return birthRateInput.get().getValuesAtTime(time);
-    }
+    private double[][][] birthRateValues;
 
     @Override
-    protected double[][] getCrossBirthRateValues(double time) {
-        if (crossBirthRateInput.get() == null)
-            return ZERO_VALUE_MATRIX;
+    protected double[][][] getBirthRateValues(double time) {
+        if (birthRateValues == null)
+            birthRateValues = new double[nTypes][nTypes][nTypes];
 
-        return crossBirthRateInput.get().getValuesAtTime(time);
+        double[] birthRates = birthRateInput.get().getValuesAtTime(time);
+
+        for (int i = 0; i < nTypes; i++)
+            birthRateValues[i][i][i] = birthRates[i];
+
+        if (crossBirthRateInput.get() != null) {
+            double[][] crossBirthRates = crossBirthRateInput.get().getValuesAtTime(time);
+
+            for (int i = 0; i < nTypes; i++) {
+                for (int j = 0; j < nTypes; j++) {
+                    if (i == j)
+                        continue;
+
+                    birthRateValues[i][i][j] = crossBirthRates[i][j];
+                }
+            }
+        }
+
+        return birthRateValues;
     }
 
     @Override

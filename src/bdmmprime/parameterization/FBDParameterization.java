@@ -34,29 +34,19 @@ public class FBDParameterization extends Parameterization {
 
     @Override
     public double[] getBirthRateChangeTimes() {
-        birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
-                diversificationRateAmongDemesInput.get().getChangeTimes(),
-                turnoverInput.get().getChangeTimes());
+        if (diversificationRateAmongDemesInput.get() != null) {
+            birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
+                    diversificationRateInput.get().getChangeTimes(),
+                    diversificationRateAmongDemesInput.get().getChangeTimes(),
+                    turnoverInput.get().getChangeTimes());
+        } else {
+            birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
+                    diversificationRateInput.get().getChangeTimes(),
+                    turnoverInput.get().getChangeTimes());
+        }
 
         return birthRateChangeTimes;
     }
-
-
-    private double[] crossBirthRateChangeTimes;
-
-    @Override
-    public double[] getCrossBirthRateChangeTimes() {
-        if (diversificationRateAmongDemesInput.get() == null)
-            return EMPTY_TIME_ARRAY;
-
-        crossBirthRateChangeTimes = combineAndSortTimes(crossBirthRateChangeTimes,
-                diversificationRateInput.get().getChangeTimes(),
-                diversificationRateAmongDemesInput.get().getChangeTimes(),
-                turnoverInput.get().getChangeTimes());
-
-        return crossBirthRateChangeTimes;
-    }
-
 
     private double[] deathRateChangeTimes;
 
@@ -102,37 +92,36 @@ public class FBDParameterization extends Parameterization {
         return migRateInput.get().getValuesAtTime(time);
     }
 
+    private double[][][] birthRateValues;
     @Override
-    protected double[] getBirthRateValues(double time) {
-        double[] res = diversificationRateInput.get().getValuesAtTime(time);
+    protected double[][][] getBirthRateValues(double time) {
+        if (birthRateValues == null)
+            birthRateValues = new double[nTypes][nTypes][nTypes];
+
+        double[] divRateVals = diversificationRateInput.get().getValuesAtTime(time);
         double[] toVals = turnoverInput.get().getValuesAtTime(time);
 
-        for (int type=0; type<nTypes; type++)
-            res[type] /= 1.0 - toVals[type];
+        for (int type = 0; type < nTypes; type++)
+            birthRateValues[type][type][type] =
+                    divRateVals[type] / (1.0 - toVals[type]);
 
-        return res;
-    }
+        if (diversificationRateAmongDemesInput.get() != null) {
+            double[][] divRateADVals = diversificationRateAmongDemesInput.get().getValuesAtTime(time);
 
-    @Override
-    protected double[][] getCrossBirthRateValues(double time) {
-        if (diversificationRateAmongDemesInput.get() == null)
-            return ZERO_VALUE_MATRIX;
+            for (int sourceType = 0; sourceType < nTypes; sourceType++) {
+                for (int destType = 0; destType < nTypes; destType++) {
+                    if (destType == sourceType)
+                        continue;
 
-        double[][] res = diversificationRateAmongDemesInput.get().getValuesAtTime(time);
-        double[] dVals = diversificationRateInput.get().getValuesAtTime(time);
-        double[] toVals = turnoverInput.get().getValuesAtTime(time);
-
-        for (int sourceType=0; sourceType<nTypes; sourceType++) {
-            for (int destType=0; destType<nTypes; destType++) {
-                if (sourceType==destType)
-                    continue;
-
-                res[sourceType][destType] += dVals[sourceType]
-                        * toVals[sourceType]/(1.0-toVals[sourceType]);
+                    birthRateValues[sourceType][sourceType][destType] =
+                            divRateADVals[sourceType][destType]
+                                    + divRateVals[sourceType]
+                                    * toVals[sourceType] / (1.0 - toVals[sourceType]);
+                }
             }
         }
 
-        return res;
+        return birthRateValues;
     }
 
     @Override
