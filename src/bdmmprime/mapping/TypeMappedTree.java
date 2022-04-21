@@ -731,7 +731,7 @@ public class TypeMappedTree extends Tree {
                 continue;
             }
 
-            result[type] = (param.getCrossBirthRates()[interval][fromType][type] * y[type]
+            result[type] = (param.getCrossBirthRates()[interval][fromType][type] * y[fromType]
                         + param.getMigRates()[interval][fromType][type])
                         * y[param.getNTypes() + type];
         }
