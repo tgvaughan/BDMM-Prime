@@ -60,8 +60,9 @@ public class SimulatedTree extends Tree {
     RealParameter frequencies;
     double simulationTime;
 
-    double[] a_birth, a_death, a_sampling;
-    double[][] a_migration, a_crossbirth;
+    double[] a_death, a_sampling;
+    double[][] a_migration;
+    double[][][] a_birth;
 
     int nTypes;
     String typeLabel;
@@ -85,11 +86,10 @@ public class SimulatedTree extends Tree {
 
         simulateUntypedTree = simulateUntypedTreeInput.get();
 
-        a_birth = new double[nTypes];
+        a_birth = new double[nTypes][nTypes][nTypes];
         a_death = new double[nTypes];
         a_sampling = new double[nTypes];
         a_migration = new double[nTypes][nTypes];
-        a_crossbirth = new double[nTypes][nTypes];
 
         traj = null;
         do {
@@ -144,18 +144,18 @@ public class SimulatedTree extends Tree {
 
             double a_tot = 0.0;
             for (int s=0; s<nTypes; s++) {
-                a_birth[s] = traj.currentState[s] * param.getBirthRates()[interval][s];
                 a_death[s] = traj.currentState[s] * param.getDeathRates()[interval][s];
                 a_sampling[s] = traj.currentState[s] * param.getSamplingRates()[interval][s];
-                a_tot += a_birth[s] + a_death[s] + a_sampling[s];
+                a_tot += a_death[s] + a_sampling[s];
 
                 for (int sp = 0; sp < nTypes; sp++) {
-                    if (sp == s)
-                        continue;
-
                     a_migration[s][sp] = traj.currentState[s] * param.getMigRates()[interval][s][sp];
-                    a_crossbirth[s][sp] = traj.currentState[s] * param.getCrossBirthRates()[interval][s][sp];
-                    a_tot += a_migration[s][sp] + a_crossbirth[s][sp];
+                    a_tot += a_migration[s][sp];
+
+                    for (int spp = 0; spp <= sp; spp++) {
+                        a_birth[s][sp][spp] = traj.currentState[s] * param.getBirthRates()[interval][s][sp][spp];
+                        a_tot += a_birth[s][sp][spp];
+                    }
                 }
             }
 
@@ -200,12 +200,6 @@ public class SimulatedTree extends Tree {
             TrajectoryEvent event = null;
             for (int s=0; s<nTypes; s++) {
 
-                if (u < a_birth[s]) {
-                    event = new BirthEvent(t, s);
-                    break;
-                }
-                u -= a_birth[s];
-
                 if (u < a_death[s]) {
                     event = new DeathEvent(t, s);
                     break;
@@ -231,11 +225,13 @@ public class SimulatedTree extends Tree {
                     }
                     u -= a_migration[s][sp];
 
-                    if (u < a_crossbirth[s][sp]) {
-                        event = new CrossBirthEvent(t, s, sp);
-                        break;
+                    for (int spp=0; spp<=sp; spp++) {
+                        if (u < a_birth[s][sp][spp]) {
+                            event = new BirthEvent(t, s, sp, spp);
+                            break;
+                        }
+                        u -= a_birth[s][sp][spp];
                     }
-                    u -= a_crossbirth[s][sp];
                 }
 
                 if (event != null)
