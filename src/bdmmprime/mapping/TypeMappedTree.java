@@ -474,17 +474,15 @@ public class TypeMappedTree extends Tree {
 
         int N = param.getNTypes();
 
-        for (int type = 0; type< param.getNTypes(); type++) {
-            y[type] = yLeft[type];
-            y[N+type] = 0.0;
+        for (int parentType = 0; parentType< param.getNTypes(); parentType++) {
+            y[parentType] = yLeft[parentType];
+            y[N+parentType] = 0.0;
 
-            for (int typeOther=0; typeOther<N; typeOther++) {
-                if (typeOther == type) {
-                    y[N+type] += param.getBirthRates()[nodeInterval][type]
-                            *yLeft[N+type]*yRight[N+type];
-                } else {
-                    y[N+type] += 0.5*param.getCrossBirthRates()[nodeInterval][type][typeOther]
-                            *(yLeft[N+type]*yRight[N+typeOther] + yLeft[N+typeOther]*yRight[N+type]);
+            for (int childType1 = 0; childType1<param.getNTypes(); childType1++) {
+                for (int childType2 = 0; childType2<=childType1; childType2++) {
+                    y[N+parentType] += 0.5*param.getBirthRates()[nodeInterval][parentType][childType1][childType2] *
+                            (yLeft[N+childType1]*yRight[N+childType2] + yLeft[N+childType2]*yRight[N+childType1]);
+
                 }
             }
         }
@@ -506,11 +504,11 @@ public class TypeMappedTree extends Tree {
     private double rescaleState(double[] y, double prevLogF) {
 
         double C = 0.0;
-        for (int type = 0; type< param.getNTypes(); type++)
-            C = Math.max(C, y[type+ param.getNTypes()]);
+        for (int type = 0; type<param.getNTypes(); type++)
+            C = Math.max(C, y[type+param.getNTypes()]);
 
-        for (int type = 0; type< param.getNTypes(); type++)
-            y[type+ param.getNTypes()] /= C;
+        for (int type = 0; type<param.getNTypes(); type++)
+            y[type+param.getNTypes()] /= C;
 
         return prevLogF + Math.log(C);
     }
@@ -675,18 +673,14 @@ public class TypeMappedTree extends Tree {
         for (int type1=0; type1<param.getNTypes(); type1++) {
             for (int type2=0; type2<param.getNTypes(); type2++) {
 
-                if (type1 != parentType && type2 != parentType) {
-                    probs[type1][type2] = 0.0;
-                    continue;
-                }
+                probs[type1][type2] = y1[param.getNTypes()+type1]*y2[param.getNTypes()+type2];
 
                 if (type1 == type2) {
-                    probs[type1][type1] = param.getBirthRates()[interval][type1]
-                            *y1[param.getNTypes()+type1]*y2[param.getNTypes()+type1];
+                    probs[type1][type2] *= param.getBirthRates()[interval][parentType][type1][type2];
+                } else if (type1 > type2) {
+                    probs[type1][type2] *= 0.5*param.getBirthRates()[interval][parentType][type1][type2];
                 } else {
-                    int newType = type1 != parentType ? type1 : type2;
-                    probs[type1][type2] = param.getCrossBirthRates()[interval][parentType][newType]
-                            * 0.5 * y1[param.getNTypes()+type1]*y2[param.getNTypes()+type2];
+                    probs[type1][type2] *= 0.5*param.getBirthRates()[interval][parentType][type2][type1];
                 }
 
                 totalMass += probs[type1][type2];
@@ -718,9 +712,8 @@ public class TypeMappedTree extends Tree {
      * @param time time at which to compute rates
      * @param baseNode node at base of edge along which to compute rates.
      * @param result array in which results will be stored.
-     * @return reference to array.
      */
-    private double[] getForwardsRates(int fromType, double time, Node baseNode, double[] result) {
+    private void calculateForwardRates(int fromType, double time, Node baseNode, double[] result) {
         double[] y = getBackwardsIntegrationResult(baseNode, time);
 
         int interval = param.getIntervalIndex(time);
@@ -731,9 +724,17 @@ public class TypeMappedTree extends Tree {
                 continue;
             }
 
-            result[type] = (param.getCrossBirthRates()[interval][fromType][type] * y[type]
-                        + param.getMigRates()[interval][fromType][type])
-                        * y[param.getNTypes() + type];
+            result[type] = param.getMigRates()[interval][fromType][type];
+
+            for (int otherType=0; otherType<type; otherType++)
+                result[type] += param.getBirthRates()[interval][fromType][type][otherType] * y[otherType];
+
+            result[type] += 2.0 * param.getBirthRates()[interval][fromType][type][type] * y[type];
+
+            for (int otherType=type+1; otherType<param.getNTypes(); otherType++)
+                result[type] += param.getBirthRates()[interval][fromType][otherType][type] * y[otherType];
+
+            result[type] *= y[param.getNTypes() + type];
         }
 
         if (y[param.getNTypes()+fromType]<=0.0) {
@@ -761,8 +762,6 @@ public class TypeMappedTree extends Tree {
                 result[type] /= y[param.getNTypes()+fromType];
 
         }
-
-        return result;
     }
 
     /**
@@ -776,7 +775,7 @@ public class TypeMappedTree extends Tree {
      */
     private double getTotalFowardsRate(int fromType, double time, Node baseNode, double[] rates) {
         double totalRate = 0.0;
-        getForwardsRates(fromType, time, baseNode, rates);
+        calculateForwardRates(fromType, time, baseNode, rates);
         for (int type=0; type<param.getNTypes(); type++)
             totalRate += rates[type];
 

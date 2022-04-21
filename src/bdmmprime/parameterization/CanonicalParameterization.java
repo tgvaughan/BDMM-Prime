@@ -96,12 +96,12 @@ public class CanonicalParameterization extends Parameterization {
             double[][] crossBirthRates = crossBirthRateInput.get().getValuesAtTime(time);
 
             for (int i = 0; i < nTypes; i++) {
-                for (int j = 0; j < nTypes; j++) {
-                    if (i == j)
-                        continue;
-
+                for (int j = 0; j < i; j++)
                     birthRateValues[i][i][j] = crossBirthRates[i][j];
-                }
+
+                for (int j = i+1; j < nTypes; j++)
+                    birthRateValues[i][j][i] = crossBirthRates[i][j];
+
             }
         }
 

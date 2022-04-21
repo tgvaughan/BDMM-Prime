@@ -15,7 +15,7 @@ import org.apache.commons.math3.ode.events.EventHandler;
  */
 public class ODESystem implements FirstOrderDifferentialEquations, EventHandler {
 
-    private Parameterization param;
+    private final Parameterization param;
     private int interval;
 
     public ODESystem(Parameterization parameterization) {
@@ -44,39 +44,37 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
 
 			/*  p0 equations (0 .. dim-1) */
 
-			yDot[i] = (param.getBirthRates()[interval][i]
-                    + param.getDeathRates()[interval][i]
+			yDot[i] = (param.getDeathRates()[interval][i]
                     + param.getSamplingRates()[interval][i]) * y[i]
-					- param.getBirthRates()[interval][i] * y[i] * y[i]
 					- param.getDeathRates()[interval][i];
 
 			for (int j = 0; j < nTypes; j++){
 
-			    if (i==j)
-			        continue;
+			    if (i!=j)
+                    yDot[i] += param.getMigRates()[interval][i][j] * (y[i] - y[j]);
 
-                yDot[i] += param.getCrossBirthRates()[interval][i][j] * (y[i] - y[i]*y[j]);
-                yDot[i] += param.getMigRates()[interval][i][j] * (y[i] - y[j]);
+                for (int k=0; k<=j; k++) {
+                    yDot[i] += param.getBirthRates()[interval][i][j][k]
+                            * (y[i] - y[j] * y[k]);
+                }
 			}
 
 			/*  ge equations: (dim .. 2*dim-1) */
 
-			yDot[nTypes + i] = (param.getBirthRates()[interval][i]
-                    + param.getDeathRates()[interval][i]
-                    + param.getSamplingRates()[interval][i])*y[nTypes+i]
-                    - 2*param.getBirthRates()[interval][i]*y[nTypes+i]*y[i];
+			yDot[nTypes+i] = (param.getDeathRates()[interval][i]
+                    + param.getSamplingRates()[interval][i])*y[nTypes+i];
 
-			for (int j = 0; j< nTypes; j++) {
+			for (int j = 0; j<nTypes; j++) {
+                if (i!=j) {
+                    yDot[nTypes + i] += param.getMigRates()[interval][i][j]
+                            * (y[nTypes + i] - y[nTypes + j]);
+                }
 
-                if (i==j)
-			        continue;
-
-                yDot[nTypes + i] += param.getCrossBirthRates()[interval][i][j]
-                        * (y[nTypes+i] - (y[nTypes+i]*y[j] + y[nTypes+j]*y[i]));
-
-                yDot[nTypes + i] += param.getMigRates()[interval][i][j]
-                        * (y[nTypes+i] - y[nTypes+j]);
-			}
+                for (int k=0; k<=j; k++) {
+                    yDot[nTypes + i] += param.getBirthRates()[interval][i][j][k]
+                            * (y[nTypes+i] - (y[nTypes+j]*y[k] + y[nTypes+k]*y[j]));
+                }
+            }
 		}
 
     }

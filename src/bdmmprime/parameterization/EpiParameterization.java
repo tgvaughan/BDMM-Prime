@@ -113,11 +113,12 @@ public class EpiParameterization extends Parameterization {
             double[][] r0AD = R0AmongDemesInput.get().getValuesAtTime(time);
 
             for (int sourceType=0; sourceType<nTypes; sourceType++) {
-                for (int destType=0; destType<nTypes; destType++) {
-                    if (sourceType==destType)
-                        continue;
-
+                for (int destType=0; destType<sourceType; destType++) {
                     birthRateValues[sourceType][sourceType][destType] =
+                            r0AD[sourceType][destType]*bu[sourceType];
+                }
+                for (int destType=sourceType+1; destType<nTypes; destType++) {
+                    birthRateValues[sourceType][destType][sourceType] =
                             r0AD[sourceType][destType]*bu[sourceType];
                 }
             }

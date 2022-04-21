@@ -512,25 +512,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 if (debug) debugMessage("Infection at time " + tBottom, depth);
 
-                for (int childType = 0; childType < parameterization.getNTypes(); childType++) {
+                for (int parentType = 0; parentType < parameterization.getNTypes(); parentType++) {
 
-                    state.p0[childType] = childState1.p0[childType];
-                    state.ge[childType] = childState1.ge[childType]
-                            .multiplyBy(childState2.ge[childType])
-                            .scalarMultiplyBy(system.b[intervalIdx][childType]);
+                    state.p0[parentType] = childState1.p0[parentType];
 
-                    for (int otherChildType = 0; otherChildType < parameterization.getNTypes(); otherChildType++) {
-                        if (otherChildType == childType)
-                            continue;
-
-                        state.ge[childType] = state.ge[childType]
-                                .addTo((childState1.ge[childType].multiplyBy(childState2.ge[otherChildType]))
-                                        .addTo(childState1.ge[otherChildType].multiplyBy(childState2.ge[childType]))
-                                        .scalarMultiplyBy(0.5 * system.b_ij[intervalIdx][childType][otherChildType]));
+                    for (int childType1 = 0; childType1 < parameterization.getNTypes(); childType1++) {
+                        for (int childType2 = 0; childType2 <= childType1; childType2++) {
+                            state.ge[parentType] = state.ge[parentType]
+                                    .addTo((childState1.ge[childType1].multiplyBy(childState2.ge[childType2]))
+                                            .addTo(childState1.ge[childType2].multiplyBy(childState2.ge[childType1]))
+                                            .scalarMultiplyBy(0.5 * system.b[intervalIdx][parentType][childType1][childType2]));
+                        }
                     }
 
-
-                    if (Double.isInfinite(state.p0[childType])) {
+                    if (Double.isInfinite(state.p0[parentType])) {
                         throw new RuntimeException("infinite likelihood");
                     }
                 }
@@ -936,7 +931,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             double p_i_prev;
             if (i + 1 < parameterization.getTotalIntervalCount()) {
-                p_i_prev = get_p_i(parameterization.getBirthRates()[i+1][0],
+                p_i_prev = get_p_i(parameterization.getBirthRates()[i+1][0][0][0],
                         parameterization.getDeathRates()[i+1][0],
                         parameterization.getSamplingRates()[i+1][0],
                         A[i+1], B[i+1],
@@ -947,7 +942,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             }
 
             double rho_i = parameterization.getRhoValues()[i][0];
-            double lambda_i = parameterization.getBirthRates()[i][0];
+            double lambda_i = parameterization.getBirthRates()[i][0][0][0];
             double mu_i = parameterization.getDeathRates()[i][0];
             double psi_i = parameterization.getSamplingRates()[i][0];
 
@@ -987,7 +982,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (conditionOnSurvival.get()) {
             int i = parameterization.getIntervalIndex(0.0);
             logP -= Math.log(1.0 -
-                    get_p_i(parameterization.getBirthRates()[i][0],
+                    get_p_i(parameterization.getBirthRates()[i][0][0][0],
                             parameterization.getDeathRates()[i][0],
                             parameterization.getSamplingRates()[i][0],
                             A[i], B[i],
@@ -1008,7 +1003,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         double t_i = parameterization.getIntervalEndTimes()[i];
 
         double rho_i = parameterization.getRhoValues()[i][0];
-        double lambda_i = parameterization.getBirthRates()[i][0];
+        double lambda_i = parameterization.getBirthRates()[i][0][0][0];
         double mu_i = parameterization.getDeathRates()[i][0];
         double psi_i = parameterization.getSamplingRates()[i][0];
         double r_i = parameterization.getRemovalProbs()[i][0];
@@ -1026,7 +1021,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             if (isRhoTip[subtreeRoot.getNr()]) {
 
                 double p_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
-                        ? get_p_i(parameterization.getBirthRates()[i + 1][0],
+                        ? get_p_i(parameterization.getBirthRates()[i + 1][0][0][0],
                         parameterization.getDeathRates()[i + 1][0],
                         parameterization.getSamplingRates()[i + 1][0],
                         A[i + 1], B[i + 1], parameterization.getIntervalEndTimes()[i+1], t_node)

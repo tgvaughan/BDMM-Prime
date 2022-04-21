@@ -42,7 +42,7 @@ public class P0GeSystem extends P0System {
                     yDot[i] -= M[interval][i][j] * y[j];
                 }
 
-                for (int k=0; k<nTypes; k++) {
+                for (int k=0; k<=j; k++) {
                     yDot[i] += b[interval][i][j][k] * y[i];
                     yDot[i] -= b[interval][i][j][k] * y[j] * y[k];
                 }
@@ -58,7 +58,7 @@ public class P0GeSystem extends P0System {
                             - M[interval][i][j]*y[nTypes+j];
                 }
 
-                for (int k=0; k<nTypes; k++) {
+                for (int k=0; k<=j; k++) {
                     yDot[nTypes+i] += b[interval][i][j][k]*y[nTypes+i]
                             - b[interval][i][j][k]*(y[j]*y[nTypes+k] + y[k]*y[nTypes+j]);
                 }

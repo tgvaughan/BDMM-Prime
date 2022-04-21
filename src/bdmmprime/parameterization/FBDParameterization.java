@@ -109,11 +109,14 @@ public class FBDParameterization extends Parameterization {
             double[][] divRateADVals = diversificationRateAmongDemesInput.get().getValuesAtTime(time);
 
             for (int sourceType = 0; sourceType < nTypes; sourceType++) {
-                for (int destType = 0; destType < nTypes; destType++) {
-                    if (destType == sourceType)
-                        continue;
-
+                for (int destType = 0; destType < sourceType; destType++) {
                     birthRateValues[sourceType][sourceType][destType] =
+                            divRateADVals[sourceType][destType]
+                                    + divRateVals[sourceType]
+                                    * toVals[sourceType] / (1.0 - toVals[sourceType]);
+                }
+                for (int destType = sourceType+1; destType < nTypes; destType++) {
+                    birthRateValues[sourceType][destType][sourceType] =
                             divRateADVals[sourceType][destType]
                                     + divRateVals[sourceType]
                                     * toVals[sourceType] / (1.0 - toVals[sourceType]);

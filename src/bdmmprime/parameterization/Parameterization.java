@@ -22,6 +22,12 @@ import java.util.*;
  * the birth-death process is broken up into intervals at boundaries t_i.
  * Interval i includes the times (t_i-1,t_i], i.e. it does NOT include the time
  * at the earlier boundary.
+ *
+ * This parameterization implements a generalisation of the birth process
+ * described in Kuehnert et al., 2016; namely, we allow a birth reaction
+ * of the form X_i -> X_j + X_k with rate lambda_ijk.  Because of the symmetry
+ * with respect to the j and k indices, we assume always that k<=j, meaning
+ * that lambda_ijk only has N^2(N+1)/2 elements instead of N^3.
  */
 public abstract class Parameterization extends CalculationNode {
 
