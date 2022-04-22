@@ -27,8 +27,9 @@ public class Particle {
      * Propensities
      */
     double a_tot, a_illegal_tot;
-    double[] a_birth, a_death;
-    double[][] a_migration, a_crossbirth;
+    double[] a_death;
+    double[][] a_migration;
+    double[][][] a_birth;
 
     boolean useTauLeaping;
     int minLeapCount;
@@ -42,10 +43,9 @@ public class Particle {
         this.minLeapCount = minLeapCount;
         this.epsilon = epsilon;
 
-        a_birth = new double[nTypes];
+        a_birth = new double[nTypes][nTypes][nTypes];
         a_death = new double[nTypes];
         a_migration = new double[nTypes][nTypes];
-        a_crossbirth = new double[nTypes][nTypes];
 
         trajectory = new Trajectory(initialState);
         logWeight = 0.0;
@@ -117,7 +117,12 @@ public class Particle {
             throw new IllegalStateException("Observed event produced illegal state.");
     }
 
-
+    /**
+     *  Compute propensities for particle simulation.
+     *
+     * @param observedEvent Next observed event object (contains details of
+     *                      extant lineages in this interval)
+     */
     public void computePropensities (ObservedEvent observedEvent) {
 
         double a_temp, p_obs;
@@ -125,19 +130,12 @@ public class Particle {
         a_illegal_tot = 0.0;
 
         for (int s=0; s<nTypes; s++) {
-            a_temp = trajectory.currentState[s]*param.getBirthRates()[interval][s];
-            if (a_temp > 0) {
-                p_obs = observedEvent.lineages[s] * (observedEvent.lineages[s] - 1.0)
-                        / (trajectory.currentState[s] * (trajectory.currentState[s] + 1.0));
-                a_birth[s] = a_temp * (1 - p_obs);
-                a_tot += a_birth[s];
-                a_illegal_tot += a_temp * p_obs;
-            } else {
-                a_birth[s] = 0.0;
-            }
 
-            a_temp = trajectory.currentState[s] * param.getDeathRates()[interval][s];
-            if (trajectory.currentState[s] > observedEvent.lineages[s]) {
+            int ks = observedEvent.lineages[s];
+            double Ns = trajectory.currentState[s];
+
+            a_temp = Ns * param.getDeathRates()[interval][s];
+            if (Ns > ks) {
                 a_death[s] = a_temp;
                 a_tot += a_death[s];
             } else {
@@ -145,36 +143,78 @@ public class Particle {
                 a_illegal_tot += a_temp;
             }
 
-            a_illegal_tot += trajectory.currentState[s]*param.getSamplingRates()[interval][s];
+            a_illegal_tot += Ns*param.getSamplingRates()[interval][s];
 
             for (int sp=0; sp<nTypes; sp++) {
-                if (sp == s)
-                    continue;
 
-                // Migration
-                a_temp = trajectory.currentState[s] * param.getMigRates()[interval][s][sp];
-                if (trajectory.currentState[s]>observedEvent.lineages[s]) {
-                    p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1.0);
-                    a_migration[s][sp] = a_temp * (1.0 - p_obs);
-                    a_tot += a_migration[s][sp];
-                    a_illegal_tot += a_temp * p_obs;
-                } else {
-                    a_migration[s][sp] = 0.0;
-                    a_illegal_tot += a_temp;
+                int ksp = observedEvent.lineages[sp];
+                double Nsp = trajectory.currentState[sp];
+
+                if (sp != s) {
+                    // Migration
+                    a_temp = Ns * param.getMigRates()[interval][s][sp];
+                    if (Ns > ks) {
+                        p_obs = ksp / (Nsp + 1.0);
+                        a_migration[s][sp] = a_temp * (1.0 - p_obs);
+                        a_tot += a_migration[s][sp];
+                        a_illegal_tot += a_temp * p_obs;
+                    } else {
+                        a_migration[s][sp] = 0.0;
+                        a_illegal_tot += a_temp;
+                    }
                 }
 
-                // Cross birth
-                a_temp = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
-                if (a_temp > 0.0) {
-                    // The following probability is for _any_ observable event produced as a result
-                    // of a cross-birth, either a type change or a coalescence.
-                    // This is why we don't include a factor lineages[s]/currentState[s].
-                    p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1.0);
-                    a_crossbirth[s][sp] = a_temp * (1.0 - p_obs);
-                    a_tot += a_crossbirth[s][sp];
-                    a_illegal_tot += a_temp * p_obs;
-                } else {
-                    a_crossbirth[s][sp] = 0.0;
+                for (int spp=0; spp<=sp; spp++) {
+                    // Birth
+                    a_temp = Ns * param.getBirthRates()[interval][s][sp][spp];
+                    if (a_temp > 0.0) {
+
+                        int kspp = observedEvent.lineages[spp];
+                        double Nspp = trajectory.currentState[spp];
+
+                        if (sp == s && spp == s) {
+
+                            // Only observable event is coalescence
+                            p_obs = ks*(ks-1.0)/((Ns+1.0)*Ns);
+                        } else if (sp == s) {
+                            // sp == s and spp != s
+
+                            // Need lineage in spp to be involved for both type change and
+                            // for coalescence
+                            p_obs = kspp/(Nspp+1.0);
+
+                        } else if (spp == s) {
+                            // sp != s and spp == s
+
+                            // Need lineage in sp to be involved for both type change and
+                            // for coalescence
+                            p_obs = ksp/(Nsp+1.0);
+
+                        } else if (sp == spp) {
+                            // sp != s and spp !=s but sp == spp
+
+                            // Need at least one lineage in either sp or spp to
+                            // be involved.  (I.e. 1-p_neither.)  Note that since
+                            // sp != s, Nsp is incremented by 2 by this event.
+
+                            p_obs = ksp/(Nsp+2.0) + ksp/(Nsp+1.0) - ksp*ksp/((Nsp+2.0)*(Nsp+1.0));
+
+                        } else {
+                            // sp != s and spp != s and sp != spp
+
+                            // Need at least one lineage in either sp or spp to
+                            // be involved. (I.e. 1-p_neither.)
+
+
+                            p_obs = ksp/(Nsp+1.0) + kspp/(Nspp+1.0) - ksp*kspp/((Nsp+1.0)*(Nspp+1.0));
+                        }
+
+                        a_birth[s][sp][spp] = a_temp * (1.0 - p_obs);
+                        a_tot += a_birth[s][sp][spp];
+                        a_illegal_tot += a_temp * p_obs;
+                    } else {
+                        a_birth[s][sp][spp] = 0.0;
+                    }
                 }
             }
         }
@@ -208,11 +248,6 @@ public class Particle {
 
             TrajectoryEvent event = null;
             for (int s = 0; s < nTypes; s++) {
-                if (u < a_birth[s]) {
-                    event = new BirthEvent(t, s);
-                    break;
-                }
-                u -= a_birth[s];
 
                 if (u < a_death[s]) {
                     event = new DeathEvent(t, s);
@@ -221,20 +256,22 @@ public class Particle {
                 u -= a_death[s];
 
                 for (int sp = 0; sp < nTypes; sp++) {
-                    if (sp == s)
-                        continue;
 
-                    if (u < a_migration[s][sp]) {
-                        event = new MigrationEvent(t, s, sp);
-                        break;
+                    if (sp != s) {
+                        if (u < a_migration[s][sp]) {
+                            event = new MigrationEvent(t, s, sp);
+                            break;
+                        }
+                        u -= a_migration[s][sp];
                     }
-                    u -= a_migration[s][sp];
 
-                    if (u < a_crossbirth[s][sp]) {
-                        event = new CrossBirthEvent(t, s, sp);
-                        break;
+                    for (int spp=0; spp<=sp; spp++) {
+                        if (u < a_birth[s][sp][spp]) {
+                            event = new BirthEvent(t, s, sp, spp);
+                            break;
+                        }
+                        u -= a_birth[s][sp][spp];
                     }
-                    u -= a_crossbirth[s][sp];
                 }
                 if (event != null)
                     break;
@@ -301,12 +338,6 @@ public class Particle {
             logWeight += -dt*a_illegal_tot;
 
             for (int s = 0; s < nTypes; s++) {
-                if (a_birth[s] > 0) {
-                    int nBirths = (int)Randomizer.nextPoisson(a_birth[s]*dt);
-                    if (nBirths > 0)
-                        trajectory.addEvent(new BirthEvent(t, s, nBirths));
-                }
-
                 if (a_death[s] > 0) {
                     int nDeaths = (int)Randomizer.nextPoisson(a_death[s]*dt);
                     if (nDeaths > 0)
@@ -314,19 +345,20 @@ public class Particle {
                 }
 
                 for (int sp = 0; sp < nTypes; sp++) {
-                    if (sp == s)
-                        continue;
-
-                    if (a_migration[s][sp] > 0) {
-                        int nMigs = (int)Randomizer.nextPoisson(a_migration[s][sp]*dt);
-                        if (nMigs > 0)
-                            trajectory.addEvent(new MigrationEvent(t, s, sp, nMigs));
+                    if (sp != s) {
+                        if (a_migration[s][sp] > 0) {
+                            int nMigs = (int) Randomizer.nextPoisson(a_migration[s][sp] * dt);
+                            if (nMigs > 0)
+                                trajectory.addEvent(new MigrationEvent(t, s, sp, nMigs));
+                        }
                     }
 
-                    if (a_crossbirth[s][sp] > 0) {
-                        int nCrossBirths = (int)Randomizer.nextPoisson(a_crossbirth[s][sp]*dt);
-                        if (nCrossBirths > 0)
-                            trajectory.addEvent(new CrossBirthEvent(t, s, sp, nCrossBirths));
+                    for (int spp=0; spp<=sp; spp++) {
+                        if (a_birth[s][sp][spp] > 0) {
+                            int nBirths = (int) Randomizer.nextPoisson(a_birth[s][sp][spp] * dt);
+                            if (nBirths > 0)
+                                trajectory.addEvent(new BirthEvent(t, s, sp, spp, nBirths));
+                        }
                     }
                 }
             }

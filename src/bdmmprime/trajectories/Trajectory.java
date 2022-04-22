@@ -92,7 +92,7 @@ public class Trajectory {
     }
 
     public int getSampleCount() {
-        return (int) this.events.stream()
+        return this.events.stream()
                 .filter(TrajectoryEvent::isSamplingEvent)
                 .mapToInt(e -> e.multiplicity)
                 .sum();
