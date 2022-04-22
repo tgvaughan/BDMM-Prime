@@ -291,38 +291,67 @@ public class Particle {
      * Estimate tau-leaping step size for a given epsilon using the approach
      * from Cao et al., JCP 124, 044109 (2006), doi:10.1063/1.2159468
      *
-     * @return
+     * @return suggested tau
      */
     public double getTau() {
 
+        if (mu == null)
+            mu = new double[nTypes];
+
+        if (sigma2 == null)
+            sigma2 = new double[nTypes];
+
+        for (int i=0; i<nTypes; i++) {
+            mu[i] = -a_death[i];
+            sigma2[i] = a_death[i];
+
+            for (int j = 0; j < nTypes; j++) {
+                if (i != j) {
+                    mu[i] += a_migration[i][j];
+                    sigma2[i] += a_migration[i][j];
+
+                    mu[j] -= a_migration[i][j];
+                    sigma2[j] += a_migration[i][j];
+                }
+
+                for (int k = 0; k <= j; k++) {
+                    if (j == i && k == i) {
+                        mu[i] += a_birth[i][i][i];
+                        sigma2[i] += a_birth[i][i][i];
+                    } else if (j == i) {
+                        mu[k] += a_birth[i][i][k];
+                        sigma2[k] += a_birth[i][i][k];
+                    } else if (k == i) {
+                        mu[j] += a_birth[i][j][i];
+                        sigma2[j] += a_birth[i][j][i];
+                    } else if (j == k) {
+                        mu[i] -= a_birth[i][j][j];
+                        sigma2[i] += a_birth[i][j][j];
+                        mu[j] += 2 * a_birth[i][j][j];
+                        sigma2[j] += 4 * a_birth[i][j][j];
+                    } else {
+                        mu[i] -= a_birth[i][j][k];
+                        sigma2[i] += a_birth[i][j][k];
+                        mu[j] += a_birth[i][j][k];
+                        sigma2[j] += a_birth[i][j][k];
+                        mu[k] += a_birth[i][j][k];
+                        sigma2[k] += a_birth[i][j][k];
+                    }
+                }
+            }
+        }
+
         double tau = Double.POSITIVE_INFINITY;
 
-       if (mu == null)
-           mu = new double[nTypes];
+        for (int i=0; i<nTypes; i++) {
+            if (mu[i] != 0)
+                tau = Math.min(tau, Math.max(epsilon*trajectory.currentState[i], 1)/Math.abs(mu[i]));
 
-       if (sigma2 == null)
-           sigma2 = new double[nTypes];
+            if (sigma2[i] >= 0)
+                tau = Math.min(tau, Math.pow(Math.max(epsilon*trajectory.currentState[i], 1),2)/sigma2[i]);
+        }
 
-       for (int i=0; i<nTypes; i++) {
-           mu[i] = a_birth[i] - a_death[i];
-           sigma2[i] = a_birth[i] + a_death[i];
-
-           for (int j=0; j<nTypes; j++)  {
-               if (i == j)
-                   continue;
-
-               mu[i] += a_migration[j][i] - a_migration[i][j] + a_crossbirth[j][i];
-               sigma2[i] += a_migration[j][i] + a_migration[i][j] + a_crossbirth[j][i];
-           }
-
-           if (mu[i] != 0)
-               tau = Math.min(tau, Math.max(epsilon*trajectory.currentState[i], 1)/Math.abs(mu[i]));
-
-           if (sigma2[i] >= 0)
-               tau = Math.min(tau, Math.pow(Math.max(epsilon*trajectory.currentState[i], 1),2)/sigma2[i]);
-       }
-
-       return Math.min(tau, param.getTotalProcessLength()/minLeapCount);
+        return Math.min(tau, param.getTotalProcessLength()/minLeapCount);
     }
 
     public void stepParticleTauLeaping(ObservedEvent observedEvent, double tmax) {
