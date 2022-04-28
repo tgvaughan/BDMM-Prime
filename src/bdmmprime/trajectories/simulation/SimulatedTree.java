@@ -149,8 +149,10 @@ public class SimulatedTree extends Tree {
                 a_tot += a_death[s] + a_sampling[s];
 
                 for (int sp = 0; sp < nTypes; sp++) {
-                    a_migration[s][sp] = traj.currentState[s] * param.getMigRates()[interval][s][sp];
-                    a_tot += a_migration[s][sp];
+                    if (sp != s) {
+                        a_migration[s][sp] = traj.currentState[s] * param.getMigRates()[interval][s][sp];
+                        a_tot += a_migration[s][sp];
+                    }
 
                     for (int spp = 0; spp <= sp; spp++) {
                         a_birth[s][sp][spp] = traj.currentState[s] * param.getBirthRates()[interval][s][sp][spp];
@@ -216,14 +218,14 @@ public class SimulatedTree extends Tree {
                 u -= a_sampling[s];
 
                 for (int sp=0; sp<nTypes; sp++) {
-                    if (sp == s)
-                        continue;
 
-                    if (u < a_migration[s][sp]) {
-                        event = new MigrationEvent(t, s, sp);
-                        break;
+                    if (sp != s) {
+                        if (u < a_migration[s][sp]) {
+                            event = new MigrationEvent(t, s, sp);
+                            break;
+                        }
+                        u -= a_migration[s][sp];
                     }
-                    u -= a_migration[s][sp];
 
                     for (int spp=0; spp<=sp; spp++) {
                         if (u < a_birth[s][sp][spp]) {
@@ -232,6 +234,9 @@ public class SimulatedTree extends Tree {
                         }
                         u -= a_birth[s][sp][spp];
                     }
+
+                    if (event != null)
+                        break;
                 }
 
                 if (event != null)
