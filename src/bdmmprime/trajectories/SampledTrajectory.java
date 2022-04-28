@@ -270,7 +270,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                 eventList.add(new CoalescenceEvent(param.getNodeTime(node, finalSampleOffset.getArrayValue()),
                         getNodeType(node, typeLabel),
                         getNodeType(node.getChild(0), typeLabel),
-                        getNodeType(node.getChild(1), typeLabel), 1));
+                        getNodeType(node.getChild(1), typeLabel)));
             }
         }
 

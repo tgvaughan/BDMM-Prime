@@ -2,7 +2,7 @@ package bdmmprime.trajectories.obsevents;
 
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
-import bdmmprime.trajectories.trajevents.CrossBirthEvent;
+import bdmmprime.trajectories.trajevents.BirthEvent;
 import bdmmprime.trajectories.trajevents.MigrationEvent;
 import beast.util.Randomizer;
 
@@ -14,53 +14,87 @@ public class TypeChangeEvent extends ObservedEvent {
         this.time = time;
         this.type = parentType;
         this.childType = childType;
-        this.multiplicity = multiplicity;
     }
 
     @Override
     public int[] getNextLineageCounts() {
         int[] nextLineageCounts = lineages.clone();
-        nextLineageCounts[type] -= multiplicity;
-        nextLineageCounts[childType] += multiplicity;
+        nextLineageCounts[type] -= 1;
+        nextLineageCounts[childType] += 1;
 
         return nextLineageCounts;
     }
 
+    double[][] birth_props;
     @Override
     public double applyToTrajectory(Parameterization param, int interval, Trajectory trajectory) {
+
+        if (birth_props == null)
+            birth_props = new double[param.getNTypes()][param.getNTypes()];
 
         double logWeightContrib = 0;
 
         int s = type;
-        int sp = childType;
+        int sc = childType;
 
-        for (int i=0; i<multiplicity; i++) {
-            double migration_prop = trajectory.currentState[s] * param.getMigRates()[interval][s][sp];
-            double crossbirth_prop = trajectory.currentState[s] * param.getCrossBirthRates()[interval][s][sp];
-
-            logWeightContrib += Math.log(migration_prop + crossbirth_prop);
-
-            boolean isMigration;
-            if (migration_prop == 0.0)
-                isMigration = false;
-            else if (crossbirth_prop == 0.0)
-                isMigration = true;
-            else {
-                isMigration = Randomizer.nextDouble() * (migration_prop + crossbirth_prop) < migration_prop;
-            }
-
-            if (isMigration) {
-                logWeightContrib += -Math.log(trajectory.currentState[sp] + 1);
-                trajectory.addEvent(new MigrationEvent(time, s, sp));
-
+        double migration_prop = trajectory.currentState[s] * param.getMigRates()[interval][s][sc];
+        double birth_prop_tot = 0.0;
+        for (int sc_other=0; sc_other < param.getNTypes(); sc_other++) {
+            int sp, spp;
+            if (sc_other <= sc) {
+                sp = sc;
+                spp = sc_other;
             } else {
-                logWeightContrib += Math.log(1.0 - lineages[s] / trajectory.currentState[s])
-                        - Math.log(trajectory.currentState[sp] + 1);
-
-                trajectory.addEvent(new CrossBirthEvent(time, s, sp));
+                sp = sc_other;
+                spp = sc;
             }
+            birth_props[sp][spp] = trajectory.currentState[s] * param.getBirthRates()[interval][s][sp][spp];
+            birth_prop_tot += birth_props[sp][spp];
         }
 
-        return logWeightContrib;
+        logWeightContrib += Math.log(migration_prop + birth_prop_tot);
+
+        double u;
+
+        boolean isMigration;
+        if (migration_prop == 0.0)
+            isMigration = false;
+        else if (birth_prop_tot == 0.0)
+            isMigration = true;
+        else {
+            u = Randomizer.nextDouble() * (migration_prop + birth_prop_tot);
+            isMigration = u < migration_prop;
+        }
+
+        if (isMigration) {
+            logWeightContrib += -Math.log(trajectory.currentState[sc] + 1);
+            trajectory.addEvent(new MigrationEvent(time, s, sc));
+            return logWeightContrib;
+
+        } else {
+            u = -migration_prop;
+
+            for (int sc_other = 0; sc_other < param.getNTypes(); sc_other++) {
+                int sp, spp;
+                if (sc_other <= sc) {
+                    sp = sc;
+                    spp = sc_other;
+                } else {
+                    sp = sc_other;
+                    spp = sc;
+                }
+
+                if (sc_other == param.getNTypes() || u < birth_props[sp][spp]) {
+                    trajectory.addEvent(new BirthEvent(time, s, sp, spp));
+                    logWeightContrib +=
+                            Math.log(1.0 - lineages[sc_other] / trajectory.currentState[sc_other])
+                            - Math.log(trajectory.currentState[sc]);
+                    return logWeightContrib;
+                }
+                u -= birth_props[sp][spp];
+            }
+
+            throw new IllegalStateException("Type change event selection reaction fell through.");
+        }
     }
 }

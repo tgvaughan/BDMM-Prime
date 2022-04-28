@@ -6,7 +6,7 @@ import bdmmprime.trajectories.Trajectory;
 public abstract class ObservedEvent {
 
     public double time;
-    public int type, multiplicity;
+    public int type;
     public int[] lineages; // before the event
 
     public boolean isFinalEvent() {
