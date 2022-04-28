@@ -51,18 +51,18 @@ public class ParameterizationTest {
             double migRate = interval < 1 ? 0.1 : 0.2;
 
             for (int state1 = 0; state1 < 2; state1++) {
-                Assert.assertEquals(4.0, parameterization.getBirthRates()[interval][state1], TOLERANCE);
                 Assert.assertEquals(3.0, parameterization.getDeathRates()[interval][state1], TOLERANCE);
                 Assert.assertEquals(1.5, parameterization.getSamplingRates()[interval][state1], TOLERANCE);
                 Assert.assertEquals(1.0, parameterization.getRemovalProbs()[interval][state1], TOLERANCE);
                 Assert.assertEquals(0.0, parameterization.getRhoValues()[interval][state1], TOLERANCE);
 
                 for (int state2 = 0; state2 < 2; state2++) {
-                    if (state2 == state1)
-                        continue;
+                    if (state2 != state1)
+                        Assert.assertEquals(migRate, parameterization.getMigRates()[interval][state1][state2], TOLERANCE);
 
-                    Assert.assertEquals(migRate, parameterization.getMigRates()[interval][state1][state2], TOLERANCE);
-                    Assert.assertEquals(0.0, parameterization.getCrossBirthRates()[interval][state1][state2], TOLERANCE);
+                    for (int state3 = 0; state3 <= state2; state3++)
+                        Assert.assertEquals(state3 == state1 && state2 == state1 ? 4 : 0,
+                                parameterization.getBirthRates()[interval][state1][state2][state3], TOLERANCE);
                 }
             }
         }
