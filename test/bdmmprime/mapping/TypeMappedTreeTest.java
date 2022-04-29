@@ -324,6 +324,7 @@ public class TypeMappedTreeTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", frequencies,
                 "conditionOnSurvival", false,
                 "tree", simulatedTree,
@@ -335,6 +336,7 @@ public class TypeMappedTreeTest {
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", frequencies,
                 "untypedTree", simulatedTree,
                 "typeLabel", "type");
@@ -392,6 +394,7 @@ public class TypeMappedTreeTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", frequencies,
                 "conditionOnSurvival", false,
                 "tree", simulatedTree,
@@ -403,6 +406,7 @@ public class TypeMappedTreeTest {
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
+                "finalSampleOffset", finalSampleOffset,
                 "frequencies", frequencies,
                 "untypedTree", simulatedTree,
                 "typeLabel", "type");
