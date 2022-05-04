@@ -1,4 +1,4 @@
-<addon name="BDMM-Prime" version="0.0.24">
+<addon name="BDMM-Prime" version="0.0.25">
   <depends on="beast2" atleast="2.6.0"/>
   <depends on="SA" atleast="2.0.2"/>
 </addon>
