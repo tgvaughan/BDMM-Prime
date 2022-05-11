@@ -3,6 +3,7 @@ package bdmmprime.util.operators;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.Operator;
+import beast.core.StateNode;
 import beast.core.parameter.RealParameter;
 
 import java.util.*;
@@ -53,5 +54,10 @@ public abstract class SmartRealOperator extends Operator {
 
             groups.put(param, groupIDs);
         }
+    }
+
+    @Override
+    public List<StateNode> listStateNodes() {
+        return new ArrayList<>(parametersInput.get());
     }
 }
