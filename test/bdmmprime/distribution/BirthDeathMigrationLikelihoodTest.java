@@ -936,6 +936,51 @@ public class BirthDeathMigrationLikelihoodTest {
 	}
 
 	/**
+	 * Compare analytical and numerical for one rate change implementing
+	 * truncated sampling (no sampling before specific time).
+	 */
+	@Test
+	public void testLikelihoodRateTrancatedSampling1dim() {
+
+		Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
+				false);
+
+		Parameterization parameterization = new EpiParameterization();
+		parameterization.initByName(
+				"origin", new RealParameter("6.0"),
+				"typeSet", new TypeSet(1),
+				"R0", new SkylineVectorParameter(
+						null,
+						new RealParameter("1.2")),
+				"becomeUninfectiousRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("1.0")),
+				"samplingProportion", new SkylineVectorParameter(
+						new RealParameter("2.4"),
+						new RealParameter("0 0.33333333333")),
+				"removalProb", new SkylineVectorParameter(
+						null,
+						new RealParameter("1.0")));
+
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName("parameterization", parameterization,
+				"frequencies", new RealParameter("1.0"),
+				"conditionOnSurvival", false,
+				"tree", tree,
+				"typeLabel", "state",
+				"parallelize", false,
+				"useAnalyticalSingleTypeSolution", false);
+
+		double logPNumerical = density.calculateLogP();
+
+		density.setInputValue("useAnalyticalSingleTypeSolution", true);
+		density.initAndValidate();
+		double logPAnalytical = density.calculateLogP();
+
+		assertEquals(logPNumerical, logPAnalytical, 1e-4);
+	}
+
+	/**
 	 * 1-dim and 1 rate-change test
 	 * reference from BDSKY
 	 */
