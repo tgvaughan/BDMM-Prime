@@ -1,14 +1,13 @@
 package bdmmprime.trajectories.simulation;
 
 import bdmmprime.parameterization.*;
-import bdmmprime.trajectories.*;
+import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.*;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
-import beast.math.Binomial;
 import beast.util.Randomizer;
 
 import java.io.FileNotFoundException;
@@ -77,7 +76,7 @@ public class SimulatedTree extends Tree {
     public void initAndValidate() {
         param = parameterizationInput.get();
         frequencies = frequenciesInput.get();
-        simulationTime = param.originInput.get().getValue();
+        simulationTime = param.originInput.get().getArrayValue();
 
         minSamples = minSamplesInput.get();
 
@@ -98,7 +97,7 @@ public class SimulatedTree extends Tree {
         } while (traj.getSampleCount() < Math.max(minSamples,1));
 
         RealParameter fso = (RealParameter) finalSampleOffsetInput.get();
-        fso.setValue(param.originInput.get().getValue() - traj.getFinalSampleTime());
+        fso.setValue(param.originInput.get().getArrayValue() - traj.getFinalSampleTime());
 
         if (trajFileNameInput.get() != null) {
             try (PrintStream out = new PrintStream(trajFileNameInput.get())) {

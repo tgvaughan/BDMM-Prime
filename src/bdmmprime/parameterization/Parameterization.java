@@ -2,8 +2,8 @@ package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
 import beast.core.CalculationNode;
+import beast.core.Function;
 import beast.core.Input;
-import beast.core.parameter.RealParameter;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.Tree;
 
@@ -29,7 +29,7 @@ public abstract class Parameterization extends CalculationNode {
             "Type set containing types in model.",
             new TypeSet(1));
 
-    public Input<RealParameter> originInput = new Input<>("origin",
+    public Input<Function> originInput = new Input<>("origin",
             "Time between start of process and the end.");
 
     public Input<Tree> treeInput = new Input<>("tree",
@@ -96,7 +96,7 @@ public abstract class Parameterization extends CalculationNode {
 
     public double getTotalProcessLength() {
         if (originInput.get() != null)
-            return originInput.get().getValue();
+            return originInput.get().getArrayValue();
         else
             return treeInput.get().getRoot().getHeight();
     }

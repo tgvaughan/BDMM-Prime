@@ -2,6 +2,7 @@ package bdmmprime.parameterization;
 
 import beast.core.BEASTObject;
 import beast.core.Input;
+import beast.core.util.Log;
 import beast.evolution.tree.TraitSet;
 
 import java.util.*;
@@ -63,6 +64,11 @@ public class TypeSet extends BEASTObject {
 
         if (typeTraitSetInput.get() != null)
             addTypesFromTypeTraitSet(typeTraitSetInput.get());
+
+        // Report type<->index map
+        Log.info("TypeSet " + getID() + ":");
+        for (int i=0; i<getNTypes(); i++)
+            Log.info("\t" + getTypeName(i) + " (" + i + ")");
     }
 
     /**

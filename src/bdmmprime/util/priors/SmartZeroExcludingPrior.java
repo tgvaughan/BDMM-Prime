@@ -15,9 +15,8 @@ import java.util.Set;
         "nonzero elements of the parameter")
 public class SmartZeroExcludingPrior extends Prior {
 
-    public Input<List<Double>> classesToExcludeInput = new Input<>("classToExclude",
-            "Elements having this value will be excluded from the prior calculation",
-            new ArrayList<>());
+    public Input<Function> classesToExcludeInput = new Input<>("classesToExclude",
+            "Elements having this value will be excluded from the prior calculation");
 
     List<Integer> indices;
 
@@ -28,7 +27,11 @@ public class SmartZeroExcludingPrior extends Prior {
 
         // Making the classesToExclude values already "seen" causes them not
         // to be added to the index list:
-        Set<Double> seenValues = new HashSet<>(classesToExcludeInput.get());
+        Set<Double> seenValues = new HashSet<>();
+        if (classesToExcludeInput.get() != null) {
+            for (double value : classesToExcludeInput.get().getDoubleValues())
+                seenValues.add(value);
+        }
 
         for (int i=0; i<m_x.get().getDimension(); i++) {
             double thisValue = m_x.get().getArrayValue(i);

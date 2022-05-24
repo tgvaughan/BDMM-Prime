@@ -1,17 +1,17 @@
 package bdmmprime.distribution;
 
-import beast.core.BEASTObject;
+import beast.core.CalculationNode;
 import beast.core.Input;
 import beast.core.Loggable;
 
 import java.io.PrintStream;
 
-public class RootProbLogger extends BEASTObject implements Loggable {
+public class StartTypeProbLogger extends CalculationNode implements Loggable  {
 
     public Input<BirthDeathMigrationDistribution> treePriorInput = new Input<>(
             "bdmmTreePrior",
             "Instance of BirthDeathMigrationModel which records the " +
-                    "root type probabilities",
+                    "initial type probabilities",
             Input.Validate.REQUIRED);
 
     BirthDeathMigrationDistribution treePrior;
@@ -33,7 +33,7 @@ public class RootProbLogger extends BEASTObject implements Loggable {
         double[] rootTypeProbs = treePrior.getRootTypeProbs();
 
         for (int i=0; i<rootTypeProbs.length; i++)
-            out.print(loggerID + "probForRootType" + i + "\t");
+            out.print(loggerID + "probForStartType" + i + "\t");
     }
 
     @Override

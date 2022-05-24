@@ -156,7 +156,7 @@
                      typedTree="@typeMappedTree.t:$(n)"
                      typeSet="@typeSetBDMMPrime.t:$(n)"
                      typeLabel="type"
-                     includeRootEdgeChanges="true"/>
+                     includeRootEdge="true"/>
 
                 <logger spec="bdmmprime.util.OptionalLogger" id="trajLogger.t:$(n)"
                         fileName="$(filebase).$(tree).traj" logEvery="1000"

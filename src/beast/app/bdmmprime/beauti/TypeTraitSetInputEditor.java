@@ -72,7 +72,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 ".*(\\d\\d\\d\\d).*");
             
             String traitString = "";
-            switch(dlg.showDialog("Auto-configure locations")) {
+            switch(dlg.showDialog("Auto-configure types")) {
                 case canceled:
                     return;
 
@@ -215,9 +215,9 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         public String getColumnName(int column) {
             switch(column) {
                 case 0:
-                    return "Name";
+                    return "Sample Name";
                 case 1:
-                    return "Location";
+                    return "Type";
                 default:
                     return null;
             }

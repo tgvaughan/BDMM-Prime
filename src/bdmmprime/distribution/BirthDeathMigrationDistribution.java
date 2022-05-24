@@ -4,6 +4,7 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
 import beast.core.*;
 import beast.core.parameter.RealParameter;
+import beast.core.util.Log;
 import beast.evolution.speciation.SpeciesTreeDistribution;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
@@ -12,6 +13,8 @@ import beast.evolution.tree.TreeInterface;
 import beast.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
 
+import java.io.FileNotFoundException;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
@@ -84,9 +87,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     "calculations on the children. (default: 1/10). ",
             1.0 / 10);
 
-    public Input<Boolean> storeNodeTypes = new Input<>("storeNodeTypes",
+    public Input<Boolean> storeNodeTypesInput = new Input<>("storeNodeTypes",
             "store tip node types? this assumes that tip types cannot " +
                     "change (default false)", false);
+
+    public Input<String> savePartialLikelihoodsToFileInput = new Input<>("savePartialLikelihoodsToFile",
+            "If provided, the name of a file to which a tree annotated with partial likelihoods " +
+                    "will be written.  This is useful for debugging the cause of chain initialization failure.");
 
     private int[] nodeStates;
 
@@ -141,7 +148,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (isParallelizedCalculation) executorBootUp();
 
-        if (storeNodeTypes.get()) {
+        if (storeNodeTypesInput.get()) {
 
             nodeStates = new int[nLeaves];
 
@@ -289,13 +296,23 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (debug) System.out.println("\nlogP = " + logP);
 
+        if (savePartialLikelihoodsToFileInput.get() != null) {
+            Log.info("Writing partial BDMM-Prime likelihoods to file '"
+                    + savePartialLikelihoodsToFileInput.get() + "'");
+            try (PrintStream ps = new PrintStream(savePartialLikelihoodsToFileInput.get())) {
+                ps.println(getNewickWithP0GeMetadata(tree.getRoot()));
+            } catch (FileNotFoundException e) {
+                Log.err("Failed to open output file '" + savePartialLikelihoodsToFileInput.get() + "'");
+            }
+        }
+
         return logP;
     }
 
     private int getNodeType(Node node, Boolean init) {
 
 
-        if (storeNodeTypes.get() && !init)
+        if (storeNodeTypesInput.get() && !init)
             return nodeStates[node.getNr()];
 
         int nodeType;
@@ -319,7 +336,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             nodeType = 0;
         }
 
-        if (storeNodeTypes.get())
+        if (storeNodeTypesInput.get())
             nodeStates[node.getNr()] = nodeType;
 
         return nodeType;
@@ -522,6 +539,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         if (debug) debugMessage("State at base of edge: " + state, depth);
+        if (savePartialLikelihoodsToFileInput.get() != null) {
+            node.setMetaData("p0", getP0MetadataString(state));
+            node.setMetaData("ge", getGeMetadataString(state));
+            node.setMetaData("geZero", partialLikelihodZero(state) ? "true" : "false");
+            node.setMetaData("interval", String.valueOf(intervalIdx));
+        }
 
         integrateP0Ge(node, tTop, state, system);
 
@@ -542,6 +565,83 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             System.out.print("  ");
 
         System.out.println(message);
+    }
+
+    private String getGeMetadataString(P0GeState state) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{");
+        for (int i=0; i<state.dimension; i++) {
+            if (i > 0)
+                sb.append(",");
+            sb.append(state.ge[i].toString());
+        }
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    private String getP0MetadataString(P0GeState state) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{");
+        for (int i=0; i<state.dimension; i++) {
+            if (i > 0)
+                sb.append(",");
+            sb.append(state.p0[i]);
+        }
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    private boolean partialLikelihodZero(P0GeState state) {
+
+        for (int i=0; i<state.dimension; i++) {
+            if (state.ge[i].getMantissa() != 0.0)
+                return false;
+        }
+
+        return true;
+    }
+
+    private String getNewickWithP0GeMetadata(Node node) {
+        StringBuilder sb = new StringBuilder();
+
+        if (!node.isLeaf()) {
+            sb.append("(");
+            boolean isFirst = true;
+            for (Node child : node.getChildren()) {
+                if (isFirst)
+                    isFirst = false;
+                else
+                    sb.append(",");
+                sb.append(getNewickWithP0GeMetadata(child));
+            }
+            sb.append(")");
+        }
+
+        if (node.getID() != null)
+            sb.append(node.getID());
+
+        String p0Metadata = (String) node.getMetaData("p0");
+        String geMetadata = (String) node.getMetaData("ge");
+        String geZero = (String) node.getMetaData("geZero");
+
+        if (p0Metadata != null && geMetadata != null && geZero != null)
+            sb.append("[&p0=").append(p0Metadata)
+                    .append(",ge=").append(geMetadata)
+                    .append(",geZero=").append(node.getMetaData("geZero"))
+                    .append(",interval=").append(node.getMetaData("interval"))
+                    .append("]");
+
+        sb.append(":");
+        if (node.isRoot())
+            sb.append("0.0;");
+        else
+            sb.append(node.getParent().getHeight()-node.getHeight());
+
+        return sb.toString();
     }
 
     /**
