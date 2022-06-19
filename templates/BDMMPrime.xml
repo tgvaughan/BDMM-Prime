@@ -74,7 +74,7 @@
 
                     <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
                                       spec="bdmmprime.parameterization.CanonicalParameterization">
-                        <origin idref="originBDMMPrime.t:$(n)"/>
+                        <processLength idref="originBDMMPrime.t:$(n)"/>
                         <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
                         <birthRate id="birthRateSVCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <origin idref="originBDMMPrime.t:$(n)"/>

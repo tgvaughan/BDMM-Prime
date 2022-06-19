@@ -54,9 +54,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Attribute key used to specify sample trait values in tree.");
 
-    public Input<Boolean> conditionOnSurvival = new Input<>("conditionOnSurvival",
+    public Input<Boolean> conditionOnSurvivalInput = new Input<>("conditionOnSurvival",
             "Condition on at least one surviving lineage. (Default true.)",
             true);
+
+    public Input<Boolean> conditionOnRootInput = new Input<>("conditionOnRoot",
+            "Condition on root age, not time of origin.", false);
 
     public Input<Boolean> useAnalyticalSingleTypeSolutionInput = new Input<>("useAnalyticalSingleTypeSolution",
             "Use the analytical SABDSKY tree prior when the model has only one type.",
@@ -188,12 +191,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         Node root = tree.getRoot();
 
         if (parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()) < 0.0) {
+            if (savePartialLikelihoodsToFileInput.get() != null)
+                Log.err("Tree MRCA older than start of process.");
             logP = Double.NEGATIVE_INFINITY;
             return logP;
         }
 
         // Use the exact solution in the case of a single type
-        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1) {
+        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1
+                && savePartialLikelihoodsToFileInput.get() == null) {
             logP = getSingleTypeTreeLogLikelihood(tree);
             return logP;
         }
@@ -208,7 +214,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         updateInitialConditionsForP(tree);
 
         double probNoSample = 0;
-        if (conditionOnSurvival.get()) {
+        if (conditionOnSurvivalInput.get()) {
 
             double[] noSampleExistsProp = pInitialConditions[pInitialConditions.length - 1];
             if (debug) {
@@ -229,7 +235,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         P0GeState finalP0Ge;
-        if (parameterization.conditionedOnRoot()) {
+        if (conditionOnRootInput.get()) {
 
             // Condition on a known root time:
 
@@ -284,7 +290,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         // TGV: Why is there not one of these factors per subtree when conditioning
         // on root?
-        if (conditionOnSurvival.get()) {
+        if (conditionOnSurvivalInput.get()) {
             PrSN = PrSN.scalarMultiplyBy(1 / (1 - probNoSample));
         }
 
@@ -965,7 +971,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         double logP;
 
-        if (parameterization.conditionedOnRoot()) {
+        if (conditionOnRootInput.get()) {
 
             double t_root = parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue());
             logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(0), t_root, A, B)
