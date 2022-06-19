@@ -23,7 +23,7 @@ public class TypeMappedTreeTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "origin", new RealParameter("6.0"),
+                "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(2),
                 "R0", new SkylineVectorParameter(
                         null,
@@ -89,7 +89,7 @@ public class TypeMappedTreeTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "origin", new RealParameter("6.0"),
+                "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(2),
                 "R0", new SkylineVectorParameter(
                         null,
@@ -158,7 +158,7 @@ public class TypeMappedTreeTest {
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
-                "origin", new RealParameter("6.0"),
+                "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(2),
                 "birthRate", new SkylineVectorParameter(
                         null,
@@ -228,7 +228,7 @@ public class TypeMappedTreeTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "origin", new RealParameter(Double.toString(tree.getRoot().getHeight() + 0.1)),
+                "processLength", new RealParameter(Double.toString(tree.getRoot().getHeight() + 0.1)),
                 "typeSet", new TypeSet(2),
                 "R0", new SkylineVectorParameter(
                         null,
@@ -293,7 +293,7 @@ public class TypeMappedTreeTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", typeSet,
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0"), 2),
@@ -361,7 +361,7 @@ public class TypeMappedTreeTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", typeSet,
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0"), 2),
