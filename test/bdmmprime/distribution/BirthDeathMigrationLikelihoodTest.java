@@ -448,13 +448,13 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		// test with conditioned-on-survival tree
 		parameterization.setInputValue("processLength", "10");
-        parameterization.setInputValue("tree", null);
         parameterization.setInputValue("rhoSampling",
                 new TimedParameter(new RealParameter("10"),
                         new RealParameter("0.01")));
         parameterization.initAndValidate();
 
         density.setInputValue("conditionOnSurvival", true);
+		density.setInputValue("conditionOnRoot", false);
 		density.setInputValue("useAnalyticalSingleTypeSolution", false);
 		density.initAndValidate();
 
