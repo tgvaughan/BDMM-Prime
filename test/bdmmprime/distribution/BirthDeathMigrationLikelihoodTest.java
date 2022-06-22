@@ -1783,10 +1783,10 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		// Conditioned on origin:
 
-		parameterization.setInputValue("tree", null);
 		parameterization.setInputValue("processLength", new RealParameter("10.0"));
 		parameterization.initAndValidate();
 		density.setInputValue("useAnalyticalSingleTypeSolution", false);
+		density.setInputValue("conditionOnRoot", false);
 		density.initAndValidate();
 
 		assertEquals(-25.991511346557598 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
