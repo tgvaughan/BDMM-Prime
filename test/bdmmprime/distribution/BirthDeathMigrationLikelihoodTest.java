@@ -401,7 +401,7 @@ public class BirthDeathMigrationLikelihoodTest {
         Parameterization parameterization = new EpiParameterization();
 		parameterization.initByName(
 		        "typeSet", new TypeSet(1),
-                "tree", tree,
+                "processLength", tree,
                 "R0", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
@@ -429,6 +429,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		        "parameterization", parameterization,
                 "frequencies", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
+				"conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
                 "parallelize", false,
@@ -798,7 +799,7 @@ public class BirthDeathMigrationLikelihoodTest {
         // rate-changes, rho-sampling in the past and present, with reversed times
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "tree", tree,
+                "processLength", tree,
                 "typeSet", new TypeSet(1),
                 "R0", new SkylineVectorParameter(
                         new RealParameter("0.5 1.0 1.1"),
@@ -826,6 +827,7 @@ public class BirthDeathMigrationLikelihoodTest {
         density.initByName("parameterization", parameterization,
                 "frequencies", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
+				"conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
                 "parallelize", false,
@@ -1598,7 +1600,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "tree", tree,
+                "processLength", tree,
                 "typeSet", new TypeSet(2),
                 "R0", new SkylineVectorParameter(
                         null,
@@ -1624,6 +1626,7 @@ public class BirthDeathMigrationLikelihoodTest {
         density.initByName("parameterization", parameterization,
                 "frequencies", new RealParameter("0.6 0.4"),
                 "conditionOnSurvival", false,
+				"conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
                 "parallelize", false);
@@ -1744,7 +1747,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "tree", tree,
+                "processLength", tree,
                 "typeSet", new TypeSet(1),
                 "R0", new SkylineVectorParameter(
                         null,
@@ -1763,6 +1766,7 @@ public class BirthDeathMigrationLikelihoodTest {
         density.initByName("parameterization", parameterization,
                 "frequencies", new RealParameter("1.0"),
                 "conditionOnSurvival", true,
+				"conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
                 "parallelize", false,
