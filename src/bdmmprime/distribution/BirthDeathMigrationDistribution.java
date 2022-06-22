@@ -990,7 +990,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        if (conditionOnSurvival.get()) {
+        if (conditionOnSurvivalInput.get() || conditionOnRootInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
             logP -= Math.log(1.0 -
                     get_p_i(parameterization.getBirthRates()[i][0],
