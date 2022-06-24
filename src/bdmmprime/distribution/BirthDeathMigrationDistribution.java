@@ -169,7 +169,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++) {
             isRhoTip[nodeNr] = false;
             double nodeTime = parameterization.getNodeTime(tree.getNode(nodeNr), finalSampleOffset.getArrayValue());
-//            double nodeTime = parameterization.getTotalProcessLength() - tree.getNode(nodeNr).getHeight();
             for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
                 if (Utils.equalWithPrecision(rhoSampTime, nodeTime)) {
                     isRhoTip[nodeNr] = true;
@@ -190,7 +189,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         Node root = tree.getRoot();
 
-        if (parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()) < 0.0) {
+        if (Utils.lessThanWithPrecision(parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()), 0)) {
             if (savePartialLikelihoodsToFileInput.get() != null)
                 Log.err("Tree MRCA older than start of process.");
             logP = Double.NEGATIVE_INFINITY;
