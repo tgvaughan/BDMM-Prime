@@ -157,7 +157,8 @@ public class EpochVisualizerPanel extends JPanel {
         int nLeaves = tree.getLeafNodeCount();
         double[] leafTimes = new double[nLeaves];
         if (tree.hasDateTrait()) {
-            tree.getDateTrait().initAndValidate();
+            if (tree.getDateTrait().getStringValue(tree.getNode(0).getID()) == null)
+                tree.getDateTrait().initAndValidate();
             for (int nodeNr = 0; nodeNr < nLeaves; nodeNr++)
                 leafTimes[nodeNr] = origin - tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
         } else {
