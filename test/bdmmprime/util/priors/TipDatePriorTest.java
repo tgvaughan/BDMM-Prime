@@ -8,6 +8,7 @@ import beast.evolution.tree.Tree;
 import junit.framework.Assert;
 import org.junit.Test;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,23 +66,23 @@ public class TipDatePriorTest {
 
         System.out.println(tree);
 
-        RealParameter fso = new RealParameter("0.0");
+        double fso = laterBounds.getDate(0) - tipDates.getDate(0);
+        RealParameter fsoParam = new RealParameter(String.valueOf(fso));
 
         TipDatePrior prior = new TipDatePrior();
         prior.initByName(
                 "tree", tree,
-                "finalSampleOffset", fso,
-                "initialTipDates", tipDates,
+                "finalSampleOffset", fsoParam,
                 "earlierBound", earlierBounds,
                 "laterBound", laterBounds);
 
         Assert.assertEquals(0.0, prior.calculateLogP(), 1e-10);
 
-        fso.setValue(0.99/365.25);
+        fsoParam.setValue(fso+0.99/365.25);
         prior.initAndValidate();
         Assert.assertEquals(0.0, prior.calculateLogP(), 1e-10);
 
-        fso.setValue(-0.99/365.25);
+        fsoParam.setValue(fso-0.99/365.25);
         prior.initAndValidate();
         Assert.assertEquals(Double.NEGATIVE_INFINITY, prior.calculateLogP(), 1e-10);
 
