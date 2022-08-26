@@ -989,21 +989,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        if (conditionOnSurvivalInput.get() || conditionOnRootInput.get()) {
+        if (conditionOnSurvivalInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
-            double p_i = get_p_i(parameterization.getBirthRates()[i][0],
-                    parameterization.getDeathRates()[i][0],
-                    parameterization.getSamplingRates()[i][0],
-                    A[i], B[i],
-                    parameterization.getIntervalEndTimes()[i], 0.0);
-
-            if (p_i == 1)
-                return Double.NEGATIVE_INFINITY; // Following BDSKY's behaviour
-
-            if (conditionOnRootInput.get())
-                logP -= 2.0 * Math.log(1.0 - p_i);
-            else
-                logP -= Math.log(1.0 - p_i);
+            logP -= Math.log(1.0 -
+                    get_p_i(parameterization.getBirthRates()[i][0],
+                            parameterization.getDeathRates()[i][0],
+                            parameterization.getSamplingRates()[i][0],
+                            A[i], B[i],
+                            parameterization.getIntervalEndTimes()[i], 0.0));
         }
 
         // Account for possible label permutations
