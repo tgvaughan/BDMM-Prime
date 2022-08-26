@@ -103,7 +103,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private final boolean debug = false;
 //    private final boolean debug = true;
 
-    private double[] rootTypeProbs, storedRootTypeProbs;
+    private double[] startTypeProbs, storedStartTypeProbs;
     private boolean[] isRhoTip;
 
     private Parameterization parameterization;
@@ -160,8 +160,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             }
         }
 
-        rootTypeProbs = new double[parameterization.getNTypes()];
-        storedRootTypeProbs = new double[parameterization.getNTypes()];
+        startTypeProbs = new double[parameterization.getNTypes()];
+        storedStartTypeProbs = new double[parameterization.getNTypes()];
 
         // Determine which, if any, of the leaf ages correspond exactly to
         // rho sampling times.
@@ -218,14 +218,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double[] noSampleExistsProp = pInitialConditions[pInitialConditions.length - 1];
             if (debug) {
                 System.out.print("\nnoSampleExistsProp = ");
-                for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++) {
-                        System.out.print(noSampleExistsProp[rootType] + " ");
+                for (int type = 0; type<parameterization.getNTypes(); type++) {
+                        System.out.print(noSampleExistsProp[type] + " ");
                 }
                 System.out.println();
             }
 
-            for (int rootType = 0; rootType < parameterization.getNTypes(); rootType++) {
-                probNoSample += frequenciesInput.get().getArrayValue(rootType) * noSampleExistsProp[rootType];
+            for (int type = 0; type < parameterization.getNTypes(); type++) {
+                probNoSample += frequenciesInput.get().getArrayValue(type) * noSampleExistsProp[type];
             }
 
             if (probNoSample < 0 || probNoSample > 1)
@@ -267,24 +267,24 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (debug) System.out.print("Final state: " + finalP0Ge);
 
         SmallNumber PrSN = new SmallNumber(0);
-        for (int rootType = 0; rootType < parameterization.getNTypes(); rootType++) {
+        for (int startType = 0; startType < parameterization.getNTypes(); startType++) {
 
             SmallNumber jointProb = finalP0Ge
-                    .ge[rootType]
-                    .scalarMultiplyBy(frequenciesInput.get().getArrayValue(rootType));
+                    .ge[startType]
+                    .scalarMultiplyBy(frequenciesInput.get().getArrayValue(startType));
 
             if (jointProb.getMantissa() > 0) {
-                rootTypeProbs[rootType] = jointProb.log();
+                startTypeProbs[startType] = jointProb.log();
                 PrSN = PrSN.addTo(jointProb);
             } else {
-                rootTypeProbs[rootType] = Double.NEGATIVE_INFINITY;
+                startTypeProbs[startType] = Double.NEGATIVE_INFINITY;
             }
         }
 
-        // Normalize root type probs:
-        for (int rootType = 0; rootType < parameterization.getNTypes(); rootType++) {
-            rootTypeProbs[rootType] -= PrSN.log();
-            rootTypeProbs[rootType] = Math.exp(rootTypeProbs[rootType]);
+        // Normalize start type probs:
+        for (int startType = 0; startType < parameterization.getNTypes(); startType++) {
+            startTypeProbs[startType] -= PrSN.log();
+            startTypeProbs[startType] = Math.exp(startTypeProbs[startType]);
         }
 
         // TGV: Why is there not one of these factors per subtree when conditioning
@@ -652,8 +652,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     /**
      * @return retrieve current set of root type probabilities.
      */
-    double[] getRootTypeProbs() {
-        return rootTypeProbs;
+    double[] getStartTypeProbs() {
+        return startTypeProbs;
     }
 
     /**
@@ -989,14 +989,21 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        if (conditionOnSurvivalInput.get()) {
+        if (conditionOnSurvivalInput.get() || conditionOnRootInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
-            logP -= Math.log(1.0 -
-                    get_p_i(parameterization.getBirthRates()[i][0],
-                            parameterization.getDeathRates()[i][0],
-                            parameterization.getSamplingRates()[i][0],
-                            A[i], B[i],
-                            parameterization.getIntervalEndTimes()[i], 0.0));
+            double p_i = get_p_i(parameterization.getBirthRates()[i][0],
+                    parameterization.getDeathRates()[i][0],
+                    parameterization.getSamplingRates()[i][0],
+                    A[i], B[i],
+                    parameterization.getIntervalEndTimes()[i], 0.0);
+
+            if (p_i == 1)
+                return Double.NEGATIVE_INFINITY; // Following BDSKY's behaviour
+
+            if (conditionOnRootInput.get())
+                logP -= 2.0 * Math.log(1.0 - p_i);
+            else
+                logP -= Math.log(1.0 - p_i);
         }
 
         // Account for possible label permutations
@@ -1136,15 +1143,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public void store() {
         super.store();
 
-        System.arraycopy(rootTypeProbs, 0, storedRootTypeProbs, 0, parameterization.getNTypes());
+        System.arraycopy(startTypeProbs, 0, storedStartTypeProbs, 0, parameterization.getNTypes());
     }
 
     @Override
     public void restore() {
         super.restore();
 
-        double[] tmp = storedRootTypeProbs;
-        rootTypeProbs = storedRootTypeProbs;
-        storedRootTypeProbs = tmp;
+        double[] tmp = storedStartTypeProbs;
+        startTypeProbs = storedStartTypeProbs;
+        storedStartTypeProbs = tmp;
     }
 }

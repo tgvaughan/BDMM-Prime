@@ -30,16 +30,16 @@ public class StartTypeProbLogger extends CalculationNode implements Loggable  {
             loggerID = treePrior.getID() + ".";
         else loggerID = "";
 
-        double[] rootTypeProbs = treePrior.getRootTypeProbs();
+        double[] startTypeProbs = treePrior.getStartTypeProbs();
 
-        for (int i=0; i<rootTypeProbs.length; i++)
+        for (int i=0; i<startTypeProbs.length; i++)
             out.print(loggerID + "probForStartType" + i + "\t");
     }
 
     @Override
     public void log(long sample, PrintStream out) {
-        for (double rootTypeProb : treePrior.getRootTypeProbs())
-            out.print(rootTypeProb + "\t");
+        for (double startTypeProb : treePrior.getStartTypeProbs())
+            out.print(startTypeProb + "\t");
     }
 
     @Override
