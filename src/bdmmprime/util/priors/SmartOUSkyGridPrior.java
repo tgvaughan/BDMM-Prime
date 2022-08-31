@@ -7,7 +7,7 @@ import beast.core.State;
 
 import java.util.*;
 
-public class OUSkyGridPrior2 extends Distribution {
+public class SmartOUSkyGridPrior extends Distribution {
 
     public Input<Function> xInput = new Input<>("x",
             "Parameter to place prior on.", Input.Validate.REQUIRED);
@@ -29,7 +29,7 @@ public class OUSkyGridPrior2 extends Distribution {
             "Elements having this value will be excluded from the prior calculation",
             new ArrayList<>());
 
-    public OUSkyGridPrior2() { }
+    public SmartOUSkyGridPrior() { }
 
     Function x;
     int n;
@@ -105,6 +105,6 @@ public class OUSkyGridPrior2 extends Distribution {
 
     @Override
     public void sample(State state, Random random) {
-        throw new UnsupportedOperationException("Sampling from OUSkygridPrior not supported.");
+        throw new UnsupportedOperationException("Sampling from SmartOUSkygridPrior not supported.");
     }
 }
