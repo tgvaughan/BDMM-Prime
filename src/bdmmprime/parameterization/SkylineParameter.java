@@ -29,11 +29,8 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
             "Parameter specifying parameter values through time.",
             Input.Validate.REQUIRED);
 
-    public Input<Function> originInput = new Input<>("origin",
-            "Parameter specifying origin of process.");
-
-    public Input<Tree> treeInput = new Input<>("tree",
-            "Tree when root time is used to identify the start of the process.");
+    public Input<Function> processLengthInput = new Input<>("processLength",
+            "Time between start of process and the end.");
 
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
             "Type set defining distinct types in model. Used when a" +
@@ -60,15 +57,15 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
     public SkylineParameter(Function changeTimesParam,
                             Function skylineValuesParam,
                             int nTypes,
-                            Function origin) {
+                            Function processLength) {
 
         changeTimesInput.setValue(changeTimesParam, this);
         skylineValuesInput.setValue(skylineValuesParam, this);
         typeSetInput.setValue(new TypeSet(nTypes), this);
 
-        if (origin != null) {
+        if (processLength != null) {
             this.timesAreAgesInput.setValue(true, this);
-            this.originInput.setValue(origin, this);
+            this.processLengthInput.setValue(processLength, this);
         }
 
         initAndValidate();
@@ -79,13 +76,9 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
         timesAreAges = timesAreAgesInput.get();
         timesAreRelative = timesAreRelativeInput.get();
 
-        if ((timesAreAges || timesAreRelative) && (originInput.get() == null && treeInput.get() == null))
-            throw new IllegalArgumentException("Origin parameter or tree must be supplied " +
+        if ((timesAreAges || timesAreRelative) && processLengthInput.get() == null)
+            throw new IllegalArgumentException("Process length parameter or tree must be supplied " +
                     "when times are given as ages and/or when times are relative.");
-
-        if (originInput.get() != null && treeInput.get() != null)
-            throw new IllegalArgumentException("Only one of origin or tree " +
-                    "should be specified.");
 
         int nChangeTimes = changeTimesInput.get() == null ? 0 : changeTimesInput.get().getDimension();
         nIntervals = nChangeTimes + 1;
@@ -139,9 +132,7 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
 
         if (timesAreRelative) {
 
-            double startAge = originInput.get() != null
-                    ? originInput.get().getArrayValue()
-                    : treeInput.get().getRoot().getHeight();
+            double startAge = processLengthInput.get().getArrayValue();
 
             for (int i=0; i<times.length; i++)
                 times[i] *= startAge;
@@ -150,9 +141,7 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
         if (timesAreAges) {
             Utils.reverseDoubleArray(times);
 
-            double startAge = originInput.get() != null
-                    ? originInput.get().getArrayValue()
-                    : treeInput.get().getRoot().getHeight();
+            double startAge = processLengthInput.get().getArrayValue();
 
             for (int i=0; i<times.length; i++)
                 times[i] = startAge-times[i];

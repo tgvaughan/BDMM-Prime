@@ -76,7 +76,7 @@ public class SimulatedTree extends Tree {
     public void initAndValidate() {
         param = parameterizationInput.get();
         frequencies = frequenciesInput.get();
-        simulationTime = param.originInput.get().getArrayValue();
+        simulationTime = param.processLengthInput.get().getArrayValue();
 
         minSamples = minSamplesInput.get();
 
@@ -97,7 +97,7 @@ public class SimulatedTree extends Tree {
         } while (traj.getSampleCount() < Math.max(minSamples,1));
 
         RealParameter fso = (RealParameter) finalSampleOffsetInput.get();
-        fso.setValue(param.originInput.get().getArrayValue() - traj.getFinalSampleTime());
+        fso.setValue(param.processLengthInput.get().getArrayValue() - traj.getFinalSampleTime());
 
         if (trajFileNameInput.get() != null) {
             try (PrintStream out = new PrintStream(trajFileNameInput.get())) {

@@ -16,7 +16,7 @@ public class ParameterizationTest {
 		Parameterization parameterization = new CanonicalParameterization();
 		parameterization.initByName(
 		        "typeSet", new TypeSet(2),
-                "origin", originParam,
+                "processLength", originParam,
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("4.0"), 2),
@@ -76,7 +76,7 @@ public class ParameterizationTest {
         Parameterization parameterization = new CanonicalParameterization();
 		parameterization.initByName(
 		        "typeSet", new TypeSet(2),
-                "origin", originParam,
+                "processLength", originParam,
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("4.0"), 2),

@@ -589,7 +589,7 @@ public class TypeMappedTree extends Tree {
                 }
             }
 
-            currentNode.setHeight(param.getAge(currentTime, finalSampleOffset.getArrayValue()));
+            currentNode.setHeight(param.getNodeAge(currentTime, finalSampleOffset.getArrayValue()));
 
             // Sample event type
 
@@ -604,7 +604,7 @@ public class TypeMappedTree extends Tree {
             currentNode = newNode;
         }
 
-        currentNode.setHeight(param.getAge(endTime, finalSampleOffset.getArrayValue()));
+        currentNode.setHeight(param.getNodeAge(endTime, finalSampleOffset.getArrayValue()));
 
         switch(getNodeKind(subtreeRoot)) {
             case LEAF:

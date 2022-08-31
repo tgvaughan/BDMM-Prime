@@ -39,7 +39,7 @@ public class EpochVisualizerPanel extends JPanel {
         FontMetrics fm = getFontMetrics(getFont());
 
         boolean useAges = param.timesAreAgesInput.get();
-        double origin = param.originInput.get().getArrayValue();
+        double origin = param.processLengthInput.get().getArrayValue();
         TypeSet typeSet = param.typeSetInput.get();
 
         if (origin <= 0.0) {
@@ -157,7 +157,8 @@ public class EpochVisualizerPanel extends JPanel {
         int nLeaves = tree.getLeafNodeCount();
         double[] leafTimes = new double[nLeaves];
         if (tree.hasDateTrait()) {
-            tree.getDateTrait().initAndValidate();
+            if (tree.getDateTrait().getStringValue(tree.getNode(0).getID()) == null)
+                tree.getDateTrait().initAndValidate();
             for (int nodeNr = 0; nodeNr < nLeaves; nodeNr++)
                 leafTimes[nodeNr] = origin - tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
         } else {
@@ -198,7 +199,7 @@ public class EpochVisualizerPanel extends JPanel {
         int axisXEnd = getWidth() - charHeight*2;
 
         int scaledTime = (int)Math.round((axisXEnd-axisXStart)
-                *time/param.originInput.get().getArrayValue());
+                *time/param.processLengthInput.get().getArrayValue());
 
         return useAges
                 ? axisXEnd - scaledTime

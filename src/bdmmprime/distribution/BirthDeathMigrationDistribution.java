@@ -54,9 +54,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Attribute key used to specify sample trait values in tree.");
 
-    public Input<Boolean> conditionOnSurvival = new Input<>("conditionOnSurvival",
+    public Input<Boolean> conditionOnSurvivalInput = new Input<>("conditionOnSurvival",
             "Condition on at least one surviving lineage. (Default true.)",
             true);
+
+    public Input<Boolean> conditionOnRootInput = new Input<>("conditionOnRoot",
+            "Condition on root age, not time of origin.", false);
 
     public Input<Boolean> useAnalyticalSingleTypeSolutionInput = new Input<>("useAnalyticalSingleTypeSolution",
             "Use the analytical SABDSKY tree prior when the model has only one type.",
@@ -100,7 +103,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private final boolean debug = false;
 //    private final boolean debug = true;
 
-    private double[] rootTypeProbs, storedRootTypeProbs;
+    private double[] startTypeProbs, storedStartTypeProbs;
     private boolean[] isRhoTip;
 
     private Parameterization parameterization;
@@ -157,8 +160,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             }
         }
 
-        rootTypeProbs = new double[parameterization.getNTypes()];
-        storedRootTypeProbs = new double[parameterization.getNTypes()];
+        startTypeProbs = new double[parameterization.getNTypes()];
+        storedStartTypeProbs = new double[parameterization.getNTypes()];
 
         // Determine which, if any, of the leaf ages correspond exactly to
         // rho sampling times.
@@ -166,7 +169,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++) {
             isRhoTip[nodeNr] = false;
             double nodeTime = parameterization.getNodeTime(tree.getNode(nodeNr), finalSampleOffset.getArrayValue());
-//            double nodeTime = parameterization.getTotalProcessLength() - tree.getNode(nodeNr).getHeight();
             for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
                 if (Utils.equalWithPrecision(rhoSampTime, nodeTime)) {
                     isRhoTip[nodeNr] = true;
@@ -187,13 +189,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         Node root = tree.getRoot();
 
-        if (parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()) < 0.0) {
+        if (Utils.lessThanWithPrecision(parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()), 0)) {
+            if (savePartialLikelihoodsToFileInput.get() != null)
+                Log.err("Tree MRCA older than start of process.");
             logP = Double.NEGATIVE_INFINITY;
             return logP;
         }
 
         // Use the exact solution in the case of a single type
-        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1) {
+        if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1
+                && savePartialLikelihoodsToFileInput.get() == null) {
             logP = getSingleTypeTreeLogLikelihood(tree);
             return logP;
         }
@@ -208,19 +213,19 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         updateInitialConditionsForP(tree);
 
         double probNoSample = 0;
-        if (conditionOnSurvival.get()) {
+        if (conditionOnSurvivalInput.get()) {
 
             double[] noSampleExistsProp = pInitialConditions[pInitialConditions.length - 1];
             if (debug) {
                 System.out.print("\nnoSampleExistsProp = ");
-                for (int rootType = 0; rootType<parameterization.getNTypes(); rootType++) {
-                        System.out.print(noSampleExistsProp[rootType] + " ");
+                for (int type = 0; type<parameterization.getNTypes(); type++) {
+                        System.out.print(noSampleExistsProp[type] + " ");
                 }
                 System.out.println();
             }
 
-            for (int rootType = 0; rootType < parameterization.getNTypes(); rootType++) {
-                probNoSample += frequenciesInput.get().getArrayValue(rootType) * noSampleExistsProp[rootType];
+            for (int type = 0; type < parameterization.getNTypes(); type++) {
+                probNoSample += frequenciesInput.get().getArrayValue(type) * noSampleExistsProp[type];
             }
 
             if (probNoSample < 0 || probNoSample > 1)
@@ -229,7 +234,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         P0GeState finalP0Ge;
-        if (parameterization.conditionedOnRoot()) {
+        if (conditionOnRootInput.get()) {
 
             // Condition on a known root time:
 
@@ -262,29 +267,29 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (debug) System.out.print("Final state: " + finalP0Ge);
 
         SmallNumber PrSN = new SmallNumber(0);
-        for (int rootType = 0; rootType < parameterization.getNTypes(); rootType++) {
+        for (int startType = 0; startType < parameterization.getNTypes(); startType++) {
 
             SmallNumber jointProb = finalP0Ge
-                    .ge[rootType]
-                    .scalarMultiplyBy(frequenciesInput.get().getArrayValue(rootType));
+                    .ge[startType]
+                    .scalarMultiplyBy(frequenciesInput.get().getArrayValue(startType));
 
             if (jointProb.getMantissa() > 0) {
-                rootTypeProbs[rootType] = jointProb.log();
+                startTypeProbs[startType] = jointProb.log();
                 PrSN = PrSN.addTo(jointProb);
             } else {
-                rootTypeProbs[rootType] = Double.NEGATIVE_INFINITY;
+                startTypeProbs[startType] = Double.NEGATIVE_INFINITY;
             }
         }
 
-        // Normalize root type probs:
-        for (int rootType = 0; rootType < parameterization.getNTypes(); rootType++) {
-            rootTypeProbs[rootType] -= PrSN.log();
-            rootTypeProbs[rootType] = Math.exp(rootTypeProbs[rootType]);
+        // Normalize start type probs:
+        for (int startType = 0; startType < parameterization.getNTypes(); startType++) {
+            startTypeProbs[startType] -= PrSN.log();
+            startTypeProbs[startType] = Math.exp(startTypeProbs[startType]);
         }
 
         // TGV: Why is there not one of these factors per subtree when conditioning
         // on root?
-        if (conditionOnSurvival.get()) {
+        if (conditionOnSurvivalInput.get()) {
             PrSN = PrSN.scalarMultiplyBy(1 / (1 - probNoSample));
         }
 
@@ -647,8 +652,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     /**
      * @return retrieve current set of root type probabilities.
      */
-    double[] getRootTypeProbs() {
-        return rootTypeProbs;
+    double[] getStartTypeProbs() {
+        return startTypeProbs;
     }
 
     /**
@@ -965,7 +970,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         double logP;
 
-        if (parameterization.conditionedOnRoot()) {
+        if (conditionOnRootInput.get()) {
 
             double t_root = parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue());
             logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(0), t_root, A, B)
@@ -984,7 +989,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        if (conditionOnSurvival.get()) {
+        if (conditionOnSurvivalInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
             logP -= Math.log(1.0 -
                     get_p_i(parameterization.getBirthRates()[i][0],
@@ -1131,15 +1136,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public void store() {
         super.store();
 
-        System.arraycopy(rootTypeProbs, 0, storedRootTypeProbs, 0, parameterization.getNTypes());
+        System.arraycopy(startTypeProbs, 0, storedStartTypeProbs, 0, parameterization.getNTypes());
     }
 
     @Override
     public void restore() {
         super.restore();
 
-        double[] tmp = storedRootTypeProbs;
-        rootTypeProbs = storedRootTypeProbs;
-        storedRootTypeProbs = tmp;
+        double[] tmp = storedStartTypeProbs;
+        startTypeProbs = storedStartTypeProbs;
+        storedStartTypeProbs = tmp;
     }
 }

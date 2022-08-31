@@ -55,7 +55,6 @@ public class TipDateOperator extends TreeOperator {
         Node node = tree.getExternalNodes().stream().
                 filter(n->n.getID().equals(taxonID)).findFirst().get();
 
-
         double oldHeight = node.getHeight();
 
         // Select new height:

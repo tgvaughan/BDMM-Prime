@@ -30,11 +30,8 @@ public class TimedParameter extends CalculationNode implements Loggable {
             "True if times are relative to the origin. (Default false.)",
             false);
 
-    public Input<Function> originInput = new Input<>("origin",
-            "Parameter specifying origin of process.");
-
-    public Input<Tree> treeInput = new Input<>("tree",
-            "Tree when root time is used to identify the start of the process.");
+    public Input<Function> processLengthInput = new Input<>("processLength",
+            "Time between start of process and the end.");
 
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
             "Type set defining distinct types in model. Used when a" +
@@ -69,18 +66,10 @@ public class TimedParameter extends CalculationNode implements Loggable {
         initAndValidate();
     }
 
-    public TimedParameter(RealParameter timesParam, RealParameter valuesParam, RealParameter originParam) {
+    public TimedParameter(RealParameter timesParam, RealParameter valuesParam, Function processLength) {
         timesInput.setValue(timesParam, this);
         valuesInput.setValue(valuesParam, this);
-        originInput.setValue(originParam, this);
-        timesAreAgesInput.setValue(true, this);
-        initAndValidate();
-    }
-
-    public TimedParameter(RealParameter timesParam, RealParameter valuesParam, Tree tree) {
-        timesInput.setValue(timesParam, this);
-        valuesInput.setValue(valuesParam, this);
-        treeInput.setValue(tree, this);
+        processLengthInput.setValue(processLength, this);
         timesAreAgesInput.setValue(true, this);
         initAndValidate();
     }
@@ -90,13 +79,9 @@ public class TimedParameter extends CalculationNode implements Loggable {
         timesAreAges = timesAreAgesInput.get();
         timesAreRelative = timesAreRelativeInput.get();
 
-        if ((timesAreAges || timesAreRelative) && (originInput.get() == null && treeInput.get() == null))
-            throw new IllegalArgumentException("Origin parameter or tree must be supplied " +
+        if ((timesAreAges || timesAreRelative) && processLengthInput.get() == null)
+            throw new IllegalArgumentException("Process length parameter must be supplied " +
                     "when times are given as ages and/or when times are relative.");
-
-        if (originInput.get() != null && treeInput.get() != null)
-            throw new IllegalArgumentException("Only one of origin or tree " +
-                    "should be specified.");
 
         if (timesInput.get() != null)
             nTimes = timesInput.get().getDimension();
@@ -181,9 +166,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
             times[i] = timesInput.get().getArrayValue(i);
 
         if (timesAreRelative) {
-            double startAge = originInput.get() != null
-                    ? originInput.get().getArrayValue()
-                    : treeInput.get().getRoot().getHeight();
+            double startAge = processLengthInput.get().getArrayValue();
 
             for (int i=0; i<nTimes; i++)
                 times[i] *= startAge;
@@ -192,9 +175,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
         if (timesAreAges) {
             Utils.reverseDoubleArray(times);
 
-            double startAge = originInput.get() != null
-                    ? originInput.get().getArrayValue()
-                    : treeInput.get().getRoot().getHeight();
+            double startAge = processLengthInput.get().getArrayValue();
 
             for (int i=0; i<times.length; i++) {
                 times[i] = startAge-times[i];

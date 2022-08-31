@@ -81,37 +81,18 @@ loadTrajectories <- function(filename, burninFrac=0.1, subsample=NA) {
 }
 
 gridTrajectories <- function(trajStates, times) {
-    df_grid <- NULL
+    return(trajStates %>%
+           group_by(traj, type) %>%
+           summarize(N=approx(time, N, times, method="constant", f=1, yleft=0)$y,
+                     age=ages))
 
-    for (grid_time in times) {
-        time_summary <- trajStates %>%
-            group_by(traj, type) %>%
-            summarize(
-                N=N[max(which(time<=grid_time))],
-                .groups = "drop_last")
-
-        time_summary$time <- grid_time
-        df_grid <- bind_rows(df_grid, time_summary)
-    }
-
-    return(df_grid)
 }
 
 gridTrajectoriesByAge <- function(trajStates, ages) {
-    df_grid <- NULL
-
-    for (grid_age in ages) {
-        age_summary <- trajStates %>%
-            group_by(traj, type) %>%
-            summarize(
-                N=N[max(which(age>=grid_age))],
-                .groups = "drop_last")
-
-        age_summary$age <- grid_age
-        df_grid <- bind_rows(df_grid, age_summary)
-    }
-
-    return(df_grid)
+    return(trajStates %>%
+           group_by(traj, type) %>%
+           summarize(N=approx(age, N, ages, method="constant", f=0, yright=0)$y,
+                     age=ages))
 }
 
 

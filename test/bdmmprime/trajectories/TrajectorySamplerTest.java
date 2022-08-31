@@ -20,7 +20,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -76,7 +76,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -135,7 +135,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -193,7 +193,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -253,7 +253,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         new RealParameter("2.5"),
                         new RealParameter("2.0 1.0"), 1),
@@ -310,7 +310,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         new RealParameter("2.5"),
                         new RealParameter("2.0 1.0"), 1),
@@ -369,7 +369,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -429,7 +429,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("5.0"),
+                "processLength", new RealParameter("5.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -508,7 +508,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "origin", new RealParameter("3.0"),
+                "processLength", new RealParameter("3.0"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0")),
@@ -561,7 +561,7 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(nTypes),
-                "origin", new RealParameter("1.2"),
+                "processLength", new RealParameter("1.2"),
                 "birthRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("2.0"), nTypes),

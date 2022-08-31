@@ -5,7 +5,6 @@ import beast.core.CalculationNode;
 import beast.core.Function;
 import beast.core.Input;
 import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
 
 import java.util.*;
 
@@ -29,12 +28,8 @@ public abstract class Parameterization extends CalculationNode {
             "Type set containing types in model.",
             new TypeSet(1));
 
-    public Input<Function> originInput = new Input<>("origin",
+    public Input<Function> processLengthInput = new Input<>("processLength",
             "Time between start of process and the end.");
-
-    public Input<Tree> treeInput = new Input<>("tree",
-            "If specified, condition on root time rather than origin time.",
-            Input.Validate.XOR, originInput);
 
     private boolean dirty;
 
@@ -95,14 +90,7 @@ public abstract class Parameterization extends CalculationNode {
     }
 
     public double getTotalProcessLength() {
-        if (originInput.get() != null)
-            return originInput.get().getArrayValue();
-        else
-            return treeInput.get().getRoot().getHeight();
-    }
-
-    public boolean conditionedOnRoot() {
-        return originInput.get() == null;
+        return processLengthInput.get().getArrayValue();
     }
 
     private void update() {
@@ -278,7 +266,7 @@ public abstract class Parameterization extends CalculationNode {
      * @param time time to query age for
      * @return age corresponding to time
      */
-    public double getAge(double time, double finalSampleOffset) {
+    public double getNodeAge(double time, double finalSampleOffset) {
         return getTotalProcessLength() - time - finalSampleOffset;
     }
 
