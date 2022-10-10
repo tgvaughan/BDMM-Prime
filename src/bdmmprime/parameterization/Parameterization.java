@@ -29,7 +29,8 @@ public abstract class Parameterization extends CalculationNode {
             new TypeSet(1));
 
     public Input<Function> processLengthInput = new Input<>("processLength",
-            "Time between start of process and the end.");
+            "Time between start of process and the end.",
+            Input.Validate.REQUIRED);
 
     private boolean dirty;
 

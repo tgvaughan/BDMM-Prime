@@ -181,11 +181,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     }
 
     @Override
-    public double calculateTreeLogLikelihood(TreeInterface tree) {
+    public double calculateTreeLogLikelihood(TreeInterface dummyTree) {
 
-        if (tree.getLeafNodeCount() != originalLeafCount) {
+        if (tree.getLeafNodeCount() != originalLeafCount)
             initAndValidate();
-        }
 
         Node root = tree.getRoot();
 
@@ -196,42 +195,58 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             return logP;
         }
 
+        if (conditionOnRootInput.get() && tree.getRoot().isFake()) {
+            if (savePartialLikelihoodsToFileInput.get() != null)
+                Log.err("Tree root is a sampled ancestor but we're conditioning on a root birth.");
+            logP = Double.NEGATIVE_INFINITY;
+            return logP;
+        }
+
         // Use the exact solution in the case of a single type
         if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1
                 && savePartialLikelihoodsToFileInput.get() == null) {
-            logP = getSingleTypeTreeLogLikelihood(tree);
+            logP = getSingleTypeTreeLogLikelihood();
             return logP;
         }
 
         P0GeSystem system = new P0GeSystem(parameterization,
                 absoluteToleranceInput.get(), relativeToleranceInput.get());
 
-        // update the threshold for parallelization
-        //TODO only do it if tree shape changed
         updateParallelizationThreshold();
 
-        updateInitialConditionsForP(tree);
+        updateInitialConditionsForP();
 
-        double probNoSample = 0;
-        if (conditionOnSurvivalInput.get()) {
+        double conditionDensity = 0.0;
+        double[] extinctionProb = pInitialConditions[pInitialConditions.length - 1];
+        if (conditionOnRootInput.get()) {
 
-            double[] noSampleExistsProp = pInitialConditions[pInitialConditions.length - 1];
-            if (debug) {
-                System.out.print("\nnoSampleExistsProp = ");
-                for (int type = 0; type<parameterization.getNTypes(); type++) {
-                        System.out.print(noSampleExistsProp[type] + " ");
+            int intervalIndex = parameterization.getIntervalIndex(0);
+            for (int type1=0; type1<parameterization.getNTypes(); type1++) {
+                for (int type2=0; type2<parameterization.getNTypes(); type2++) {
+                    double rate = type1 == type2
+                            ? parameterization.getBirthRates()[intervalIndex][type1]
+                            : parameterization.getCrossBirthRates()[intervalIndex][type1][type2];
+
+                    if (rate == 0.0)
+                        continue;
+
+                   conditionDensity += rate*frequenciesInput.get().getArrayValue(type1)
+                           * (1-extinctionProb[type1])
+                           * (1-extinctionProb[type2]);
                 }
-                System.out.println();
             }
+        } else if (conditionOnSurvivalInput.get()) {
 
-            for (int type = 0; type < parameterization.getNTypes(); type++) {
-                probNoSample += frequenciesInput.get().getArrayValue(type) * noSampleExistsProp[type];
-            }
+            for (int type = 0; type < parameterization.getNTypes(); type++)
+                conditionDensity += frequenciesInput.get().getArrayValue(type)
+                        * (1-extinctionProb[type]);
 
-            if (probNoSample < 0 || probNoSample > 1)
-                return Double.NEGATIVE_INFINITY;
-
+        } else {
+            conditionDensity = 1.0;
         }
+
+        if (conditionDensity < 0)
+            return Double.NEGATIVE_INFINITY;
 
         P0GeState finalP0Ge;
         if (conditionOnRootInput.get()) {
@@ -240,24 +255,38 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             finalP0Ge = new P0GeState(parameterization.getNTypes());
 
-            Node child0 = root.getChild(0);
-            Node child1 = root.getChild(1);
+            Node child1 = root.getChild(0);
+            Node child2 = root.getChild(1);
 
-            P0GeState child1state = calculateSubtreeLikelihood(child0, 0,
-                    parameterization.getNodeTime(child0, finalSampleOffset.getArrayValue()),
-                    system, 0);
-            P0GeState child2state = calculateSubtreeLikelihood(child1, 0,
+            P0GeState child1state = calculateSubtreeLikelihood(child1, 0,
                     parameterization.getNodeTime(child1, finalSampleOffset.getArrayValue()),
                     system, 0);
+            P0GeState child2state = calculateSubtreeLikelihood(child2, 0,
+                    parameterization.getNodeTime(child2, finalSampleOffset.getArrayValue()),
+                    system, 0);
 
-            for (int type=0; type<parameterization.getNTypes(); type++) {
-                finalP0Ge.ge[type] = child1state.ge[type].multiplyBy(child2state.ge[type]);
-                finalP0Ge.p0[type] = child1state.p0[type];
+            int intervalIndex = parameterization.getIntervalIndex(0);
+            for (int type1=0; type1<parameterization.getNTypes(); type1++) {
+                finalP0Ge.p0[type1] = child1state.p0[type1];
+                for (int type2=0; type2<parameterization.getNTypes(); type2++) {
+                    double rate = type2 == type1
+                            ? parameterization.getBirthRates()[intervalIndex][type1]
+                            : parameterization.getCrossBirthRates()[intervalIndex][type1][type2];
+
+                    if (rate == 0.0)
+                        continue;
+
+                    finalP0Ge.ge[type1] = finalP0Ge.ge[type1].addTo(
+                            child1state.ge[type1]
+                            .multiplyBy(child2state.ge[type2])
+                                    .addTo(child1state.ge[type2].multiplyBy(child2state.ge[type1]))
+                                    .scalarMultiplyBy(0.5*rate));
+                }
             }
 
         } else {
 
-            // Condition on origin time, as usual:
+            // Condition on origin time:
 
             finalP0Ge = calculateSubtreeLikelihood(root, 0,
                     parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()),
@@ -287,11 +316,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             startTypeProbs[startType] = Math.exp(startTypeProbs[startType]);
         }
 
-        // TGV: Why is there not one of these factors per subtree when conditioning
-        // on root?
-        if (conditionOnSurvivalInput.get()) {
-            PrSN = PrSN.scalarMultiplyBy(1 / (1 - probNoSample));
-        }
+        PrSN = PrSN.scalarMultiplyBy(1 / conditionDensity);
 
         logP = PrSN.log();
 
@@ -658,10 +683,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     /**
      * Compute all initial conditions for all future integrations on p0 equations.
-     *
-     * @param tree tree to extract leaf times from
      */
-    private void updateInitialConditionsForP(TreeInterface tree) {
+    private void updateInitialConditionsForP() {
 
         P0System p0System = new P0System(parameterization,
                 absoluteToleranceInput.get(), relativeToleranceInput.get());
@@ -961,7 +984,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
     }
 
-    private double getSingleTypeTreeLogLikelihood(TreeInterface tree) {
+    private double getSingleTypeTreeLogLikelihood() {
 
         double[] A = new double[parameterization.getTotalIntervalCount()];
         double[] B = new double[parameterization.getTotalIntervalCount()];
@@ -989,14 +1012,22 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         }
 
-        if (conditionOnSurvivalInput.get()) {
+        if (conditionOnSurvivalInput.get() || conditionOnRootInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
-            logP -= Math.log(1.0 -
-                    get_p_i(parameterization.getBirthRates()[i][0],
-                            parameterization.getDeathRates()[i][0],
-                            parameterization.getSamplingRates()[i][0],
-                            A[i], B[i],
-                            parameterization.getIntervalEndTimes()[i], 0.0));
+            double p_i = get_p_i(parameterization.getBirthRates()[i][0],
+                    parameterization.getDeathRates()[i][0],
+                    parameterization.getSamplingRates()[i][0],
+                    A[i], B[i],
+                    parameterization.getIntervalEndTimes()[i], 0.0);
+
+            if (p_i == 1)
+                return Double.NEGATIVE_INFINITY; // Following BDSKY's behaviour
+
+//            logP -= Math.log(1.0 - p_i);
+            if (conditionOnRootInput.get())
+                logP -= 2.0 * Math.log(1.0 - p_i);
+            else
+                logP -= Math.log(1.0 - p_i);
         }
 
         // Account for possible label permutations
