@@ -834,10 +834,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parallelize", false,
 				"useAnalyticalSingleTypeSolution", false);
 
-		assertEquals(-100.15682190617582 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
+		assertEquals(-99.0428845398644 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
 
 		density.setInputValue("useAnalyticalSingleTypeSolution", true);
-		assertEquals(-100.15682190617582 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
+		assertEquals(-99.0428845398644 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
 	}
 
 	/**
@@ -1632,7 +1632,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-		assertEquals(-8.906223150087108 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);   // Reference from BDMM - version 0.2.0 - 06/07/2017
+		// Corrected value from BDMM (original was incorrectly conditioned)
+		assertEquals(-5.5751511486962215 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+
+//		assertEquals(-8.906223150087108 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);   // Reference from BDMM - version 0.2.0 - 06/07/2017
 
 	}
 	
@@ -1823,10 +1826,9 @@ public class BirthDeathMigrationLikelihoodTest {
 	 * No rate-change, one state, 4 tips
 	 * This state is just there in case something is broken with sampled ancestors,
 	 * helps for debugging if combined with testSALikelihoodMini for instance
-	 * @throws Exception
 	 */
 	@Test
-	public void testSALikelihoodCalculationWithoutAncestors() throws Exception {
+	public void testSALikelihoodCalculationWithoutAncestors() {
 
 	    Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
                 false);
@@ -1860,12 +1862,12 @@ public class BirthDeathMigrationLikelihoodTest {
 
         // Conditioned on root:
 
-		assertEquals(-15.99699690815937 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+		assertEquals(-15.545323363405362 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
 
 		density.setInputValue("useAnalyticalSingleTypeSolution", true);
 		density.initAndValidate();
 
-		assertEquals(-15.99699690815937 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+		assertEquals(-15.545323363405362 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
 
 		// Conditioned on origin:
 
