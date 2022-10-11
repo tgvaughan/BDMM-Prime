@@ -429,7 +429,6 @@ public class BirthDeathMigrationLikelihoodTest {
 		density.initByName(
 		        "parameterization", parameterization,
                 "frequencies", new RealParameter("1.0"),
-                "conditionOnSurvival", false,
 				"conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -438,14 +437,15 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		double logL = density.calculateLogP();
 
-		// this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=0)
-		assertEquals(-6.761909 + labeledTreeConversionFactor(density), logL, 1e-4);
+		// this result is from the R package, TreePar:
+		// LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=1)
+		assertEquals(-3.72382 + labeledTreeConversionFactor(density), logL, 1e-4);
 
 		density.setInputValue("useAnalyticalSingleTypeSolution", true);
 		density.initAndValidate();
 
 		double logLanalytical = density.calculateLogP();
-		assertEquals(-6.761909 + labeledTreeConversionFactor(density), logLanalytical, 1e-4);
+		assertEquals(-3.72382 + labeledTreeConversionFactor(density), logLanalytical, 1e-4);
 
 		// test with conditioned-on-survival tree
 		parameterization.setInputValue("processLength", "10");
