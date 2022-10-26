@@ -1,6 +1,6 @@
 package bdmmprime.mapping;
 
-import beast.evolution.tree.Node;
+import beast.base.evolution.tree.Node;
 
 import java.io.PrintStream;
 

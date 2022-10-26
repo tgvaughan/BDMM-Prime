@@ -1,7 +1,7 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.core.parameter.RealParameter;
+import beast.base.inference.parameter.RealParameter;
 
 import java.io.PrintStream;
 

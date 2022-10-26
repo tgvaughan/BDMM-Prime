@@ -1,9 +1,8 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.core.Description;
-import beast.core.Function;
-import beast.core.parameter.RealParameter;
+import beast.base.core.Description;
+import beast.base.core.Function;
 
 import java.io.PrintStream;
 

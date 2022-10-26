@@ -1,6 +1,7 @@
 package bdmmprime.util;
 
-import beast.core.*;
+import beast.base.core.*;
+import beast.base.inference.CalculationNode;
 
 import java.io.PrintStream;
 

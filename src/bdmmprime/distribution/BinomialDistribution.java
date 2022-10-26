@@ -1,9 +1,9 @@
 package bdmmprime.distribution;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.math.distributions.ParametricDistribution;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.distribution.ParametricDistribution;
+import beast.base.inference.parameter.RealParameter;
 import org.apache.commons.math.distribution.BinomialDistributionImpl;
 
 @Description("Binomial distribution, used as prior  Pr(k; n; p)=\\binom{n}{k} p^k (1-p)^{n-k}" +

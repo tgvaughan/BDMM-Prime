@@ -1,13 +1,13 @@
 package bdmmprime.util.operators;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.evolution.alignment.TaxonSet;
-import beast.evolution.operators.TreeOperator;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.evolution.operator.TreeOperator;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.util.Randomizer;
 
 import java.util.ArrayList;
 import java.util.Arrays;

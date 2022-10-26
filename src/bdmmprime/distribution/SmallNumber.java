@@ -1,8 +1,8 @@
 package bdmmprime.distribution;
 
-import java.text.DecimalFormat;
+import beast.base.core.Description;
 
-import beast.core.Description;
+import java.text.DecimalFormat;
 
 /**
  * Created by Jeremie Scire (jscire) on 24.06.16.

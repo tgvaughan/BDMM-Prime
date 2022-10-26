@@ -3,7 +3,7 @@ package bdmmprime.trajectories;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.ObservedEvent;
 import bdmmprime.trajectories.trajevents.*;
-import beast.util.Randomizer;
+import beast.base.util.Randomizer;
 
 import static bdmmprime.util.Utils.*;
 

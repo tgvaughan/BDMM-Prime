@@ -2,11 +2,11 @@ package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.TimedParameter;
 import bdmmprime.parameterization.TypeSet;
-import beast.app.beauti.BeautiDoc;
-import beast.app.draw.InputEditor;
-import beast.core.BEASTInterface;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beast.base.inference.parameter.RealParameter;
+import beastfx.app.inputeditor.BeautiDoc;
+import beastfx.app.inputeditor.InputEditor;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;

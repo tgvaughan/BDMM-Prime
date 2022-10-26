@@ -1,10 +1,10 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.core.CalculationNode;
-import beast.core.Function;
-import beast.core.Input;
-import beast.evolution.tree.Node;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.evolution.tree.Node;
+import beast.base.inference.CalculationNode;
 
 import java.util.*;
 

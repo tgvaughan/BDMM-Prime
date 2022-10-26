@@ -1,6 +1,6 @@
 package bdmmprime.parameterization;
 
-import beast.core.Input;
+import beast.base.core.Input;
 
 public class CanonicalParameterization extends Parameterization {
 
