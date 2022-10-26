@@ -1,10 +1,11 @@
 package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineVectorParameter;
-import beast.app.beauti.BeautiDoc;
-import beast.core.BEASTInterface;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beast.base.inference.parameter.RealParameter;
+import beastfx.app.inputeditor.BeautiDoc;
+import beastfx.app.inputeditor.InputEditor;
 
 public class SkylineVectorInputEditor extends SkylineInputEditor {
 
@@ -21,7 +22,7 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
 
     @Override
     public void init(Input<?> input, BEASTInterface beastObject, int itemNr,
-                     ExpandOption isExpandOption, boolean addButtons) {
+                     InputEditor.ExpandOption isExpandOption, boolean addButtons) {
 
         skylineVector = (SkylineVectorParameter) input.get();
 

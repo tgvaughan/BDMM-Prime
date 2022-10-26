@@ -2,15 +2,14 @@ package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineParameter;
 import bdmmprime.parameterization.TypeSet;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.TraitSet;
-import beast.evolution.tree.Tree;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.Tree;
 
 import javax.swing.*;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
-import java.math.RoundingMode;
 
 public class EpochVisualizerPanel extends JPanel {
 

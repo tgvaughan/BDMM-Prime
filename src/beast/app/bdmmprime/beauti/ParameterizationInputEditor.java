@@ -1,10 +1,10 @@
 package beast.app.bdmmprime.beauti;
 
 import bdmmprime.parameterization.Parameterization;
-import beast.app.beauti.BeautiDoc;
-import beast.app.draw.BEASTObjectInputEditor;
-import beast.core.BEASTInterface;
-import beast.core.Input;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beastfx.app.inputeditor.BEASTObjectInputEditor;
+import beastfx.app.inputeditor.BeautiDoc;
 
 public class ParameterizationInputEditor extends BEASTObjectInputEditor {
 

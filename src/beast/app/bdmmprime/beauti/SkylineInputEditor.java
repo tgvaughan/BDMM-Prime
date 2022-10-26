@@ -2,13 +2,13 @@ package beast.app.bdmmprime.beauti;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.SkylineParameter;
-import beast.app.beauti.BeautiDoc;
-import beast.app.draw.InputEditor;
-import beast.core.BEASTInterface;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.evolution.tree.TraitSet;
-import beast.evolution.tree.Tree;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.Tree;
+import beast.base.inference.parameter.RealParameter;
+import beastfx.app.inputeditor.BeautiDoc;
+import beastfx.app.inputeditor.InputEditor;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
