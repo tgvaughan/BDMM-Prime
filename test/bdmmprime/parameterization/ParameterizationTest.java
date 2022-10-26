@@ -1,6 +1,6 @@
 package bdmmprime.parameterization;
 
-import beast.core.parameter.RealParameter;
+import beast.base.inference.parameter.RealParameter;
 import org.junit.Assert;
 import org.junit.Test;
 

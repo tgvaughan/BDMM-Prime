@@ -1,12 +1,12 @@
 package bdmmprime.util.priors;
 
-import beast.core.Distribution;
-import beast.core.Function;
-import beast.core.Input;
-import beast.core.State;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.TraitSet;
-import beast.evolution.tree.TreeInterface;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.inference.Distribution;
+import beast.base.inference.State;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.TreeInterface;
 
 import java.util.List;
 import java.util.Random;

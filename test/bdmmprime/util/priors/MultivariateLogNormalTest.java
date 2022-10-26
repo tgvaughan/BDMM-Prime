@@ -1,7 +1,7 @@
 package bdmmprime.util.priors;
 
-import beast.core.Distribution;
-import beast.core.parameter.RealParameter;
+import beast.base.inference.Distribution;
+import beast.base.inference.parameter.RealParameter;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

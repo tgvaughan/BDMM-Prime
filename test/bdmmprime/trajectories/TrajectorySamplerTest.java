@@ -3,9 +3,9 @@ package bdmmprime.trajectories;
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.simulation.SimulatedTree;
-import beast.core.parameter.RealParameter;
-import beast.util.Randomizer;
-import beast.util.TreeParser;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.util.Randomizer;
+import beast.base.evolution.tree.TreeParser;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;

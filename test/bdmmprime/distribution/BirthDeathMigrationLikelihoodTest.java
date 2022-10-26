@@ -1,6 +1,7 @@
 package bdmmprime.distribution;
 
 import bdmmprime.parameterization.*;
+import beast.base.evolution.tree.TreeParser;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.tree.Tree;
 import org.apache.commons.math.special.Gamma;
