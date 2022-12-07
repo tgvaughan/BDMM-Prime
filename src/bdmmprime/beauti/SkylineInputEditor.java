@@ -1,4 +1,4 @@
-package beast.app.bdmmprime.beauti;
+package bdmmprime.beauti;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.SkylineParameter;
@@ -9,31 +9,40 @@ import beast.base.evolution.tree.Tree;
 import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
+import beastfx.app.util.FXUtils;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.value.ObservableDoubleValue;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.ObservableValueBase;
+import javafx.collections.FXCollections;
+import javafx.event.EventHandler;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
+import javafx.util.Callback;
 
-import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.util.List;
 
 public abstract class SkylineInputEditor extends InputEditor.Base {
 
     SkylineParameter skylineParameter;
 
-    SpinnerModel changeCountSpinnerModel;
-    JCheckBox scalarRatesCheckBox, timesAreAgesCheckBox;
+    Spinner<Integer> changeCountSpinner;
+    CheckBox scalarRatesCheckBox, timesAreAgesCheckBox;
 
-    DefaultTableModel changeTimesTableModel;
-    JTable changeTimesTable;
-    Box changeTimesBox;
+    TableView<RealParameter> changeTimesTable;
+    VBox changeTimesBox;
 
-    SkylineValuesTableModel valuesTableModel;
-    JTable valuesTable;
+    TableView valuesTable;
+    List<TableColumn<RealParameter,String>> valuesColumns;
 
-    JCheckBox estimateValuesCheckBox, estimateTimesCheckBox;
+    CheckBox estimateValuesCheckBox, estimateTimesCheckBox;
 
-    Box mainInputBox;
+    VBox mainInputBox;
 
-    JCheckBox visualizerCheckBox;
+    CheckBox visualizerCheckBox;
     EpochVisualizerPanel epochVisualizer;
 
     private boolean modelSaveInProcess = false;
@@ -55,113 +64,81 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         addInputLabel();
 
-        Box boxHoriz;
+        HBox boxHoriz;
 
         // Add elements specific to change times
 
-        mainInputBox = Box.createVerticalBox();
-        mainInputBox.setBorder(new EtchedBorder());
+        mainInputBox = FXUtils.newVBox();
 
-        boxHoriz = Box.createHorizontalBox();
-        JLabel changePointLabel = new JLabel("Number of change times:");
-        JSpinner changePointsSpinner = new JSpinner();
-        changeCountSpinnerModel =
-                new SpinnerNumberModel(0, 0, Integer.MAX_VALUE,1);
-        changePointsSpinner.setModel(changeCountSpinnerModel);
-        boxHoriz.add(changePointLabel);
-        boxHoriz.add(changePointsSpinner);
-        boxHoriz.add(makeHorizontalFiller());
+        boxHoriz = FXUtils.newHBox();
+        Label changePointLabel = new Label("Number of change times:");
+        changeCountSpinner = new Spinner<>(0, 0, Integer.MAX_VALUE);
+        boxHoriz.getChildren().add(changePointLabel);
+        boxHoriz.getChildren().add(changeCountSpinner);
 
-        mainInputBox.add(boxHoriz);
+        mainInputBox.getChildren().add(boxHoriz);
 
-        changeTimesBox = Box.createVerticalBox();
-        Box changeTimesBoxRow = Box.createHorizontalBox();
-        changeTimesBoxRow.add(new JLabel("Change times:"));
-        changeTimesTableModel = new DefaultTableModel(new String[] {"Epoch 1->2"}, 1);
-        changeTimesTable = new JTable(changeTimesTableModel);
-        changeTimesTable.setShowGrid(true);
-        changeTimesTable.setGridColor(Color.GRAY);
-        changeTimesTable.setCellSelectionEnabled(false);
-        Box changeTimesTableBoxCol = Box.createVerticalBox();
-        changeTimesTableBoxCol.add(changeTimesTable.getTableHeader());
-        changeTimesTableBoxCol.add(changeTimesTable);
-        changeTimesBoxRow.add(changeTimesTableBoxCol);
-        changeTimesBoxRow.add(makeHorizontalFiller());
-        changeTimesBox.add(changeTimesBoxRow);
-        changeTimesBoxRow = Box.createHorizontalBox();
-        timesAreAgesCheckBox = new JCheckBox("Times specified as ages");
-        changeTimesBoxRow.add(timesAreAgesCheckBox);
-        estimateTimesCheckBox = new JCheckBox("Estimate change times");
-        changeTimesBoxRow.add(estimateTimesCheckBox);
-        changeTimesBoxRow.add(makeHorizontalFiller());
-        changeTimesBox.add(changeTimesBoxRow);
+        changeTimesBox = FXUtils.newVBox();
+        HBox changeTimesBoxRow = FXUtils.newHBox();
+        changeTimesBoxRow.getChildren().add(new Label("Change times:"));
+        changeTimesTable = new TableView<>();
+        VBox changeTimesTableBoxCol = FXUtils.newVBox();
+        changeTimesTableBoxCol.getChildren().add(changeTimesTable);
+        changeTimesBoxRow.getChildren().add(changeTimesTableBoxCol);
+        changeTimesBox.getChildren().add(changeTimesBoxRow);
+        changeTimesBoxRow = FXUtils.newHBox();
+        timesAreAgesCheckBox = new CheckBox("Times specified as ages");
+        changeTimesBoxRow.getChildren().add(timesAreAgesCheckBox);
+        estimateTimesCheckBox = new CheckBox("Estimate change times");
+        changeTimesBoxRow.getChildren().add(estimateTimesCheckBox);
+        changeTimesBox.getChildren().add(changeTimesBoxRow);
 
-        mainInputBox.add(changeTimesBox);
+        mainInputBox.getChildren().add(changeTimesBox);
 
         // Add elements specific to values
 
-        boxHoriz = Box.createHorizontalBox();
-        boxHoriz.add(new JLabel("Values:"));
-        valuesTableModel = getValuesTableModel();
-        valuesTable = new JTable(valuesTableModel);
-        valuesTable.setShowGrid(true);
-        valuesTable.setGridColor(Color.GRAY);
-        valuesTable.setCellSelectionEnabled(false);
-        Box valuesTableBoxCol = Box.createVerticalBox();
-        valuesTableBoxCol.add(valuesTable.getTableHeader());
-        valuesTableBoxCol.add(valuesTable);
-        boxHoriz.add(valuesTableBoxCol);
-        boxHoriz.add(makeHorizontalFiller());
+        boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(new Label("Values:"));
+        valuesTable = new TableView<RealParameter>();
+        VBox valuesTableBoxCol = FXUtils.newVBox();
+        valuesTableBoxCol.getChildren().add(valuesTable);
+        boxHoriz.getChildren().add(valuesTableBoxCol);
 
-        mainInputBox.add(boxHoriz);
+        mainInputBox.getChildren().add(boxHoriz);
 
-        boxHoriz = Box.createHorizontalBox();
-        scalarRatesCheckBox = new JCheckBox("Scalar values");
-        boxHoriz.add(scalarRatesCheckBox, Component.LEFT_ALIGNMENT);
-        estimateValuesCheckBox = new JCheckBox("Estimate values");
-        boxHoriz.add(estimateValuesCheckBox);
-        boxHoriz.add(makeHorizontalFiller());
+        boxHoriz = FXUtils.newHBox();
+        scalarRatesCheckBox = new CheckBox("Scalar values");
+        boxHoriz.getChildren().add(scalarRatesCheckBox);
+        estimateValuesCheckBox = new CheckBox("Estimate values");
+        boxHoriz.getChildren().add(estimateValuesCheckBox);
 
-        mainInputBox.add(boxHoriz);
+        mainInputBox.getChildren().add(boxHoriz);
 
-        boxHoriz = Box.createHorizontalBox();
-        visualizerCheckBox = new JCheckBox("Display visualization");
-        boxHoriz.add(visualizerCheckBox, Component.LEFT_ALIGNMENT);
-        boxHoriz.add(makeHorizontalFiller());
-        mainInputBox.add(boxHoriz);
+        boxHoriz = FXUtils.newHBox();
+        visualizerCheckBox = new CheckBox("Display visualization");
+        boxHoriz.getChildren().add(visualizerCheckBox);
+        mainInputBox.getChildren().add(boxHoriz);
 
-        epochVisualizer = new EpochVisualizerPanel(getTree(), getTypeTraitSet(), skylineParameter);
-        mainInputBox.add(epochVisualizer);
+//        epochVisualizer = new EpochVisualizerPanel(getTree(), getTypeTraitSet(), skylineParameter);
+//        mainInputBox.getChildren().add(epochVisualizer);
 
-        add(mainInputBox);
+        getChildren().add(mainInputBox);
 
         ensureParamsConsistent();
 
         loadFromModel();
 
         // Add event listeners:
-        changeCountSpinnerModel.addChangeListener(e -> saveToModel());
-        changeTimesTableModel.addTableModelListener(e -> saveToModel());
-        timesAreAgesCheckBox.addItemListener(e -> saveToModel());
-        estimateTimesCheckBox.addItemListener(e -> saveToModel());
+        changeCountSpinner.editorProperty().addListener(e -> saveToModel());
+        timesAreAgesCheckBox.selectedProperty().addListener(e -> saveToModel());
+        estimateTimesCheckBox.selectedProperty().addListener(e -> saveToModel());
 
-        valuesTableModel.addTableModelListener(e -> saveToModel());
-        scalarRatesCheckBox.addItemListener(e -> saveToModel());
-        estimateValuesCheckBox.addItemListener(e -> saveToModel());
+        scalarRatesCheckBox.selectedProperty().addListener(e -> saveToModel());
+        estimateValuesCheckBox.selectedProperty().addListener(e -> saveToModel());
 
-        visualizerCheckBox.addItemListener(e -> saveToModel());
+        visualizerCheckBox.selectedProperty().addListener(e -> saveToModel());
     }
 
-    abstract SkylineValuesTableModel getValuesTableModel();
-
-    /**
-     * @return a horizontal filler object.
-     */
-    public static Box.Filler makeHorizontalFiller() {
-        return new Box.Filler(new Dimension(1,1),
-                new Dimension(1,1),
-                new Dimension(Integer.MAX_VALUE,1));
-    }
 
     /**
      * Ensures that the dimensions of the values RealParameter is consistent
@@ -176,6 +153,46 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     abstract void ensureParamsConsistent();
 
     /**
+     * Configure table columns for change times.
+     * @param nChanges number of change times (number of columns to configure)
+     */
+    void addChangeTimesColumns(int nChanges) {
+        changeTimesTable.getColumns().clear();
+
+        for (int i=0; i<nChanges; i++) {
+            int index = i;
+
+            TableColumn<RealParameter, String> thisCol = new TableColumn<>(
+                    "Epoch " + (i+1) + "->" + (i+2));
+            thisCol.setSortable(false);
+
+            thisCol.setCellValueFactory(p -> new ObservableValueBase<>() {
+                @Override
+                public String getValue() {
+                    return p.getValue().getValue(index).toString();
+                }
+            });
+
+            thisCol.setCellFactory(TextFieldTableCell.forTableColumn());
+
+            thisCol.setOnEditCommit(event -> event.getRowValue().setValue(
+                    index, Double.valueOf(event.getNewValue())));
+
+            changeTimesTable.getColumns().add(thisCol);
+        }
+
+        valuesTable.getColumns().clear();
+
+        for (int i=0; i<nChanges+1; i++) {
+            int index = i;
+
+            TableColumn<TableColumn<RealParameter,String>, String> thisCol = new TableColumn<>(
+                    "Epoch " + (i+1));
+            thisCol.setSortable(false);
+        }
+    }
+
+    /**
      * Populate GUI elements with values/dimensions from current BEASTObject model.
      * Called immediately after init(), and thus after every refreshPanel().
      */
@@ -187,26 +204,19 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         // Load change times:
 
         if (nChanges > 0) {
-            changeCountSpinnerModel.setValue(nChanges);
-            changeTimesTableModel.setColumnCount(nChanges);
-
-            String[] columnNames = new String[nChanges];
-            for (int i=0; i<nChanges; i++) {
-                columnNames[i] = "Epoch " + (i+1) + " -> " + (i+2);
-            }
-            changeTimesTableModel.setColumnIdentifiers(columnNames);
+            changeCountSpinner.getValueFactory().setValue(nChanges);
+            addChangeTimesColumns(nChanges);
 
             changeTimesBox.setVisible(true);
 
             estimateTimesCheckBox.setSelected(((RealParameter)skylineParameter.changeTimesInput.get()).isEstimatedInput.get());
 
             RealParameter changeTimesParameter = (RealParameter)skylineParameter.changeTimesInput.get();
-            for (int i=0; i<changeTimesParameter.getDimension(); i++)
-                changeTimesTableModel.setValueAt(changeTimesParameter.getValue(i), 0, i);
+            changeTimesTable.setItems(FXCollections.observableArrayList(changeTimesParameter));
 
         } else {
-            changeCountSpinnerModel.setValue(0);
-            changeTimesTableModel.setColumnCount(0);
+            changeCountSpinner.getValueFactory().setValue(0);
+            changeTimesTable.setItems(null);
             changeTimesBox.setVisible(false);
         }
 
@@ -216,17 +226,14 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         RealParameter valuesParameter = (RealParameter)skylineParameter.skylineValuesInput.get();
 
-        valuesTableModel.setIntervalCount(nChanges+1);
-        valuesTableModel.loadFromParameter(valuesParameter);
-
         if (valuesParameter.getDimension()==(nChanges+1)) {
             if (nTypes>1) {
                 scalarRatesCheckBox.setSelected(true);
-                scalarRatesCheckBox.setEnabled(true);
+                scalarRatesCheckBox.disableProperty().set(false);
                 epochVisualizer.setScalar(true);
             } else {
                 scalarRatesCheckBox.setSelected(false);
-                scalarRatesCheckBox.setEnabled(false);
+                scalarRatesCheckBox.disableProperty().set(true);
                 epochVisualizer.setScalar(false);
             }
         } else {
@@ -254,7 +261,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         modelSaveInProcess = true;
 
-        int nChanges = (int)changeCountSpinnerModel.getValue();
+        int nChanges = changeCountSpinner.getValue();
 
         // Update table model dimensions
 
@@ -331,12 +338,10 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     }
 
     protected Tree getTree() {
-
         return (Tree) doc.pluginmap.get("Tree.t:" + getPartitionID());
     }
 
     protected TraitSet getTypeTraitSet() {
-
         BirthDeathMigrationDistribution bdmmPrimeDistrib =
                 (BirthDeathMigrationDistribution) doc.pluginmap.get("BDMMPrime.t:" + getPartitionID());
 

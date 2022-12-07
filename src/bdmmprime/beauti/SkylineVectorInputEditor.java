@@ -1,4 +1,4 @@
-package beast.app.bdmmprime.beauti;
+package bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineVectorParameter;
 import beast.base.core.BEASTInterface;

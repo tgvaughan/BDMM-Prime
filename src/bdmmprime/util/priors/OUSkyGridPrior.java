@@ -1,9 +1,9 @@
 package bdmmprime.util.priors;
 
-import beast.core.Distribution;
-import beast.core.Function;
-import beast.core.Input;
-import beast.core.State;
+import beast.base.inference.Distribution;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.inference.State;
 
 import java.util.List;
 import java.util.Random;

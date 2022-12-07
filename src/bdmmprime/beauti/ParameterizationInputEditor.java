@@ -1,4 +1,4 @@
-package beast.app.bdmmprime.beauti;
+package bdmmprime.beauti;
 
 import bdmmprime.parameterization.Parameterization;
 import beast.base.core.BEASTInterface;
