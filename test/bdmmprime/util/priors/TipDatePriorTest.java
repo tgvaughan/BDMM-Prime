@@ -73,6 +73,7 @@ public class TipDatePriorTest {
         prior.initByName(
                 "tree", tree,
                 "finalSampleOffset", fsoParam,
+                "endOfSamplingTime", new RealParameter(String.valueOf(laterBounds.getDate(0))),
                 "earlierBound", earlierBounds,
                 "laterBound", laterBounds);
 
