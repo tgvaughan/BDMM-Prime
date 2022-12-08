@@ -1,12 +1,23 @@
 <beast version='2.0'
-       namespace='beast.app.beauti:beast.core:beast.evolution.branchratemodel:beast.evolution.speciation:beast.evolution.tree.coalescent:beast.core.util:beast.evolution.nuc:beast.evolution.operators:beast.evolution.sitemodel:beast.evolution.substitutionmodel:beast.evolution.likelihood:beast.evolution:beast.math.distributions'>
+       namespace='beast.base.core
+                 :beast.base.evolution.branchratemodel
+                 :beast.base.evolution.speciation
+                 :beast.base.evolution.tree.coalescent
+                 :beast.base.util
+                 :beast.base.evolution.nuc
+                 :beast.base.evolution.operator
+                 :beast.base.evolution.sitemodel
+                 :beast.base.evolution.substitutionmodel
+                 :beast.base.evolution.likelihood
+                 :beast.base.evolution
+                 :beast.base.inference.distributions'>
 
     <mergewith point='misc'>
-        <fragment id='CanonicalBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
+        <fragment id='CanonicalBDMMPrimeParameters' spec="beastfx.app.beauti.Fragment">
             <![CDATA[
 
             <distribution spec="bdmmprime.util.priors.ZeroExcludingPrior" id='$(thisparam)CanonicalPrior.t:$(n)' x='@$(thisparam)Canonical.t:$(n)'>
-                   <distr spec="beast.math.distributions.OneOnX"/>
+                   <distr spec="beast.base.inference.distribution.OneOnX"/>
             </distribution>
   		    <operator id='$(thisparam)CanonicalScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
             ]]>
@@ -30,7 +41,7 @@
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
         </fragment>
 
-        <fragment id="CanonicalBDMMPrimeSkylineLoggers" spec="beast.app.beauti.Fragment">
+        <fragment id="CanonicalBDMMPrimeSkylineLoggers" spec="beastfx.app.beauti.Fragment">
             <connect srcID='$(thisparam)Canonical.t:$(n)' targetID='tracelog' inputName='log'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
@@ -38,11 +49,11 @@
                      and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))'/>
         </fragment>
 
-        <fragment id='EpiBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
+        <fragment id='EpiBDMMPrimeParameters' spec="beastfx.app.beauti.Fragment">
             <![CDATA[
 
             <distribution spec="bdmmprime.util.priors.ZeroExcludingPrior" id='$(thisparam)EpiPrior.t:$(n)' x='@$(thisparam)Epi.t:$(n)'>
-                   <distr spec="beast.math.distributions.OneOnX"/>
+                   <distr spec="beast.base.inference.distribution.OneOnX"/>
             </distribution>
   		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
             ]]>

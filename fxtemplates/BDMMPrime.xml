@@ -14,7 +14,7 @@
                   :beast.base.inference.distribution">
 
     <mergewith point="misc">
-        <fragment id="BDMMPrimeSATreeOperators" spec="beast.app.beauti.Fragment">
+        <fragment id="BDMMPrimeSATreeOperators" spec="beastfx.app.beauti.Fragment">
             <![CDATA[
             <operator id='$(m)LeafToSA.t:$(n)' spec='sa.evolution.operators.LeafToSampledAncestorJump' weight="10" tree="@Tree.t:$(n)"/>
             <operator id='$(m)SAWilsonBalding.t:$(n)' spec='sa.evolution.operators.SAWilsonBalding' weight="10" tree="@Tree.t:$(n)"/>
@@ -132,8 +132,8 @@
   		        <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
   		        <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
 
-                <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
-                <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.core.parameter.RealParameter" value="0.0" estimate="false"/>
+                <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
+                <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
 
                 <logger spec="bdmmprime.util.OptionalLogger" id="typedTreeLogger.t:$(n)"
                         fileName="$(filebase).$(tree).typed.trees" logEvery="1000" mode="tree"
