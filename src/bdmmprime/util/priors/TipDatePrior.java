@@ -4,6 +4,7 @@ import beast.core.Distribution;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.State;
+import beast.core.util.Log;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
 import beast.evolution.tree.TreeInterface;
@@ -30,11 +31,19 @@ public class TipDatePrior extends Distribution {
             "Time of the point when sampling ends.  (Necessary only " +
                     "when upper and lower bounds are given forward in time.)");
 
+    public Input<Boolean> reportBoundsViolationsInput = new Input<>(
+            "reportBoundsViolations",
+            "Causes the distribution to report which taxon exceeded " +
+                    "its bounds in each case.  Useful for diagnosing " +
+                    "initialization problems.", false);
+
     TreeInterface tree;
     TraitSet earlierBound, laterBound;
     boolean boundsAreAges;
 
     Function fso, endOfSamplingTime;
+
+    boolean reportBoundsViolations;
 
     /**
      * Final sample offset for the ages read from trait set representing
@@ -67,6 +76,8 @@ public class TipDatePrior extends Distribution {
             throw new IllegalArgumentException("If bounds are given forward " +
                     "in time, you must also provide a value to the " +
                     "endOfSamplingTime input.");
+
+        reportBoundsViolations = reportBoundsViolationsInput.get();
     }
 
     double getBoundAge(TraitSet boundTrait, Node node) {
@@ -86,10 +97,14 @@ public class TipDatePrior extends Distribution {
             double nodeAge = node.getHeight() + fso.getArrayValue();
             double earlyAge = getBoundAge(earlierBound, node);
             double lateAge = getBoundAge(laterBound, node);
-//            double earlyAge = earlierBound.getValue(node.getID()) + earlyOffset;
-//            double lateAge = laterBound.getValue(node.getID());
 
             if (nodeAge > earlyAge || nodeAge < lateAge) {
+                if (reportBoundsViolations) {
+                    Log.err.println("Taxon " + node.getID() +
+                            " (" + nr + ") has an age of " + nodeAge +
+                            "which is outside the allowed range of [" +
+                            lateAge + "," + earlyAge + "].");
+                }
                 logP = Double.NEGATIVE_INFINITY;
                 break;
             }
