@@ -3,18 +3,18 @@ package bdmmprime.util.priors;
 import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.core.Log;
+import beast.base.evolution.tree.Tree;
 import beast.base.inference.Distribution;
 import beast.base.inference.State;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TraitSet;
-import beast.base.evolution.tree.TreeInterface;
 
 import java.util.List;
 import java.util.Random;
 
 public class TipDatePrior extends Distribution {
 
-    public Input<TreeInterface> treeInput = new Input<>("tree",
+    public Input<Tree> treeInput = new Input<>("tree",
             "Tree whose tips we wish to place a prior on.",
             Input.Validate.REQUIRED);
 
@@ -37,7 +37,7 @@ public class TipDatePrior extends Distribution {
                     "its bounds in each case.  Useful for diagnosing " +
                     "initialization problems.", false);
 
-    TreeInterface tree;
+    Tree tree;
     TraitSet earlierBound, laterBound;
     boolean boundsAreAges;
 
@@ -82,9 +82,10 @@ public class TipDatePrior extends Distribution {
 
     double getBoundAge(TraitSet boundTrait, Node node) {
         if (boundsAreAges)
-            return boundTrait.getValue(node.getID()) + boundTrait.getDate(0);
+            return boundTrait.getValue(tree.getTaxonId(node)) +
+                    boundTrait.getDate(0);
         else
-            return boundTrait.getValue(node.getID()) +
+            return boundTrait.getValue(tree.getTaxonId(node)) +
                     (endOfSamplingTime.getArrayValue() - boundTrait.getDate(0));
     }
 
