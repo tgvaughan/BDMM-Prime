@@ -16,6 +16,7 @@ import javafx.beans.value.ObservableValue;
 import javafx.beans.value.ObservableValueBase;
 import javafx.collections.FXCollections;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
@@ -32,11 +33,10 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     Spinner<Integer> changeCountSpinner;
     CheckBox scalarRatesCheckBox, timesAreAgesCheckBox;
 
-    TableView<RealParameter> changeTimesTable;
     VBox changeTimesBox;
+    HBox changeTimesEntryRow;
 
     TableView valuesTable;
-    List<TableColumn<RealParameter,String>> valuesColumns;
 
     CheckBox estimateValuesCheckBox, estimateTimesCheckBox;
 
@@ -79,14 +79,10 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         mainInputBox.getChildren().add(boxHoriz);
 
         changeTimesBox = FXUtils.newVBox();
+        changeTimesEntryRow = FXUtils.newHBox();
+        changeTimesEntryRow.getChildren().add(new Label("Change times:"));
+        changeTimesBox.getChildren().add(changeTimesEntryRow);
         HBox changeTimesBoxRow = FXUtils.newHBox();
-        changeTimesBoxRow.getChildren().add(new Label("Change times:"));
-        changeTimesTable = new TableView<>();
-        VBox changeTimesTableBoxCol = FXUtils.newVBox();
-        changeTimesTableBoxCol.getChildren().add(changeTimesTable);
-        changeTimesBoxRow.getChildren().add(changeTimesTableBoxCol);
-        changeTimesBox.getChildren().add(changeTimesBoxRow);
-        changeTimesBoxRow = FXUtils.newHBox();
         timesAreAgesCheckBox = new CheckBox("Times specified as ages");
         changeTimesBoxRow.getChildren().add(timesAreAgesCheckBox);
         estimateTimesCheckBox = new CheckBox("Estimate change times");
@@ -129,7 +125,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         loadFromModel();
 
         // Add event listeners:
-        changeCountSpinner.editorProperty().addListener(e -> saveToModel());
+        changeCountSpinner.valueProperty().addListener(e -> saveToModel());
         timesAreAgesCheckBox.selectedProperty().addListener(e -> saveToModel());
         estimateTimesCheckBox.selectedProperty().addListener(e -> saveToModel());
 
@@ -153,42 +149,26 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     abstract void ensureParamsConsistent();
 
     /**
-     * Configure table columns for change times.
+     * Configure inputs for change times.
+     *
      * @param nChanges number of change times (number of columns to configure)
+     * @param parameter change times parameter
      */
-    void addChangeTimesColumns(int nChanges) {
-        changeTimesTable.getColumns().clear();
-
+    void addChangeTimesColumns(int nChanges, RealParameter parameter) {
         for (int i=0; i<nChanges; i++) {
+            changeTimesEntryRow.getChildren().add(new Label("Epoch " + (i+1) + "->" + (i+2) + ": "));
+            TextField textField = new TextField(parameter.getValue(i).toString());
+
+            textField.setPrefWidth(50);
+            textField.setPadding(new Insets(0));
+            HBox.setMargin(textField, new Insets(0, 10, 0, 0));
+
             int index = i;
-
-            TableColumn<RealParameter, String> thisCol = new TableColumn<>(
-                    "Epoch " + (i+1) + "->" + (i+2));
-            thisCol.setSortable(false);
-
-            thisCol.setCellValueFactory(p -> new ObservableValueBase<>() {
-                @Override
-                public String getValue() {
-                    return p.getValue().getValue(index).toString();
-                }
+            textField.setOnAction(event -> {
+                parameter.setValue(index, Double.valueOf(textField.getText()));
             });
 
-            thisCol.setCellFactory(TextFieldTableCell.forTableColumn());
-
-            thisCol.setOnEditCommit(event -> event.getRowValue().setValue(
-                    index, Double.valueOf(event.getNewValue())));
-
-            changeTimesTable.getColumns().add(thisCol);
-        }
-
-        valuesTable.getColumns().clear();
-
-        for (int i=0; i<nChanges+1; i++) {
-            int index = i;
-
-            TableColumn<TableColumn<RealParameter,String>, String> thisCol = new TableColumn<>(
-                    "Epoch " + (i+1));
-            thisCol.setSortable(false);
+            changeTimesEntryRow.getChildren().add(textField);
         }
     }
 
@@ -201,22 +181,17 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         int nChanges = skylineParameter.getChangeCount();
         int nTypes = skylineParameter.getNTypes();
 
+        changeCountSpinner.getValueFactory().setValue(nChanges);
+
         // Load change times:
 
         if (nChanges > 0) {
-            changeCountSpinner.getValueFactory().setValue(nChanges);
-            addChangeTimesColumns(nChanges);
+            addChangeTimesColumns(nChanges, (RealParameter)skylineParameter.changeTimesInput.get());
 
             changeTimesBox.setVisible(true);
 
             estimateTimesCheckBox.setSelected(((RealParameter)skylineParameter.changeTimesInput.get()).isEstimatedInput.get());
-
-            RealParameter changeTimesParameter = (RealParameter)skylineParameter.changeTimesInput.get();
-            changeTimesTable.setItems(FXCollections.observableArrayList(changeTimesParameter));
-
         } else {
-            changeCountSpinner.getValueFactory().setValue(0);
-            changeTimesTable.setItems(null);
             changeTimesBox.setVisible(false);
         }
 
@@ -263,28 +238,10 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         int nChanges = changeCountSpinner.getValue();
 
-        // Update table model dimensions
-
-        valuesTableModel.setIntervalCount(nChanges+1);
-        valuesTableModel.setScalar(scalarRatesCheckBox.isSelected());
-
-        changeTimesTableModel.setColumnCount(nChanges);
-        for (int colIdx=0; colIdx<changeTimesTable.getColumnCount(); colIdx++) {
-            if (changeTimesTableModel.getValueAt(0, colIdx) == null)
-                changeTimesTableModel.setValueAt(
-                        colIdx > 0
-                                ? changeTimesTableModel.getValueAt(0, colIdx-1)
-                                : 0.0,
-                        0, colIdx);
-        }
-
         // Save values
 
         RealParameter skylineValuesParam = (RealParameter)skylineParameter.skylineValuesInput.get();
-        skylineValuesParam.setDimension(valuesTableModel.getRowCount()*(nChanges+1));
-        skylineValuesParam.valuesInput.setValue(valuesTableModel.getParameterString(), skylineValuesParam);
         skylineValuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), skylineValuesParam);
-        skylineParameter.setInputValue("skylineValues", skylineValuesParam);
         skylineValuesParam.initAndValidate();
 
         // Save change times
@@ -300,12 +257,6 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
                 }
             }
             changeTimesParam.setDimension(nChanges);
-
-            StringBuilder changeTimesBuilder = new StringBuilder();
-            for (int i=0; i<nChanges; i++)
-                changeTimesBuilder.append(" ").append(changeTimesTableModel.getValueAt(0, i));
-
-            changeTimesParam.valuesInput.setValue(changeTimesBuilder.toString(), changeTimesParam);
             changeTimesParam.isEstimatedInput.setValue(estimateTimesCheckBox.isSelected(), changeTimesParam);
 
         } else {
@@ -331,22 +282,11 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         refreshPanel();
     }
 
+
     abstract String getChangeTimesParameterID();
 
     private String getPartitionID() {
         return skylineParameter.getID().split("\\.t:")[1];
     }
-
-    protected Tree getTree() {
-        return (Tree) doc.pluginmap.get("Tree.t:" + getPartitionID());
-    }
-
-    protected TraitSet getTypeTraitSet() {
-        BirthDeathMigrationDistribution bdmmPrimeDistrib =
-                (BirthDeathMigrationDistribution) doc.pluginmap.get("BDMMPrime.t:" + getPartitionID());
-
-        return bdmmPrimeDistrib.typeTraitSetInput.get();
-    }
-
 
 }

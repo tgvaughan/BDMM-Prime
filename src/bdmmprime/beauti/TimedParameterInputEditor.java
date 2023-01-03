@@ -1,35 +1,33 @@
 package bdmmprime.beauti;
 
 import bdmmprime.parameterization.TimedParameter;
-import bdmmprime.parameterization.TypeSet;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
-
-import javax.swing.*;
-import javax.swing.border.EtchedBorder;
-import javax.swing.table.AbstractTableModel;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import beastfx.app.util.FXUtils;
+import javafx.beans.value.ObservableValueBase;
+import javafx.geometry.Insets;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
 public class TimedParameterInputEditor extends InputEditor.Base {
 
     TimedParameter timedParameter;
 
-    SpinnerModel timeCountSpinnerModel;
-    JCheckBox scalarValuesCheckBox, timesAreAgesCheckBox;
+    Spinner<Integer> elementCountSpinner;
 
-    DefaultTableModel timesTableModel;
-    JTable timesTable;
-    Box elementsBox;
+    HBox timesEntryRow;
+    VBox elementsBox;
 
-    ValuesTableModel valuesTableModel;
-    JTable valuesTable;
+    CheckBox scalarValuesCheckBox, timesAreAgesCheckBox;
 
-    JCheckBox estimateValuesCheckBox, estimateTimesCheckBox;
+    TableView<TimedParamValuesEntry> valuesTable;
+
+    CheckBox estimateValuesCheckBox, estimateTimesCheckBox;
 
     boolean modelSaveInProcess = false;
 
@@ -55,114 +53,67 @@ public class TimedParameterInputEditor extends InputEditor.Base {
 
         addInputLabel();
 
-        Box boxVert, boxHoriz;
+        HBox boxHoriz;
+        VBox boxVert;
 
         // Add elements specific to change times
 
-        boxVert = Box.createVerticalBox();
-        boxVert.setBorder(new EtchedBorder());
+        boxVert = FXUtils.newVBox();
 
-        boxHoriz = Box.createHorizontalBox();
-        JLabel changePointLabel = new JLabel("Number of elements:");
-        JSpinner changePointsSpinner = new JSpinner();
-        timeCountSpinnerModel =
-                new SpinnerNumberModel(0, 0, Integer.MAX_VALUE,1);
-        changePointsSpinner.setModel(timeCountSpinnerModel);
-        boxHoriz.add(changePointLabel);
-        boxHoriz.add(changePointsSpinner);
-        boxHoriz.add(makeHorizontalFiller());
+        boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(new Label("Number of elements:"));
+        elementCountSpinner = new Spinner<>(0, Integer.MAX_VALUE, 0);
+        boxHoriz.getChildren().add(elementCountSpinner);
 
-        boxVert.add(boxHoriz);
+        boxVert.getChildren().add(boxHoriz);
 
-        elementsBox = Box.createVerticalBox();
+        elementsBox = FXUtils.newVBox();
 
-        Box timesBox = Box.createVerticalBox();
-        Box timesBoxRow = Box.createHorizontalBox();
-        timesBoxRow.add(new JLabel("Element times:"));
-        timesTableModel = new DefaultTableModel(new String[] {"Time 1"}, 1);
-        timesTable = new JTable(timesTableModel);
-        timesTable.setShowGrid(true);
-        timesTable.setGridColor(Color.GRAY);
-        timesTable.setCellSelectionEnabled(false);
-        Box timesTableBoxCol = Box.createVerticalBox();
-        timesTableBoxCol.add(timesTable.getTableHeader());
-        timesTableBoxCol.add(timesTable);
-        timesBoxRow.add(timesTableBoxCol);
-        timesBoxRow.add(makeHorizontalFiller());
-        timesBox.add(timesBoxRow);
-        timesBoxRow = Box.createHorizontalBox();
-        timesAreAgesCheckBox = new JCheckBox("Times specified as ages");
-        timesBoxRow.add(timesAreAgesCheckBox);
-        estimateTimesCheckBox = new JCheckBox("Estimate times");
-        timesBoxRow.add(estimateTimesCheckBox);
-        timesBoxRow.add(makeHorizontalFiller());
-        timesBox.add(timesBoxRow);
+        VBox timesBox = FXUtils.newVBox();
+        timesEntryRow.getChildren().add(new Label("Element times:"));
+        HBox timesBoxRow = FXUtils.newHBox();
+        timesAreAgesCheckBox = new CheckBox("Times specified as ages");
+        timesBoxRow.getChildren().add(timesAreAgesCheckBox);
+        estimateTimesCheckBox = new CheckBox("Estimate times");
+        timesBoxRow.getChildren().add(estimateTimesCheckBox);
+        timesBox.getChildren().add(timesBoxRow);
 
-        elementsBox.add(timesBox);
+        elementsBox.getChildren().add(timesBox);
 
         // Add elements specific to values
 
-        Box valuesBox = Box.createVerticalBox();
-        boxHoriz = Box.createHorizontalBox();
-        boxHoriz.add(new JLabel("Values:"));
-        valuesTableModel = new ValuesTableModel(timedParameter.typeSetInput.get(), true, 1);
-        valuesTable = new JTable(valuesTableModel);
-        valuesTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+        VBox valuesBox = FXUtils.newVBox();
+        boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(new Label("Values:"));
+        valuesTable = new TableView();
+        VBox valuesTableBoxCol = FXUtils.newVBox();
+        valuesTableBoxCol.getChildren().add(valuesTable);
+        boxHoriz.getChildren().add(valuesTableBoxCol);
 
-            Color defaultBG = null;
+        valuesBox.getChildren().add(boxHoriz);
 
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-                JLabel l = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+        boxHoriz = FXUtils.newHBox();
+        scalarValuesCheckBox = new CheckBox("Scalar values");
+        boxHoriz.getChildren().add(scalarValuesCheckBox);
+        estimateValuesCheckBox = new CheckBox("Estimate values");
+        boxHoriz.getChildren().add(estimateValuesCheckBox);
 
-                if (defaultBG == null)
-                    defaultBG = l.getBackground();
+        valuesBox.getChildren().add(boxHoriz);
+        elementsBox.getChildren().add(valuesBox);
 
-                if (column==0) {
-                    l.setBackground(Color.LIGHT_GRAY);
-                }  else {
-                    l.setBackground(defaultBG);
-                }
+        boxVert.getChildren().add(elementsBox);
 
-                return l;
-            }
-        });
-        valuesTable.setShowGrid(true);
-        valuesTable.setGridColor(Color.GRAY);
-        valuesTable.setCellSelectionEnabled(false);
-        Box valuesTableBoxCol = Box.createVerticalBox();
-        valuesTableBoxCol.add(valuesTable.getTableHeader());
-        valuesTableBoxCol.add(valuesTable);
-        boxHoriz.add(valuesTableBoxCol);
-        boxHoriz.add(makeHorizontalFiller());
-
-        valuesBox.add(boxHoriz);
-
-        boxHoriz = Box.createHorizontalBox();
-        scalarValuesCheckBox = new JCheckBox("Scalar values");
-        boxHoriz.add(scalarValuesCheckBox, Component.LEFT_ALIGNMENT);
-        estimateValuesCheckBox = new JCheckBox("Estimate values");
-        boxHoriz.add(estimateValuesCheckBox);
-        boxHoriz.add(makeHorizontalFiller());
-
-        valuesBox.add(boxHoriz);
-        elementsBox.add(valuesBox);
-
-        boxVert.add(elementsBox);
-
-        add(boxVert);
+        getChildren().add(boxVert);
 
         loadFromModel();
 
         // Add event listeners:
-        timeCountSpinnerModel.addChangeListener(e -> saveToModel());
-        timesTableModel.addTableModelListener(e -> saveToModel());
-        timesAreAgesCheckBox.addItemListener(e -> saveToModel());
-        estimateTimesCheckBox.addItemListener(e -> saveToModel());
+        elementCountSpinner.valueProperty().addListener(e -> saveToModel());
+        timesAreAgesCheckBox.selectedProperty().addListener(e -> saveToModel());
+        estimateTimesCheckBox.selectedProperty().addListener(e -> saveToModel());
 
-        valuesTableModel.addTableModelListener(e -> saveToModel());
-        scalarValuesCheckBox.addItemListener(e -> saveToModel());
-        estimateValuesCheckBox.addItemListener(e -> saveToModel());
+        scalarValuesCheckBox.selectedProperty().addListener(e -> saveToModel());
+        estimateValuesCheckBox.selectedProperty().addListener(e -> saveToModel());
     }
 
     /**
@@ -213,6 +164,30 @@ public class TimedParameterInputEditor extends InputEditor.Base {
     }
 
     /**
+     * Configure inputs for element times.
+     *
+     * @param nTimes number of times
+     * @param parameter parameter containing times
+     */
+    void addTimesColumns(int nTimes, RealParameter parameter) {
+        for (int i=0; i<nTimes; i++) {
+            timesEntryRow.getChildren().add(new Label("Epoch " + (i+1)));
+            TextField textField = new TextField(parameter.getValue(i).toString());
+
+            textField.setPrefWidth(50);
+            textField.setPadding(new Insets(0));
+            HBox.setMargin(textField, new Insets(0, 10, 0, 0));
+
+            int index = i;
+            textField.setOnAction(event -> {
+                parameter.setValue(index, Double.valueOf(textField.getText()));
+            });
+
+            timesEntryRow.getChildren().add(textField);
+        }
+    }
+
+    /**
      * Populate GUI elements with values/dimensions from current BEASTObject model.
      * Called immediately after init(), and thus after every refreshPanel().
      */
@@ -223,51 +198,81 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         int nTimes = timedParameter.getTimeCount();
         int nTypes = timedParameter.getNTypes();
 
-        timeCountSpinnerModel.setValue(nTimes);
+        elementCountSpinner.getValueFactory().setValue(nTimes);
+
+        // Load times:
 
         if (nTimes > 0) {
+            RealParameter timesParameter = (RealParameter)timedParameter.timesInput.get();
+            addTimesColumns(nTimes, timesParameter);
 
-            // Load times:
+            TableColumn<TimedParamValuesEntry, String> typeNameCol = new TableColumn<>("Types");
+            typeNameCol.setCellValueFactory(p -> new ObservableValueBase<>() {
+                @Override
+                public String getValue() {
+                    if (p.getValue().type < 0)
+                        return "ALL";
+                    else
+                        return timedParameter.typeSetInput.get().getTypeName(p.getValue().type);
+                }
+            });
+            valuesTable.getColumns().add(typeNameCol);
 
-            timesTableModel.setColumnCount(nTimes);
-
-            String[] columnNames = new String[nTimes];
             for (int i = 0; i < nTimes; i++) {
-                columnNames[i] = "Time " + (i + 1);
+                TableColumn<TimedParamValuesEntry, String> col =
+                        new TableColumn<>("Epoch " + (i+1));
+                int index = i;
+                col.setCellValueFactory(p -> new ObservableValueBase<>() {
+                    @Override
+                    public String getValue() {
+                        RealParameter param = p.getValue().parameter;
+                        int type = p.getValue().type;
+                        if (type<0)
+                            return String.valueOf(param.getValue(index)); // scalar
+                        else
+                            return String.valueOf(param.getValue(index*nTypes + type));
+                    }
+                });
+
+                col.setCellFactory(TextFieldTableCell.forTableColumn());
+                col.setOnEditCommit(e -> {
+                    RealParameter param = e.getRowValue().parameter;
+                    int type = e.getRowValue().type;
+                    double newValue = Double.parseDouble(e.getNewValue());
+                    if (type<0)
+                        param.setValue(index, newValue); // scalar
+                    else
+                        param.setValue(index*nTypes + type, newValue);
+                });
+
+                valuesTable.getColumns().add(col);
             }
-            timesTableModel.setColumnIdentifiers(columnNames);
 
-            RealParameter changeTimesParameter = (RealParameter)timedParameter.timesInput.get();
-            estimateTimesCheckBox.setSelected(changeTimesParameter.isEstimatedInput.get());
-
-            for (int i = 0; i < changeTimesParameter.getDimension(); i++)
-                timesTableModel.setValueAt(changeTimesParameter.getValue(i), 0, i);
+            estimateTimesCheckBox.setSelected(timesParameter.isEstimatedInput.get());
 
             // Load values
 
             RealParameter valuesParameter = (RealParameter)timedParameter.valuesInput.get();
 
-            valuesTableModel.setTimeCount(nTimes);
-            valuesTableModel.loadFromParameter(valuesParameter);
-
             if (valuesParameter.getDimension() == nTimes) {
+                valuesTable.getItems().add(new TimedParamValuesEntry(valuesParameter, -1));
                 if (nTypes > 1) {
                     scalarValuesCheckBox.setSelected(true);
-                    scalarValuesCheckBox.setEnabled(true);
+                    scalarValuesCheckBox.disableProperty().set(true);
                 } else {
                     scalarValuesCheckBox.setSelected(false);
-                    scalarValuesCheckBox.setEnabled(false);
+                    scalarValuesCheckBox.disableProperty().set(false);
                 }
             } else {
+                for (int i=0; i<nTypes; i++)
+                    valuesTable.getItems().add(new TimedParamValuesEntry(valuesParameter, i));
+
                 scalarValuesCheckBox.setSelected(false);
             }
 
             estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
 
         } else {
-            timesTableModel.setColumnCount(0);
-            valuesTableModel.setTimeCount(0);
-
             estimateTimesCheckBox.setSelected(false);
             estimateValuesCheckBox.setSelected(false);
 
@@ -360,6 +365,17 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         refreshPanel();
     }
 
+    public static class TimedParamValuesEntry {
+
+        public TimedParamValuesEntry(RealParameter parameter, int type) {
+            this.parameter = parameter;
+            this.type = type;
+        }
+
+        public RealParameter parameter;
+        public int type;
+    }
+
     RealParameter getValuesParam() {
         RealParameter changeTimesParam = (RealParameter)timedParameter.timesInput.get();
         if (changeTimesParam == null) {
@@ -397,177 +413,4 @@ public class TimedParameterInputEditor extends InputEditor.Base {
 
         return changeTimesParam;
     }
-
-    /**
-     * Table model used to represent SV parameter values.
-     */
-    class ValuesTableModel extends AbstractTableModel {
-
-        double[] data;
-        int nTimes;
-        boolean scalar;
-        TypeSet typeSet;
-
-        public ValuesTableModel(TypeSet typeSet, boolean scalar, int nTimes) {
-            this.typeSet = typeSet;
-            this.nTimes = nTimes;
-            this.scalar = scalar;
-
-            int nRows = scalar ? 1 : typeSet.getNTypes();
-
-            this.data = new double[nRows*nTimes];
-        }
-
-        @Override
-        public int getRowCount() {
-            return scalar ? 1 : typeSet.getNTypes();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return nTimes +1;
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            return column > 0 ? "Time " + column : "Types";
-        }
-
-        @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            data[(columnIndex-1)*getRowCount() + rowIndex] = Double.parseDouble((String)aValue);
-            fireTableDataChanged();
-        }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            if (columnIndex>0)
-                return data[(columnIndex-1)*getRowCount() + rowIndex];
-            else {
-                if (scalar)
-                    return "ALL";
-                else
-                    return typeSet.getTypeName(rowIndex);
-            }
-        }
-
-        public void setTimeCount(int nTimesNew) {
-
-            double [] oldData = data;
-            int nRows = getRowCount();
-            data = new double[nTimesNew*nRows];
-
-            for (int timeIdx=0; timeIdx<nTimesNew; timeIdx++) {
-                for (int row=0; row<nRows; row++) {
-                    if (timeIdx< nTimes)
-                        data[timeIdx*nRows + row] = oldData[timeIdx*nRows + row];
-                    else {
-                        if (timeIdx > 0)
-                            data[timeIdx*nRows + row] = oldData[(nTimes -1)*nRows + row];
-                        else {
-                            if (row > 0)
-                                data[row] = oldData[row-1];
-                            else
-                                data[0] = 0.0;
-                        }
-
-                    }
-                }
-            }
-
-            nTimes = nTimesNew;
-
-            fireTableDataChanged();
-            fireTableStructureChanged();
-        }
-
-        public void setScalar(boolean scalar) {
-
-            if (this.scalar == scalar)
-                return;
-
-            if (scalar) {
-
-                double [] oldData = data;
-                data = new double[nTimes];
-
-                int nRowsOld = getRowCount();
-
-                for (int timeIdx = 0; timeIdx< nTimes; timeIdx++) {
-                    data[timeIdx] = oldData[nRowsOld*timeIdx];
-                }
-
-            } else {
-                double [] oldData = data;
-                data = new double[nTimes *typeSet.getNTypes()];
-
-                for (int timeIdx = 0; timeIdx< nTimes; timeIdx++) {
-                    for (int row=0; row<typeSet.getNTypes(); row++) {
-                        data[timeIdx*typeSet.getNTypes()+row] = oldData[timeIdx];
-                    }
-                }
-            }
-
-            this.scalar = scalar;
-
-            fireTableDataChanged();
-            fireTableStructureChanged();
-        }
-
-        /**
-         * @return string appropriate for initializing RealParameter
-         * corresponding to table values.
-         */
-        public String getParameterString() {
-
-            int rowCount = getRowCount();
-
-            StringBuilder valuesBuilder = new StringBuilder();
-            for (int timeIdx = 0; timeIdx< nTimes; timeIdx++) {
-                for (int row=0; row<rowCount; row++) {
-                    valuesBuilder.append(" ").append(data[rowCount*timeIdx + row]);
-                }
-            }
-
-            return valuesBuilder.toString();
-        }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return columnIndex>0;
-        }
-
-        /**
-         * @param realParameter parameter from which to import values.
-         */
-        public void loadFromParameter(RealParameter realParameter) {
-            if (realParameter.getDimension()== nTimes) {
-                setScalar(typeSet.getNTypes()>1);
-
-                for (int timeIdx = 0; timeIdx< nTimes; timeIdx++)
-                    data[timeIdx] = realParameter.getValue(timeIdx);
-            } else {
-                setScalar(false);
-
-                int valueIdx = 0;
-                for (int interval = 0; interval< nTimes; interval++) {
-                    for (int typeIdx = 0; typeIdx<typeSet.getNTypes(); typeIdx++) {
-                        data[interval*typeSet.getNTypes() + typeIdx] = realParameter.getValue(valueIdx++);
-                    }
-                }
-            }
-
-            fireTableDataChanged();
-        }
-    }
-
-    /**
-     * @return a horizontal filler object.
-     */
-    public static Box.Filler makeHorizontalFiller() {
-        return new Box.Filler(new Dimension(1,1),
-                new Dimension(1,1),
-                new Dimension(Integer.MAX_VALUE,1));
-    }
-
 }

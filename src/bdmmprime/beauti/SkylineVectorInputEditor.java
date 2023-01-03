@@ -30,11 +30,6 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
     }
 
     @Override
-    SkylineValuesTableModel getValuesTableModel() {
-        return new SkylineVectorValuesTableModel(skylineVector.typeSetInput.get(), true, 1);
-    }
-
-    @Override
     void ensureParamsConsistent() {
 
         skylineVector.typeSetInput.get().initAndValidate();

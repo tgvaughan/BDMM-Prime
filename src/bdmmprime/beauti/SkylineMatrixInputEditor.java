@@ -5,10 +5,9 @@ import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableCellRenderer;
-import java.awt.*;
+import beastfx.app.util.FXUtils;
+import javafx.scene.control.Label;
+import javafx.scene.layout.HBox;
 
 public class SkylineMatrixInputEditor extends SkylineInputEditor {
 
@@ -33,31 +32,6 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
 
         // Custom cell renderer to gray out diagonal entries in values table:
 
-        valuesTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
-            Color defaultBG = null;
-
-            @Override
-            public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-
-                JLabel l = (JLabel)super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-
-                if (defaultBG == null)
-                    defaultBG = l.getBackground();
-
-                if (l.getText().equals("-")) {
-                    l.setText("");
-                    l.setBackground(Color.LIGHT_GRAY);
-                } else
-                    l.setBackground(defaultBG);
-
-                return l;
-            }
-        });
-    }
-
-    @Override
-    SkylineValuesTableModel getValuesTableModel() {
-        return new SkylineMatrixValuesTableModel(skylineMatrix.typeSetInput.get(), true, 0);
     }
 
     @Override
@@ -104,10 +78,9 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
     void loadFromModel() {
         if (skylineMatrix.getNTypes()==1) {
             mainInputBox.setVisible(false);
-            Box box = Box.createHorizontalBox();
-            box.add(new JLabel("Insufficient types in model."));
-            box.add(makeHorizontalFiller());
-            add(box);
+            HBox box = FXUtils.newHBox();
+            box.getChildren().add(new Label("Insufficient types in model."));
+            getChildren().add(box);
             return;
         }
 
