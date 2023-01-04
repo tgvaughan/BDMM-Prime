@@ -298,60 +298,35 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         modelSaveInProcess = true;
 
         int nTypes = timedParameter.getNTypes();
-        int nTimes = (int) timeCountSpinnerModel.getValue();
-
-        // Update table model dimensions
-
-        valuesTableModel.setTimeCount(nTimes);
-        valuesTableModel.setScalar(scalarValuesCheckBox.isSelected());
-
-        timesTableModel.setColumnCount(nTimes);
-        for (int colIdx = 0; colIdx< timesTable.getColumnCount(); colIdx++) {
-            if (timesTableModel.getValueAt(0, colIdx) == null)
-                timesTableModel.setValueAt(
-                        colIdx > 0
-                                ? timesTableModel.getValueAt(0, colIdx-1)
-                                : 0.0,
-                        0, colIdx);
-        }
+        int nTimes = elementCountSpinner.getValue();
 
         // Save values and times
 
-        RealParameter valuesParam = (RealParameter)timedParameter.valuesInput.get();
-        RealParameter timesParam = (RealParameter)timedParameter.timesInput.get();
+        RealParameter valuesParam = getValuesParam();
+        RealParameter timesParam = getTimesParam();
         if (nTimes>0) {
-            if (valuesParam == null)
-                valuesParam = getValuesParam();
 
-            valuesParam.setDimension(valuesTableModel.getRowCount()*nTimes);
-            valuesParam.valuesInput.setValue(valuesTableModel.getParameterString(), valuesParam);
+            if (scalarValuesCheckBox.isSelected())
+                valuesParam.setDimension(nTimes);
+            else
+                valuesParam.setDimension(nTimes*nTypes);
+
             valuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), valuesParam);
 
-            if (timesParam == null)
-                timesParam = getTimesParam();
-
-
-            StringBuilder timesBuilder = new StringBuilder();
-            for (int i=0; i<nTimes; i++)
-                timesBuilder.append(" ").append(timesTableModel.getValueAt(0, i));
-
             timesParam.setDimension(nTimes);
-            timesParam.valuesInput.setValue(timesBuilder.toString(), timesParam);
             timesParam.isEstimatedInput.setValue(estimateTimesCheckBox.isSelected(), timesParam);
-
-        } else {
-            if (timesParam != null)
-                timesParam.isEstimatedInput.setValue(false, timesParam);
-        }
-
-        if (nTimes>0) {
-            timedParameter.setInputValue("values", valuesParam);
-            valuesParam.initAndValidate();
 
             timedParameter.setInputValue("times", timesParam);
             timesParam.initAndValidate();
 
+            timedParameter.setInputValue("values", valuesParam);
+            valuesParam.initAndValidate();
+
         } else {
+
+            if (timesParam != null)
+                timesParam.isEstimatedInput.setValue(false, timesParam);
+
             timedParameter.setInputValue("values", null);
             timedParameter.setInputValue("times", null);
         }
