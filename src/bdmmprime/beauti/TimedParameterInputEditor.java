@@ -48,6 +48,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         m_input = input;
         m_beastObject = beastObject;
         this.itemNr = itemNr;
+        pane = FXUtils.newVBox();
 
         timedParameter = (TimedParameter)input.get();
 
@@ -70,6 +71,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         elementsBox = FXUtils.newVBox();
 
         VBox timesBox = FXUtils.newVBox();
+        timesEntryRow = FXUtils.newHBox();
         timesEntryRow.getChildren().add(new Label("Element times:"));
         HBox timesBoxRow = FXUtils.newHBox();
         timesAreAgesCheckBox = new CheckBox("Times specified as ages");
@@ -85,7 +87,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         VBox valuesBox = FXUtils.newVBox();
         boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(new Label("Values:"));
-        valuesTable = new TableView();
+        valuesTable = new TableView<>();
         VBox valuesTableBoxCol = FXUtils.newVBox();
         valuesTableBoxCol.getChildren().add(valuesTable);
         boxHoriz.getChildren().add(valuesTableBoxCol);

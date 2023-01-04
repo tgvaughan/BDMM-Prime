@@ -49,7 +49,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
     TraitSet traitSet;
     TaxonSet taxonSet;
 
-    static class TaxonEntry {
+    public static class TaxonEntry {
         String taxon;
         TraitSet traitSet;
 
@@ -105,12 +105,13 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         typeTable.getColumns().add(taxonNameCol);
 
         TableColumn<TaxonEntry,String> typeCol = new TableColumn<>("Type");
-        taxonNameCol.setCellValueFactory(new PropertyValueFactory<>("type"));
-        taxonNameCol.setCellFactory(TextFieldTableCell.forTableColumn());
-        taxonNameCol.setOnEditCommit(e -> {
+        typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        typeCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        typeCol.setOnEditCommit(e -> {
             e.getRowValue().setType(e.getNewValue());
             updateFrequencies();
             refreshPanel();
+            typeTable.refresh();
         });
         typeTable.getColumns().add(typeCol);
 

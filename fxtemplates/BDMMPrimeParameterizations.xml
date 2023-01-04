@@ -78,7 +78,7 @@
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
         </fragment>
 
-        <fragment id="EpiBDMMPrimeSkylineLoggers" spec="beast.app.beauti.Fragment">
+        <fragment id="EpiBDMMPrimeSkylineLoggers" spec="beastfx.app.beauti.Fragment">
             <connect srcID='$(thisparam)Epi.t:$(n)' targetID='tracelog' inputName='log'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
@@ -86,7 +86,7 @@
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))'/>
         </fragment>
 
-        <fragment id='FBDBDMMPrimeParameters' spec="beast.app.beauti.Fragment">
+        <fragment id='FBDBDMMPrimeParameters' spec="beastfx.app.beauti.Fragment">
             <![CDATA[
 
             <distribution spec="bdmmprime.util.priors.ZeroExcludingPrior" id='$(thisparam)FBDPrior.t:$(n)' x='@$(thisparam)FBD.t:$(n)'>
@@ -115,7 +115,7 @@
                      and $(thisparam)FBD.t:$(n)/estimate=true'/>
         </fragment>
 
-        <fragment id="FBDBDMMPrimeSkylineLoggers" spec="beast.app.beauti.Fragment">
+        <fragment id="FBDBDMMPrimeSkylineLoggers" spec="beastfx.app.beauti.Fragment">
             <connect srcID='$(thisparam)FBD.t:$(n)' targetID='tracelog' inputName='log'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
