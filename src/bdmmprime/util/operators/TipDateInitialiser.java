@@ -17,11 +17,15 @@
 
 package bdmmprime.util.operators;
 
-import beast.core.*;
-import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.TraitSet;
-import beast.evolution.tree.Tree;
+import beast.base.core.BEASTObject;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.inference.StateNode;
+import beast.base.inference.StateNodeInitialiser;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.Tree;
 
 import java.util.List;
 
