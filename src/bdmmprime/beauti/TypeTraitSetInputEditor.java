@@ -25,6 +25,7 @@ import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
+import beastfx.app.inputeditor.BeautiPanel;
 import beastfx.app.inputeditor.GuessPatternDialog;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
@@ -99,6 +100,9 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
         typeTable = new TableView<>();
         typeTable.setEditable(true);
+        typeTable.setPrefWidth(800);
+        typeTable.setMinWidth(doc.beauti.frame.getWidth()-50);
+        BeautiPanel.resizeList.add(typeTable);
 
         TableColumn<TaxonEntry,String> taxonNameCol = new TableColumn<>("Sample Name");
         taxonNameCol.setCellValueFactory(new PropertyValueFactory<>("taxon"));
@@ -163,6 +167,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
             updateFrequencies();
             refreshPanel();
+            typeTable.refresh();
         });
 
         Button clearButton = new Button("Clear");
@@ -183,6 +188,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
             updateFrequencies();
             refreshPanel();
+            typeTable.refresh();
         });
 
         VBox boxVert = FXUtils.newVBox();
