@@ -70,7 +70,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         public void setType(String newType) {
             String newInitString =
                     traitSet.taxaInput.get().getTaxaNames().stream()
-                    .map(n -> n.equals(taxon) ? "=" + newType : "=" + traitSet.getStringValue(n))
+                    .map(n -> n + "=" + (n.equals(taxon) ?  newType : traitSet.getStringValue(n)))
                     .collect(Collectors.joining(","));
 
             traitSet.traitsInput.setValue(newInitString, traitSet);
@@ -113,9 +113,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         typeCol.setCellFactory(TextFieldTableCell.forTableColumn());
         typeCol.setOnEditCommit(e -> {
             e.getRowValue().setType(e.getNewValue());
-            updateFrequencies();
             refreshPanel();
-            typeTable.refresh();
         });
         typeTable.getColumns().add(typeCol);
 
@@ -165,9 +163,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 ex.printStackTrace();
             }
 
-            updateFrequencies();
             refreshPanel();
-            typeTable.refresh();
         });
 
         Button clearButton = new Button("Clear");
@@ -186,9 +182,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 ex.printStackTrace();
             }
 
-            updateFrequencies();
             refreshPanel();
-            typeTable.refresh();
         });
 
         VBox boxVert = FXUtils.newVBox();
@@ -240,5 +234,13 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 System.err.println("Error updating root/origin type frequencies.");
             }
         }
+    }
+
+    @Override
+    public void refreshPanel() {
+        typeTable.refresh();
+        updateFrequencies();
+        sync();
+        super.refreshPanel();
     }
 }
