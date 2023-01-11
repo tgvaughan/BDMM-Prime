@@ -51,12 +51,20 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
             "Time of the point when sampling ends.  (Necessary only " +
                     "when tip times are given forward in time.)");
 
+    public Input<Boolean> adjustInternalNodesInput = new Input<>("adjustInternalNodes",
+            "If true, original divergence times of input tree are preserved.",
+            false);
+
+    public Input<Function> internalNodeSpacingInput = new Input<>("internalNodeSpacing",
+            "Default spacing used when adjusting internal node times.",
+            new RealParameter("1.0"));
+
     Tree tree;
     RealParameter fso;
     TraitSet dateTrait;
     Function endOfSamplingTime;
 
-    boolean traitValuesAreAges;
+    boolean traitValuesAreAges, adjustInternalNodes;
 
     @Override
     public void initAndValidate() {
@@ -64,6 +72,7 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
         dateTrait = tipDatesTraitInput.get();
         fso = finalSampleOffsetInput.get();
         endOfSamplingTime = endOfSamplingTimeInput.get();
+        adjustInternalNodes = adjustInternalNodesInput.get();
 
         traitValuesAreAges = !dateTrait.isDateTrait()
                 || dateTrait.getDateType().equals(TraitSet.AGE_TRAIT)
@@ -90,8 +99,17 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
                         (endOfSamplingTime.getArrayValue() - dateTrait.getDate(0));
 
             node.setHeight(nodeAge - fso.getValue());
-            if (node.getParent().getHeight() < node.getHeight())
-                throw new IllegalStateException("TipDateInitialiser set child older than parent.");
+            if (!adjustInternalNodes && node.getParent().getHeight() < node.getHeight())
+                throw new IllegalStateException("TipDateInitialiser set child (" +
+                        tree.getTaxonId(node) + ") older than parent.");
+            else {
+                Node nodePrime = node;
+                while (nodePrime.getParent() != null && nodePrime.getParent().getHeight()<nodePrime.getHeight()) {
+                    nodePrime.getParent().setHeight(nodePrime.getHeight()
+                            + internalNodeSpacingInput.get().getArrayValue());
+                    nodePrime = nodePrime.getParent();
+                }
+            }
         }
 
         updateHeights();
