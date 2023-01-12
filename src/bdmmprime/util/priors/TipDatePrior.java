@@ -4,16 +4,17 @@ import beast.core.Distribution;
 import beast.core.Function;
 import beast.core.Input;
 import beast.core.State;
+import beast.core.util.Log;
 import beast.evolution.tree.Node;
 import beast.evolution.tree.TraitSet;
-import beast.evolution.tree.TreeInterface;
+import beast.evolution.tree.Tree;
 
 import java.util.List;
 import java.util.Random;
 
 public class TipDatePrior extends Distribution {
 
-    public Input<TreeInterface> treeInput = new Input<>("tree",
+    public Input<Tree> treeInput = new Input<>("tree",
             "Tree whose tips we wish to place a prior on.",
             Input.Validate.REQUIRED);
 
@@ -26,10 +27,23 @@ public class TipDatePrior extends Distribution {
     public Input<TraitSet> laterBoundInput = new Input<>("laterBound",
             "Initial tip dates", Input.Validate.REQUIRED);
 
-    TreeInterface tree;
-    TraitSet earlierBound, laterBound;
+    public Input<Function> endOfSamplingTimeInput = new Input<>("endOfSamplingTime",
+            "Time of the point when sampling ends.  (Necessary only " +
+                    "when upper and lower bounds are given forward in time.)");
 
-    Function fso;
+    public Input<Boolean> reportBoundsViolationsInput = new Input<>(
+            "reportBoundsViolations",
+            "Causes the distribution to report which taxon exceeded " +
+                    "its bounds in each case.  Useful for diagnosing " +
+                    "initialization problems.", false);
+
+    Tree tree;
+    TraitSet earlierBound, laterBound;
+    boolean boundsAreAges;
+
+    Function fso, endOfSamplingTime;
+
+    boolean reportBoundsViolations;
 
     /**
      * Final sample offset for the ages read from trait set representing
@@ -44,9 +58,35 @@ public class TipDatePrior extends Distribution {
         earlierBound = earlierBoundInput.get();
         laterBound = laterBoundInput.get();
 
-        earlyOffset = laterBound.getDate(0) - earlierBound.getDate(0);
+        boundsAreAges = !earlierBound.isDateTrait()
+                || earlierBound.getDateType().equals(TraitSet.AGE_TRAIT)
+                || earlierBound.getDateType().equals(TraitSet.DATE_BACKWARD_TRAIT);
+
+        if (boundsAreAges && laterBound.isDateTrait()
+                && (laterBound.getDateType().equals(TraitSet.DATE_TRAIT)
+                || laterBound.getDateType().equals(TraitSet.DATE_FORWARD_TRAIT)))
+            throw new IllegalArgumentException("earlierBound and " +
+                    "laterBound trait sets must both be forward in time " +
+                    "or both backward in time (ages), not a mixture.");
 
         fso = finalSampleOffsetInput.get();
+        endOfSamplingTime = endOfSamplingTimeInput.get();
+
+        if (!boundsAreAges && endOfSamplingTime == null)
+            throw new IllegalArgumentException("If bounds are given forward " +
+                    "in time, you must also provide a value to the " +
+                    "endOfSamplingTime input.");
+
+        reportBoundsViolations = reportBoundsViolationsInput.get();
+    }
+
+    double getBoundAge(TraitSet boundTrait, Node node) {
+        if (boundsAreAges)
+            return boundTrait.getValue(tree.getTaxonId(node)) +
+                    boundTrait.getDate(0);
+        else
+            return boundTrait.getValue(tree.getTaxonId(node)) +
+                    (endOfSamplingTime.getArrayValue() - boundTrait.getDate(0));
     }
 
     @Override
@@ -56,10 +96,16 @@ public class TipDatePrior extends Distribution {
         for (int nr=0; nr<tree.getLeafNodeCount(); nr++) {
             Node node = tree.getNode(nr);
             double nodeAge = node.getHeight() + fso.getArrayValue();
-            double earlyAge = earlierBound.getValue(node.getID()) + earlyOffset;
-            double lateAge = laterBound.getValue(node.getID());
+            double earlyAge = getBoundAge(earlierBound, node);
+            double lateAge = getBoundAge(laterBound, node);
 
             if (nodeAge > earlyAge || nodeAge < lateAge) {
+                if (reportBoundsViolations) {
+                    Log.err.println("Taxon " + node.getID() +
+                            " (" + nr + ") has an age of " + nodeAge +
+                            " which is outside the allowed range of [" +
+                            lateAge + "," + earlyAge + "].");
+                }
                 logP = Double.NEGATIVE_INFINITY;
                 break;
             }

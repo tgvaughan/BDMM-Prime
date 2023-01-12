@@ -53,7 +53,7 @@ public class TipDateOperator extends TreeOperator {
         String taxonID = taxaNames.get(Randomizer.nextInt(taxaNames.size()));
 
         Node node = tree.getExternalNodes().stream().
-                filter(n->n.getID().equals(taxonID)).findFirst().get();
+                filter(n->tree.getTaxonId(n).equals(taxonID)).findFirst().get();
 
         double oldHeight = node.getHeight();
 

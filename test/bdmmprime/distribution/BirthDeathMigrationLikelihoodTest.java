@@ -334,6 +334,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		assertEquals(logLnumerical, logLanalytical, 1e-5);
 	}
 
+
 	/**
 	 * Two-state test for removal-probability rate change
 	 * Reference from BDMM itself
@@ -428,7 +429,6 @@ public class BirthDeathMigrationLikelihoodTest {
 		density.initByName(
 		        "parameterization", parameterization,
                 "frequencies", new RealParameter("1.0"),
-                "conditionOnSurvival", false,
 				"conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -437,14 +437,15 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		double logL = density.calculateLogP();
 
-		// this result is from R: LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=0)
-		assertEquals(-6.761909 + labeledTreeConversionFactor(density), logL, 1e-4);
+		// this result is from the R package, TreePar:
+		// LikConstant(2.25,1.5,0.01,c(4.5,5.5),root=1,survival=1)
+		assertEquals(-3.72382 + labeledTreeConversionFactor(density), logL, 1e-4);
 
 		density.setInputValue("useAnalyticalSingleTypeSolution", true);
 		density.initAndValidate();
 
 		double logLanalytical = density.calculateLogP();
-		assertEquals(-6.761909 + labeledTreeConversionFactor(density), logLanalytical, 1e-4);
+		assertEquals(-3.72382 + labeledTreeConversionFactor(density), logLanalytical, 1e-4);
 
 		// test with conditioned-on-survival tree
 		parameterization.setInputValue("processLength", "10");
@@ -833,10 +834,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parallelize", false,
 				"useAnalyticalSingleTypeSolution", false);
 
-		assertEquals(-100.15682190617582 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
+		assertEquals(-99.0428845398644 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
 
 		density.setInputValue("useAnalyticalSingleTypeSolution", true);
-		assertEquals(-100.15682190617582 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
+		assertEquals(-99.0428845398644 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
 	}
 
 	/**
@@ -1631,7 +1632,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "parallelize", false);
 
-		assertEquals(-8.906223150087108 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);   // Reference from BDMM - version 0.2.0 - 06/07/2017
+		// Corrected value from BDMM (original was incorrectly conditioned)
+		assertEquals(-5.5751511486962215 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+
+//		assertEquals(-8.906223150087108 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);   // Reference from BDMM - version 0.2.0 - 06/07/2017
 
 	}
 	
@@ -1678,6 +1682,91 @@ public class BirthDeathMigrationLikelihoodTest {
 		density.initAndValidate();
 
 		assertEquals(-18.854438107814335 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); //Reference value from BDSKY (23/03/2017)
+	}
+
+	/**
+	 * Likelihood test from the Sasha's SA package.
+	 */
+	@Test
+	public void testSALikelihoodMini2() {
+		String newick = "((1:1.5,2:0.5):0.5,3:0.0)4:0.0;";
+
+		Parameterization parameterization = new CanonicalParameterization();
+		parameterization.initByName(
+				"processLength", new RealParameter("10.0"),
+				"birthRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("2.0")),
+				"deathRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.99")),
+				"samplingRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.5")),
+				"removalProb", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.9")));
+
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName(
+				"parameterization", parameterization,
+				"conditionOnSurvival", true,
+				"tree", new TreeParser(newick, false, false, true,0),
+				"parallelize", false,
+				"useAnalyticalSingleTypeSolution", true);
+
+		// this value was calculated by Sasha with Mathematica
+		assertEquals(-22.08332 + labeledTreeConversionFactor(density),
+				density.calculateLogP(), 1e-5); // likelihood conditioning on at least one sampled individual
+
+		density.useAnalyticalSingleTypeSolutionInput.set(false);
+		density.initAndValidate();
+
+		assertEquals(-22.08332 + labeledTreeConversionFactor(density),
+				density.calculateLogP(), 1e-5); // likelihood conditioning on at least one sampled individual
+	}
+
+	/**
+	 * Likelihood test from the Sasha's SA package.
+	 */
+	@Test
+	public void testSALikelihoodMini3() {
+		String newick = "((1:1.0,2:0.0):1.0,3:0):0.0";
+
+		Parameterization parameterization = new CanonicalParameterization();
+		parameterization.initByName(
+				"processLength", new RealParameter("10.0"),
+				"birthRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("2.0")),
+				"deathRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.99")),
+				"samplingRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.5")),
+				"removalProb", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.9")));
+
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName(
+				"parameterization", parameterization,
+				"conditionOnSurvival", false,
+				"tree", new TreeParser(newick, false, false, true,0),
+				"parallelize", false,
+				"useAnalyticalSingleTypeSolution", true);
+
+		// this value was calculated by Sasha with Mathematica
+		assertEquals(-25.3707 + labeledTreeConversionFactor(density),
+				density.calculateLogP(), 1e-5); // likelihood conditioning on at least one sampled individual
+
+		density.useAnalyticalSingleTypeSolutionInput.set(false);
+		density.initAndValidate();
+
+		assertEquals(-25.3707 + labeledTreeConversionFactor(density),
+				density.calculateLogP(), 1e-5); // likelihood conditioning on at least one sampled individual
+
 	}
 
 	/**
@@ -1737,10 +1826,9 @@ public class BirthDeathMigrationLikelihoodTest {
 	 * No rate-change, one state, 4 tips
 	 * This state is just there in case something is broken with sampled ancestors,
 	 * helps for debugging if combined with testSALikelihoodMini for instance
-	 * @throws Exception
 	 */
 	@Test
-	public void testSALikelihoodCalculationWithoutAncestors() throws Exception {
+	public void testSALikelihoodCalculationWithoutAncestors() {
 
 	    Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
                 false);
@@ -1774,12 +1862,12 @@ public class BirthDeathMigrationLikelihoodTest {
 
         // Conditioned on root:
 
-		assertEquals(-15.99699690815937 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+		assertEquals(-15.545323363405362 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
 
 		density.setInputValue("useAnalyticalSingleTypeSolution", true);
 		density.initAndValidate();
 
-		assertEquals(-15.99699690815937 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+		assertEquals(-15.545323363405362 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
 
 		// Conditioned on origin:
 
