@@ -206,6 +206,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (useAnalyticalSingleTypeSolutionInput.get() && parameterization.getNTypes() == 1
                 && savePartialLikelihoodsToFileInput.get() == null) {
             logP = getSingleTypeTreeLogLikelihood();
+
+            if (savePartialLikelihoodsToFileInput.get() != null)
+                writeAnnotatedTree();
+
             return logP;
         }
 
@@ -326,15 +330,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (debug) System.out.println("\nlogP = " + logP);
 
-        if (savePartialLikelihoodsToFileInput.get() != null) {
-            Log.info("Writing partial BDMM-Prime likelihoods to file '"
-                    + savePartialLikelihoodsToFileInput.get() + "'");
-            try (PrintStream ps = new PrintStream(savePartialLikelihoodsToFileInput.get())) {
-                ps.println(getNewickWithP0GeMetadata(tree.getRoot()));
-            } catch (FileNotFoundException e) {
-                Log.err("Failed to open output file '" + savePartialLikelihoodsToFileInput.get() + "'");
-            }
-        }
+        if (savePartialLikelihoodsToFileInput.get() != null)
+            writeAnnotatedTree();
 
         return logP;
     }
@@ -572,7 +569,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (savePartialLikelihoodsToFileInput.get() != null) {
             node.setMetaData("p0", getP0MetadataString(state));
             node.setMetaData("ge", getGeMetadataString(state));
-            node.setMetaData("geZero", partialLikelihodZero(state) ? "true" : "false");
+            node.setMetaData("geZero", partialLikelihoodZero(state) ? "true" : "false");
             node.setMetaData("interval", String.valueOf(intervalIdx));
         }
 
@@ -585,97 +582,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     }
 
     /**
-     * Print message to stdout with given indentation depth.
-     *
-     * @param message debug message
-     * @param depth   indentation level
-     */
-    private void debugMessage(String message, int depth) {
-        for (int i = 0; i < depth; i++)
-            System.out.print("  ");
-
-        System.out.println(message);
-    }
-
-    private String getGeMetadataString(P0GeState state) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("{");
-        for (int i=0; i<state.dimension; i++) {
-            if (i > 0)
-                sb.append(",");
-            sb.append(state.ge[i].toString());
-        }
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    private String getP0MetadataString(P0GeState state) {
-        StringBuilder sb = new StringBuilder();
-
-        sb.append("{");
-        for (int i=0; i<state.dimension; i++) {
-            if (i > 0)
-                sb.append(",");
-            sb.append(state.p0[i]);
-        }
-        sb.append("}");
-
-        return sb.toString();
-    }
-
-    private boolean partialLikelihodZero(P0GeState state) {
-
-        for (int i=0; i<state.dimension; i++) {
-            if (state.ge[i].getMantissa() != 0.0)
-                return false;
-        }
-
-        return true;
-    }
-
-    private String getNewickWithP0GeMetadata(Node node) {
-        StringBuilder sb = new StringBuilder();
-
-        if (!node.isLeaf()) {
-            sb.append("(");
-            boolean isFirst = true;
-            for (Node child : node.getChildren()) {
-                if (isFirst)
-                    isFirst = false;
-                else
-                    sb.append(",");
-                sb.append(getNewickWithP0GeMetadata(child));
-            }
-            sb.append(")");
-        }
-
-        if (node.getID() != null)
-            sb.append(node.getID());
-
-        String p0Metadata = (String) node.getMetaData("p0");
-        String geMetadata = (String) node.getMetaData("ge");
-        String geZero = (String) node.getMetaData("geZero");
-
-        if (p0Metadata != null && geMetadata != null && geZero != null)
-            sb.append("[&p0=").append(p0Metadata)
-                    .append(",ge=").append(geMetadata)
-                    .append(",geZero=").append(node.getMetaData("geZero"))
-                    .append(",interval=").append(node.getMetaData("interval"))
-                    .append("]");
-
-        sb.append(":");
-        if (node.isRoot())
-            sb.append("0.0;");
-        else
-            sb.append(node.getParent().getHeight()-node.getHeight());
-
-        return sb.toString();
-    }
-
-    /**
-     * @return retrieve current set of root type probabilities.
+     * @return retrieve current set of start type probabilities.
      */
     double[] getStartTypeProbs() {
         return startTypeProbs;
@@ -1138,6 +1045,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             i -= 1;
         }
 
+        if (savePartialLikelihoodsToFileInput.get() != null)
+            subtreeRoot.setMetaData("logP", logP);
+
         return logP;
     }
 
@@ -1156,6 +1066,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     @Override
     public void sample(State state, Random random) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -1178,4 +1089,115 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         startTypeProbs = storedStartTypeProbs;
         storedStartTypeProbs = tmp;
     }
+
+    /*
+     * Various debugging methods
+     */
+
+    /**
+     * Print message to stdout with given indentation depth.
+     *
+     * @param message debug message
+     * @param depth   indentation level
+     */
+    private void debugMessage(String message, int depth) {
+        for (int i = 0; i < depth; i++)
+            System.out.print("  ");
+
+        System.out.println(message);
+    }
+
+    private String getGeMetadataString(P0GeState state) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{");
+        for (int i=0; i<state.dimension; i++) {
+            if (i > 0)
+                sb.append(",");
+            sb.append(state.ge[i].toString());
+        }
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    private String getP0MetadataString(P0GeState state) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("{");
+        for (int i=0; i<state.dimension; i++) {
+            if (i > 0)
+                sb.append(",");
+            sb.append(state.p0[i]);
+        }
+        sb.append("}");
+
+        return sb.toString();
+    }
+
+    private boolean partialLikelihoodZero(P0GeState state) {
+
+        for (int i=0; i<state.dimension; i++) {
+            if (state.ge[i].getMantissa() != 0.0)
+                return false;
+        }
+
+        return true;
+    }
+
+
+    private void writeAnnotatedTree() {
+        Log.info("Writing partial BDMM-Prime likelihoods to file '"
+                + savePartialLikelihoodsToFileInput.get() + "'");
+        try (PrintStream ps = new PrintStream(savePartialLikelihoodsToFileInput.get())) {
+            ps.println(getNewickWithMetadata(tree.getRoot()));
+        } catch (FileNotFoundException e) {
+            Log.err("Failed to open output file '" + savePartialLikelihoodsToFileInput.get() + "'");
+        }
+    }
+
+
+    private String getNewickWithMetadata(Node node) {
+        StringBuilder sb = new StringBuilder();
+
+        if (!node.isLeaf()) {
+            sb.append("(");
+            boolean isFirst = true;
+            for (Node child : node.getChildren()) {
+                if (isFirst)
+                    isFirst = false;
+                else
+                    sb.append(",");
+                sb.append(getNewickWithMetadata(child));
+            }
+            sb.append(")");
+        }
+
+        if (node.getID() != null)
+            sb.append(node.getID());
+
+        if (!node.getMetaDataNames().isEmpty()) {
+            boolean isFirst = true;
+            for (String key : node.getMetaDataNames()) {
+                if (isFirst) {
+                    sb.append("[&");
+                    isFirst = false;
+                } else {
+                    sb.append(",");
+                }
+
+                sb.append(key).append("=").append(node.getMetaData(key));
+            }
+            sb.append("]");
+        }
+
+        sb.append(":");
+        if (node.isRoot())
+            sb.append("0.0;");
+        else
+            sb.append(node.getParent().getHeight()-node.getHeight());
+
+        return sb.toString();
+    }
+
 }
