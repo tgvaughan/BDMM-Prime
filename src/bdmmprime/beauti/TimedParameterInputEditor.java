@@ -11,8 +11,8 @@ import javafx.beans.value.ObservableValueBase;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 
 public class TimedParameterInputEditor extends InputEditor.Base {
 
@@ -48,7 +48,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         m_input = input;
         m_beastObject = beastObject;
         this.itemNr = itemNr;
-        pane = FXUtils.newVBox();
+        pane = FXUtils.newHBox();
 
         timedParameter = (TimedParameter)input.get();
 
@@ -60,6 +60,8 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         // Add elements specific to change times
 
         boxVert = FXUtils.newVBox();
+        boxVert.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
+                BorderStrokeStyle.SOLID, null, null)));
 
         boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(new Label("Number of elements:"));
@@ -105,7 +107,8 @@ public class TimedParameterInputEditor extends InputEditor.Base {
 
         boxVert.getChildren().add(elementsBox);
 
-        getChildren().add(boxVert);
+        pane.getChildren().add(boxVert);
+        getChildren().add(pane);
 
         loadFromModel();
 

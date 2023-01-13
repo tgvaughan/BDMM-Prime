@@ -1,8 +1,6 @@
 BDMM-Prime
 ==========
 
-[![Build Status](https://github.com/tgvaughan/BDMM-Prime/workflows/Unit%2Fintegration%20tests/badge.svg)](https://github.com/tgvaughan/BDMM-Prime/actions?query=workflow%3A%22Unit%2Fintegration+tests%22)
-
 The BDMM-Prime project provides a [BEAST 2](http://www.beast2.org/) package for
 performing phylodynamic inference under both structured and unstructured
 birth-death models.
