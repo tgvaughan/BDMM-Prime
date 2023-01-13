@@ -848,24 +848,25 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     /* --- Exact calculation for single type case --- */
 
-    private double get_p_i(double lambda, double mu, double psi, double A, double B, double t_i, double t) {
+    private double get_p_i(double lambda, double mu, double psi, double A, double B, double Bplus1, double t_i, double t) {
 
         if (lambda > 0.0) {
-            double v = Math.exp(A * (t_i - t)) * (1 + B);
-            return (lambda + mu + psi - A * (v - (1 - B)) / (v + (1 - B)))
+            double v = Math.exp(A * (t_i - t)) * (Bplus1);
+            double p_i = (lambda + mu + psi - A * (v - (1 - B)) / (v + (1 - B)))
                     / (2 * lambda);
+            return Math.max(Math.min(p_i, 1.0), 0.0); // Guard against rounding errors
         } else {
             // The limit of p_i as lambda -> 0
             return 0.5;
         }
     }
 
-    private double get_q_i(double A, double B, double t_i, double t) {
-        double v = Math.exp(A * (t_i - t));
-        return 4 * v / Math.pow(v*(1+B) + (1-B), 2.0);
+    private double get_logq_i(double A, double B, double Bplus1, double t_i, double t) {
+        double v = A * (t_i - t);
+        return Math.log(4) + v - 2*Math.log(Math.exp(v)*Bplus1 + (1-B));
     }
 
-    private void computeConstants(double[] A, double[] B) {
+    private void computeConstants(double[] A, double[] B, double[] Bplus1) {
 
         for (int i=parameterization.getTotalIntervalCount()-1; i>=0; i--) {
 
@@ -874,7 +875,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 p_i_prev = get_p_i(parameterization.getBirthRates()[i+1][0],
                         parameterization.getDeathRates()[i+1][0],
                         parameterization.getSamplingRates()[i+1][0],
-                        A[i+1], B[i+1],
+                        A[i+1], B[i+1], Bplus1[i+1],
                         parameterization.getIntervalEndTimes()[i+1],
                         parameterization.getIntervalEndTimes()[i]);
             } else {
@@ -886,8 +887,18 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double mu_i = parameterization.getDeathRates()[i][0];
             double psi_i = parameterization.getSamplingRates()[i][0];
 
-            A[i] = Math.sqrt((lambda_i-mu_i-psi_i)*(lambda_i-mu_i-psi_i) + 4*lambda_i*psi_i);
-            B[i] = ((1 - 2*(1-rho_i)*p_i_prev)*lambda_i + mu_i + psi_i)/A[i];
+            double Asq = ((lambda_i-mu_i-psi_i)*(lambda_i-mu_i-psi_i) + 4*lambda_i*psi_i);
+            A[i] = Math.sqrt(Asq);
+
+            double scaled_lambda_i = (2 * (1 - rho_i) * p_i_prev - 1) * lambda_i;
+            B[i] = (-scaled_lambda_i + mu_i + psi_i)/A[i];
+
+            Bplus1[i] = (A[i] - (scaled_lambda_i - mu_i - psi_i)) / A[i];
+            if (Bplus1[i] <= 0.0) {
+                // In this case rounding errors can cause the usual expression
+                // to evaluate to 0, so we handle it specially.
+                Bplus1[i] = Math.exp(Math.log(Asq - (scaled_lambda_i - mu_i - psi_i)*A[i]) - Math.log(Asq));
+            }
         }
     }
 
@@ -895,27 +906,28 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         double[] A = new double[parameterization.getTotalIntervalCount()];
         double[] B = new double[parameterization.getTotalIntervalCount()];
+        double[] Bplus1 = new double[parameterization.getTotalIntervalCount()];
 
-        computeConstants(A, B);
+        computeConstants(A, B, Bplus1);
 
         double logP;
 
         if (conditionOnRootInput.get()) {
 
             double t_root = parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue());
-            logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(0), t_root, A, B)
-                    + getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(1), t_root, A, B)
+            logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(0), t_root, A, B, Bplus1)
+                    + getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(1), t_root, A, B, Bplus1)
                     + Math.log(2);
 
             int i_root = parameterization.getIntervalIndex(t_root);
-            logP += 2*Math.log(get_q_i(A[i_root], B[i_root], parameterization.getIntervalEndTimes()[i_root], 0.0));
+            logP += 2*get_logq_i(A[i_root], B[i_root], Bplus1[i_root], parameterization.getIntervalEndTimes()[i_root], 0.0);
 
         } else {
 
-            logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot(), 0.0, A, B);
+            logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot(), 0.0, A, B, Bplus1);
 
             int i = parameterization.getIntervalIndex(0.0);
-            logP += Math.log(get_q_i(A[i], B[i], parameterization.getIntervalEndTimes()[i], 0.0));
+            logP += get_logq_i(A[i], B[i], Bplus1[i], parameterization.getIntervalEndTimes()[i], 0.0);
 
         }
 
@@ -924,7 +936,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double p_i = get_p_i(parameterization.getBirthRates()[i][0],
                     parameterization.getDeathRates()[i][0],
                     parameterization.getSamplingRates()[i][0],
-                    A[i], B[i],
+                    A[i], B[i], Bplus1[i],
                     parameterization.getIntervalEndTimes()[i], 0.0);
 
             if (p_i == 1)
@@ -944,7 +956,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     }
 
     private double getSingleTypeSubtreeLogLikelihood(Node subtreeRoot, double timeOfSubtreeRootEdgeTop,
-                                                     double[] A, double[] B) {
+                                                     double[] A, double[] B,
+                                                     double[] Bplus1) {
 
         double t_node = parameterization.getNodeTime(subtreeRoot, finalSampleOffset.getArrayValue());
         int i = parameterization.getIntervalIndex(t_node);
@@ -972,7 +985,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                         ? get_p_i(parameterization.getBirthRates()[i + 1][0],
                         parameterization.getDeathRates()[i + 1][0],
                         parameterization.getSamplingRates()[i + 1][0],
-                        A[i + 1], B[i + 1], parameterization.getIntervalEndTimes()[i+1], t_node)
+                        A[i + 1], B[i + 1], Bplus1[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
                         : 1.0;
 
                 logP += Math.log(rho_i*(r_iplus1 + (1 - r_iplus1) * p_iplus1));
@@ -980,8 +993,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             } else {
 
                 logP += Math.log(psi_i)
-                        + Math.log(r_i + (1-r_i)*get_p_i(lambda_i, mu_i, psi_i, A[i], B[i], t_i, t_node))
-                        - Math.log(get_q_i(A[i], B[i], t_i, t_node));
+                        + Math.log(r_i + (1-r_i)*get_p_i(lambda_i, mu_i, psi_i, A[i], B[i], Bplus1[i], t_i, t_node))
+                        - get_logq_i(A[i], B[i], Bplus1[i], t_i, t_node);
 
             }
 
@@ -989,15 +1002,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         } else if (subtreeRoot.isFake()) {
             // SA node
 
-            logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getNonDirectAncestorChild(), t_node, A, B);
+            logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getNonDirectAncestorChild(), t_node, A, B, Bplus1);
 
             if (isRhoTip[subtreeRoot.getDirectAncestorChild().getNr()]) {
 
-                double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
-                        ? get_q_i(A[i+1], B[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
-                        : 1.0;
+                double logq_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
+                        ? get_logq_i(A[i+1], B[i+1], Bplus1[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
+                        : 0.0;
 
-                logP += Math.log(rho_i*(1-r_iplus1)*q_iplus1);
+                logP += Math.log(rho_i*(1-r_iplus1)) + logq_iplus1;
 
             } else {
 
@@ -1008,45 +1021,48 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         } else {
             // Internal node
 
-            logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(0), t_node, A, B)
-                    + getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(1), t_node, A, B);
+            logP = getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(0), t_node, A, B, Bplus1)
+                    + getSingleTypeSubtreeLogLikelihood(subtreeRoot.getChild(1), t_node, A, B, Bplus1);
 
             logP += Math.log(2*lambda_i);
 
-            double q_i = get_q_i(A[i], B[i], t_i, t_node);
-            logP -= Math.log(q_i);
+            double logq_i = get_logq_i(A[i], B[i], Bplus1[i], t_i, t_node);
+            logP -= logq_i;
 
             if (Utils.equalWithPrecision(t_i, t_node)) {
-                double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
-                        ? get_q_i(A[i+1], B[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
-                        : 1.0;
+                double logq_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
+                        ? get_logq_i(A[i+1], B[i+1], Bplus1[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
+                        : 0.0;
 
-                logP += 2*Math.log((1-rho_i)*q_iplus1);
+                logP += 2*(Math.log((1-rho_i)) + logq_iplus1);
             } else {
 
-                logP += 2*Math.log(q_i);
+                logP += 2*logq_i;
             }
         }
+
+        if (savePartialLikelihoodsToFileInput.get() != null)
+            subtreeRoot.setMetaData("logPbottom", logP);
 
         // Compute contributions from intervals along edge
 
         while (i >= 0 && Utils.greaterThanWithPrecision(parameterization.getIntervalEndTimes()[i], timeOfSubtreeRootEdgeTop)) {
 
             if (Utils.lessThanWithPrecision(parameterization.getIntervalEndTimes()[i], t_node)) {
-                double q_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
-                        ? get_q_i(A[i + 1], B[i + 1],
+                double logq_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
+                        ? get_logq_i(A[i + 1], B[i + 1], Bplus1[i + 1],
                         parameterization.getIntervalEndTimes()[i + 1],
                         parameterization.getIntervalEndTimes()[i])
-                        : 1.0;
+                        : 0.0;
 
-                logP += Math.log((1-parameterization.getRhoValues()[i][0])*q_iplus1);
+                logP += Math.log(1-parameterization.getRhoValues()[i][0]) + logq_iplus1;
             }
 
             i -= 1;
         }
 
         if (savePartialLikelihoodsToFileInput.get() != null)
-            subtreeRoot.setMetaData("logP", logP);
+            subtreeRoot.setMetaData("logPtop", logP);
 
         return logP;
     }
