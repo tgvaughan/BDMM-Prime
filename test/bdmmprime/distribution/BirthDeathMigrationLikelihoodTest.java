@@ -551,7 +551,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		double logL2analytical = density.calculateLogP();
 
-		assertEquals(-8.099631076932816, logL2, 1e-4);
+		assertEquals(-8.099631076932816, logL2analytical, 1e-4);
 	}
 
 	/**
