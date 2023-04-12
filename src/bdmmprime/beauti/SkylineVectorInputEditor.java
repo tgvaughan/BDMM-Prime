@@ -31,12 +31,56 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
 
         skylineVector = (SkylineVectorParameter) input.get();
         skylineVector.initAndValidate();
+
+        updateValuesUI();
+
+        valuesTable.setFixedCellSize(25);
+        valuesTable.prefHeightProperty().bind(valuesTable.fixedCellSizeProperty()
+                .multiply(Bindings.size(valuesTable.getItems()).add(1.1)));
+
+    }
+
+    @Override
+    String getChangeTimesParameterID() {
+        int idx = skylineVector.getID().indexOf("SV");
+        String prefix = skylineVector.getID().substring(0, idx);
+        String suffix = skylineVector.getID().substring(idx+2);
+
+        return prefix + "ChangeTimes" + suffix;
+    }
+
+    @Override
+    void ensureValuesConsistency(boolean scalar) {
+        int nTypes = skylineParameter.typeSetInput.get().getNTypes();
+        int nEpochs = skylineParameter.changeTimesInput.get() == null
+                ? 1
+                : skylineParameter.changeTimesInput.get().getDimension() + 1;
+        RealParameter valuesParam = (RealParameter) skylineParameter.skylineValuesInput.get();
+        int valuesPerEpoch = valuesParam.getDimension() / nEpochs;
+
+        if (valuesParam.getDimension() % nEpochs != 0
+                || (valuesPerEpoch != 1 && valuesPerEpoch != nTypes)) {
+            if (scalar)
+                valuesParam.setDimension(nEpochs);
+            else
+                valuesParam.setDimension(nTypes*nEpochs);
+        }
+
+        if (skylineParameter.changeTimesInput.get() != null)
+            ((RealParameter)skylineParameter.changeTimesInput.get()).initAndValidate();
+        valuesParam.initAndValidate();
+        skylineParameter.initAndValidate();
+    }
+
+    @Override
+    void updateValuesUI() {
+        valuesTable.getColumns().clear();
+        valuesTable.getItems().clear();
+
         int nChanges = skylineVector.getChangeCount();
         int nTypes = skylineVector.getNTypes();
 
         RealParameter valuesParameter = (RealParameter) skylineVector.skylineValuesInput.get();
-
-
         TableColumn<ValuesTableEntry, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(p -> new ObservableValueBase<>() {
             @Override
@@ -69,40 +113,6 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
         } else {
             valuesTable.getItems().add(new VectorValuesEntry(-1));
         }
-
-        valuesTable.setFixedCellSize(25);
-        valuesTable.prefHeightProperty().bind(valuesTable.fixedCellSizeProperty()
-                .multiply(Bindings.size(valuesTable.getItems()).add(1.1)));
-
-    }
-
-    @Override
-    String getChangeTimesParameterID() {
-        int idx = skylineVector.getID().indexOf("SV");
-        String prefix = skylineVector.getID().substring(0, idx);
-        String suffix = skylineVector.getID().substring(idx+2);
-
-        return prefix + "ChangeTimes" + suffix;
-    }
-
-    @Override
-    void ensureValuesConsistency() {
-        int nTypes = skylineParameter.typeSetInput.get().getNTypes();
-        int nEpochs = skylineParameter.changeTimesInput.get() == null
-                ? 1
-                : skylineParameter.changeTimesInput.get().getDimension() + 1;
-        RealParameter valuesParam = (RealParameter) skylineParameter.skylineValuesInput.get();
-        int valuesPerEpoch = valuesParam.getDimension() / nEpochs;
-
-        if (valuesParam.getDimension() % nEpochs != 0
-                || (valuesPerEpoch != 1 && valuesPerEpoch != nTypes)) {
-            valuesParam.setDimension(nTypes*nEpochs);
-        }
-
-        if (skylineParameter.changeTimesInput.get() != null)
-            ((RealParameter)skylineParameter.changeTimesInput.get()).initAndValidate();
-        valuesParam.initAndValidate();
-        skylineParameter.initAndValidate();
     }
 
     public static class VectorValuesEntry extends ValuesTableEntry {

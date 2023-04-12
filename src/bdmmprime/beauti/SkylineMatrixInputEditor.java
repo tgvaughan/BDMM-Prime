@@ -41,7 +41,12 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
     }
 
     @Override
-    void ensureValuesConsistency() {
+    void ensureValuesConsistency(boolean scalar) {
+        // TODO
+    }
+
+    @Override
+    void updateValuesUI() {
         // TODO
     }
 

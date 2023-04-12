@@ -35,9 +35,9 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         this.itemNr = itemNr;
         pane = FXUtils.newHBox();
 
-        skylineParameter = (SkylineParameter)input.get();
+        skylineParameter = (SkylineParameter) input.get();
 
-        ensureValuesConsistency();
+        ensureValuesConsistency(true);
 
         addInputLabel();
 
@@ -69,13 +69,13 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         changeTimesBox.getChildren().add(changeTimesBoxRow);
         mainInputBox.getChildren().add(changeTimesBox);
 
-        if (nChanges>0) {
-            updateChangeTimesUI((RealParameter)skylineParameter.changeTimesInput.get(),
+        if (nChanges > 0) {
+            updateChangeTimesUI((RealParameter) skylineParameter.changeTimesInput.get(),
                     changeTimesEntryRow);
             timesAreAgesCheckBox.setSelected(skylineParameter.timesAreAgesInput.get());
 
             estimateTimesCheckBox.setSelected(
-                    ((RealParameter)skylineParameter.changeTimesInput.get())
+                    ((RealParameter) skylineParameter.changeTimesInput.get())
                             .isEstimatedInput.get());
         } else {
             changeTimesBox.setVisible(false);
@@ -84,7 +84,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         // Add elements specific to values
 
-        RealParameter valuesParameter = (RealParameter)skylineParameter.skylineValuesInput.get();
+        RealParameter valuesParameter = (RealParameter) skylineParameter.skylineValuesInput.get();
 
         boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(new Label("Values:"));
@@ -109,8 +109,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         mainInputBox.getChildren().add(boxHoriz);
 
         int nTypes = skylineParameter.getNTypes();
-        if (valuesParameter.getDimension()==(nChanges+1)) {
-            if (nTypes>1) {
+        if (valuesParameter.getDimension() == (nChanges + 1)) {
+            if (nTypes > 1) {
                 scalarRatesCheckBox.setSelected(true);
                 scalarRatesCheckBox.disableProperty().set(false);
 //                epochVisualizer.setScalar(true);
@@ -138,7 +138,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         changeCountSpinner.valueProperty().addListener((observable, oldValue, newValue) -> {
             System.out.println(oldValue + " -> " + newValue);
 
-            if (newValue>0) {
+            if (newValue > 0) {
                 RealParameter param = (RealParameter) skylineParameter.changeTimesInput.get();
                 if (param == null) {
                     if (!doc.pluginmap.containsKey(getChangeTimesParameterID())) {
@@ -155,15 +155,15 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
                 skylineParameter.changeTimesInput.setValue(null, skylineParameter);
             }
 
-            ensureValuesConsistency();
+            ensureValuesConsistency(scalarRatesCheckBox.isSelected());
 
-            if (newValue>0) {
-                updateChangeTimesUI((RealParameter)skylineParameter.changeTimesInput.get(),
+            if (newValue > 0) {
+                updateChangeTimesUI((RealParameter) skylineParameter.changeTimesInput.get(),
                         changeTimesEntryRow);
                 timesAreAgesCheckBox.setSelected(skylineParameter.timesAreAgesInput.get());
 
                 estimateTimesCheckBox.setSelected(
-                        ((RealParameter)skylineParameter.changeTimesInput.get())
+                        ((RealParameter) skylineParameter.changeTimesInput.get())
                                 .isEstimatedInput.get());
 
                 changeTimesBox.setManaged(true);
@@ -174,13 +174,14 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
             }
 
             System.out.println(skylineParameter);
+            System.out.println(scalarRatesCheckBox.isSelected());
 
-            sync();
+            updateValuesUI();
         });
 
         timesAreAgesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             skylineParameter.timesAreAgesInput.setValue(newValue, skylineParameter);
-            ensureValuesConsistency();
+            skylineParameter.initAndValidate();
             System.out.println(skylineParameter);
         });
 
@@ -191,14 +192,21 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         });
 
         scalarRatesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            valuesParameter.setDimension(skylineParameter.getChangeCount() + 1);
+            if (newValue)
+                valuesParameter.setDimension(skylineParameter.getChangeCount() + 1);
+            else
+                valuesParameter.setDimension(skylineParameter.getNTypes() * (skylineParameter.getChangeCount() + 1));
+
             sanitiseRealParameter(valuesParameter);
-            ensureValuesConsistency();
+            ensureValuesConsistency(newValue);
+            updateValuesUI();
             System.out.println(skylineParameter);
         });
 
-        estimateValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) ->
-                valuesParameter.isEstimatedInput.setValue(newValue, valuesParameter));
+        estimateValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                valuesParameter.isEstimatedInput.setValue(newValue, valuesParameter);
+                sync();
+        });
 
         visualizerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             skylineParameter.epochVisualizerDisplayed = newValue;
@@ -229,7 +237,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
             textField.textProperty().addListener((observable, oldValue, newValue) -> {
                 parameter.setValue(index, Double.valueOf(newValue));
                 sanitiseRealParameter(parameter);
-                ensureValuesConsistency();
+                skylineParameter.initAndValidate();
                 System.out.println(skylineParameter);
             });
 
@@ -259,7 +267,9 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
      * the type count is affected by the TypeTraitSetInputEditor, which
      * calls a sync() when this value changes.
      */
-    abstract void ensureValuesConsistency();
+    abstract void ensureValuesConsistency(boolean scalar);
+
+    abstract void updateValuesUI();
 
     public abstract static class ValuesTableEntry { }
 }
