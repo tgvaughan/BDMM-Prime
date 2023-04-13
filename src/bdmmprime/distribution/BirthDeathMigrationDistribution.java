@@ -890,6 +890,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double Asq = ((lambda_i-mu_i-psi_i)*(lambda_i-mu_i-psi_i) + 4*lambda_i*psi_i);
             A[i] = Math.sqrt(Asq);
 
+            if (Asq == 0.0)
+                throw new IllegalStateException(
+                        "Analytical BDSKY tree prior calculation cannot handle\n" +
+                        "birthRate-deathRate-samplingRate = 0 and samplingRate = 0. \n" +
+                        "(If this is the starting state, try perturbing one of these parameters.)");
+
             double scaled_lambda_i = (2 * (1 - rho_i) * p_i_prev - 1) * lambda_i;
             B[i] = (-scaled_lambda_i + mu_i + psi_i)/A[i];
 
