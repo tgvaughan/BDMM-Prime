@@ -89,6 +89,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(new Label("Values:"));
         valuesTable = new TableView<>();
+        valuesTable.getSelectionModel().setCellSelectionEnabled(true);
+        valuesTable.setEditable(true);
         VBox valuesTableBoxCol = FXUtils.newVBox();
         valuesTableBoxCol.getChildren().add(valuesTable);
         boxHoriz.getChildren().add(valuesTableBoxCol);
@@ -245,7 +247,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         }
     }
 
-    private void sanitiseRealParameter(RealParameter parameter) {
+    void sanitiseRealParameter(RealParameter parameter) {
         parameter.valuesInput.setValue(
                 Arrays.stream(parameter.getDoubleValues())
                         .mapToObj(String::valueOf)

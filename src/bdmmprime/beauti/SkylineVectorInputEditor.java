@@ -4,11 +4,14 @@ import bdmmprime.parameterization.SkylineVectorParameter;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.math.matrixalgebra.Vector;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValueBase;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.util.converter.DoubleStringConverter;
 
 public class SkylineVectorInputEditor extends SkylineInputEditor {
 
@@ -93,16 +96,27 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
         });
         valuesTable.getColumns().add(typeCol);
         for (int i=0; i<nChanges+1; i++) {
-            TableColumn<ValuesTableEntry, String> col = new TableColumn<>("Epoch " + (i+1));
+            TableColumn<ValuesTableEntry, Double> col = new TableColumn<>("Epoch " + (i+1));
             int epochIdx = i;
             col.setCellValueFactory(p -> new ObservableValueBase<>() {
                 @Override
-                public String getValue() {
+                public Double getValue() {
                     int type = ((VectorValuesEntry)p.getValue()).type;
-                    return String.valueOf(type<0
+                    return type<0
                             ? valuesParameter.getValue(epochIdx)
-                            : valuesParameter.getValue(epochIdx*nTypes + type));
+                            : valuesParameter.getValue(epochIdx*nTypes + type);
                 }
+            });
+            col.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+            col.setOnEditCommit(e -> {
+                int type = ((VectorValuesEntry) e.getTableView()
+                        .getItems().get(e.getTablePosition().getRow())).type;
+                if (type < 0) {
+                    valuesParameter.setValue(epochIdx, e.getNewValue());
+                } else {
+                    valuesParameter.setValue(epochIdx*nTypes + type, e.getNewValue());
+                }
+                sanitiseRealParameter(valuesParameter);
             });
             valuesTable.getColumns().add(col);
         }
