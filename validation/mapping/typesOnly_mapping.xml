@@ -1,15 +1,8 @@
 <beast version="2.0"
-       namespace="beast.core
-                 :beast.core.util
-                 :beast.core.parameter
-                 :beast.evolution.alignment
-                 :beast.evolution.likelihood
-                 :beast.evolution.tree
-                 :beast.evolution.tree.coalescent
-                 :beast.evolution.sitemodel
-                 :beast.evolution.substitutionmodel
-                 :beast.evolution.operators
-                 :beast.math.distributions
+       namespace="beast.base.inference
+                 :beast.base.inference.parameter
+                 :beast.base.evolution.tree
+                 :beast.base.evolution.alignment
                  :feast.simulation
                  :bdmmprime.distribution
                  :bdmmprime.parameterization
@@ -18,7 +11,7 @@
     <typedTree spec="TypeMappedTree" id="typedTree" typeLabel="type" remapOnLog="false">
 
         <parameterization spec="CanonicalParameterization">
-            <origin spec="RealParameter" id="origin" value="6.0"/>
+            <processLength spec="RealParameter" id="origin" value="6.0"/>
             <!-- <tree idref="untypedTree"/> -->
             <typeSet id="typeSet" spec="TypeSet" typeTraitSet="@typeTraitSet"/>
             <birthRate spec="SkylineVectorParameter">
@@ -40,11 +33,11 @@
 
         <frequencies spec="RealParameter" value="0.5 0.5"/>
 
-        <typeTraitSet id="typeTraitSet" spec="beast.evolution.tree.TraitSet" traitname="type" taxa="@taxonSet">
+        <typeTraitSet id="typeTraitSet" spec="TraitSet" traitname="type" taxa="@taxonSet">
             t1=0,t2=0,t3=1,t4=1,t5=0
         </typeTraitSet>
 
-        <untypedTree id="untypedTree" spec="beast.util.TreeParser"
+        <untypedTree id="untypedTree" spec="TreeParser"
                      adjustTipHeights="false" IsLabelledNewick="true"
                      newick="(t5:5.7,((t1:1,t2:2):1,(t3:3,t4:4):0.5):1.3):0.0;"/>
         <taxonset spec="TaxonSet" id="taxonSet">
