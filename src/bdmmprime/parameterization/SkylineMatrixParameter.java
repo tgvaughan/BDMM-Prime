@@ -5,6 +5,7 @@ import beast.base.core.Description;
 import beast.base.core.Function;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 
 @Description("Skyline parameter representing a matrix containing.  (Diagonals must be zero.)")
 public class SkylineMatrixParameter extends SkylineParameter {
@@ -211,5 +212,23 @@ public class SkylineMatrixParameter extends SkylineParameter {
 
     @Override
     public void close(PrintStream out) {
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+
+        sb.append(":");
+        for (int i=0; i<getChangeCount()+1; i++) {
+            if (i>0)
+                sb.append(" (change time ").append(times[i-1]).append(")");
+            sb.append(" [");
+            for (int t=0; t<getNTypes(); t++)
+                sb.append(Arrays.toString(values[i][t]));
+            sb.append("]");
+        }
+
+        return sb.toString();
     }
 }

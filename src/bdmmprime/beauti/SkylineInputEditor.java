@@ -21,6 +21,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
     TableView<ValuesTableEntry> valuesTable;
 
+    VBox mainInputBox;
+
     public SkylineInputEditor(BeautiDoc doc) {
         super(doc);
     }
@@ -45,7 +47,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         int nChanges = skylineParameter.getChangeCount();
 
-        VBox mainInputBox = FXUtils.newVBox();
+        mainInputBox = FXUtils.newVBox();
         mainInputBox.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
                 BorderStrokeStyle.SOLID, null, null)));
 
