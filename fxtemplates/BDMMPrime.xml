@@ -1,6 +1,5 @@
 <beast version="2.0"
        namespace="beast.app.beauti
-                  :beast.core
                   :beast.base.evolution.branchratemodel
                   :beast.base.evolution.speciation
                   :beast.base.evolution.tree.coalescent
