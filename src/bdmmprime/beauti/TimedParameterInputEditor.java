@@ -7,29 +7,23 @@ import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
+import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValueBase;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.util.converter.DoubleStringConverter;
+
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class TimedParameterInputEditor extends InputEditor.Base {
 
     TimedParameter timedParameter;
 
-    Spinner<Integer> elementCountSpinner;
-
-    HBox timesEntryRow;
-    VBox elementsBox;
-
-    CheckBox scalarValuesCheckBox, timesAreAgesCheckBox;
-
-    TableView<TimedParamValuesEntry> valuesTable;
-
-    CheckBox estimateValuesCheckBox, estimateTimesCheckBox;
-
-    boolean modelSaveInProcess = false;
+    TableView<TimedParamValuesTableEntry> valuesTable;
 
     public TimedParameterInputEditor(BeautiDoc doc) {
         super(doc);
@@ -54,129 +48,178 @@ public class TimedParameterInputEditor extends InputEditor.Base {
 
         addInputLabel();
 
-        HBox boxHoriz;
-        VBox boxVert;
+        ensureValuesConsistency(true);
 
-        // Add elements specific to change times
+        // Add elements specific to times
 
-        boxVert = FXUtils.newVBox();
-        boxVert.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
+        int timeCount = timedParameter.getTimeCount();
+
+        VBox mainInputBox = FXUtils.newVBox();
+        mainInputBox.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
                 BorderStrokeStyle.SOLID, null, null)));
 
-        boxHoriz = FXUtils.newHBox();
-        boxHoriz.getChildren().add(new Label("Number of elements:"));
-        elementCountSpinner = new Spinner<>(0, Integer.MAX_VALUE, 0);
-        boxHoriz.getChildren().add(elementCountSpinner);
+        HBox boxHoriz = FXUtils.newHBox();
+        Label changePointLabel = new Label("Number of times:");
+        Spinner<Integer> timeCountSpinner = new Spinner<>(0, Integer.MAX_VALUE, timeCount);
+        timeCountSpinner.setEditable(true);
+        boxHoriz.getChildren().add(changePointLabel);
+        boxHoriz.getChildren().add(timeCountSpinner);
 
-        boxVert.getChildren().add(boxHoriz);
+        mainInputBox.getChildren().add(boxHoriz);
 
-        elementsBox = FXUtils.newVBox();
-
-        VBox timesBox = FXUtils.newVBox();
-        timesEntryRow = FXUtils.newHBox();
-        timesEntryRow.getChildren().add(new Label("Element times:"));
+        VBox timesAndValuesBox = FXUtils.newVBox();
+        HBox timesEntryRow = FXUtils.newHBox();
+        timesAndValuesBox.getChildren().add(timesEntryRow);
         HBox timesBoxRow = FXUtils.newHBox();
-        timesAreAgesCheckBox = new CheckBox("Times specified as ages");
+        CheckBox timesAreAgesCheckBox = new CheckBox("Times specified as ages");
         timesBoxRow.getChildren().add(timesAreAgesCheckBox);
-        estimateTimesCheckBox = new CheckBox("Estimate times");
+        CheckBox estimateTimesCheckBox = new CheckBox("Estimate change times");
         timesBoxRow.getChildren().add(estimateTimesCheckBox);
-        timesBox.getChildren().add(timesBoxRow);
+        timesAndValuesBox.getChildren().add(timesBoxRow);
 
-        elementsBox.getChildren().add(timesBox);
+
 
         // Add elements specific to values
 
-        VBox valuesBox = FXUtils.newVBox();
         boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(new Label("Values:"));
         valuesTable = new TableView<>();
+        valuesTable.getSelectionModel().setCellSelectionEnabled(true);
+        valuesTable.setEditable(true);
+        valuesTable.setFixedCellSize(25);
+        valuesTable.prefHeightProperty().bind(valuesTable.fixedCellSizeProperty()
+                .multiply(Bindings.size(valuesTable.getItems()).add(1.1)));
         VBox valuesTableBoxCol = FXUtils.newVBox();
         valuesTableBoxCol.getChildren().add(valuesTable);
         boxHoriz.getChildren().add(valuesTableBoxCol);
 
-        valuesBox.getChildren().add(boxHoriz);
+        timesAndValuesBox.getChildren().add(boxHoriz);
 
         boxHoriz = FXUtils.newHBox();
-        scalarValuesCheckBox = new CheckBox("Scalar values");
-        boxHoriz.getChildren().add(scalarValuesCheckBox);
-        estimateValuesCheckBox = new CheckBox("Estimate values");
+        CheckBox scalarValues = new CheckBox("Scalar values");
+        boxHoriz.getChildren().add(scalarValues);
+        CheckBox estimateValuesCheckBox = new CheckBox("Estimate values");
         boxHoriz.getChildren().add(estimateValuesCheckBox);
 
-        valuesBox.getChildren().add(boxHoriz);
-        elementsBox.getChildren().add(valuesBox);
+        int nTypes = timedParameter.getNTypes();
+        if (nTypes > 1) {
+            scalarValues.setSelected(true);
+            scalarValues.disableProperty().set(false);
+        } else {
+            scalarValues.setSelected(false);
+            scalarValues.disableProperty().set(true);
+        }
 
-        boxVert.getChildren().add(elementsBox);
+        timesAndValuesBox.getChildren().add(boxHoriz);
+        mainInputBox.getChildren().add(timesAndValuesBox);
 
-        pane.getChildren().add(boxVert);
+        if (timeCount > 0) {
+            updateTimesUI(timesEntryRow);
+            updateValuesUI();
+
+            timesAreAgesCheckBox.setSelected(timedParameter.timesAreAgesInput.get());
+
+            estimateTimesCheckBox.setSelected(
+                    ((RealParameter) timedParameter.timesInput.get())
+                            .isEstimatedInput.get());
+
+            estimateValuesCheckBox.setSelected(
+                    ((RealParameter) timedParameter.valuesInput.get())
+                            .isEstimatedInput.get());
+        } else {
+            timesAndValuesBox.setVisible(false);
+            timesAndValuesBox.setManaged(false);
+        }
+
+        pane.getChildren().add(mainInputBox);
         getChildren().add(pane);
 
-        loadFromModel();
-
         // Add event listeners:
-        elementCountSpinner.valueProperty().addListener(e -> saveToModel());
-        timesAreAgesCheckBox.selectedProperty().addListener(e -> saveToModel());
-        estimateTimesCheckBox.selectedProperty().addListener(e -> saveToModel());
+        timeCountSpinner.valueProperty().addListener((observable, oldValue, newValue) -> {
+            System.out.println(oldValue + " -> " + newValue);
 
-        scalarValuesCheckBox.selectedProperty().addListener(e -> saveToModel());
-        estimateValuesCheckBox.selectedProperty().addListener(e -> saveToModel());
-    }
+            if (newValue > 0) {
+                RealParameter times = getTimesParam();
+                times.setDimension(newValue);
+                sanitiseRealParameter(times);
+                timedParameter.timesInput.setValue(times, timedParameter);
+            } else {
+                if (estimateTimesCheckBox.isSelected())
+                    estimateTimesCheckBox.fire();
 
-    /**
-     * Ensures that the dimensions of the values RealParameter is consistent
-     * with the number of types specified by the TypeSet.
-     *
-     * This is necessary because the TypeSet can be modified by other input
-     * editors, such as the type trait set input editor.
-     *
-     * Once returning from this method, the number of types reported by the
-     * SV itself should match the number reported by the typeset.
-     */
-    void ensureParamsConsistent() {
-
-        timedParameter.typeSetInput.get().initAndValidate();
-
-        int nTypes = timedParameter.typeSetInput.get().getNTypes();
-        int nTimes = timedParameter.getTimeCount();
-
-        if (nTimes==0)
-            return;
-
-        RealParameter valuesParam = (RealParameter)timedParameter.valuesInput.get();
-        int valuesPerInterval = valuesParam.getDimension() / nTimes;
-
-        if (valuesPerInterval == 1 || valuesPerInterval == nTypes) {
-            timedParameter.initAndValidate();
-            return;
-        }
-
-        StringBuilder valueBuilder = new StringBuilder();
-
-        for (int timeIdx=0; timeIdx<nTimes; timeIdx++) {
-            for (int typeIdx = 0; typeIdx < nTypes; typeIdx++) {
-                valueBuilder.append(" ");
-
-                if (typeIdx < valuesPerInterval)
-                    valueBuilder.append(valuesParam.getValue(timeIdx*valuesPerInterval + typeIdx));
-                else
-                    valueBuilder.append(valuesParam.getValue(timeIdx*valuesPerInterval + (valuesPerInterval-1)));
+                if (estimateValuesCheckBox.isSelected())
+                    estimateValuesCheckBox.fire();
+                timedParameter.timesInput.setValue(null, timedParameter);
             }
-        }
 
-        valuesParam.valuesInput.setValue(valueBuilder.toString(), valuesParam);
-        valuesParam.initAndValidate();
+            ensureValuesConsistency(scalarValues.isSelected());
 
-        timedParameter.initAndValidate();
+            if (newValue > 0) {
+                updateTimesUI(timesEntryRow);
+                updateValuesUI();
+
+
+                timesAreAgesCheckBox.setSelected(timedParameter.timesAreAgesInput.get());
+
+                estimateTimesCheckBox.setSelected(getTimesParam().isEstimatedInput.get());
+
+                timesAndValuesBox.setManaged(true);
+                timesAndValuesBox.setVisible(true);
+
+
+            } else {
+                timesAndValuesBox.setManaged(false);
+                timesAndValuesBox.setVisible(false);
+            }
+
+            System.out.println(timedParameter);
+            System.out.println(scalarValues.isSelected());
+        });
+
+        timesAreAgesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            timedParameter.timesAreAgesInput.setValue(newValue, timedParameter);
+            timedParameter.initAndValidate();
+            System.out.println(timedParameter);
+        });
+
+        estimateTimesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            RealParameter changeTimes = (RealParameter) timedParameter.timesInput.get();
+            changeTimes.isEstimatedInput.setValue(newValue, changeTimes);
+            sync();
+        });
+
+        scalarValues.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue)
+                getValuesParam().setDimension(timedParameter.getTimeCount());
+            else
+                getValuesParam().setDimension(timedParameter.getNTypes() * timedParameter.getTimeCount());
+
+            sanitiseRealParameter(getValuesParam());
+            ensureValuesConsistency(newValue);
+            updateValuesUI();
+            System.out.println(timedParameter);
+        });
+
+        estimateValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            RealParameter valuesParam = getValuesParam();
+            valuesParam.isEstimatedInput.setValue(newValue, valuesParam);
+            hardSync();
+        });
+
+
     }
 
     /**
-     * Configure inputs for element times.
+     * Configure inputs for times.
      *
-     * @param nTimes number of times
-     * @param parameter parameter containing times
+     * @param changeTimesEntryRow HBox containing time inputs
      */
-    void addTimesColumns(int nTimes, RealParameter parameter) {
-        for (int i=0; i<nTimes; i++) {
-            timesEntryRow.getChildren().add(new Label("Epoch " + (i+1)));
+    void updateTimesUI(HBox changeTimesEntryRow) {
+        RealParameter parameter = getTimesParam();
+        changeTimesEntryRow.getChildren().clear();
+        changeTimesEntryRow.getChildren().add(new Label("Times:"));
+        for (int i=0; i<parameter.getDimension(); i++) {
+            changeTimesEntryRow.getChildren().add(new Label("Time " + (i+1) + ": "));
             TextField textField = new TextField(parameter.getValue(i).toString());
 
             textField.setPrefWidth(50);
@@ -184,213 +227,146 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             HBox.setMargin(textField, new Insets(0, 10, 0, 0));
 
             int index = i;
-            textField.setOnAction(event -> {
-                parameter.setValue(index, Double.valueOf(textField.getText()));
+            textField.textProperty().addListener((observable, oldValue, newValue) -> {
+                parameter.setValue(index, Double.valueOf(newValue));
+                sanitiseRealParameter(parameter);
+                timedParameter.initAndValidate();
+                System.out.println(timedParameter);
             });
 
-            timesEntryRow.getChildren().add(textField);
+            changeTimesEntryRow.getChildren().add(textField);
         }
     }
 
-    /**
-     * Populate GUI elements with values/dimensions from current BEASTObject model.
-     * Called immediately after init(), and thus after every refreshPanel().
-     */
-    void loadFromModel() {
-
-        ensureParamsConsistent();
+    void updateValuesUI() {
+        valuesTable.getColumns().clear();
+        valuesTable.getItems().clear();
 
         int nTimes = timedParameter.getTimeCount();
         int nTypes = timedParameter.getNTypes();
 
-        elementCountSpinner.getValueFactory().setValue(nTimes);
-
-        // Load times:
-
-        if (nTimes > 0) {
-            RealParameter timesParameter = (RealParameter)timedParameter.timesInput.get();
-            addTimesColumns(nTimes, timesParameter);
-
-            TableColumn<TimedParamValuesEntry, String> typeNameCol = new TableColumn<>("Types");
-            typeNameCol.setCellValueFactory(p -> new ObservableValueBase<>() {
+        RealParameter valuesParameter = getValuesParam();
+        TableColumn<TimedParamValuesTableEntry, String> typeCol = new TableColumn<>("Type");
+        typeCol.setCellValueFactory(p -> new ObservableValueBase<>() {
+            @Override
+            public String getValue() {
+                int type = p.getValue().type;
+                return type < 0
+                        ? "ALL"
+                        : timedParameter.typeSetInput.get().getTypeName(type);
+            }
+        });
+        valuesTable.getColumns().add(typeCol);
+        for (int i=0; i<nTimes; i++) {
+            TableColumn<TimedParamValuesTableEntry, Double> col = new TableColumn<>("Epoch " + (i+1));
+            int epochIdx = i;
+            col.setCellValueFactory(p -> new ObservableValueBase<>() {
                 @Override
-                public String getValue() {
-                    if (p.getValue().type < 0)
-                        return "ALL";
-                    else
-                        return timedParameter.typeSetInput.get().getTypeName(p.getValue().type);
+                public Double getValue() {
+                    int type = p.getValue().type;
+                    return type<0
+                            ? valuesParameter.getValue(epochIdx)
+                            : valuesParameter.getValue(epochIdx*nTypes + type);
                 }
             });
-            valuesTable.getColumns().add(typeNameCol);
-
-            for (int i = 0; i < nTimes; i++) {
-                TableColumn<TimedParamValuesEntry, String> col =
-                        new TableColumn<>("Epoch " + (i+1));
-                int index = i;
-                col.setCellValueFactory(p -> new ObservableValueBase<>() {
-                    @Override
-                    public String getValue() {
-                        RealParameter param = p.getValue().parameter;
-                        int type = p.getValue().type;
-                        if (type<0)
-                            return String.valueOf(param.getValue(index)); // scalar
-                        else
-                            return String.valueOf(param.getValue(index*nTypes + type));
-                    }
-                });
-
-                col.setCellFactory(TextFieldTableCell.forTableColumn());
-                col.setOnEditCommit(e -> {
-                    RealParameter param = e.getRowValue().parameter;
-                    int type = e.getRowValue().type;
-                    double newValue = Double.parseDouble(e.getNewValue());
-                    if (type<0)
-                        param.setValue(index, newValue); // scalar
-                    else
-                        param.setValue(index*nTypes + type, newValue);
-                });
-
-                valuesTable.getColumns().add(col);
-            }
-
-            estimateTimesCheckBox.setSelected(timesParameter.isEstimatedInput.get());
-
-            // Load values
-
-            RealParameter valuesParameter = (RealParameter)timedParameter.valuesInput.get();
-
-            if (valuesParameter.getDimension() == nTimes) {
-                valuesTable.getItems().add(new TimedParamValuesEntry(valuesParameter, -1));
-                if (nTypes > 1) {
-                    scalarValuesCheckBox.setSelected(true);
-                    scalarValuesCheckBox.disableProperty().set(true);
+            col.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+            col.setOnEditCommit(e -> {
+                int type = e.getTableView()
+                        .getItems().get(e.getTablePosition().getRow()).type;
+                if (type < 0) {
+                    valuesParameter.setValue(epochIdx, e.getNewValue());
                 } else {
-                    scalarValuesCheckBox.setSelected(false);
-                    scalarValuesCheckBox.disableProperty().set(false);
+                    valuesParameter.setValue(epochIdx*nTypes + type, e.getNewValue());
                 }
-            } else {
-                for (int i=0; i<nTypes; i++)
-                    valuesTable.getItems().add(new TimedParamValuesEntry(valuesParameter, i));
-
-                scalarValuesCheckBox.setSelected(false);
-            }
-
-            estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
-
-        } else {
-            estimateTimesCheckBox.setSelected(false);
-            estimateValuesCheckBox.setSelected(false);
-
-            elementsBox.setVisible(false);
+                sanitiseRealParameter(valuesParameter);
+                System.out.println(timedParameter);
+            });
+            valuesTable.getColumns().add(col);
         }
 
-        timesAreAgesCheckBox.setSelected(timedParameter.timesAreAgesInput.get());
-
+        if (valuesParameter.getDimension() / nTimes > 1) {
+            for (int type=0; type<nTypes; type++)
+                valuesTable.getItems().add(new TimedParamValuesTableEntry(type));
+        } else {
+            valuesTable.getItems().add(new TimedParamValuesTableEntry(-1));
+        }
     }
 
-    /**
-     * Write anything in the GUI elements to the BEASTObject model.  Called
-     * immediately when any of the change event handlers for the GUI objects
-     * fire, i.e. when any of the values in the GUI are changed.
-     *
-     * Ends with a call to refreshPanel().
-     */
-    void saveToModel() {
+    void ensureValuesConsistency(boolean scalar) {
+        int nTypes = timedParameter.typeSetInput.get().getNTypes();
+        int nEpochs = timedParameter.timesInput.get() == null
+                ? 0
+                : timedParameter.timesInput.get().getDimension();
 
-        if (modelSaveInProcess)
-            return;
+        System.out.println("Number of epochs: " + nEpochs);
 
-        modelSaveInProcess = true;
+        if (nEpochs > 0) {
+            RealParameter valuesParam = getValuesParam();
 
-        int nTypes = timedParameter.getNTypes();
-        int nTimes = elementCountSpinner.getValue();
-
-        // Save values and times
-
-        RealParameter valuesParam = getValuesParam();
-        RealParameter timesParam = getTimesParam();
-        if (nTimes>0) {
-
-            if (scalarValuesCheckBox.isSelected())
-                valuesParam.setDimension(nTimes);
+            if (scalar)
+                valuesParam.setDimension(nEpochs);
             else
-                valuesParam.setDimension(nTimes*nTypes);
+                valuesParam.setDimension(nTypes * nEpochs);
 
-            valuesParam.isEstimatedInput.setValue(estimateValuesCheckBox.isSelected(), valuesParam);
-
-            timesParam.setDimension(nTimes);
-            timesParam.isEstimatedInput.setValue(estimateTimesCheckBox.isSelected(), timesParam);
-
-            timedParameter.setInputValue("times", timesParam);
-            timesParam.initAndValidate();
-
-            timedParameter.setInputValue("values", valuesParam);
-            valuesParam.initAndValidate();
-
-        } else {
-
-            if (timesParam != null)
-                timesParam.isEstimatedInput.setValue(false, timesParam);
-
-            timedParameter.setInputValue("values", null);
-            timedParameter.setInputValue("times", null);
-        }
-
-        timedParameter.timesAreAgesInput.setValue(timesAreAgesCheckBox.isSelected(), timedParameter);
+            sanitiseRealParameter(valuesParam);
+            timedParameter.valuesInput.setValue(valuesParam, timedParameter);
+        } else
+            timedParameter.valuesInput.setValue(null, timedParameter);
 
         timedParameter.initAndValidate();
-
-        modelSaveInProcess = false;
-
-        refreshPanel();
     }
 
-    public static class TimedParamValuesEntry {
-
-        public TimedParamValuesEntry(RealParameter parameter, int type) {
-            this.parameter = parameter;
-            this.type = type;
-        }
-
-        public RealParameter parameter;
-        public int type;
-    }
-
-    RealParameter getValuesParam() {
-        RealParameter changeTimesParam = (RealParameter)timedParameter.timesInput.get();
-        if (changeTimesParam == null) {
-
-            int idx = timedParameter.getID().indexOf("TP");
-            String prefix = timedParameter.getID().substring(0, idx);
-            String suffix = timedParameter.getID().substring(idx+2);
-            String paramID = prefix + suffix;
-
-            changeTimesParam = (RealParameter) doc.pluginmap.get(paramID);
-            if (changeTimesParam == null) {
-                changeTimesParam = new RealParameter("0.0");
-                changeTimesParam.setID(paramID);
-            }
-        }
-
-        return changeTimesParam;
+    void sanitiseRealParameter(RealParameter parameter) {
+        parameter.valuesInput.setValue(
+                Arrays.stream(parameter.getDoubleValues())
+                        .mapToObj(String::valueOf)
+                        .collect(Collectors.joining(" ")),
+                parameter);
+        parameter.initAndValidate();
     }
 
     RealParameter getTimesParam() {
-        RealParameter changeTimesParam = (RealParameter)timedParameter.timesInput.get();
-        if (changeTimesParam == null) {
+        RealParameter timesParam = (RealParameter)timedParameter.timesInput.get();
+        if (timesParam == null) {
 
             int idx = timedParameter.getID().indexOf("TP");
             String prefix = timedParameter.getID().substring(0, idx);
             String suffix = timedParameter.getID().substring(idx+2);
             String paramID = prefix + "Times" + suffix;
 
-            changeTimesParam = (RealParameter) doc.pluginmap.get(paramID);
-            if (changeTimesParam == null) {
-                changeTimesParam = new RealParameter("0.0");
-                changeTimesParam.setID(paramID);
+            timesParam = (RealParameter) doc.pluginmap.get(paramID);
+            if (timesParam == null) {
+                timesParam = new RealParameter("0.0");
+                timesParam.setID(paramID);
             }
         }
+        return timesParam;
+    }
 
-        return changeTimesParam;
+    RealParameter getValuesParam() {
+        RealParameter valuesParam = (RealParameter)timedParameter.valuesInput.get();
+        if (valuesParam == null) {
+
+            int idx = timedParameter.getID().indexOf("TP");
+            String prefix = timedParameter.getID().substring(0, idx);
+            String suffix = timedParameter.getID().substring(idx+2);
+            String paramID = prefix + suffix;
+
+            valuesParam = (RealParameter) doc.pluginmap.get(paramID);
+            if (valuesParam == null) {
+                valuesParam = new RealParameter("0.0");
+                valuesParam.isEstimatedInput.setValue(true, valuesParam);
+                valuesParam.setID(paramID);
+            }
+        }
+        return valuesParam;
+    }
+
+    public static class TimedParamValuesTableEntry {
+        int type;
+
+        public TimedParamValuesTableEntry(int type) {
+            this.type = type;
+        }
     }
 }

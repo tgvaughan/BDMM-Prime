@@ -134,6 +134,8 @@ public class TimedParameter extends CalculationNode implements Loggable {
     }
 
     public int getTimeCount() {
+        update();
+
         return times.length;
     }
 
@@ -276,5 +278,19 @@ public class TimedParameter extends CalculationNode implements Loggable {
     @Override
     public void close(PrintStream out) {
 
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+
+        sb.append(":");
+        for (int i=0; i<getTimeCount(); i++) {
+            sb.append(" ").append(Arrays.toString(values[i]));
+            sb.append(" (time ").append(times[i]).append(")");
+        }
+
+        return sb.toString();
     }
 }
