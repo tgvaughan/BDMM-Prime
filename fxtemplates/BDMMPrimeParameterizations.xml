@@ -168,12 +168,12 @@
                         </rhoSampling>
             </parameterization>
 
-            <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
+            <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
 
             <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
             <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
@@ -227,12 +227,12 @@
                         </rhoSampling>
             </parameterization>
 
-            <param id="R0ChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="R0AmongDemesChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="becomeUninfectiousRateChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="migrationRateChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="samplingProportionChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="removalProbChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
+            <param id="R0ChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="R0AmongDemesChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="becomeUninfectiousRateChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="migrationRateChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="samplingProportionChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="removalProbChangeTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
 
             <param id="rhoSamplingProbEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
             <param id="rhoSamplingProbTimesEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
@@ -283,11 +283,11 @@
                         </rhoSampling>
             </parameterization>
 
-            <param id="diversificationRateChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="diversificationRateAmongDemesChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="turnoverChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="migrationRateChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
-  		    <param id="samplingProportionChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
+            <param id="diversificationRateChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="diversificationRateAmongDemesChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="turnoverChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="migrationRateChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+            <param id="samplingProportionChangeTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
 
             <param id="rhoSamplingProbFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
             <param id="rhoSamplingProbTimesFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>

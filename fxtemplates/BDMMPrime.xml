@@ -122,16 +122,17 @@
                 <prior id="originBDMMPrimePrior.t:$(n)" x="@originBDMMPrime.t:$(n)">
                    <distr spec="beast.base.inference.distribution.OneOnX"/>
                 </prior>
-  		        <operator id="originBDMMPrimeScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
 
-  		        <operator id="typeFrequenciesExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@typeFrequencies.t:$(n)" delta="0.1" weight="1.0"/>
+                <operator id="originBDMMPrimeScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
 
-  		        <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-  		        <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-  		        <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-  		        <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-  		        <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-  		        <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                <operator id="typeFrequenciesExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@typeFrequencies.t:$(n)" delta="0.1" weight="1.0"/>
+
+                <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
 
                 <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
                 <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
