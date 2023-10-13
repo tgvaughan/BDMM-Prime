@@ -61,7 +61,7 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
     }
 
     @Override
-    void ensureValuesConsistency(boolean scalar) {
+    void ensureValuesConsistency() {
         int nTypes = skylineParameter.typeSetInput.get().getNTypes();
         int nEpochs = skylineParameter.changeTimesInput.get() == null
                 ? 1
@@ -70,7 +70,7 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
 
         System.out.println("Number of epochs: " + nEpochs);
 
-        if (scalar)
+        if (skylineParameter.isScalarInput.get())
             valuesParam.setDimension(nEpochs);
         else
             valuesParam.setDimension(nTypes*nTypes*nEpochs);

@@ -39,7 +39,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         skylineParameter = (SkylineParameter) input.get();
 
-        ensureValuesConsistency(true);
+        ensureValuesConsistency();
 
         addInputLabel();
 
@@ -159,7 +159,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
                 skylineParameter.changeTimesInput.setValue(null, skylineParameter);
             }
 
-            ensureValuesConsistency(scalarRatesCheckBox.isSelected());
+            ensureValuesConsistency();
 
             if (newValue > 0) {
                 updateChangeTimesUI((RealParameter) skylineParameter.changeTimesInput.get(),
@@ -196,13 +196,10 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         });
 
         scalarRatesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            if (newValue)
-                valuesParameter.setDimension(skylineParameter.getChangeCount() + 1);
-            else
-                valuesParameter.setDimension(skylineParameter.getNTypes() * (skylineParameter.getChangeCount() + 1));
+            skylineParameter.isScalarInput.setValue(newValue, skylineParameter);
 
+            ensureValuesConsistency();
             sanitiseRealParameter(valuesParameter);
-            ensureValuesConsistency(newValue);
             updateValuesUI();
             System.out.println(skylineParameter);
         });
@@ -271,7 +268,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
      * the type count is affected by the TypeTraitSetInputEditor, which
      * calls a sync() when this value changes.
      */
-    abstract void ensureValuesConsistency(boolean scalar);
+    abstract void ensureValuesConsistency();
 
     abstract void updateValuesUI();
 

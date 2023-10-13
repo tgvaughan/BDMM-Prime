@@ -34,6 +34,11 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
             "Type set defining distinct types in model. Used when a" +
                     "single value is to be shared amongst several types.");
 
+    public Input<Boolean> isScalarInput = new Input<>("isScalar",
+            "Input used internally by BEAUti to record whether to " +
+                    "regard parameter as scalar. Users should disregard " +
+                    "this parameter.", true);
+
     boolean timesAreAges, timesAreRelative;
 
     double[] times, storedTimes;
