@@ -11,6 +11,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.util.Duration;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
@@ -55,6 +56,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         Label changePointLabel = new Label("Number of change times:");
         Spinner<Integer> changeCountSpinner = new Spinner<>(0, Integer.MAX_VALUE, nChanges);
         changeCountSpinner.setEditable(true);
+        changeCountSpinner.setRepeatDelay(Duration.INDEFINITE); // (Hack around weird race condition I can't solve)
         boxHoriz.getChildren().add(changePointLabel);
         boxHoriz.getChildren().add(changeCountSpinner);
 
