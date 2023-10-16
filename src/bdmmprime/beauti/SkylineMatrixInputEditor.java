@@ -9,8 +9,10 @@ import beastfx.app.inputeditor.InputEditor;
 import javafx.beans.binding.Bindings;
 import javafx.beans.value.ObservableValueBase;
 import javafx.scene.control.Label;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.util.Callback;
 import javafx.util.converter.DoubleStringConverter;
 
 import java.util.ArrayList;
@@ -44,9 +46,10 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
             pane.getChildren().add(new Label("Insufficient types for this parameter."));
         } else {
             updateValuesUI();
+            System.out.println(valuesTable.getLayoutBounds());
             valuesTable.setFixedCellSize(25);
             valuesTable.prefHeightProperty().bind(valuesTable.fixedCellSizeProperty()
-                    .multiply(Bindings.size(valuesTable.getItems()).add(2.2)));
+                    .multiply(Bindings.size(valuesTable.getItems()).add(3.0)));
         }
 
     }
@@ -73,7 +76,7 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         if (skylineParameter.isScalarInput.get())
             valuesParam.setDimension(nEpochs);
         else
-            valuesParam.setDimension(nTypes*nTypes*nEpochs);
+            valuesParam.setDimension(nTypes*(nTypes-1)*nEpochs);
 
         if (skylineParameter.changeTimesInput.get() != null)
             ((RealParameter)skylineParameter.changeTimesInput.get()).initAndValidate();
@@ -90,7 +93,6 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         int nTypes = skylineMatrix.getNTypes();
 
         RealParameter valuesParameter = (RealParameter) skylineMatrix.skylineValuesInput.get();
-        boolean scalar = valuesParameter.getDimension() / (nChanges+1) == 1;
 
         TableColumn<ValuesTableEntry, String> typeCol = new TableColumn<>("From Type");
         typeCol.setCellValueFactory(p -> new ObservableValueBase<>() {
@@ -105,7 +107,7 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         valuesTable.getColumns().add(typeCol);
 
         List<Integer> toTypes = new ArrayList<>();
-        if (scalar)
+        if (skylineParameter.isScalarInput.get())
             toTypes.add(-1);
         else {
             for (int t=0; t<nTypes; t++) {
@@ -128,20 +130,54 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
                     @Override
                     public Double getValue() {
                         int from = ((MatrixValuesEntry) p.getValue()).fromType;
-                        return from < 0
-                                ? valuesParameter.getValue(epochIdx)
-                                : valuesParameter.getValue(epochIdx * nTypes * nTypes + nTypes * from + toType);
+                        if (from < 0)
+                            return valuesParameter.getValue(epochIdx);
+
+                        if (from == toType)
+                            return Double.NaN;
+
+                        return valuesParameter.getValue(
+                                epochIdx*nTypes*(nTypes-1)
+                                + (nTypes-1)*from
+                                + (toType<from ? toType : toType-1));
                     }
                 });
-                col.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+//                col.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
+                col.setCellFactory(new Callback<>() {
+                    @Override
+                    public TableCell<ValuesTableEntry, Double> call(TableColumn<ValuesTableEntry, Double> param) {
+                        return new TextFieldTableCell<>(new DoubleStringConverter()) {
+                            @Override
+                            public void updateItem(Double item, boolean empty) {
+                                super.updateItem(item, empty);
+
+                                if (item == null || empty) {
+                                    setText("");
+                                    setStyle("");
+                                    setEditable(false);
+                                } else if (Double.isNaN(item)) {
+                                    setText("");
+                                    setStyle("-fx-background-color: black");
+                                    setEditable(false);
+                                } else {
+                                    setText(Double.toString(item));
+                                    setEditable(true);
+                                }
+                            }
+                        };
+                    }
+                });
                 col.setOnEditCommit(e -> {
                     int from = ((MatrixValuesEntry) e.getTableView()
                             .getItems().get(e.getTablePosition().getRow())).fromType;
                     if (from < 0) {
                         valuesParameter.setValue(epochIdx, e.getNewValue());
                     } else {
-                        valuesParameter.setValue(epochIdx * nTypes * nTypes + nTypes * from + toType, e.getNewValue());
+                        valuesParameter.setValue(epochIdx*nTypes*(nTypes-1)
+                                + (nTypes-1)*from
+                                + (toType<from ? toType : toType-1), e.getNewValue());
                     }
+                    ensureValuesConsistency();
                     sanitiseRealParameter(valuesParameter);
                     System.out.println(skylineMatrix);
                 });
@@ -149,7 +185,7 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
             }
         }
 
-        if (!scalar) {
+        if (!skylineParameter.isScalarInput.get()) {
             for (int from=0; from<nTypes; from++) {
                 valuesTable.getItems().add(new MatrixValuesEntry(from));
             }
