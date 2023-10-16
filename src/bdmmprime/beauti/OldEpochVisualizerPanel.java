@@ -11,7 +11,7 @@ import java.awt.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
 
-public class EpochVisualizerPanel extends JPanel {
+public class OldEpochVisualizerPanel extends JPanel {
 
     Tree tree;
     TraitSet typeTraitSet;
@@ -25,7 +25,7 @@ public class EpochVisualizerPanel extends JPanel {
     final int MARGIN_WIDTH = 2;
 
 
-    public EpochVisualizerPanel(Tree tree, TraitSet typeTraitSet, SkylineParameter param) {
+    public OldEpochVisualizerPanel(Tree tree, TraitSet typeTraitSet, SkylineParameter param) {
         this.tree = tree;
         this.typeTraitSet = typeTraitSet;
         this.param = param;

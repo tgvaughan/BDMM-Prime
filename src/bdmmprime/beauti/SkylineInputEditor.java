@@ -1,8 +1,11 @@
 package bdmmprime.beauti;
 
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.SkylineParameter;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
+import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.Tree;
 import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
@@ -11,6 +14,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 import java.util.Arrays;
@@ -23,6 +27,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     TableView<ValuesTableEntry> valuesTable;
 
     VBox mainInputBox;
+
+    EpochVisualizerPane epochVisualizer;
 
     public SkylineInputEditor(BeautiDoc doc) {
         super(doc);
@@ -105,6 +111,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         CheckBox scalarRatesCheckBox = new CheckBox("Scalar values");
         boxHoriz.getChildren().add(scalarRatesCheckBox);
         CheckBox estimateValuesCheckBox = new CheckBox("Estimate values");
+        estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
         boxHoriz.getChildren().add(estimateValuesCheckBox);
 
         mainInputBox.getChildren().add(boxHoriz);
@@ -114,28 +121,30 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz.getChildren().add(visualizerCheckBox);
         mainInputBox.getChildren().add(boxHoriz);
 
+        epochVisualizer = new EpochVisualizerPane(getTree(), getTypeTraitSet(), skylineParameter);
+        epochVisualizer.prefWidthProperty().bind(mainInputBox.widthProperty().subtract(10));
+        epochVisualizer.prefHeightProperty().bind(epochVisualizer.linesProperty()
+                .multiply(Font.getDefault().getSize()));
+        visualizerCheckBox.setSelected(skylineParameter.epochVisualizerDisplayed);
+        epochVisualizer.setVisible(skylineParameter.epochVisualizerDisplayed);
+        epochVisualizer.setManaged(skylineParameter.epochVisualizerDisplayed);
+        mainInputBox.getChildren().add(epochVisualizer);
+
         int nTypes = skylineParameter.getNTypes();
         if (valuesParameter.getDimension() == (nChanges + 1)) {
             if (nTypes > 1) {
                 scalarRatesCheckBox.setSelected(true);
                 scalarRatesCheckBox.disableProperty().set(false);
-//                epochVisualizer.setScalar(true);
+                epochVisualizer.setScalar(true);
             } else {
                 scalarRatesCheckBox.setSelected(false);
                 scalarRatesCheckBox.disableProperty().set(true);
-//                epochVisualizer.setScalar(false);
+                epochVisualizer.setScalar(false);
             }
         } else {
             scalarRatesCheckBox.setSelected(false);
-//            epochVisualizer.setScalar(false);
+            epochVisualizer.setScalar(false);
         }
-
-        estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
-
-        visualizerCheckBox.setSelected(skylineParameter.epochVisualizerDisplayed);
-//        epochVisualizer.setVisible(skylineParameter.epochVisualizerDisplayed);
-//        epochVisualizer = new EpochVisualizerPanel(getTree(), getTypeTraitSet(), skylineParameter);
-//        mainInputBox.getChildren().add(epochVisualizer);
 
         pane.getChildren().add(mainInputBox);
         getChildren().add(pane);
@@ -213,8 +222,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         visualizerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             skylineParameter.epochVisualizerDisplayed = newValue;
-
-            // TODO
+            epochVisualizer.setVisible(newValue);
+            epochVisualizer.setManaged(newValue);
         });
     }
 
@@ -262,6 +271,17 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
     private String getPartitionID() {
         return skylineParameter.getID().split("\\.t:")[1];
+    }
+
+    protected Tree getTree() {
+        return (Tree) doc.pluginmap.get("Tree.t:" + getPartitionID());
+    }
+
+    protected TraitSet getTypeTraitSet() {
+        BirthDeathMigrationDistribution bdmmPrimeDistrib =
+                (BirthDeathMigrationDistribution) doc.pluginmap.get("BDMMPrime.t:" + getPartitionID());
+
+        return bdmmPrimeDistrib.typeTraitSetInput.get();
     }
 
     /**
