@@ -118,14 +118,12 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         boxHoriz = FXUtils.newHBox();
         CheckBox visualizerCheckBox = new CheckBox("Display visualization");
+        visualizerCheckBox.setSelected(skylineParameter.epochVisualizerDisplayed);
         boxHoriz.getChildren().add(visualizerCheckBox);
         mainInputBox.getChildren().add(boxHoriz);
 
         epochVisualizer = new EpochVisualizerPane(getTree(), getTypeTraitSet(), skylineParameter);
-        epochVisualizer.prefWidthProperty().bind(mainInputBox.widthProperty().subtract(10));
-        epochVisualizer.prefHeightProperty().bind(epochVisualizer.linesProperty()
-                .multiply(Font.getDefault().getSize()));
-        visualizerCheckBox.setSelected(skylineParameter.epochVisualizerDisplayed);
+        epochVisualizer.widthProperty().bind(mainInputBox.widthProperty().subtract(10));
         epochVisualizer.setVisible(skylineParameter.epochVisualizerDisplayed);
         epochVisualizer.setManaged(skylineParameter.epochVisualizerDisplayed);
         mainInputBox.getChildren().add(epochVisualizer);
@@ -198,6 +196,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
             skylineParameter.timesAreAgesInput.setValue(newValue, skylineParameter);
             skylineParameter.initAndValidate();
             System.out.println(skylineParameter);
+            epochVisualizer.repaintCanvas();
         });
 
         estimateTimesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -213,6 +212,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
             sanitiseRealParameter(valuesParameter);
             updateValuesUI();
             System.out.println(skylineParameter);
+            epochVisualizer.setScalar(newValue);
         });
 
         estimateValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
@@ -251,6 +251,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
                 sanitiseRealParameter(parameter);
                 skylineParameter.initAndValidate();
                 System.out.println(skylineParameter);
+                epochVisualizer.repaintCanvas();
             });
 
             changeTimesEntryRow.getChildren().add(textField);

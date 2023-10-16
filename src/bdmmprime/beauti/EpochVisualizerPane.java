@@ -22,27 +22,21 @@ import bdmmprime.parameterization.TypeSet;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleDoubleProperty;
-import javafx.beans.property.SimpleIntegerProperty;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
-import javafx.scene.layout.BorderPane;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 
-import java.awt.*;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Arrays;
 
-public class EpochVisualizerPane extends BorderPane {
+public class EpochVisualizerPane extends Canvas {
 
     Tree tree;
     TraitSet typeTraitSet;
     SkylineParameter param;
-
-    Canvas canvas;
 
     boolean isScalar = false;
 
@@ -56,26 +50,17 @@ public class EpochVisualizerPane extends BorderPane {
         this.typeTraitSet = typeTraitSet;
         this.param = param;
 
-        canvas = new Canvas(getWidth(), getHeight());
-        setCenter(canvas);
-
-        widthProperty().addListener(e -> canvas.setWidth(getWidth()));
-        heightProperty().addListener(e -> canvas.setHeight(getHeight()));
-
-        lines.setValue(HEADER_HEIGHT + FOOTER_HEIGHT +
-                HEIGHT_PER_TYPE*(isScalar ? 1 : param.getNTypes()));
+        widthProperty().addListener(e -> repaintCanvas());
     }
 
-    @Override
-    protected void layoutChildren() {
-        super.layoutChildren();
+    public void repaintCanvas() {
+        setHeight((HEADER_HEIGHT + FOOTER_HEIGHT
+                + (isScalar ? 1 : param.getNTypes()) * HEIGHT_PER_TYPE)
+                * Font.getDefault().getSize());
 
-        GraphicsContext gc = canvas.getGraphicsContext2D();
+        GraphicsContext gc = getGraphicsContext2D();
 
         gc.clearRect(0,0,getWidth(),getHeight());
-
-        gc.setFill(Color.ROYALBLUE);
-        gc.fillRect(5, 5, 5, 5);
 
         boolean useAges = param.timesAreAgesInput.get();
         double origin = param.processLengthInput.get().getArrayValue();
@@ -251,19 +236,7 @@ public class EpochVisualizerPane extends BorderPane {
 
     public void setScalar(boolean scalar) {
         isScalar = scalar;
-    }
-
-    private final SimpleIntegerProperty lines = new SimpleIntegerProperty(
-            HEADER_HEIGHT + FOOTER_HEIGHT + HEIGHT_PER_TYPE);
-
-    public int getLines() {
-        return lines.get();
-    }
-    public void setLines(int value) {
-        lines.set(value);
-    }
-    public IntegerProperty linesProperty() {
-        return lines;
+        repaintCanvas();
     }
 
     double getHorizontalPixel(GraphicsContext gc, double time) {
