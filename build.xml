@@ -194,7 +194,9 @@
     <target name="compile" depends="build-beast,build-beastfx,install-dependencies">
       <javac target="${targetVersion}" source="${sourceVersion}"
              srcdir="${src}" destdir="${build}"
-             includeantruntime="false" fork="yes">
+             includeantruntime="false"
+             encoding="UTF-8"
+             fork="yes">
             <classpath>
                 <pathelement path="${classpath}"/>
                 <fileset dir="${lib}" includes="**/*.jar" erroronmissingdir="false"/>
@@ -226,7 +228,9 @@
     <target name="compile-test" depends="init-test,compile,copy-resources">
       <javac target="${targetVersion}" source="${sourceVersion}"
              srcdir="${test}" destdir="${build-test}"
-             includeantruntime="false" fork="yes">
+             includeantruntime="false"
+             encoding="UTF-8"
+             fork="yes">
             <classpath>
                 <pathelement path="${classpath}"/>
                 <pathelement path="${build}" />
