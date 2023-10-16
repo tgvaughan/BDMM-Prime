@@ -252,7 +252,7 @@
                 <pathelement path="${classpath}"/>
                 <pathelement path="${build}" />
                 <pathelement path="${build-test}" />
-                <fileset dir="${lib}" includes="**/*.jar"/>
+                <fileset dir="${lib}" includes="**/*.jar" erroronmissingdir="false"/>
                 <fileset dir="${beast-source-root}/lib" includes="**/*.jar"/>
                 <pathelement path="${build-beast}" />
                 <fileset dir="deps/SA" includes="**/*.jar"/>
