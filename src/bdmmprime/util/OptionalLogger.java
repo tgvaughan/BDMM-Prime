@@ -1,8 +1,8 @@
 package bdmmprime.util;
 
-import beast.core.Description;
-import beast.core.Input;
-import beast.core.Logger;
+import beast.base.core.Description;
+import beast.base.core.Input;
+import beast.base.inference.Logger;
 
 import java.io.IOException;
 

@@ -4,7 +4,7 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.CrossBirthEvent;
 import bdmmprime.trajectories.trajevents.MigrationEvent;
-import beast.util.Randomizer;
+import beast.base.util.Randomizer;
 
 public class TypeChangeEvent extends ObservedEvent {
 

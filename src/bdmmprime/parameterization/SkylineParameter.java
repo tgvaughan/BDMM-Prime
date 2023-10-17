@@ -1,12 +1,10 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.core.CalculationNode;
-import beast.core.Function;
-import beast.core.Input;
-import beast.core.Loggable;
-import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Tree;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.inference.CalculationNode;
 
 import java.io.PrintStream;
 import java.util.*;
@@ -35,6 +33,11 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
             "Type set defining distinct types in model. Used when a" +
                     "single value is to be shared amongst several types.");
+
+    public Input<Boolean> isScalarInput = new Input<>("isScalar",
+            "Input used internally by BEAUti to record whether to " +
+                    "regard parameter as scalar. Users should disregard " +
+                    "this parameter.", true);
 
     boolean timesAreAges, timesAreRelative;
 

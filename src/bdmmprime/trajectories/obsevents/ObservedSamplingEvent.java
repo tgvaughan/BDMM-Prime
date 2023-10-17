@@ -4,7 +4,7 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.SamplingEvent;
 import bdmmprime.util.Utils;
-import beast.util.Randomizer;
+import beast.base.util.Randomizer;
 import org.apache.commons.math.special.Gamma;
 
 import static bdmmprime.util.Utils.logChoose;

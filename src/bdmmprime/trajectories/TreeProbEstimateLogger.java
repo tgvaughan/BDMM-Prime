@@ -1,8 +1,8 @@
 package bdmmprime.trajectories;
 
-import beast.core.CalculationNode;
-import beast.core.Input;
-import beast.core.Loggable;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.inference.CalculationNode;
 
 import java.io.PrintStream;
 

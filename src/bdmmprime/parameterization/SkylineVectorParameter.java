@@ -1,9 +1,10 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.core.parameter.RealParameter;
+import beast.base.inference.parameter.RealParameter;
 
 import java.io.PrintStream;
+import java.util.Arrays;
 
 public class SkylineVectorParameter extends SkylineParameter {
 
@@ -169,5 +170,20 @@ public class SkylineVectorParameter extends SkylineParameter {
 
     @Override
     public void close(PrintStream out) {
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append(super.toString());
+
+        sb.append(":");
+        for (int i=0; i<getChangeCount()+1; i++) {
+            if (i>0)
+                sb.append(" (change time ").append(times[i-1]).append(")");
+            sb.append(" ").append(Arrays.toString(values[i]));
+        }
+
+        return sb.toString();
     }
 }

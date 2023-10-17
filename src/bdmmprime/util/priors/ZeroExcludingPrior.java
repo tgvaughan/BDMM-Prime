@@ -1,10 +1,10 @@
 package bdmmprime.util.priors;
 
-import beast.core.Description;
-import beast.core.Function;
-import beast.core.parameter.IntegerParameter;
-import beast.core.parameter.RealParameter;
-import beast.math.distributions.Prior;
+import beast.base.core.Description;
+import beast.base.core.Function;
+import beast.base.inference.distribution.Prior;
+import beast.base.inference.parameter.IntegerParameter;
+import beast.base.inference.parameter.RealParameter;
 
 @Description("Like Prior, but excludes any zero elements of the input parameter " +
         "from the calculation.")

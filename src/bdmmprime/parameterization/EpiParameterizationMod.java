@@ -1,11 +1,6 @@
 package bdmmprime.parameterization;
 
-import beast.core.Input;
-
-import java.io.*;
-import java.nio.file.Files;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
+import beast.base.core.Input;
 
 public class EpiParameterizationMod extends Parameterization {
 

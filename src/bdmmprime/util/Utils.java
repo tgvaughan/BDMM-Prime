@@ -1,7 +1,7 @@
 package bdmmprime.util;
 
-import beast.math.GammaFunction;
-import beast.util.Randomizer;
+import beast.base.util.GammaFunction;
+import beast.base.util.Randomizer;
 
 /**
  * @author dkuh004

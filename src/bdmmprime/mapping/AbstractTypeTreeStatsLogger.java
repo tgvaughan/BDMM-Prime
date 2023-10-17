@@ -1,11 +1,11 @@
 package bdmmprime.mapping;
 
 import bdmmprime.parameterization.TypeSet;
-import beast.core.CalculationNode;
-import beast.core.Input;
-import beast.core.Loggable;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.inference.CalculationNode;
 
 public abstract class AbstractTypeTreeStatsLogger extends CalculationNode implements Loggable {
 

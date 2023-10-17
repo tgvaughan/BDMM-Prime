@@ -1,7 +1,7 @@
 package bdmmprime.trajectories.simulation;
 
 import bdmmprime.parameterization.TypeSet;
-import beast.evolution.tree.Node;
+import beast.base.evolution.tree.Node;
 
 public class NodeFactory {
 

@@ -1,10 +1,10 @@
 package bdmmprime.util.priors;
 
-import beast.core.Distribution;
-import beast.core.Function;
-import beast.core.Input;
-import beast.core.State;
-import beast.core.parameter.RealParameter;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.inference.Distribution;
+import beast.base.inference.State;
+import beast.base.inference.parameter.RealParameter;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;

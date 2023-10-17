@@ -3,12 +3,12 @@ package bdmmprime.trajectories.simulation;
 import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.*;
-import beast.core.Function;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
-import beast.util.Randomizer;
+import beast.base.core.Function;
+import beast.base.core.Input;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.util.Randomizer;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;

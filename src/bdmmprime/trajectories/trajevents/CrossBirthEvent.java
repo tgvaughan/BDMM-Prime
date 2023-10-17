@@ -1,8 +1,8 @@
 package bdmmprime.trajectories.trajevents;
 
 import bdmmprime.trajectories.simulation.NodeFactory;
-import beast.evolution.tree.Node;
-import beast.util.Randomizer;
+import beast.base.evolution.tree.Node;
+import beast.base.util.Randomizer;
 
 import java.util.List;
 

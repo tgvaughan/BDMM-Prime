@@ -1,4 +1,55 @@
-<addon name="BDMM-Prime" version="0.0.33">
-  <depends on="beast2" atleast="2.6.0"/>
-  <depends on="SA" atleast="2.0.2"/>
-</addon>
+<package name="BDMM-Prime" version="0.0.27">
+  <depends on="BEAST.base" atleast="2.7.0" atmost="2.7.9"/>
+  <depends on="BEAST.app" atleast="2.7.0" atmost="2.7.9"/>
+  <depends on="SA" atleast="2.1.0"/>
+
+  <service type="beast.base.core.BEASTInterface">
+    <provider classname="bdmmprime.mapping.AbstractTypeTreeStatsLogger"/>
+    <provider classname="bdmmprime.mapping.TypeMappedTree"/>
+    <provider classname="bdmmprime.mapping.TypedTreeStatsLogger"/>
+    <provider classname="bdmmprime.mapping.TypedNodeTreeLogger"/>
+    <provider classname="bdmmprime.mapping.TransitionTimeLogger"/>
+    <provider classname="bdmmprime.util.TipDatesFromTree"/>
+    <provider classname="bdmmprime.util.priors.SmartZeroExcludingPrior"/>
+    <provider classname="bdmmprime.util.priors.OUSkyGridPrior"/>
+    <provider classname="bdmmprime.util.priors.SkyGridPrior"/>
+    <provider classname="bdmmprime.util.priors.ZeroExcludingPrior"/>
+    <provider classname="bdmmprime.util.priors.TipDatePrior"/>
+    <provider classname="bdmmprime.util.priors.MultivariateLogNormal"/>
+    <provider classname="bdmmprime.util.operators.SmartScaleOperator"/>
+    <provider classname="bdmmprime.util.operators.ChangeTimeScaler"/>
+    <provider classname="bdmmprime.util.operators.TipEdgeScaleOperator"/>
+    <provider classname="bdmmprime.util.operators.TipDateInitialiser"/>
+    <provider classname="bdmmprime.util.operators.TipDateOperator"/>
+    <provider classname="bdmmprime.util.operators.SmartRealRandomWalkOperator"/>
+    <provider classname="bdmmprime.util.InitializedTraitSet"/>
+    <provider classname="bdmmprime.util.Slice"/>
+    <provider classname="bdmmprime.util.NodeAgeLogger"/>
+    <provider classname="bdmmprime.util.OptionalLogger"/>
+    <provider classname="bdmmprime.parameterization.TimedParameter"/>
+    <provider classname="bdmmprime.parameterization.CanonicalParameterization"/>
+    <provider classname="bdmmprime.parameterization.SkylineMatrixParameter"/>
+    <provider classname="bdmmprime.parameterization.SkylineVectorParameter"/>
+    <provider classname="bdmmprime.parameterization.EpiParameterizationMod"/>
+    <provider classname="bdmmprime.parameterization.EpiParameterization"/>
+    <provider classname="bdmmprime.parameterization.FBDParameterization"/>
+    <provider classname="bdmmprime.parameterization.TypeSet"/>
+    <provider classname="bdmmprime.distribution.BinomialDistribution"/>
+    <provider classname="bdmmprime.distribution.BirthDeathMigrationDistribution"/>
+    <provider classname="bdmmprime.distribution.StartTypeProbLogger"/>
+    <provider classname="bdmmprime.trajectories.simulation.SimulatedTrajectoryLogger"/>
+    <provider classname="bdmmprime.trajectories.simulation.SimulatedTree"/>
+    <provider classname="bdmmprime.trajectories.simulation.UntypedTreeFromTypedTree"/>
+    <provider classname="bdmmprime.trajectories.SampledTrajectory"/>
+    <provider classname="bdmmprime.trajectories.ReplacementSampler"/>
+    <provider classname="bdmmprime.trajectories.TreeProbEstimateLogger"/>
+  </service>
+
+  <service type="beastfx.app.inputeditor.InputEditor">
+    <provider classname="bdmmprime.beauti.TimedParameterInputEditor"/>
+    <provider classname="bdmmprime.beauti.ParameterizationInputEditor"/>
+    <provider classname="bdmmprime.beauti.SkylineVectorInputEditor"/>
+    <provider classname="bdmmprime.beauti.SkylineMatrixInputEditor"/>
+    <provider classname="bdmmprime.beauti.TypeTraitSetInputEditor"/>
+  </service>
+</package>

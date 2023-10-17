@@ -2,15 +2,15 @@ package bdmmprime.distribution;
 
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
-import beast.core.*;
-import beast.core.parameter.RealParameter;
-import beast.core.util.Log;
-import beast.evolution.speciation.SpeciesTreeDistribution;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.TraitSet;
-import beast.evolution.tree.Tree;
-import beast.evolution.tree.TreeInterface;
-import beast.util.HeapSort;
+import beast.base.core.*;
+import beast.base.evolution.speciation.SpeciesTreeDistribution;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.TreeInterface;
+import beast.base.inference.State;
+import beast.base.inference.parameter.RealParameter;
+import beast.base.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
 
 import java.io.FileNotFoundException;

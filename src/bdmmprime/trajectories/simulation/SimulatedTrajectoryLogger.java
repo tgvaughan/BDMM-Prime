@@ -1,8 +1,8 @@
 package bdmmprime.trajectories.simulation;
 
-import beast.core.BEASTObject;
-import beast.core.Input;
-import beast.core.Loggable;
+import beast.base.core.BEASTObject;
+import beast.base.core.Input;
+import beast.base.core.Loggable;
 
 import java.io.PrintStream;
 

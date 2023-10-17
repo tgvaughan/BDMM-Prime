@@ -14,23 +14,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
-package beast.app.bdmmprime.beauti;
+package bdmmprime.beauti;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.TypeSet;
 import bdmmprime.util.InitializedTraitSet;
-import beast.app.beauti.BeautiDoc;
-import beast.app.beauti.GuessPatternDialog;
-import beast.app.draw.InputEditor;
-import beast.core.BEASTInterface;
-import beast.core.Input;
-import beast.core.parameter.RealParameter;
-import beast.evolution.alignment.TaxonSet;
-import beast.evolution.tree.TraitSet;
+import beast.base.core.BEASTInterface;
+import beast.base.core.Input;
+import beast.base.evolution.alignment.TaxonSet;
+import beast.base.evolution.tree.TraitSet;
+import beast.base.inference.parameter.RealParameter;
+import beastfx.app.inputeditor.BeautiDoc;
+import beastfx.app.inputeditor.BeautiPanel;
+import beastfx.app.inputeditor.GuessPatternDialog;
+import beastfx.app.inputeditor.InputEditor;
+import beastfx.app.util.FXUtils;
+import javafx.scene.control.Button;
+import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableView;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.control.cell.TextFieldTableCell;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 
-import javax.swing.*;
-import javax.swing.table.AbstractTableModel;
-import java.awt.event.ActionEvent;
 import java.util.stream.Collectors;
 
 /**
@@ -40,9 +46,37 @@ import java.util.stream.Collectors;
  */
 public class TypeTraitSetInputEditor extends InputEditor.Base {
 
-    TypeTraitTableModel tableModel;
+    TableView<TaxonEntry> typeTable;
     TraitSet traitSet;
     TaxonSet taxonSet;
+
+    public static class TaxonEntry {
+        String taxon;
+        TraitSet traitSet;
+
+        public TaxonEntry (String taxon, TraitSet traitSet) {
+            this.taxon = taxon;
+            this.traitSet = traitSet;
+        }
+
+        public String getTaxon() {
+            return taxon;
+        }
+
+        public String getType() {
+            return traitSet.getStringValue(taxon);
+        }
+
+        public void setType(String newType) {
+            String newInitString =
+                    traitSet.taxaInput.get().getTaxaNames().stream()
+                    .map(n -> n + "=" + (n.equals(taxon) ?  newType : traitSet.getStringValue(n)))
+                    .collect(Collectors.joining(","));
+
+            traitSet.traitsInput.setValue(newInitString, traitSet);
+            traitSet.initAndValidate();
+        }
+    }
 
     public TypeTraitSetInputEditor(BeautiDoc doc) {
         super(doc);
@@ -63,11 +97,31 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
         traitSet = (TraitSet)input.get();
         taxonSet = traitSet.taxaInput.get();
-        tableModel = new TypeTraitTableModel(traitSet);
-        JTable table = new JTable(tableModel);
 
-        JButton guessButton = new JButton("Auto-configure");
-        guessButton.addActionListener((ActionEvent e) -> {
+        typeTable = new TableView<>();
+        typeTable.setEditable(true);
+        typeTable.setPrefWidth(800);
+        typeTable.setMinWidth(doc.beauti.frame.getWidth()-50);
+        BeautiPanel.resizeList.add(typeTable);
+
+        TableColumn<TaxonEntry,String> taxonNameCol = new TableColumn<>("Sample Name");
+        taxonNameCol.setCellValueFactory(new PropertyValueFactory<>("taxon"));
+        typeTable.getColumns().add(taxonNameCol);
+
+        TableColumn<TaxonEntry,String> typeCol = new TableColumn<>("Type");
+        typeCol.setCellValueFactory(new PropertyValueFactory<>("type"));
+        typeCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        typeCol.setOnEditCommit(e -> {
+            e.getRowValue().setType(e.getNewValue());
+            refreshPanel();
+        });
+        typeTable.getColumns().add(typeCol);
+
+        for (String taxon : taxonSet.asStringList())
+            typeTable.getItems().add(new TaxonEntry(taxon, traitSet));
+
+        Button guessButton = new Button("Auto-configure");
+        guessButton.setOnAction(e -> {
             GuessPatternDialog dlg = new GuessPatternDialog(null,
                 ".*(\\d\\d\\d\\d).*");
             
@@ -109,12 +163,11 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 ex.printStackTrace();
             }
 
-            updateFrequencies();
             refreshPanel();
         });
 
-        JButton clearButton = new JButton("Clear");
-        clearButton.addActionListener((ActionEvent e) -> {
+        Button clearButton = new Button("Clear");
+        clearButton.setOnAction(e -> {
             StringBuilder traitStringBuilder = new StringBuilder();
             for (String taxonName : taxonSet.asStringList()) {
                 if (traitStringBuilder.length()>0)
@@ -129,100 +182,20 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 ex.printStackTrace();
             }
 
-            updateFrequencies();
             refreshPanel();
         });
 
-        Box boxVert = Box.createVerticalBox();
+        VBox boxVert = FXUtils.newVBox();
 
-        Box boxHoriz = Box.createHorizontalBox();
-        boxHoriz.add(Box.createHorizontalGlue());
-        boxHoriz.add(guessButton);
-        boxHoriz.add(clearButton);
-        boxVert.add(boxHoriz);
-        boxVert.add(new JScrollPane(table));
+        HBox boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(guessButton);
+        boxHoriz.getChildren().add(clearButton);
+        boxVert.getChildren().add(boxHoriz);
+        boxVert.getChildren().add(typeTable);
 
-        add(boxVert);
+        getChildren().add(boxVert);
     }
 
-    class TypeTraitTableModel extends AbstractTableModel {
-
-        TraitSet typeTraitSet;
-
-        public TypeTraitTableModel(TraitSet typeTraitSet) {
-            this.typeTraitSet = typeTraitSet;
-        }
-
-        @Override
-        public int getRowCount() {
-            return typeTraitSet.taxaInput.get().getTaxonCount();
-        }
-
-        @Override
-        public int getColumnCount() {
-            return 2;
-        }
-
-        @Override
-        public Object getValueAt(int rowIndex, int columnIndex) {
-            if (columnIndex<0 || columnIndex>=getRowCount())
-                return null;
-
-            switch(columnIndex) {
-                case 0:
-                    // Taxon name:
-                    return typeTraitSet.taxaInput.get().getTaxonId(rowIndex);
-                case 1:
-                    // Type:
-                    return typeTraitSet.getStringValue(rowIndex);
-                default:
-                    return null;
-            }
-        }
-
-        @Override
-        public boolean isCellEditable(int rowIndex, int columnIndex) {
-            return columnIndex == 1;
-        }
-
-        @Override
-        public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-            String taxon = taxonSet.getTaxonId(rowIndex);
-            String traitString = traitSet.traitsInput.get();
-            int startIdx = traitString.indexOf(taxon + "=");
-            int endIdx = traitString.indexOf(",", startIdx);
-
-            String newTraitString = traitString.substring(0, startIdx);
-            newTraitString += taxon + "=" + (String)aValue;
-            if (endIdx>=0)
-                newTraitString += traitString.substring(endIdx);
-
-            traitSet.traitsInput.setValue(newTraitString, traitSet);
-            try {
-                traitSet.initAndValidate();
-            } catch (Exception ex) {
-                System.err.println("Error setting type trait value.");
-                ex.printStackTrace();
-            }
-
-            fireTableCellUpdated(rowIndex, columnIndex);
-
-            updateFrequencies();
-            refreshPanel();
-        }
-
-        @Override
-        public String getColumnName(int column) {
-            switch(column) {
-                case 0:
-                    return "Sample Name";
-                case 1:
-                    return "Type";
-                default:
-                    return null;
-            }
-        }
-    }
 
     /**
      * Ugly hack to keep equilibrium type frequency parameter dimension up to date.
@@ -258,8 +231,16 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 frequencies.initAndValidate();
                 bdmmDistr.initAndValidate();
             } catch (Exception ex) {
-                System.err.println("Error updating BDMM geo frequencies.");
+                System.err.println("Error updating root/origin type frequencies.");
             }
         }
+    }
+
+    @Override
+    public void refreshPanel() {
+        typeTable.refresh();
+        updateFrequencies();
+        sync();
+        super.refreshPanel();
     }
 }

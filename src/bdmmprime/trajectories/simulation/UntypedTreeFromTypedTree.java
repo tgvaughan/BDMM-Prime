@@ -1,8 +1,8 @@
 package bdmmprime.trajectories.simulation;
 
-import beast.core.Input;
-import beast.evolution.tree.Node;
-import beast.evolution.tree.Tree;
+import beast.base.core.Input;
+import beast.base.evolution.tree.Node;
+import beast.base.evolution.tree.Tree;
 
 public class UntypedTreeFromTypedTree extends Tree {
 

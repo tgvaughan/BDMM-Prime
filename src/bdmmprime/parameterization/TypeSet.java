@@ -1,9 +1,9 @@
 package bdmmprime.parameterization;
 
-import beast.core.BEASTObject;
-import beast.core.Input;
-import beast.core.util.Log;
-import beast.evolution.tree.TraitSet;
+import beast.base.core.BEASTObject;
+import beast.base.core.Input;
+import beast.base.core.Log;
+import beast.base.evolution.tree.TraitSet;
 
 import java.util.*;
 
