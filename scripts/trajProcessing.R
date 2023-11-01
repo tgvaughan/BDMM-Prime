@@ -91,6 +91,6 @@ gridTrajectories <- function(trajStates, times) {
 gridTrajectoriesByAge <- function(trajStates, ages) {
     return(trajStates %>%
            group_by(traj, type) %>%
-           summarize(N=approx(age, N, ages, method="constant", f=0, yright=0)$y,
+           reframe(N=approx(age, N, ages, method="constant", f=0, yright=0)$y,
                      age=ages))
 }

@@ -69,7 +69,7 @@ Acknowledgements
 ----------------
 
 As this is a fork of [BDMM](https://github.com/denisekuehnert/bdmm),
-BDMM-Prime owes its existance to all of the authors and contributors of
+BDMM-Prime owes its existence to the authors and contributors of
 that project, in particular [Denise Kühnert](https://github.com/denisekuehnert/)
 and [Jérémie Scire](https://github.com/jscire).
 
