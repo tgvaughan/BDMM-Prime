@@ -1,0 +1,107 @@
+#+title: BDMM-Prime
+#+subtitle: Phylodynamic inference under linear birth-death-sampling models
+#+author: Tim Vaughan
+
+#+SETUPFILE: theme.org
+#+EXPORT_FILE_NAME: index.html
+
+
+* Introduction
+
+BDMM-Prime is a BEAST 2 package for performing phylodynamic inference
+under a variety of linear birth-death-sampling models with/without
+types.
+
+** Comparison with BDMM
+
+The BDMM-Prime project is a hard fork of the original [[https://github.com/denisekuehnert/bdmm][BDMM project]].
+The intention is to extend the functionality of the original package,
+while improving its flexibility and ease of use.  It incorporates the
+following enhancements:
+- an improved BEAUti interface that allows a much more diverse range of analyses to be configured,
+- automatic fall-back to analytical solutions for unstructured (single type) analyses,
+- use of stochastic mapping for sampling ancestral states,
+- a particle filtering algorithm allowing joint sampling of population trajectories,
+- a heavily refactored code base intended to make the package easier to use,
+  extend and maintain.
+
+As a result of the many changes that were required in making this transition,
+BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
+package will be maintained separately to ensure that BEAST 2 XMLs and packages
+that depend on it remain usable.
+
+* Getting Started
+
+** Installation
+
+BDMM-Prime requires a working installation of [[https://beast2.org][BEAST 2.7]], which can be obtained from
+https://beast2.org/. The package itself can then be installed via the
+built-in package manager in the following way:
+
+1. Open BEAUti.
+2. From the =File= menu select =Manage Packages=.
+3. Click the =Package repositories= button at the bottom of the dialog box.
+4. Click =Add URL= and enter the following repository URL:
+    https://tgvaughan.githb.io/BDMM-Prime/package.xml
+5. Close the repository manager.
+6. The latest version of BDMM-Prime should now appear in the list of packages.
+   Select it, then click the =Install/Upgrade= button.
+7. Close the package manager.
+
+BDMM-Prime should now be available to use on your system. (You will need to
+restart BEAUti before you can set up any analyses.)
+
+Aside: Eventually BDMM-Prime will be avaialable from the default BEAST 2
+repository.  However, while it is still in development, it must be
+installed from the above repository.
+
+** Setting up your first analysis
+
+Here we will step through the process of setting up, running and
+interpreting a simple BDMM-Prime analysis.  For the purpose of
+demonstration, we will focus on applying a multi-type model to a
+simple epidemiological data set, but the same general approach can be
+taken to set up single-type analyses of other data sets too.
+
+BDMM-Prime analyses can be set up in BEAUti in much the same way that
+analyses under using common BEAST 2 models such as BDSKY or the
+Bayesian Skyline Plot can be set up.
+
+*** Loading sequence data into BEAUti
+
+*** Setting up tip dates, substitution model and clock model
+
+*** Setting up the phylodynamic prior
+
+** Running the analysis
+
+** Processing the results
+
+* Model specification using BEAUti
+
+** The BDMM-Prime Tree Prior
+
+** Parameterizations
+
+** Skyline Vector Parameters
+
+** Skyline Matrix Parameters
+
+** Sample distribution visualisation
+
+* Sampling Latent Variables
+
+** Tree edge types and type transitions
+
+** Multi-type trajectories
+
+* XML reference
+
+** Model definition
+
+** Special operators
+
+* License
+This software is free (as in freedom).  With the exception of the
+libraries on which it depends, it is made available under the terms of
+the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]].
