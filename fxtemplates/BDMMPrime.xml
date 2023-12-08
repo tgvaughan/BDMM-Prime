@@ -180,7 +180,7 @@
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
                    range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="CanonicalBDMMPrimeSkylineLoggers" var="thisparam"
-                   range="birthRateSV,birthRateAmongDemes,deathRateSV,migrationRateSM,samplingRateSV,removalProbSV,rhoSamplingProbTP"/>
+                   range="birthRateSV,birthRateAmongDemesSM,deathRateSV,migrationRateSM,samplingRateSV,removalProbSV,rhoSamplingProbTP"/>
 
             <connect srcID="BDMMPrime.t:$(n)" targetID="prior" inputName="distribution"
                     if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and Tree.t:$(n)/estimate=true">
