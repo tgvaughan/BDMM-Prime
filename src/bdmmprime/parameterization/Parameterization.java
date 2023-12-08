@@ -137,13 +137,16 @@ public abstract class Parameterization extends CalculationNode {
 
         intervalEndTimesSet.clear();
 
-        addTimes(getMigRateChangeTimes());
+
         addTimes(getBirthRateChangeTimes());
-        addTimes(getCrossBirthRateChangeTimes());
         addTimes(getDeathRateChangeTimes());
         addTimes(getSamplingRateChangeTimes());
         addTimes(getRemovalProbChangeTimes());
         addTimes(getRhoSamplingTimes());
+        if (nTypes > 1) {
+            addTimes(getMigRateChangeTimes());
+            addTimes(getCrossBirthRateChangeTimes());
+        }
 
         intervalEndTimesSet.add(getTotalProcessLength()); // End time of final interval
 
@@ -202,9 +205,12 @@ public abstract class Parameterization extends CalculationNode {
 
             double[][] migRateMatrix = getMigRateValues(t);
             double[][] crossBirthRateMatrix = getCrossBirthRateValues(t);
-            for (int i=0; i<nTypes; i++) {
-                System.arraycopy(migRateMatrix[i], 0, migRates[interval][i], 0, nTypes);
-                System.arraycopy(crossBirthRateMatrix[i], 0, crossBirthRates[interval][i], 0, nTypes);
+
+            if (nTypes>1) {
+                for (int i = 0; i < nTypes; i++) {
+                    System.arraycopy(migRateMatrix[i], 0, migRates[interval][i], 0, nTypes);
+                    System.arraycopy(crossBirthRateMatrix[i], 0, crossBirthRates[interval][i], 0, nTypes);
+                }
             }
         }
     }
@@ -326,9 +332,11 @@ public abstract class Parameterization extends CalculationNode {
             System.arraycopy(removalProbs[interval], 0, storedRemovalProbs[interval], 0, nTypes);
             System.arraycopy(rhoValues[interval], 0, storedRhoValues[interval], 0, nTypes);
 
-            for (int fromType=0; fromType<nTypes; fromType++) {
-                System.arraycopy(migRates[interval][fromType], 0, storedMigRates[interval][fromType], 0, nTypes);
-                System.arraycopy(crossBirthRates[interval][fromType], 0, storedCrossBirthRates[interval][fromType], 0, nTypes);
+            if (nTypes>1) {
+                for (int fromType = 0; fromType < nTypes; fromType++) {
+                    System.arraycopy(migRates[interval][fromType], 0, storedMigRates[interval][fromType], 0, nTypes);
+                    System.arraycopy(crossBirthRates[interval][fromType], 0, storedCrossBirthRates[interval][fromType], 0, nTypes);
+                }
             }
         }
 
@@ -366,13 +374,15 @@ public abstract class Parameterization extends CalculationNode {
         rhoValues = storedRhoValues;
         storedRhoValues = vectorTmp;
 
-        matrixTmp = migRates;
-        migRates = storedMigRates;
-        storedMigRates = matrixTmp;
+        if (nTypes>1) {
+            matrixTmp = migRates;
+            migRates = storedMigRates;
+            storedMigRates = matrixTmp;
 
-        matrixTmp = crossBirthRates;
-        crossBirthRates = storedCrossBirthRates;
-        storedCrossBirthRates = matrixTmp;
+            matrixTmp = crossBirthRates;
+            crossBirthRates = storedCrossBirthRates;
+            storedCrossBirthRates = matrixTmp;
+        }
 
         super.restore();
     }

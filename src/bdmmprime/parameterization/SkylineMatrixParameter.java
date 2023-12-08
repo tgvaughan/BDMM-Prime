@@ -68,6 +68,9 @@ public class SkylineMatrixParameter extends SkylineParameter {
 
     @Override
     protected void updateValues() {
+        if (nTypes<=1)
+            return;
+
         int idx=0;
         for (int interval=0; interval<nIntervals; interval++) {
             for (int i=0; i<nTypes; i++) {
