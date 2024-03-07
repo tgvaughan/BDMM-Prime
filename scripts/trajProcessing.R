@@ -80,11 +80,11 @@ loadTrajectories <- function(filename, burninFrac=0.1, subsample=NA) {
     return(list(states=states, events=events))
 }
 
-gridTrajectories <- function(trajStates, times) {
+gridTrajectoriesByTime <- function(trajStates, times) {
     return(trajStates %>%
            group_by(traj, type) %>%
-           summarize(N=approx(time, N, times, method="constant", f=1, yleft=0)$y,
-                     age=ages))
+           reframe(N=approx(age, N, times, method="constant", f=1, yleft=0)$y,
+                     time=times))
 
 }
 
