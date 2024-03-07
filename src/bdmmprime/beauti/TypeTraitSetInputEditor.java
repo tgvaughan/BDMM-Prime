@@ -34,8 +34,8 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 
 import java.util.stream.Collectors;
 
@@ -93,16 +93,20 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
     }
 
     @Override
-    public void init(Input<?> input, BEASTInterface plugin, int itemNr, ExpandOption bExpandOption, boolean bAddButtons) {
+    public void init(Input<?> input, BEASTInterface beastObject, int itemNr, ExpandOption bExpandOption, boolean bAddButtons) {
+
+        m_bAddButtons = bAddButtons;
+        m_input = input;
+        m_beastObject =beastObject;
+        this.itemNr = itemNr;
+        pane = FXUtils.newHBox();
 
         traitSet = (TraitSet)input.get();
         taxonSet = traitSet.taxaInput.get();
 
         typeTable = new TableView<>();
         typeTable.setEditable(true);
-        typeTable.setPrefWidth(800);
-        typeTable.setMinWidth(doc.beauti.frame.getWidth()-50);
-        BeautiPanel.resizeList.add(typeTable);
+        typeTable.setPrefWidth(600);
 
         TableColumn<TaxonEntry,String> taxonNameCol = new TableColumn<>("Sample Name");
         taxonNameCol.setCellValueFactory(new PropertyValueFactory<>("taxon"));
@@ -143,7 +147,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                         if (matchString == null || matchString.isEmpty())
                             return;
                         
-                        if (traitStringBuilder.length()>0)
+                        if (!traitStringBuilder.isEmpty())
                             traitStringBuilder.append(",");
                         
                         traitStringBuilder.append(taxonName)
@@ -170,7 +174,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         clearButton.setOnAction(e -> {
             StringBuilder traitStringBuilder = new StringBuilder();
             for (String taxonName : taxonSet.asStringList()) {
-                if (traitStringBuilder.length()>0)
+                if (!traitStringBuilder.isEmpty())
                     traitStringBuilder.append(",");
                 traitStringBuilder.append(taxonName).append("=0");
             }
@@ -185,15 +189,20 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             refreshPanel();
         });
 
+        addInputLabel();
+
         VBox boxVert = FXUtils.newVBox();
+        boxVert.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
+                BorderStrokeStyle.SOLID, null, null)));
 
         HBox boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(guessButton);
         boxHoriz.getChildren().add(clearButton);
         boxVert.getChildren().add(boxHoriz);
         boxVert.getChildren().add(typeTable);
+        pane.getChildren().add(boxVert);
 
-        getChildren().add(boxVert);
+        getChildren().add(pane);
     }
 
 
@@ -203,11 +212,8 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
     void updateFrequencies() {
 
         for (BEASTInterface beastInterface : traitSet.getOutputs()) {
-            if (!(beastInterface instanceof BirthDeathMigrationDistribution))
+            if (!(beastInterface instanceof BirthDeathMigrationDistribution bdmmDistr))
                 continue;
-
-            BirthDeathMigrationDistribution bdmmDistr =
-                    (BirthDeathMigrationDistribution)beastInterface;
 
             TypeSet typeSet = bdmmDistr.parameterizationInput.get().typeSetInput.get();
             typeSet.initAndValidate();
