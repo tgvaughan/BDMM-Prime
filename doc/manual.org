@@ -34,17 +34,20 @@ that depend on it remain usable.
 
 ** Installation
 
-BDMM-Prime requires a working installation of [[https://beast2.org][BEAST 2.7]], which can be obtained from
-https://beast2.org/. The package itself can then be installed via the
+BDMM-Prime requires a working installation of [[https://www.beast2.org][BEAST 2.7]] which can be obtained from
+https://www.beast2.org/. The package itself can then be installed via the
 built-in package manager in the following way:
 
 1. Open BEAUti.
 2. From the =File= menu select =Manage Packages=.
 3. Click the =Package repositories= button at the bottom of the dialog box.
-4. Click =Add URL= and enter the following repository URL:
-    https://tgvaughan.githb.io/BDMM-Prime/package.xml
+4. Click =Add URL= and enter the following repository URL:\\
+    https://tgvaughan.github.io/BDMM-Prime/package.xml.\\
+    The list of repositories should now look like this:
+    [[./figures/package_repo.png]]
 5. Close the repository manager.
-6. The latest version of BDMM-Prime should now appear in the list of packages.
+6. The latest version of BDMM-Prime should now appear in the list of packages:
+   [[./figures/package_manager.png]]
    Select it, then click the =Install/Upgrade= button.
 7. Close the package manager.
 
@@ -59,19 +62,111 @@ installed from the above repository.
 
 Here we will step through the process of setting up, running and
 interpreting a simple BDMM-Prime analysis.  For the purpose of
-demonstration, we will focus on applying a multi-type model to a
-simple epidemiological data set, but the same general approach can be
-taken to set up single-type analyses of other data sets too.
+demonstration, we will focus on applying a multi-type model to simple
+two-type epidemiological data set, but the same general approach can
+be taken to set up single-type analyses of other data sets too.
 
 BDMM-Prime analyses can be set up in BEAUti in much the same way that
-analyses under using common BEAST 2 models such as BDSKY or the
-Bayesian Skyline Plot can be set up.
+analyses under using other BEAST 2 models such as BDSKY or the
+Bayesian Skyline Plot can be set up. The only part unique to
+BDMM-Prime is "tree prior" configuration.  Nonetheless, below we
+describe the /complete/ process of setting up a small BDMM-Prime
+analysis.
+
+/The following should be read like a short tutorial. Steps
+to perform on your computer are highlighted like this:/
+#+begin_quote
+Start BEAUti.
+#+end_quote
 
 *** Loading sequence data into BEAUti
 
-*** Setting up tip dates, substitution model and clock model
+For this tutorial, we'll be using the example influenza data which is
+installed along with BDMM-Prime. This data, assembled from
+publicly-available data downloaded from NCBI GenBank, is the same set
+used in [[https://taming-the-beast.org/tutorials/Structured-coalescent][this MultiTypeTree tutorial]]. It consists of an aligned set of
+60 H3N2 HA sequences sampled from New Zealand and Hong Kong. To make
+finding this data easy, we first select the package working directory.
+#+begin_quote
+Select "Set working dir" from the File menu, then choose "BDMM-Prime" from the sub-menu.
+#+end_quote
 
-*** Setting up the phylodynamic prior
+To load the data, simply choose "Import alignment" from the File menu
+and select one or more FASTA files.
+
+#+begin_quote
+Select "Import alignment" from the File menu to display a file
+selection dialog box.  Using this, open the ~examples~ subdirectory
+and select the file ~h3n2_2deme.fna~.
+#+end_quote
+
+The BEAUti window should now look something like the following:
+[[./figures/tutorial_seqloaded.png]]
+
+*** Setting up tip dates
+
+The sequences in this data set are sampled at different times, so use
+the following instructions to import this information into the analysis.
+(This step is unnecessary if sequences were collected at the same time,
+or near enough given the anticipated scale of the tree.)
+
+#+begin_quote
+Select the Tip Dates panel and check the "Use tip dates" option. Then
+press the "Auto-configure" button to set the times based on values
+extracted from the sequence headers. Finally, use the radio button
+and dropdown menu to interpret everything after the last "~_~"
+character as a numerical tip time.
+#+end_quote
+
+[[./figures/tutorial_tipdates.png]]
+
+*** Setting the site model
+
+For this example, we will use the basic [[https://doi.org/10.1007%2FBF02101694][HKY]] subsitution model, with
+equilibrium nucleotide frequencies fixed to the empirical frequencies
+of characters in our alignment.  
+
+#+begin_quote
+Select the "Site model" panel. Select the HKY model with "empirical" nucleotide frequencies.
+#+end_quote
+
+[[./figures/tutorial_sitemodel.png]]
+
+This choice to fix the equilibrium frequencies is made here only
+to reduce the computational complexity of the tutorial analysis.
+For production analyses, these should probably be estimated, and
+Gamma-distributed site-to-site rate heterogeneity should also be used.
+
+*** Setting the clock model
+
+Since we have serially-sampled data, our analysis requires some kind
+of molecular clock.  For the sake of simplicity, we use a strict
+clock, setting the initial value of the clock rate to $5\times
+10^{-3}$ substitutions per site per year, which is close to the true
+value for influenza.
+
+#+begin_quote
+Select the "Cock model" panel. Set the "mean clock rate" value to 0.005.
+#+end_quote
+
+[[./figures/tutorial_clock.png]]
+
+*** Setting up the tree prior
+
+The tree prior (also known as the phylodynamic likelihood) is the
+component of the analysis which BDMM-Prime provides. Here we configure
+the particular birth-death model we will use to relate the tree to
+the various population-level parameters we'd like to learn about.
+
+#+begin_quote
+Select the "Priors" panel.  To choose the BDMM-Prime tree prior, find
+the drop-down menu next to ~Tree.t:h3n2_2deme~ and select "BDMMPrime".
+#+end_quote
+
+*** Setting the remaining parameter priors
+
+*** Logging setup
+
 
 ** Running the analysis
 
@@ -102,6 +197,5 @@ Bayesian Skyline Plot can be set up.
 ** Special operators
 
 * License
-This software is free (as in freedom).  With the exception of the
-libraries on which it depends, it is made available under the terms of
+BDMM-Prime is free software.  It is made available under the terms of
 the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]].
