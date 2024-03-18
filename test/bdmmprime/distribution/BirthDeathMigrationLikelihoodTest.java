@@ -383,8 +383,8 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		double logL = density.calculateLogP();
 
-        // Reference BDMM (version 0.2.0) 29/03/2018
-		assertEquals(-21.185194919464568 + labeledTreeConversionFactor(density), logL, 1e-5);
+        // Reference TypeMappedTree & Flow Implementation 18/03/2024
+		assertEquals(-22.82747259570373, logL, 1e-5);
 	}
 
 
