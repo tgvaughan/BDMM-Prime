@@ -383,8 +383,8 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		double logL = density.calculateLogP();
 
-        // Reference BDMM (version 0.2.0) 29/03/2018
-		assertEquals(-21.185194919464568 + labeledTreeConversionFactor(density), logL, 1e-5);
+        // Reference TypeMappedTree & Flow Implementation 18/03/2024
+		assertEquals(-22.82747259570373, logL, 1e-5);
 	}
 
 
@@ -1884,4 +1884,66 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		assertEquals(-25.991511346557598 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
 	}
+
+	/**
+	 * Tests the case where we have direct ancestors (SA nodes).
+	 * Tests if two trees identical up to rotation but with different newick representations have the same likelihood.
+	 */
+	@Test
+	public void testDirectAncestor() {
+		// two identical trees up to rotation (the two root children are rotated)
+		String newick1 = "((1[&type=1]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=1]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
+		String newick2 = "((1[&type=1]: 1.5, 2[&type=1]: 1.5)3[&type=0]: 3.5, (4[&type=1]: 1.5, 5[&type=1]: 0.0)6[&type=0]: 3.5) ;";
+
+		Parameterization parameterization = new EpiParameterization();
+		parameterization.initByName(
+				"typeSet", new TypeSet(2),
+				"processLength", new RealParameter("6.0"),
+				"R0", new SkylineVectorParameter(
+						null,
+						new RealParameter((4.0/3.0) + " 1.1"),
+						2),
+				"becomeUninfectiousRate", new SkylineVectorParameter(
+						null,
+						new RealParameter("1.5 1.4"),
+						2),
+				"R0AmongDemes", new SkylineMatrixParameter(
+						null,
+						new RealParameter("0.0"),
+						2),
+				"migrationRate", new SkylineMatrixParameter(
+						null,
+						new RealParameter("0.2 0.3"),
+						2),
+				"samplingProportion", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.33"),
+						2),
+				"removalProb", new SkylineVectorParameter(
+						null,
+						new RealParameter("0.3 0.4")));
+
+		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+		density.initByName(
+				"parameterization", parameterization,
+				"tree", new TreeParser(newick1, false, false, true,0),
+				"frequencies", new RealParameter("0.5 0.5"),
+				"conditionOnSurvival", false,
+				"typeLabel", "type",
+				"parallelize", false
+		);
+
+		// test newick representation 1
+		density.setInputValue("tree", new TreeParser(newick1, false, false, true,0));
+		density.initAndValidate();
+		double logL1 = density.calculateLogP();
+
+		// test newick representation 2
+		density.setInputValue("tree", new TreeParser(newick2, false, false, true,0));
+		density.initAndValidate();
+		double logL2 = density.calculateLogP();
+
+		assertEquals(logL1, logL2, 1e-5);
+	}
+
 }
