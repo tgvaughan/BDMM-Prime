@@ -477,8 +477,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 } else {
                     if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
-                        for (int type = 0; type < parameterization.getNTypes(); type++) {
-                            state.p0[type] = g.p0[type];
+                        if (parameterization.getNTypes() >= 0) {
+                            System.arraycopy(g.p0, 0, state.p0, 0, parameterization.getNTypes());
                         }
 
                         state.ge[saNodeType] = g.ge[saNodeType]
