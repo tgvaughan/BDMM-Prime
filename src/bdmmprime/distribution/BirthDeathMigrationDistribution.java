@@ -477,15 +477,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 } else {
                     if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
-                        state.p0[saNodeType] = g.p0[saNodeType];
+                        if (parameterization.getNTypes() >= 0) {
+                            System.arraycopy(g.p0, 0, state.p0, 0, parameterization.getNTypes());
+                        }
+
                         state.ge[saNodeType] = g.ge[saNodeType]
                                 .scalarMultiplyBy(system.s[intervalIdx][saNodeType]
                                         * (1 - system.r[intervalIdx][saNodeType]));
 
                     } else {
                         // TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
-                        state.p0[saNodeType] = g.p0[saNodeType]
-                                * (1 - system.rho[intervalIdx][saNodeType]);
+                        for (int type = 0; type < parameterization.getNTypes(); type++) {
+                            state.p0[type] = g.p0[type] * (1 - system.rho[intervalIdx][type]);
+                        }
+
                         state.ge[saNodeType] = g.ge[saNodeType]
                                 .scalarMultiplyBy(system.rho[intervalIdx][saNodeType]
                                         * (1 - system.r[intervalIdx][saNodeType]));
