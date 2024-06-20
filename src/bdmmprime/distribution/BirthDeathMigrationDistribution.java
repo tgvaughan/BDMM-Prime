@@ -25,10 +25,10 @@ import java.util.concurrent.*;
  * Time: 10:28:16 AM
  */
 
-@Citation(value = "Kuehnert D, Stadler T, Vaughan TG, Drummond AJ. (2016). " +
-        "Phylodynamics with migration: \n" +
-        "A computational framework to quantify population structure from genomic data. \n" +
-        "Mol Biol Evol. 33(8):2102–2116."
+@Citation(value = """
+        Kuehnert D, Stadler T, Vaughan TG, Drummond AJ. (2016). Phylodynamics with migration:\s
+        A computational framework to quantify population structure from genomic data.\s
+        Mol Biol Evol. 33(8):2102–2116."""
         , DOI = "10.1093/molbev/msw064", year = 2016, firstAuthorSurname = "Kuehnert")
 
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel " +
@@ -507,7 +507,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 P0GeState childState1 = null, childState2 = null;
 
-                // evaluate if the next step in the traversal should be split between one new thread and the currrent thread and run in parallel.
+                // evaluate if the next step in the traversal should be split
+                // between one new thread and the currrent thread and run in parallel.
 
                 if (isParallelizedCalculation
                         && weightOfNodeSubTree[node.getChild(indexFirstChild).getNr()] > parallelizationThreshold
@@ -526,6 +527,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                                 system, depth + 1);
                         childState2 = secondChildTraversal.get();
                     } catch (InterruptedException | ExecutionException e) {
+                        Log.err("Error encountered performing parallel tree prior calculation.");
                         e.printStackTrace();
 
                         System.exit(1);
@@ -768,7 +770,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 
     /**
-     * Perform an initial traversal of the tree to get the 'weights' (sum of all its edges lengths) of all sub-trees
+     * Perform an initial traversal of the tree to get the 'weights' (sum of all its edges lengths) of all subtrees
      * Useful for performing parallelized calculations on the tree.
      * The weights of the subtrees tell us the depth at which parallelization should stop, so as to not parallelize on subtrees that are too small.
      * Results are stored in 'weightOfNodeSubTree' array
@@ -897,9 +899,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             if (Asq == 0.0)
                 throw new IllegalStateException(
-                        "Analytical BDSKY tree prior calculation cannot handle\n" +
-                        "birthRate-deathRate-samplingRate = 0 and samplingRate = 0. \n" +
-                        "(If this is the starting state, try perturbing one of these parameters.)");
+                        """
+                                Analytical BDSKY tree prior calculation cannot handle
+                                birthRate-deathRate-samplingRate = 0 and samplingRate = 0.\s
+                                (If this is the starting state, try perturbing one of these parameters.)""");
 
             double scaled_lambda_i = (2 * (1 - rho_i) * p_i_prev - 1) * lambda_i;
             B[i] = (-scaled_lambda_i + mu_i + psi_i)/A[i];
@@ -1081,17 +1084,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     /* StateNode implementation */
 
     @Override
-    public List<String> getArguments() {
-        return null;
-    }
-
-
-    @Override
-    public List<String> getConditions() {
-        return null;
-    }
-
-    @Override
     public void sample(State state, Random random) {
         throw new UnsupportedOperationException();
     }
@@ -1112,7 +1104,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public void restore() {
         super.restore();
 
-        double[] tmp = storedStartTypeProbs;
+        double[] tmp = startTypeProbs;
         startTypeProbs = storedStartTypeProbs;
         storedStartTypeProbs = tmp;
     }
