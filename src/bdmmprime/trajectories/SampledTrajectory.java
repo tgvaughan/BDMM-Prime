@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2019-2024 Tim Vaughan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package bdmmprime.trajectories;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
@@ -320,7 +337,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     @Override
     public void init(PrintStream out) {
-        out.print("t\tvariable\tidx1\tidx2\tvalue");
+        out.print("t\tage\tvariable\ttype\ttype2\tvalue");
     }
 
     Trajectory traj = null;
@@ -337,7 +354,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         }
 
         if (traj==null)
-            out.print("NA\tNA\tNA\tNA\tNA");
+            out.print("NA\tNA\tNA\tNA\tNA\tNA");
         else
             traj.log(out, sample);
 

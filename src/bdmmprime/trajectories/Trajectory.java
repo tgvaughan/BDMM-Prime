@@ -1,3 +1,20 @@
+/*
+ * Copyright (C) 2019-2024 Tim Vaughan
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package bdmmprime.trajectories;
 
 import bdmmprime.trajectories.trajevents.TrajectoryEvent;
@@ -78,15 +95,6 @@ public class Trajectory {
         return true;
     }
 
-    public boolean currentStateEmpty() {
-        for (int s=0; s<currentState.length; s++) {
-            if (Math.round(currentState[s]) > 0)
-                return false;
-        }
-
-        return true;
-    }
-
     public List<Double> getEventTimes() {
         return this.events.stream().map(e -> e.time).collect(Collectors.toList());
     }
@@ -153,43 +161,44 @@ public class Trajectory {
      *
      * @param ps
      * @param sample
-     * @param time
+     * @param states
+     * @param stateIdx
      * @param isFirst
      */
-    public void addToLog(PrintStream ps, long sample, double time,
-                         double[] state, TrajectoryEvent event,
-                         boolean isFirst) {
+    public void addToLog(PrintStream ps, long sample,
+                         List<double[]> states,
+                         int stateIdx, boolean isFirst) {
 
+        double[] state = states.get(stateIdx);
+        double eventTime = stateIdx > 0 ? events.get(stateIdx-1).time : 0.0;
+        double eventAge = events.get(events.size()-1).time - eventTime;
 
         for (int s=0; s<state.length; s++) {
             if (s>0 || !isFirst ) {
                 ps.print("\n" + sample + "\t");
             }
 
-            ps.print(time + "\t");
+            ps.print(eventTime + "\t" + eventAge + "\t");
             ps.print("N\t" + s + "\tNA\t" + state[s]);
         }
 
-        ps.print("\n" + sample + "\t" + time + "\t");
+        ps.print("\n" + sample + "\t" + eventTime + "\t" + eventAge + "\t");
 
-        if (event == null) {
+        if (stateIdx==0) {
             ps.print("O\tNA\tNA\tNA");
         } else {
-            ps.print(event.getEventCode());
+            ps.print(events.get(stateIdx-1).getEventCode());
         }
     }
 
     public void log (PrintStream out, long sample) {
         List<double[]> states = getStateList();
-        List<Double> eventTimes = getEventTimes();
 
-        addToLog(out, sample, 0, states.get(0), null, true);
+        addToLog(out, sample, states, 0, true);
 
-        for (int i = 1; i < states.size(); i++) {
-            addToLog(out, sample, eventTimes.get(i - 1),
-                    states.get(i), events.get(i - 1), false);
+        for (int i = 1; i < states.size(); i++)
+            addToLog(out, sample, states, i, false);
 
-        }
         out.print("\t");
     }
 }
