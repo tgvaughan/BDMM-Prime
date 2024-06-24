@@ -213,7 +213,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
             // This is actually the initial weight of the particles accounting for
             // the probability of a trajectory initialized with the chosen origin state
-            // distribution having the observed state.  However because _all_ of the
+            // distribution having the observed state.  However, because _all_ of the
             // particles have this initial value, it doesn't affect the weight distribution.
             // It affects the tree prob estimate though, which is important for testing.
             logTreeProbEstimate += Math.log(frequenciesInput.get().getArrayValue(rootType));
@@ -320,10 +320,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     @Override
     public void init(PrintStream out) {
-        if (getID() == null)
-            out.print("trajectory\t");
-        else
-            out.print(getID() + "\t");
+        out.print("t\tvariable\tidx1\tidx2\tvalue");
     }
 
     Trajectory traj = null;
@@ -339,10 +336,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             prevSimulationSample = sample;
         }
 
-        if (traj == null)
-            out.print("NA");
+        if (traj==null)
+            out.print("NA\tNA\tNA\tNA\tNA");
         else
-            out.print(traj);
+            traj.log(out, sample);
 
         out.print("\t");
     }

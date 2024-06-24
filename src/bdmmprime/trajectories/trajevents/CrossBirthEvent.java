@@ -79,6 +79,6 @@ public class CrossBirthEvent extends TrajectoryEvent {
 
     @Override
     public String getEventCode() {
-        return "C" + ":" + srcType + ":" + destType + ":" + multiplicity;
+        return "B\t" + srcType + "\t" + destType + "\t" + multiplicity;
     }
 }

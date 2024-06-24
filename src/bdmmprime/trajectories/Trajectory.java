@@ -146,29 +146,50 @@ public class Trajectory {
         }
     }
 
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
 
+    /**
+     * Method used to construct trajectory log files which can be directly
+     * read into R without the need for custom parsing code.
+     *
+     * @param ps
+     * @param sample
+     * @param time
+     * @param isFirst
+     */
+    public void addToLog(PrintStream ps, long sample, double time,
+                         double[] state, TrajectoryEvent event,
+                         boolean isFirst) {
+
+
+        for (int s=0; s<state.length; s++) {
+            if (s>0 || !isFirst ) {
+                ps.print("\n" + sample + "\t");
+            }
+
+            ps.print(time + "\t");
+            ps.print("N\t" + s + "\tNA\t" + state[s]);
+        }
+
+        ps.print("\n" + sample + "\t" + time + "\t");
+
+        if (event == null) {
+            ps.print("O\tNA\tNA\tNA");
+        } else {
+            ps.print(event.getEventCode());
+        }
+    }
+
+    public void log (PrintStream out, long sample) {
         List<double[]> states = getStateList();
         List<Double> eventTimes = getEventTimes();
 
-        for (int i=0; i<states.size(); i++ ) {
+        addToLog(out, sample, 0, states.get(0), null, true);
 
-            if (i==0)
-                sb.append(0.0);
-            else
-                sb.append(",").append(eventTimes.get(i - 1));
-
-            sb.append(":").append(i == 0 ? "O:::" : events.get(i-1).getEventCode());
-
-            for (int s=0; s<currentState.length; s++) {
-                sb.append(":");
-                sb.append(states.get(i)[s]);
-            }
+        for (int i = 1; i < states.size(); i++) {
+            addToLog(out, sample, eventTimes.get(i - 1),
+                    states.get(i), events.get(i - 1), false);
 
         }
-
-        return sb.toString();
+        out.print("\t");
     }
 }
