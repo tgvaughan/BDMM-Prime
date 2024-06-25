@@ -68,7 +68,14 @@
                         bdmmprime.parameterization.SkylineVectorParameter.processLength,
                         bdmmprime.parameterization.SkylineMatrixParameter.processLength,
                         bdmmprime.util.priors.ZeroExcludingPrior.x,
-                        bdmmprime.util.OptionalLogger.model"
+                        bdmmprime.util.OptionalLogger.model,
+                        bdmmprime.trajectories.SampledTrajectory.typeMappedTree,
+                        bdmmprime.trajectories.SampledTrajectory.parameterization,
+                        bdmmprime.trajectories.SampledTrajectory.bdmmDistrib,
+                        bdmmprime.trajectories.SampledTrajectory.typeLabel,
+                        bdmmprime.trajectories.SampledTrajectory.finalSampleOffset,
+                        bdmmprime.trajectories.SampledTrajectory.frequencies,
+                        bdmmprime.trajectories.SampledTrajectory.resampleOnLog"
                      inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
