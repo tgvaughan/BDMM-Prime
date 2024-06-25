@@ -77,12 +77,21 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         CheckBox estimateTimesCheckBox = new CheckBox("Estimate change times");
         changeTimesBoxRow.getChildren().add(estimateTimesCheckBox);
         changeTimesBox.getChildren().add(changeTimesBoxRow);
+
+        changeTimesBoxRow = FXUtils.newHBox();
+        CheckBox timesAreRelativeCheckBox = new CheckBox("Relative to process length");
+        changeTimesBoxRow.getChildren().add(timesAreRelativeCheckBox);
+        Button distributeChangeTimesButton = new Button("Distribute evenly");
+        changeTimesBoxRow.getChildren().add(distributeChangeTimesButton);
+        changeTimesBox.getChildren().add(changeTimesBoxRow);
+
         mainInputBox.getChildren().add(changeTimesBox);
 
         if (nChanges > 0) {
             updateChangeTimesUI((RealParameter) skylineParameter.changeTimesInput.get(),
                     changeTimesEntryRow);
             timesAreAgesCheckBox.setSelected(skylineParameter.timesAreAgesInput.get());
+            timesAreRelativeCheckBox.setSelected(skylineParameter.timesAreRelativeInput.get());
 
             estimateTimesCheckBox.setSelected(
                     ((RealParameter) skylineParameter.changeTimesInput.get())
@@ -202,6 +211,35 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         estimateTimesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
             RealParameter changeTimes = (RealParameter) skylineParameter.changeTimesInput.get();
             changeTimes.isEstimatedInput.setValue(newValue, changeTimes);
+            sync();
+        });
+
+        timesAreRelativeCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            skylineParameter.timesAreRelativeInput.setValue(newValue, skylineParameter);
+            skylineParameter.initAndValidate();
+            System.out.println(skylineParameter);
+            epochVisualizer.repaintCanvas();
+        });
+
+        distributeChangeTimesButton.setOnAction(e -> {
+
+            RealParameter changeTimesParam = (RealParameter) skylineParameter.changeTimesInput.get();
+            int nTimes = changeTimesParam.getDimension();
+
+            if (skylineParameter.timesAreRelativeInput.get()) {
+                for (int i = 0; i < nTimes; i++) {
+                    changeTimesParam.setValue(i, ((double) (i + 1)) / (nTimes + 1));
+                }
+            } else {
+                if (nTimes > 1) {
+                    for (int i = 0; i < nTimes - 1; i++) {
+                        changeTimesParam.setValue(i,
+                                (changeTimesParam.getArrayValue(nTimes - 1) * (i + 1)) / (nTimes + 1));
+                    }
+                }
+            }
+
+            sanitiseRealParameter(changeTimesParam);
             sync();
         });
 
