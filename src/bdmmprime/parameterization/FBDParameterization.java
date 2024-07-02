@@ -51,9 +51,15 @@ public class FBDParameterization extends Parameterization {
 
     @Override
     public double[] getBirthRateChangeTimes() {
-        birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
+        if (diversificationRateAmongDemesInput.get() == null){
+            birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
+                turnoverInput.get().getChangeTimes());
+        }
+        else {
+            birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
                 diversificationRateAmongDemesInput.get().getChangeTimes(),
                 turnoverInput.get().getChangeTimes());
+        }
 
         return birthRateChangeTimes;
     }
