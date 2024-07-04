@@ -56,7 +56,6 @@ public abstract class AbstractTypeTreeStatsLogger extends CalculationNode implem
         nTypes = typeSet.getNTypes();
         typeLabel = typeLabelInput.get();
         includeRootEdge = includeRootEdgeInput.get();
-
     }
 
     protected int getType(Node node) {

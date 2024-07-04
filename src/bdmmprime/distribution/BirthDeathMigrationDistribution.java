@@ -15,7 +15,6 @@ import org.apache.commons.math.special.Gamma;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.*;
 

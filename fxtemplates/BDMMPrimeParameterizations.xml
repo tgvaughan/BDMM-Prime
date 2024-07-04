@@ -21,6 +21,11 @@
                    <distr spec="beast.base.inference.distribution.OneOnX"/>
             </distribution>
   		    <operator id='$(thisparam)CanonicalScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
+
+  		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingPrior" id='$(thisparam)CanonicalPriorSmart.t:$(n)' x='@$(thisparam)Canonical.t:$(n)'>
+                   <distr spec="beast.base.inference.distribution.OneOnX"/>
+            </distribution>
+  		    <operator id='$(thisparam)CanonicalScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)Canonical.t:$(n)' targetID='state' inputName='stateNode'
@@ -28,17 +33,35 @@
                      and inposterior(Tree.t:$(n))
                      and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
+
             <connect srcID='$(thisparam)CanonicalPrior.t:$(n)' targetID='prior' inputName='distribution'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and inposterior($(thisparam)Canonical.t:$(n))
                      and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPCanonical.t:$(n)/linkIdenticalValues=false
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
             <connect srcID='$(thisparam)CanonicalScaler.t:$(n)' targetID='mcmc' inputName='operator'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and inposterior($(thisparam)Canonical.t:$(n))
                      and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPCanonical.t:$(n)/linkIdenticalValues=false
+                     and $(thisparam)Canonical.t:$(n)/estimate=true'/>
+
+            <connect srcID='$(thisparam)CanonicalPriorSmart.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Canonical.t:$(n))
+                     and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPCanonical.t:$(n)/linkIdenticalValues=true
+                     and $(thisparam)Canonical.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)CanonicalScalerSmart.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Canonical.t:$(n))
+                     and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPCanonical.t:$(n)/linkIdenticalValues=true
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
         </fragment>
 
@@ -57,6 +80,11 @@
                    <distr spec="beast.base.inference.distribution.OneOnX"/>
             </distribution>
   		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
+
+  		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingPrior" id='$(thisparam)EpiPriorSmart.t:$(n)' x='@$(thisparam)Epi.t:$(n)'>
+                   <distr spec="beast.base.inference.distribution.OneOnX"/>
+            </distribution>
+  		    <operator id='$(thisparam)EpiScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)Epi.t:$(n)' targetID='state' inputName='stateNode'
@@ -65,17 +93,35 @@
                      and inposterior($(thisparam)Epi.t:$(n))
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
+
             <connect srcID='$(thisparam)EpiPrior.t:$(n)' targetID='prior' inputName='distribution'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and inposterior($(thisparam)Epi.t:$(n))
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPEpi.t:$(n)/linkIdenticalValues=false
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
             <connect srcID='$(thisparam)EpiScaler.t:$(n)' targetID='mcmc' inputName='operator'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and inposterior($(thisparam)Epi.t:$(n))
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPEpi.t:$(n)/linkIdenticalValues=false
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+
+            <connect srcID='$(thisparam)EpiPriorSmart.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPEpi.t:$(n)/linkIdenticalValues=true
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)EpiScalerSmart.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPEpi.t:$(n)/linkIdenticalValues=true
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
         </fragment>
 
@@ -94,6 +140,11 @@
                    <distr spec="beast.base.inference.distribution.OneOnX"/>
             </distribution>
   		    <operator id='$(thisparam)FBDScaler.t:$(n)' spec='ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
+
+   		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingPrior" id='$(thisparam)FBDPriorSmart.t:$(n)' x='@$(thisparam)FBD.t:$(n)'>
+                   <distr spec="beast.base.inference.distribution.OneOnX"/>
+            </distribution>
+  		    <operator id='$(thisparam)FBDScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)FBD.t:$(n)' targetID='state' inputName='stateNode'
@@ -102,17 +153,35 @@
                      and inposterior($(thisparam)FBD.t:$(n))
                      and inposterior(FBDBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)FBD.t:$(n)/estimate=true'/>
+
             <connect srcID='$(thisparam)FBDPrior.t:$(n)' targetID='prior' inputName='distribution'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and inposterior($(thisparam)FBD.t:$(n))
                      and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPFBD.t:$(n)/linkIdenticalValues=false
                      and $(thisparam)FBD.t:$(n)/estimate=true'/>
             <connect srcID='$(thisparam)FBDScaler.t:$(n)' targetID='mcmc' inputName='operator'
                      if='inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and inposterior($(thisparam)FBD.t:$(n))
                      and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPFBD.t:$(n)/linkIdenticalValues=false
+                     and $(thisparam)FBD.t:$(n)/estimate=true'/>
+
+            <connect srcID='$(thisparam)FBDPriorSmart.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPFBD.t:$(n)/linkIdenticalValues=true
+                     and $(thisparam)FBD.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)FBDScalerSmart.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPFBD.t:$(n)/linkIdenticalValues=true
                      and $(thisparam)FBD.t:$(n)/estimate=true'/>
         </fragment>
 
@@ -137,33 +206,33 @@
                         spec="bdmmprime.parameterization.CanonicalParameterization">
                         <processLength idref="originBDMMPrime.t:$(n)"/>
                         <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
-                        <birthRate id="birthRateSVCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <birthRate id="birthRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="birthRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
                         </birthRate>
-                        <birthRateAmongDemes id="birthRateAmongDemesSMCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <birthRateAmongDemes id="birthRateAmongDemesSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="birthRateAmongDemesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
                         </birthRateAmongDemes>
-                        <deathRate id="deathRateSVCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <deathRate id="deathRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="deathRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
                         </deathRate>
-                        <migrationRate id="migrationRateSMCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <migrationRate id="migrationRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="migrationRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
                         </migrationRate>
 
-                        <samplingRate id="samplingRateSVCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <samplingRate id="samplingRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="samplingRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.1" lower="0.0"/>
                         </samplingRate>
-                        <removalProb id="removalProbSVCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <removalProb id="removalProbSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="removalProbCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
 
-                        <rhoSampling id="rhoSamplingProbTPCanonical.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <rhoSampling id="rhoSamplingProbSPCanonical.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                         </rhoSampling>
             </parameterization>
@@ -183,7 +252,7 @@
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
                    range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="CanonicalBDMMPrimeSkylineLoggers" var="thisparam"
-                   range="birthRateSV,birthRateAmongDemesSM,deathRateSV,migrationRateSM,samplingRateSV,removalProbSV,rhoSamplingProbTP"/>
+                   range="birthRateSP,birthRateAmongDemesSP,deathRateSP,migrationRateSP,samplingRateSP,removalProbSP,rhoSamplingProbSP"/>
 
         </subtemplate>
 
@@ -197,32 +266,32 @@
                               spec="bdmmprime.parameterization.EpiParameterization">
                         <processLength idref="originBDMMPrime.t:$(n)"/>
                         <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
-                        <R0 id="R0SVEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <R0 id="R0SPEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="R0Epi.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" lower="0.0"/>
                         </R0>
-                        <R0AmongDemes id="R0AmongDemesSMEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <R0AmongDemes id="R0AmongDemesSPEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="R0AmongDemesEpi.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" lower="0.0" estimate="false"/>
                         </R0AmongDemes>
-                        <becomeUninfectiousRate id="becomeUninfectiousRateSVEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <becomeUninfectiousRate id="becomeUninfectiousRateSPEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="becomeUninfectiousRateEpi.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" lower="0.0"/>
                         </becomeUninfectiousRate>
-                        <migrationRate id="migrationRateSMEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <migrationRate id="migrationRateSPEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="migrationRateEpi.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" lower="0.0" estimate="false"/>
                         </migrationRate>
-                        <samplingProportion id="samplingProportionSVEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <samplingProportion id="samplingProportionSPEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="samplingProportionEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.1" lower="0.0" upper="1.0"/>
                         </samplingProportion>
-                        <removalProb id="removalProbSVEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <removalProb id="removalProbSPEpi.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="removalProbEpi.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
 
-                        <rhoSampling id="rhoSamplingProbTPEpi.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <rhoSampling id="rhoSamplingProbSPEpi.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                         </rhoSampling>
             </parameterization>
@@ -243,7 +312,7 @@
             <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
                    range="R0ChangeTimes,R0AmongDemesChangeTimes,becomeUninfectiousRateChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="EpiBDMMPrimeSkylineLoggers" var="thisparam"
-                   range="R0SV,R0AmongDemesSM,becomeUninfectiousRateSV,migrationRateSM,samplingProportionSV,removalProbSV,rhoSamplingProbTP"/>
+                   range="R0SP,R0AmongDemesSP,becomeUninfectiousRateSP,migrationRateSP,samplingProportionSP,removalProbSP,rhoSamplingProbSP"/>
 
         </subtemplate>
 
@@ -257,28 +326,28 @@
                               spec="bdmmprime.parameterization.FBDParameterization">
                         <processLength idref="originBDMMPrime.t:$(n)"/>
                         <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
-                        <diversificationRate id="diversificationRateSVFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <diversificationRate id="diversificationRateSPFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="diversificationRateFBD.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" lower="1.0"/>
                         </diversificationRate>
-                        <diversificationRateAmongDemes id="diversificationRateAmongDemesSMFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <diversificationRateAmongDemes id="diversificationRateAmongDemesSPFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="diversificationRateAmongDemesFBD.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" estimate="false"/>
                         </diversificationRateAmongDemes>
-                        <turnover id="turnoverSVFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <turnover id="turnoverSPFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="turnoverFBD.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" lower="0" upper="1"/>
                         </turnover>
-                        <migrationRate id="migrationRateSMFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <migrationRate id="migrationRateSPFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="migrationRateFBD.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" estimate="false"/>
                         </migrationRate>
-                        <samplingProportion id="samplingProportionSVFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <samplingProportion id="samplingProportionSPFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                             <skylineValues id="samplingProportionFBD.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.1" lower="0" upper="1"/>
                         </samplingProportion>
 
-                        <rhoSampling id="rhoSamplingProbTPFBD.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
+                        <rhoSampling id="rhoSamplingProbSPFBD.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
                         </rhoSampling>
             </parameterization>
@@ -298,7 +367,7 @@
             <plate fragment="FBDBDMMPrimeParameters" var="thisparam"
                    range="diversificationRateChangeTimes,diversificationRateAmongDemesChangeTimes,turnoverChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="FBDBDMMPrimeSkylineLoggers" var="thisparam"
-                   range="diversificationRateSV,diversificationRateAmongDSemesSM,turnoverSV,migrationRateSM,samplingProportionSV,rhoSamplingProbTP"/>
+                   range="diversificationRateSP,diversificationRateAmongDSemesSP,turnoverSP,migrationRateSP,samplingProportionSP,rhoSamplingProbSP"/>
 
         </subtemplate>
     </mergewith>

@@ -55,15 +55,6 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
     }
 
     @Override
-    String getChangeTimesParameterID() {
-        int idx = skylineMatrix.getID().indexOf("SM");
-        String prefix = skylineMatrix.getID().substring(0, idx);
-        String suffix = skylineMatrix.getID().substring(idx+2);
-
-        return prefix + "ChangeTimes" + suffix;
-    }
-
-    @Override
     void ensureValuesConsistency() {
         int nTypes = skylineParameter.typeSetInput.get().getNTypes();
         int nEpochs = skylineParameter.changeTimesInput.get() == null

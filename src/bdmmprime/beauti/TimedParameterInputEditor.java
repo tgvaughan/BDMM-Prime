@@ -329,7 +329,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         RealParameter timesParam = (RealParameter)timedParameter.timesInput.get();
         if (timesParam == null) {
 
-            int idx = timedParameter.getID().indexOf("TP");
+            int idx = timedParameter.getID().indexOf("SP");
             String prefix = timedParameter.getID().substring(0, idx);
             String suffix = timedParameter.getID().substring(idx+2);
             String paramID = prefix + "Times" + suffix;
@@ -347,7 +347,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         RealParameter valuesParam = (RealParameter)timedParameter.valuesInput.get();
         if (valuesParam == null) {
 
-            int idx = timedParameter.getID().indexOf("TP");
+            int idx = timedParameter.getID().indexOf("SP");
             String prefix = timedParameter.getID().substring(0, idx);
             String suffix = timedParameter.getID().substring(idx+2);
             String paramID = prefix + suffix;

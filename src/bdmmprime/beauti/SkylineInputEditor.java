@@ -10,6 +10,8 @@ import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -119,13 +121,16 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz = FXUtils.newHBox();
         CheckBox scalarRatesCheckBox = new CheckBox("Scalar values");
         boxHoriz.getChildren().add(scalarRatesCheckBox);
-        CheckBox estimateValuesCheckBox = new CheckBox("Estimate values");
-        estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
-        boxHoriz.getChildren().add(estimateValuesCheckBox);
+        CheckBox linkValuesCheckBox = new CheckBox("Link identical values");
+        linkValuesCheckBox.setSelected(skylineParameter.linkIdenticalValuesInput.get());
+        boxHoriz.getChildren().add(linkValuesCheckBox);
 
         mainInputBox.getChildren().add(boxHoriz);
 
         boxHoriz = FXUtils.newHBox();
+        CheckBox estimateValuesCheckBox = new CheckBox("Estimate values");
+        estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
+        boxHoriz.getChildren().add(estimateValuesCheckBox);
         CheckBox visualizerCheckBox = new CheckBox("Display visualization");
         visualizerCheckBox.setSelected(skylineParameter.epochVisualizerDisplayed);
         boxHoriz.getChildren().add(visualizerCheckBox);
@@ -253,6 +258,11 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
             epochVisualizer.setScalar(newValue);
         });
 
+        linkValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            skylineParameter.linkIdenticalValuesInput.setValue(newValue, beastObject);
+            sync();
+        });
+
         estimateValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
                 valuesParameter.isEstimatedInput.setValue(newValue, valuesParameter);
                 sync();
@@ -306,7 +316,13 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     }
 
 
-    abstract String getChangeTimesParameterID();
+    String getChangeTimesParameterID() {
+        int idx = skylineParameter.getID().indexOf("SP");
+        String prefix = skylineParameter.getID().substring(0, idx);
+        String suffix = skylineParameter.getID().substring(idx+2);
+
+        return prefix + "ChangeTimes" + suffix;
+    }
 
     private String getPartitionID() {
         return skylineParameter.getID().split("\\.t:")[1];
