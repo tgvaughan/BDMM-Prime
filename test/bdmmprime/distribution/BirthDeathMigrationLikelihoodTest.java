@@ -176,13 +176,13 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
                 "typeSet", new TypeSet(2),
                 "processLength", originParam,
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter(4.0/3.0 + " " + 4.0/3.0)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5 1.5")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         new RealParameter("0.0 0.0")),
                 "migrationRate", new SkylineMatrixParameter(
@@ -230,13 +230,13 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "processLength", new RealParameter("6.0"),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter(String.valueOf(4.0/3.0))),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
-                "R0AmongDemes", new SkylineMatrixParameter(null, null),
+                "ReAmongDemes", new SkylineMatrixParameter(null, null),
                 "migrationRate", new SkylineMatrixParameter(null, null),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
@@ -348,7 +348,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
                 "typeSet", new TypeSet(2),
                 "processLength", new RealParameter("6.0"),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         new RealParameter("1.0"),
                         new RealParameter((4.0/3.0) + " 1.1"),
                         2),
@@ -356,7 +356,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealParameter("1.0"),
                         new RealParameter("1.5 1.4"),
                         2),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         new RealParameter("0.0"),
                         2),
@@ -403,13 +403,13 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
 		        "typeSet", new TypeSet(1),
                 "processLength", tree,
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
                 "migrationRate", new SkylineMatrixParameter(
@@ -490,13 +490,13 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "processLength", originParam,
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
                 "migrationRate", new SkylineMatrixParameter(
@@ -572,13 +572,13 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "processLength", originParam,
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter(new Double[]{3.0/4.5})),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
                         new RealParameter("4.5")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
                 "migrationRate", new SkylineMatrixParameter(
@@ -706,7 +706,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "processLength", originParam,
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         new RealParameter("1.0 1.5"),
                         new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5})),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -718,7 +718,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "removalProb", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.0")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
                 "migrationRate", new SkylineMatrixParameter(
@@ -755,7 +755,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "processLength", originParam,
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         new RealParameter("1.0 1.5"),
                         new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5})),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -767,7 +767,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "removalProb", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.0")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
                 "migrationRate", new SkylineMatrixParameter(
@@ -802,7 +802,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", tree,
                 "typeSet", new TypeSet(1),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         new RealParameter("0.5 1.0 1.1"),
                         new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5, 4.0/2.5})),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -814,7 +814,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "removalProb", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.0")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
                 "migrationRate", new SkylineMatrixParameter(
@@ -855,7 +855,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(1),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.3333333334")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -909,7 +909,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(1),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         new RealParameter("3.0"),
                         new RealParameter("0.6666666667 1.3333333334")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -952,7 +952,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
 				"processLength", new RealParameter("6.0"),
 				"typeSet", new TypeSet(1),
-				"R0", new SkylineVectorParameter(
+				"Re", new SkylineVectorParameter(
 						null,
 						new RealParameter("1.2")),
 				"becomeUninfectiousRate", new SkylineVectorParameter(
@@ -997,7 +997,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
 				"processLength", new RealParameter("6.0"),
 				"typeSet", new TypeSet(1),
-				"R0", new SkylineVectorParameter(
+				"Re", new SkylineVectorParameter(
 						new RealParameter("3.0"),
 						new RealParameter("0.6666666667 1.3333333334")),
 				"becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1050,7 +1050,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("2.5"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter(Double.toString(4.0/3.0)), 2),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1080,7 +1080,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		// no migration, symmetric birth among demes
 
         parameterization.setInputValue("migrationRate", null);
-        parameterization.setInputValue("R0AmongDemes", new SkylineMatrixParameter(
+        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
                 null,
                 new RealParameter("0.0666667"), 2));
         parameterization.initAndValidate();
@@ -1090,7 +1090,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		// no migration, asymmetric birth among demes
 
-        parameterization.setInputValue("R0AmongDemes", new SkylineMatrixParameter(
+        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
                 null,
                 new RealParameter("0.0666667 0.1"), 2));
         parameterization.initAndValidate();
@@ -1099,9 +1099,9 @@ public class BirthDeathMigrationLikelihoodTest {
 		assertEquals(-7.18723 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
 
 
-        // no migration, asymmetric R0, asymmetric birth among demes
+        // no migration, asymmetric Re, asymmetric birth among demes
 
-        parameterization.setInputValue("R0", new SkylineVectorParameter(
+        parameterization.setInputValue("Re", new SkylineVectorParameter(
                 null,
                 new RealParameter("2 1.3333333")));
         parameterization.initAndValidate();
@@ -1109,9 +1109,9 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		assertEquals(-7.350649 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
 
-        // no migration, asymmetric R0, birth among demes, BU rate, samp proportion
+        // no migration, asymmetric Re, birth among demes, BU rate, samp proportion
 
-        parameterization.setInputValue("R0", new SkylineVectorParameter(
+        parameterization.setInputValue("Re", new SkylineVectorParameter(
                 null,
                 new RealParameter("2.0 1.5")));
         parameterization.setInputValue("becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1120,7 +1120,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.setInputValue("samplingProportion", new SkylineVectorParameter(
                 null,
                 new RealParameter("0.5 0.3")));
-        parameterization.setInputValue("R0AmongDemes", new SkylineMatrixParameter(
+        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
                 null,
                 new RealParameter("0.1 0.5")));
         parameterization.initAndValidate();
@@ -1154,7 +1154,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter((4.0 / 3.0) + " " + 5.0)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1199,7 +1199,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter(Double.toString(tree.getRoot().getHeight()+0.1)),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter((4.0 / 3.0) + " " + 5.0)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1335,7 +1335,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("4.1"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         new RealParameter("1.0"),
                         new RealParameter("6 5 2 2.5"), 2),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1344,7 +1344,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "samplingProportion", new SkylineVectorParameter(
                         new RealParameter("1.0"),
                         new RealParameter("0.5 0.45 0.333333 0.35"), 2),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         new RealParameter("1.0"),
                         new RealParameter("1.1 1.3 1.2 1.15"), 2),
                 "migrationRate", new SkylineMatrixParameter(
@@ -1382,7 +1382,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("0 0"), 2),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1391,7 +1391,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "samplingProportion", new SkylineVectorParameter(
                         null,
                         new RealParameter("0 0.7"), 2),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         new RealParameter("0 2"), 2),
                 "migrationRate", new SkylineMatrixParameter(
@@ -1429,7 +1429,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("4.1"),
                 "typeSet", new TypeSet(3),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("6 2 5")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1471,10 +1471,10 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("4.1"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("6 2")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         new RealParameter("1 1")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1514,10 +1514,10 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("4.1"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("6 2")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         new RealParameter("1 1")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1559,10 +1559,10 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("4.1"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         new RealParameter("1.5"),
                         new RealParameter("6 5 2 1.5")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         new RealParameter("1 1.2")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1603,7 +1603,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", tree,
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5 1.4")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1654,7 +1654,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(1),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1787,7 +1787,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", origin,
                 "typeSet", new TypeSet(1),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1837,7 +1837,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.initByName(
                 "processLength", tree,
                 "typeSet", new TypeSet(1),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter("1.5")),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -1899,7 +1899,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		parameterization.initByName(
 				"typeSet", new TypeSet(2),
 				"processLength", new RealParameter("6.0"),
-				"R0", new SkylineVectorParameter(
+				"Re", new SkylineVectorParameter(
 						null,
 						new RealParameter((4.0/3.0) + " 1.1"),
 						2),
@@ -1907,7 +1907,7 @@ public class BirthDeathMigrationLikelihoodTest {
 						null,
 						new RealParameter("1.5 1.4"),
 						2),
-				"R0AmongDemes", new SkylineMatrixParameter(
+				"ReAmongDemes", new SkylineMatrixParameter(
 						null,
 						new RealParameter("0.0"),
 						2),

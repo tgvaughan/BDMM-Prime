@@ -25,7 +25,7 @@ public class TypeMappedTreeTest {
         parameterization.initByName(
                 "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter((4.0 / 3.0) + " " + 5.0)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -91,7 +91,7 @@ public class TypeMappedTreeTest {
         parameterization.initByName(
                 "processLength", new RealParameter("6.0"),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter((4.0 / 3.0) + " " + 5.0)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -230,7 +230,7 @@ public class TypeMappedTreeTest {
         parameterization.initByName(
                 "processLength", new RealParameter(Double.toString(tree.getRoot().getHeight() + 0.1)),
                 "typeSet", new TypeSet(2),
-                "R0", new SkylineVectorParameter(
+                "Re", new SkylineVectorParameter(
                         null,
                         new RealParameter((4.0 / 3.0) + " " + 5.0)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
@@ -242,7 +242,7 @@ public class TypeMappedTreeTest {
                 "migrationRate", new SkylineMatrixParameter(
                         null,
                         new RealParameter("0.2 0.1")),
-                "R0AmongDemes", new SkylineMatrixParameter(
+                "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         new RealParameter("0.1 0.2")),
 
