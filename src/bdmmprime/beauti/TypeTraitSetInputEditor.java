@@ -25,7 +25,6 @@ import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
-import beastfx.app.inputeditor.BeautiPanel;
 import beastfx.app.inputeditor.GuessPatternDialog;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
@@ -219,25 +218,25 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             typeSet.initAndValidate();
             int nTypes = typeSet.getNTypes();
 
-            RealParameter frequencies = bdmmDistr.frequenciesInput.get();
+            RealParameter startTypeProbs = bdmmDistr.startTypeProbsInput.get();
 
-            if (frequencies.getDimension() == nTypes)
+            if (startTypeProbs.getDimension() == nTypes)
                 continue;
 
-            StringBuilder frequenciesBuilder = new StringBuilder();
+            StringBuilder startTypeProbsBuilder = new StringBuilder();
 
             for (int typeIdx=0; typeIdx<nTypes; typeIdx++) {
-                frequenciesBuilder.append(" ").append(1.0/nTypes);
+                startTypeProbsBuilder.append(" ").append(1.0/nTypes);
             }
 
-            frequencies.setDimension(nTypes);
-            frequencies.valuesInput.setValue(frequenciesBuilder.toString(), frequencies);
+            startTypeProbs.setDimension(nTypes);
+            startTypeProbs.valuesInput.setValue(startTypeProbsBuilder.toString(), startTypeProbs);
 
             try {
-                frequencies.initAndValidate();
+                startTypeProbs.initAndValidate();
                 bdmmDistr.initAndValidate();
             } catch (Exception ex) {
-                System.err.println("Error updating root/origin type frequencies.");
+                System.err.println("Error updating start type probabilities.");
             }
         }
     }

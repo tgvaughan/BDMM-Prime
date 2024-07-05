@@ -74,7 +74,7 @@
                         bdmmprime.trajectories.SampledTrajectory.bdmmDistrib,
                         bdmmprime.trajectories.SampledTrajectory.typeLabel,
                         bdmmprime.trajectories.SampledTrajectory.finalSampleOffset,
-                        bdmmprime.trajectories.SampledTrajectory.frequencies,
+                        bdmmprime.trajectories.SampledTrajectory.startTypeProbs,
                         bdmmprime.trajectories.SampledTrajectory.resampleOnLog"
                      inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
@@ -120,7 +120,7 @@
                         <taxa spec="beast.base.evolution.alignment.TaxonSet" alignment="@$(n)"/>
                     </typeTraitSet>
 
-                    <frequencies id="typeFrequencies.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0"/>
+                    <startTypeProbs id="startTypeProbs.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0"/>
                 </distribution>
 
                 <typeSet id="typeSetBDMMPrime.t:$(n)" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
@@ -132,7 +132,7 @@
 
                 <operator id="originBDMMPrimeScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
 
-                <operator id="typeFrequenciesExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@typeFrequencies.t:$(n)" delta="0.1" weight="1.0"/>
+                <operator id="startTypeProbsExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@startTypeProbs.t:$(n)" delta="0.1" weight="1.0"/>
 
                 <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
                 <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" lower="0.0" estimate="false"/>
@@ -149,7 +149,7 @@
                         enableLogger="true">
                     <log spec="bdmmprime.mapping.TypeMappedTree" id="typeMappedTree.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
                          mapOnInit="false" remapOnLog="true"
-                         frequencies="@typeFrequencies.t:$(n)"
+                         startTypeProbs="@startTypeProbs.t:$(n)"
                          typeTraitSet="@typeTraitSet.t:$(n)"
                          typeLabel="type"
                          untypedTree="@Tree.t:$(n)"/>
@@ -173,7 +173,7 @@
                         fileName="$(filebase).$(tree).traj" logEvery="1000"
                         enableLogger="false">
                         <log spec="bdmmprime.trajectories.SampledTrajectory" id="typedTraj.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
-                            frequencies="@typeFrequencies.t:$(n)"
+                            startTypeProbs="@startTypeProbs.t:$(n)"
                             typeMappedTree="@typeMappedTree.t:$(n)"
                             typeLabel="type"
                             useTauLeaping="true"
@@ -213,18 +213,18 @@
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true"/>
 
-            <connect srcID="typeFrequencies.t:$(n)" targetID="state" inputName="stateNode"
+            <connect srcID="startTypeProbs.t:$(n)" targetID="state" inputName="stateNode"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and typeFrequencies.t:$(n)/estimate=true"/>
-            <connect srcID="typeFrequenciesExchanger.t:$(n)" targetID="mcmc" inputName="operator"
+                     and startTypeProbs.t:$(n)/estimate=true"/>
+            <connect srcID="startTypeProbsExchanger.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and typeFrequencies.t:$(n)/estimate=true"/>
-            <connect srcID="typeFrequencies.t:$(n)" targetID="tracelog" inputName="log"
+                     and startTypeProbs.t:$(n)/estimate=true"/>
+            <connect srcID="startTypeProbs.t:$(n)" targetID="tracelog" inputName="log"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and typeFrequencies.t:$(n)/estimate=true"/>
+                     and startTypeProbs.t:$(n)/estimate=true"/>
 
             <connect srcID="typedTreeLogger.t:$(n)" targetID="mcmc" inputName="logger"
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>

@@ -52,8 +52,8 @@ public class SimulatedTree extends Tree {
             "The difference in time between the final sample and the end of the BD process. " +
                     "Will be set by the simulator.", Input.Validate.REQUIRED);
 
-    public Input<RealParameter> frequenciesInput = new Input<>("frequencies",
-            "The equilibrium frequencies for each type",
+    public Input<RealParameter> startTypeProbsInput = new Input<>("startTypeProbs",
+            "The type probabilities for the first individual.",
             Input.Validate.REQUIRED);
 
     public Input<Integer> minSamplesInput = new Input<>("minSamples",
@@ -74,7 +74,7 @@ public class SimulatedTree extends Tree {
             false);
 
     Parameterization param;
-    RealParameter frequencies;
+    RealParameter initialTypeProbs;
     double simulationTime;
 
     double[] a_birth, a_death, a_sampling;
@@ -92,7 +92,7 @@ public class SimulatedTree extends Tree {
     @Override
     public void initAndValidate() {
         param = parameterizationInput.get();
-        frequencies = frequenciesInput.get();
+        initialTypeProbs = startTypeProbsInput.get();
         simulationTime = param.processLengthInput.get().getArrayValue();
 
         minSamples = minSamplesInput.get();
@@ -148,11 +148,11 @@ public class SimulatedTree extends Tree {
 
         double[] initialState = new double[nTypes];
         int startType;
-        double u = Randomizer.nextDouble()*sum(frequencies.getDoubleValues());
+        double u = Randomizer.nextDouble()*sum(initialTypeProbs.getDoubleValues());
         for (startType=0; startType<nTypes-1; startType++) {
-            if (u < frequencies.getValue(startType))
+            if (u < initialTypeProbs.getValue(startType))
                 break;
-            u -= frequencies.getValue(startType);
+            u -= initialTypeProbs.getValue(startType);
         }
         initialState[startType] = 1.0;
 

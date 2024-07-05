@@ -67,8 +67,8 @@ public class TypeMappedTree extends Tree {
             "BDMM parameterization",
             Input.Validate.REQUIRED);
 
-    public Input<RealParameter> frequenciesInput = new Input<>("frequencies",
-            "The frequencies for each type",
+    public Input<RealParameter> startTypeProbsInput = new Input<>("startTypeProbs",
+            "The type probabilities for the initial individual",
             Input.Validate.REQUIRED);
 
     public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
@@ -173,7 +173,7 @@ public class TypeMappedTree extends Tree {
         double[] startTypeProbs = new double[param.getNTypes()];
 
         for (int type=0; type<param.getNTypes(); type++)
-            startTypeProbs[type] = y[type+param.getNTypes()]*frequenciesInput.get().getValue(type);
+            startTypeProbs[type] = y[type+param.getNTypes()]* startTypeProbsInput.get().getValue(type);
 
         // (startTypeProbs are unnormalized: this is okay for randomChoicePDF.)
         int startType = Randomizer.randomChoicePDF(startTypeProbs);

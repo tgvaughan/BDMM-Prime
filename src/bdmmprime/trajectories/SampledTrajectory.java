@@ -52,8 +52,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             "If provided, the difference in time between the final sample and the end of the BD process.",
             new RealParameter("0.0"));
 
-    public Input<Function> frequenciesInput = new Input<>("frequencies",
-            "The equilibrium frequencies for each type. Only needed for testing tree prob estimates.");
+    public Input<Function> startTypeProbsInput = new Input<>("startTypeProbs",
+            "The initial probabilities for each type. Only needed for testing tree prob estimates.");
 
     public Input<Integer> nParticlesInput = new Input<>("nParticles",
             "Number of particles to use in filtering calculation.", 1000);
@@ -225,7 +225,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
         // Contribution of root type to log likelihood:
         if (nTypes > 1) {
-            if (frequenciesInput.get() == null)
+            if (startTypeProbsInput.get() == null)
                 throw new IllegalArgumentException("Must provide frequency argument to calculate multi-type tree prob.");
 
             // This is actually the initial weight of the particles accounting for
@@ -233,7 +233,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             // distribution having the observed state.  However, because _all_ of the
             // particles have this initial value, it doesn't affect the weight distribution.
             // It affects the tree prob estimate though, which is important for testing.
-            logTreeProbEstimate += Math.log(frequenciesInput.get().getArrayValue(rootType));
+            logTreeProbEstimate += Math.log(startTypeProbsInput.get().getArrayValue(rootType));
         }
 
         return logTreeProbEstimate - logGamma(mappedTree.getLeafNodeCount() + 1);

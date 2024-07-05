@@ -43,8 +43,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "If provided, the difference in time between the final sample and the end of the BD process.",
             new RealParameter("0.0"));
 
-    public Input<RealParameter> frequenciesInput = new Input<>("frequencies",
-            "The equilibrium frequencies for each type",
+    public Input<RealParameter> startTypeProbsInput = new Input<>("startTypeProbs",
+            "The probabilities for the type of the first individual",
             new RealParameter("1.0"));
 
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
@@ -131,12 +131,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (parameterization.getNTypes() != 1 && (typeTraitSetInput.get() == null && typeLabelInput.get() == null))
             throw new RuntimeException("Error: For models with >1 type, either typeTraitSet or typeLabel must be specified.");
 
-        if (frequenciesInput.get().getDimension() != parameterization.getNTypes())
+        if (startTypeProbsInput.get().getDimension() != parameterization.getNTypes())
             throw new RuntimeException("Error: dimension of equilibrium frequencies " +
                     "parameter must match number of types.");
 
         double freqSum = 0;
-        for (double f : frequenciesInput.get().getValues()) freqSum += f;
+        for (double f : startTypeProbsInput.get().getValues()) freqSum += f;
         if (Math.abs(1.0 - freqSum) > 1e-10)
             throw new RuntimeException("Error: equilibrium frequencies must add " +
                     "up to 1 but currently add to " + freqSum + ".");
@@ -233,7 +233,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     if (rate == 0.0)
                         continue;
 
-                   conditionDensity += rate*frequenciesInput.get().getArrayValue(type1)
+                   conditionDensity += rate* startTypeProbsInput.get().getArrayValue(type1)
                            * (1-extinctionProb[type1])
                            * (1-extinctionProb[type2]);
                 }
@@ -241,7 +241,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         } else if (conditionOnSurvivalInput.get()) {
 
             for (int type = 0; type < parameterization.getNTypes(); type++)
-                conditionDensity += frequenciesInput.get().getArrayValue(type)
+                conditionDensity += startTypeProbsInput.get().getArrayValue(type)
                         * (1-extinctionProb[type]);
 
         } else {
@@ -303,7 +303,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             SmallNumber jointProb = finalP0Ge
                     .ge[startType]
-                    .scalarMultiplyBy(frequenciesInput.get().getArrayValue(startType));
+                    .scalarMultiplyBy(startTypeProbsInput.get().getArrayValue(startType));
 
             if (jointProb.getMantissa() > 0) {
                 startTypeProbs[startType] = jointProb.log();
