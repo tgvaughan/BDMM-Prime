@@ -135,7 +135,7 @@
                 <operator id="typeFrequenciesExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@typeFrequencies.t:$(n)" delta="0.1" weight="1.0"/>
 
                 <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-                <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" lower="0.0" estimate="false"/>
                 <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
                 <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
                 <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
