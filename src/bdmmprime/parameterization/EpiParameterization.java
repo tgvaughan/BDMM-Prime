@@ -21,8 +21,8 @@ import beast.base.core.Input;
 
 public class EpiParameterization extends Parameterization {
 
-    public Input<SkylineVectorParameter> R0Input = new Input<>("R0",
-            "Basic reproduction number skyline.", Input.Validate.REQUIRED);
+    public Input<SkylineVectorParameter> ReInput = new Input<>("Re",
+            "Effective reproduction number skyline.", Input.Validate.REQUIRED);
 
     public Input<SkylineVectorParameter> becomeUninfectiousRateInput = new Input<>("becomeUninfectiousRate",
             "Become uninfectious rate skyline.", Input.Validate.REQUIRED);
@@ -39,7 +39,7 @@ public class EpiParameterization extends Parameterization {
     public Input<SkylineMatrixParameter> migRateInput = new Input<>("migrationRate",
             "Migration rate skyline.");
 
-    public Input<SkylineMatrixParameter> R0AmongDemesInput = new Input<>("R0AmongDemes",
+    public Input<SkylineMatrixParameter> ReAmongDemesInput = new Input<>("ReAmongDemes",
             "Basic reproduction number among demes skyline.");
 
     @Override
@@ -55,7 +55,7 @@ public class EpiParameterization extends Parameterization {
     @Override
     public double[] getBirthRateChangeTimes() {
         birthRateChangeTimes = combineAndSortTimes(birthRateChangeTimes,
-                R0Input.get().getChangeTimes(),
+                ReInput.get().getChangeTimes(),
                 becomeUninfectiousRateInput.get().getChangeTimes());
 
         return birthRateChangeTimes;
@@ -66,11 +66,11 @@ public class EpiParameterization extends Parameterization {
 
     @Override
     public double[] getCrossBirthRateChangeTimes() {
-        if (R0AmongDemesInput.get() == null)
+        if (ReAmongDemesInput.get() == null)
             return EMPTY_TIME_ARRAY;
 
         crossBirthRateChangeTimes = combineAndSortTimes(crossBirthRateChangeTimes,
-                R0AmongDemesInput.get().getChangeTimes(),
+                ReAmongDemesInput.get().getChangeTimes(),
                 becomeUninfectiousRateInput.get().getChangeTimes());
 
         return crossBirthRateChangeTimes;
@@ -123,7 +123,7 @@ public class EpiParameterization extends Parameterization {
 
     @Override
     protected double[] getBirthRateValues(double time) {
-        double[] res = R0Input.get().getValuesAtTime(time);
+        double[] res = ReInput.get().getValuesAtTime(time);
         double[] buVals = becomeUninfectiousRateInput.get().getValuesAtTime(time);
 
         for (int type=0; type<nTypes; type++)
@@ -134,10 +134,10 @@ public class EpiParameterization extends Parameterization {
 
     @Override
     protected double[][] getCrossBirthRateValues(double time) {
-        if (R0AmongDemesInput.get() == null)
+        if (ReAmongDemesInput.get() == null)
             return ZERO_VALUE_MATRIX;
 
-        double[][] res = R0AmongDemesInput.get().getValuesAtTime(time);
+        double[][] res = ReAmongDemesInput.get().getValuesAtTime(time);
         double[] buVals = becomeUninfectiousRateInput.get().getValuesAtTime(time);
 
         for (int sourceType=0; sourceType<nTypes; sourceType++) {
@@ -192,8 +192,8 @@ public class EpiParameterization extends Parameterization {
 
     @Override
     protected void validateParameterTypeCounts() {
-        if (R0Input.get().getNTypes() != getNTypes())
-            throw new IllegalArgumentException("R0 skyline type count does not match type count of model.");
+        if (ReInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Re skyline type count does not match type count of model.");
 
         if (becomeUninfectiousRateInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Become uninfectious rate skyline type count does not match type count of model.");
@@ -205,9 +205,9 @@ public class EpiParameterization extends Parameterization {
                 && migRateInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Migration rate skyline type count does not match type count of model.");
 
-        if (R0AmongDemesInput.get() != null
-                && R0AmongDemesInput.get().getNTypes() != getNTypes())
-            throw new IllegalArgumentException("R0 among demes skyline type count does not match type count of model.");
+        if (ReAmongDemesInput.get() != null
+                && ReAmongDemesInput.get().getNTypes() != getNTypes())
+            throw new IllegalArgumentException("Re among demes skyline type count does not match type count of model.");
 
         if (removalProbInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Removal prob skyline type count does not match type count of model.");
