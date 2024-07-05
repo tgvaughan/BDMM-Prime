@@ -5,7 +5,6 @@
 #+SETUPFILE: theme.org
 #+EXPORT_FILE_NAME: index.html
 
-
 * Introduction
 
 BDMM-Prime is a BEAST 2 package for performing phylodynamic inference
@@ -141,8 +140,8 @@ Gamma-distributed site-to-site rate heterogeneity should also be used.
 
 Since we have serially-sampled data, our analysis requires some kind
 of molecular clock.  For the sake of simplicity, we use a strict
-clock, setting the initial value of the clock rate to $5\times
-10^{-3}$ substitutions per site per year, which is close to the true
+clock, setting the initial value of the clock rate to $5\times 10^{-3}$
+substitutions per site per year, which is close to the true
 value for influenza.
 
 #+begin_quote
@@ -151,24 +150,197 @@ Select the "Cock model" panel. Set the "mean clock rate" value to 0.005.
 
 [[./figures/tutorial_clock.png]]
 
-*** Setting up the tree prior
+*** Selecting the tree prior
 
 The tree prior (also known as the phylodynamic likelihood) is the
 component of the analysis which BDMM-Prime provides. Here we configure
 the particular birth-death model we will use to relate the tree to
 the various population-level parameters we'd like to learn about.
-
 #+begin_quote
 Select the "Priors" panel.  To choose the BDMM-Prime tree prior, find
 the drop-down menu next to ~Tree.t:h3n2_2deme~ and select "BDMMPrime".
 #+end_quote
 
+[[./figures/tutorial_treeprior.png]]
+
+*** Setting up the sample types
+
+The next thing we want to do is to specify the locations associated with each of the
+samples included in our analysis.
+#+begin_quote
+Scroll down to end of the tree prior section and find the table associating tree leaves
+with locations. Notice that the sample names have the form =ID_Location_Date=. To
+extract the locations from the sample names, click the ~Auto-configure~ button,
+select ~split on character~, ensure "~_~" is specified as the delimiter, and select
+"2" from the ~take group(s)~ drop-down menu.  Once this is complete, press "Ok".
+#+end_quote
+
+[[./figures/tutorial_tiptypes.png]]
+
+The table should now be populated with types extracted from the sample names.
+
+[[./figures/tutorial_tiptypes2.png]]
+
+*** Configuring the multi-type model
+
+Now we get to the main part of the analysis setup, where we decide exactly how
+to model the generation of our data. In our case, we want to model a small part
+of the global transmission dynamics of H3N2.
+
+The first thing to do is to is to select our desired parameterization
+of the birth-death model. In our case, as we're analysing pathogen
+sequences in an attempt to reconstruct transmission dynamics, we'll
+use the epidemiological parameterization.
+#+begin_quote
+Expand the tree prior section by clicking the arrow next to ~Tree.t:h3n2~ on the
+left-hand side of of the screen.  Then select "Epi Parameterization" from the
+drop-down menu at the top of the expanded section.
+#+end_quote
+
+[[./figures/tutorial_parameterization.png]]
+
+With this done, the next task is to define the dimensionality and
+initial values of the multi-type birth-death parameters. In BDMM-Prime,
+each of these parameters is considered a "skyline parameter" which can
+change in a piecewise-constant fashion through time.
+
+The first skyline parameter to consider is the Re parameter, representing
+the effective reproductive number.  By default parameter values are
+assumed to be the same across all types,
+
+#+begin_quote
+For the Re skyline parameter, uncheck the "Scalar values" check box to
+allow this parameter to take type-dependent values.
+#+end_quote
+
+[[./figures/tutorial_ReSetup.png]]
+
+The next parameter is the "become uninfectious rate" parameter, representing
+the rate at which infected individuals become uninfectious. As this parameter
+is predominantly a function of the pathogen rather than location, we will
+assume it takes a single value which  is shared among types. Furthermore,
+as influenza infections often take a relatively short time to pass, we will initialise
+this value to correspond to an infectious period of 1 week.
+
+#+begin_quote
+Find the Become Uninfectious Rate parameter, double-click the starting value and
+change it to 52 (per year).  *Be sure to press "Enter" to cause BEAUti to accept
+the new value.*
+#+end_quote
+
+[[./figures/tutorial_BUSetup.png]]
+
+Now let's consider the Sampling Proportion parameter. This parameter requires
+special care, as the sampling assumptions of the model can dramatically influence
+inference results.  In our case we want (a) to allow for type-dependent sampling proportions
+and (b) to fix the sampling proportion to zero for all times earlier than the first
+sample.
+
+In BDMM-Prime, this configuration is reasonably simple to configure.
+#+begin_quote
+Find the Sampling Proportion parameter, then follow these steps:
+1. Uncheck the "Scalar value" checkbox to allow for type-dependent values.
+2. Check "Display visualization" to see the distribution of sample times relative
+   to the most recent sample.
+3. Set the "Number of change times" value to 1.  (Notice the appearance of the epoch
+   boundary marker on the visualisation.)
+4. Set the change time for the boundary between epoch 1 and 2 to 5.7. (Notice that this
+   value ensures the oldest sample remains in epoch 1.)
+5. In the "Values" table, double-click the entries corresponding to
+   the sampling proportion values for Epoch 2 and change each to 0.0,
+   remembering to press "enter" after each change.
+#+end_quote
+
+[[./figures/tutorial_SampSetup.png]]
+
+Finally, we need to define how lineages change type in our multi-type
+model.  Like BDMM, BDMM-Prime allows both direct "migration" as well
+as "birth to a new type" styles of multi-type models.  Given we are
+modelling the movement of infected influenza hosts, migration suits
+our situtation best.  We also acknowledge that migration rates between
+different pairs of types/locations may be different from one another.
+
+To incorporate these decisions, follow these instructions:
+#+begin_quote
+Find the Migration Rate parameter, then:
+1. Double-click on the value and change it from it's default to the smaller
+   rate of 0.1 (any infected individual has a 10% chance of moving between
+   the two locations in any given year).
+2. Uncheck the "Scalar values" checkbox to allow rates to vary between pairs of
+   locations.
+3. Check the "Estimate values" checkbox to ensure these migration
+   rates are estimated.
+#+end_quote
+
+[[./figures/tutorial_migSetup.png]]
+
 *** Setting the remaining parameter priors
 
-*** Logging setup
+With the multi-type model is configured, what remains is to define priors for
+each of the parameters we're estimating.  As in any ther BEAST analysis, this
+includes parameters each of the various site, clock and phylodynamic models we've
+configured.
 
+Rather than describe in detail how to set these priors, here we will simply list
+a set of simple priors which can be used for the purpose of demonstrating the
+model. (Detailed information on setting up priors in BEAUti can be found elsewhere, see
+for instance the [[https://taming-the-beast.org/tutorials/Prior-selection/][Prior Selection tutorial]] on the Taming the BEAST website.
 
-** Running the analysis
+#+begin_quote
+Set the following parameter priors:
+|------------------------------------------+------------------|
+| Parameter                                | Prior            |
+|------------------------------------------+------------------|
+| =ReEpi.t:h3n2_2deme=                     | LogNormal(0,0.5) |
+| =becomeUninfectiousRateEpi.t:h3n2_2deme= | 1/X              |
+| =migrationRateEpi.t:h3n2_2deme=          | Exp(0.1)         |
+| =samplingProportionEpi.t:h3n2_2deme=     | Unif(0,1)        |
+|------------------------------------------+------------------|
+#+end_quote
+
+*** MCMC and Logging setup
+
+Finall, we need to configure the details of the MCMC chain to run and the trees and
+parameters to be logged.
+
+#+begin_quote
+Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
+#+end_quote
+
+[[./figures/tutorial_MCMC.png]]
+
+For this demonstration we will leave everything else as-is. Notice however that
+beyond the regular trace, screen and tree logs, there are three additional loggers.
+We'll discuss these in more detail 
+
+- typedTreeLogger :: A logger which uses stochastic mapping to
+  generate samples from the marginal posterior over edge-typed trees,
+  which amount to hypotheses about when and where each type change
+  occurred on the tree.
+  
+- nodeTypedTreeLogger :: Similar to typedTreeLogger, but the sampled trees
+  includes type information only at internal nodes.  Used to build summary trees
+  with BEAST 2's TreeAnnotator utility.
+
+- trajLogger :: A logger which uses particle filtering to log samples
+  from the marginal posterior of multi-type population trajectories.
+  
+Each of these loggers is optional, and can be enabled/disabled by
+clicking the arrow buttons to their left and checking/unchecking the
+"Enable logger" box.  By default edge-typed tree logging is enabled,
+but trajectory logging is disabled.
+
+** Saving and Running the analysis
+
+Now we can save and run the analysis:
+#+begin_quote
+1. Open the "File" menu and select "Save". Choose a sensible location in
+your filesystem in which to save the analysis file, which should be
+named ~h3n2.xml~.  (By default the location will be the examples/
+folder from which you loaded the sequences: you'll want to choose
+somewhere else, perhaps a folder on your desktop.)
+2. Launch BEAST, select the ~h3n2.xml~ as the input file, then run the analysis.
+#+end_quote
 
 ** Processing the results
 
@@ -196,6 +368,6 @@ the drop-down menu next to ~Tree.t:h3n2_2deme~ and select "BDMMPrime".
 
 ** Special operators
 
-* License
-BDMM-Prime is free software.  It is made available under the terms of
-the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]].
+* License BDMM-Prime is free software.  It is made available under the
+terms of the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General
+Public Licence version 3]].
