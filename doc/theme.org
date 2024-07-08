@@ -1,11 +1,27 @@
 # Turn off default internal styles
-#+OPTIONS: html-style:nil html5-fancy:t html-postamble:nil
-#+OPTIONS: H:6 toc:6 num:t
+#+OPTIONS: html-style:nil html5-fancy:t
+#+OPTIONS: tex:verbatim H:6 toc:4 num:t
 
 # Exporting to HTML5
 #+HTML_DOCTYPE: html5
 #+HTML_HEAD: <meta http-equiv="X-UA-Compatible" content="IE=edge">
 #+HTML_HEAD: <meta name="viewport" content="width=device-width, initial-scale=1">
 
-#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="theme.css"/>
+# ReadTheOrg
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/readtheorg.css"/>
+#+HTML_HEAD: <script type="text/javascript" src="js/jquery.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="js/bootstrap.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="js/jquery.stickytableheaders.min.js"></script>
+#+HTML_HEAD: <script type="text/javascript" src="js/readtheorg.js"></script>
 
+# KaTeX
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/katex.min.css" />
+#+HTML_HEAD: <script defer type="text/javascript" src="js/katex.min.js"></script>
+#+HTML_HEAD: <script defer type="text/javascript" src="js/katex-auto-render.min.js"></script>
+#+HTML_HEAD: <script> document.addEventListener("DOMContentLoaded", function() {renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\(', right: '\\)', display: false}, {left: '\\[', right: '\\]', display: true}], throwOnError : false});}); </script>
+
+# Syntax highlighting
+#+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/syntaxhl.css" />
+
+## Include logo
+##+HTML_HEAD: <style>h1.title {display:none}</style>

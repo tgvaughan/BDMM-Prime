@@ -424,7 +424,15 @@ This should produce something quite like the figure below:
 
 * Model specification using BEAUti
 
+In the following section we'll delve into the BDMM-Prime interface
+in more detail.  Unlike the tutorial, this section is written in a
+more general way rather than considering a specific data set.
+
 ** The BDMM-Prime Tree Prior
+
+Using BDMM-Prime amounts to selecting the BDMM-Prime tree prior when
+choosing priors for a particular analysis.
+
 
 ** Parameterizations
 
