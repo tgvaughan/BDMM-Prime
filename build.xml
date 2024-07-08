@@ -344,6 +344,7 @@
         <delete dir="${build-test}" />
         <delete dir="${test-reports}" />
         <delete dir="deps" />
+        <delete dir="gen" />
     </target>
 
 
