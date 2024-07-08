@@ -1,4 +1,4 @@
-<package name="BDMM-Prime" version="2.0.1">
+<package name="BDMM-Prime" version="2.1.0">
   <depends on="BEAST.base" atleast="2.7.0" atmost="2.7.9"/>
   <depends on="BEAST.app" atleast="2.7.0" atmost="2.7.9"/>
   <depends on="SA" atleast="2.1.0"/>
@@ -26,6 +26,7 @@
     <provider classname="bdmmprime.util.Slice"/>
     <provider classname="bdmmprime.util.NodeAgeLogger"/>
     <provider classname="bdmmprime.util.OptionalLogger"/>
+    <provider classname="bdmmprime.util.StartTypeProbsLogger"/>
     <provider classname="bdmmprime.parameterization.TimedParameter"/>
     <provider classname="bdmmprime.parameterization.CanonicalParameterization"/>
     <provider classname="bdmmprime.parameterization.SkylineMatrixParameter"/>

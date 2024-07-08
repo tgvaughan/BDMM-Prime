@@ -125,6 +125,8 @@
 
                 <typeSet id="typeSetBDMMPrime.t:$(n)" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
 
+                <startTypeProbsLogger id="startTypeProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypeProbsLogger" typeSet="@typeSetBDMMPrime.t:$(n)" startTypeProbs="@startTypeProbs.t:$(n)"/>
+
                 <origin spec="beast.base.inference.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
                 <prior id="originBDMMPrimePrior.t:$(n)" x="@originBDMMPrime.t:$(n)">
                    <distr spec="beast.base.inference.distribution.OneOnX"/>
@@ -221,7 +223,7 @@
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and startTypeProbs.t:$(n)/estimate=true"/>
-            <connect srcID="startTypeProbs.t:$(n)" targetID="tracelog" inputName="log"
+            <connect srcID="startTypeProbsLogger.t:$(n)" targetID="tracelog" inputName="log"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and startTypeProbs.t:$(n)/estimate=true"/>

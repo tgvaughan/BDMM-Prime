@@ -1,6 +1,6 @@
 <packages>
-  <package name="BDMM-Prime" version="2.0.1"
-           url="https://github.com/tgvaughan/BDMM-Prime/releases/download/v2.0.1/BDMM-Prime.v2.0.1.zip"
+  <package name="BDMM-Prime" version="2.1.0"
+           url="https://github.com/tgvaughan/BDMM-Prime/releases/download/v2.1.0/BDMM-Prime.v2.1.0.zip"
            projectURL="https://github.com/tgvaughan/BDMM-Prime"
            description="Birth-death Migration Model Reimplementation" >
     <depends on="BEAST.base" atleast="2.7.0" atmost="2.7.9"/>
