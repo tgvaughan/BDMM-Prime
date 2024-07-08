@@ -31,6 +31,7 @@ that depend on it remain usable.
 
 * Getting Started
 
+
 ** Installation
 
 BDMM-Prime requires a working installation of [[https://www.beast2.org][BEAST 2.7]] which can be obtained from
@@ -77,6 +78,10 @@ to perform on your computer are highlighted like this:/
 #+begin_quote
 Start BEAUti.
 #+end_quote
+
+*Note:* the following assumes some limited familiarity with BEAST 2.
+If you've never used this software before, please consider working
+through the [[https://taming-the-beast.org/tutorials/Introduction-to-BEAST2/][Introduction to BEAST 2 tutorial]].
 
 *** Loading sequence data into BEAUti
 
@@ -344,6 +349,79 @@ somewhere else, perhaps a folder on your desktop.)
 
 ** Processing the results
 
+Once the analysis is complete, we can have a look at the results.  (If
+you're impatient, note that BEAST 2 regularly appends to output files
+and that these files can also be studied in the followin way while
+BEAST is still running.)  The output files which should have been produced are
+
+- =h3n2.log= :: The parameter log file,
+- =h3n2-h3n2_2deme.trees= :: A tree log file with no types marked,
+- =h3n2.h3n2_2deme.typed.trees= :: A tree log file with all ancestral types and type changes marked,
+- =h3n2.h3n2_2deme.typed.node.trees= :: A tree log  file with only types at ancestral nodes marked.
+
+Firstly, let's open the parameter log file using the Tracer app (distributed with BEAST 2).
+
+#+begin_quote
+Open Tracer, select "Import trace file..." from the File menu.  Use the interface
+to explor the marginal distributions as estimated from the MCMC samples.
+#+end_quote
+
+We see immediately that the ESS for many of the parameters is low,
+which is unsurprising for such a short run.  However, the focus here is on
+understanding how BDMM-Prime analysis results are presented in the log file rather
+than trying to seriously interpret the results.
+
+With this in mind, see firstly that each of the estimated parameters including ~Re~,
+~becomeUninfectiousRate~ and ~migrationRate~ are represented in the log file
+by "ReSPEpi", "becomeUninfectiousRateSPEpi" and "migrationRateSPEpi".  The "SP"
+indicates that the parameter is a "Skyline parameter" (as opposed to BEAST 2's
+regular RealParameter).
+
+Also notice that when we have allowed type-specific (not scalar) values, as
+in the case of ~Re~, the parameter name appears multiple times with a suffix
+indicating the type associated with the specific value.
+
+Finally, notice that when we have allowed the parameter to change at a particular
+time, each epoch/interval receives its own set of parameter values. In this case
+an additional ".endtime" value is also recorded, which identifies the end time
+of a specific interval, measured relative to the start time of the process.
+
+[[./analyses/tracer.png]]
+
+The untyped tree log file can be dealt with in the same way as all beast tree files.
+However we also have tree log files containing sampled ancestral type information
+which we can use to learn about the type change process as it occurred on the tree.
+In this influenza case, this contains potentially interesting information about
+global influenza spatial dynamics.
+
+While in principle the .typed.trees file contains the most detailed information,
+it is easier to jointly summarize these ancestral dynamics with the tree itself
+by applying the TreeAnnotator program to the .typed.node.trees file.
+
+#+begin_quote
+1. Open TreeAnnotator (distributed with BEAST 2)
+2. For the node heights option, select "mean heights". (This produces
+   less biased estimates of divergence times than the default.)
+3. Select =h3n2.h3n2_2deme.typed.node.trees= as the input file.
+4. Choose an appropriate output file name (e.g. =summary.tree=)
+5. Click "Run".
+#+end_quote
+
+[[./analyses/treeannotator.png]]
+
+Once complete, the
+#+begin_quote
+1. Navigate to https://icytree.org in a javascript-enabled web browser.
+2. Select "Load from file" from the File menu and select the =summary.tree= file
+   produced by TreeAnnotator.
+3. From the Style menu choose "colour nodes by" and then "type".
+3. Also from the Style menu choose "Node height error bars" and then "=height_95%_HPD=".
+#+end_quote
+
+This should produce something quite like the figure below:
+
+[[./analyses/summary_tree.png]]
+
 * Model specification using BEAUti
 
 ** The BDMM-Prime Tree Prior
@@ -368,6 +446,10 @@ somewhere else, perhaps a folder on your desktop.)
 
 ** Special operators
 
-* License BDMM-Prime is free software.  It is made available under the
-terms of the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General
-Public Licence version 3]].
+* License
+
+BDMM-Prime is free software.  It is made available under the terms of
+the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]]. Unlike many software
+licenses, this is designed to give you, the user, the freedom to use
+the software as you wish - including making and publishing
+modifications - provided you also extend the same freedoms to other users.
