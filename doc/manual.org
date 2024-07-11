@@ -1,17 +1,30 @@
 #+title: BDMM-Prime
-#+subtitle: Phylodynamic inference under linear birth-death-sampling models
+#+subtitle: Linear birth-death-sampling phylodynamics
 #+author: Tim Vaughan
+
+#+options: title:nil
+
+#+ATTR_HTML: :alt BDMM-Prime: Linear birth-death-sampling phylodynamics
+[[./logos/bdmm-prime-logo.png]]
 
 #+SETUPFILE: theme.org
 #+EXPORT_FILE_NAME: index.html
 
+Source code: https://github.com/tgvaughan/BDMM-Prime
+
 * Introduction
+:PROPERTIES:
+:CUSTOM_ID: id-1-Introduction
+:END:
 
 BDMM-Prime is a BEAST 2 package for performing phylodynamic inference
 under a variety of linear birth-death-sampling models with/without
 types.
 
 ** Comparison with BDMM
+:PROPERTIES:
+:CUSTOM_ID: id-2-Introduction-Comparison-with-BDMM
+:END:
 
 The BDMM-Prime project is a hard fork of the original [[https://github.com/denisekuehnert/bdmm][BDMM project]].
 The intention is to extend the functionality of the original package,
@@ -30,9 +43,15 @@ package will be maintained separately to ensure that BEAST 2 XMLs and packages
 that depend on it remain usable.
 
 * Getting Started
+:PROPERTIES:
+:CUSTOM_ID: id-1-Getting-Started
+:END:
 
 
 ** Installation
+:PROPERTIES:
+:CUSTOM_ID: id-2-Getting-Started-Installation
+:END:
 
 BDMM-Prime requires a working installation of [[https://www.beast2.org][BEAST 2.7]] which can be obtained from
 https://www.beast2.org/. The package itself can then be installed via the
@@ -59,6 +78,9 @@ repository.  However, while it is still in development, it must be
 installed from the above repository.
 
 ** Setting up your first analysis
+:PROPERTIES:
+:CUSTOM_ID: id-2-Getting-Started-Setting-up-your-first-analysis
+:END:
 
 Here we will step through the process of setting up, running and
 interpreting a simple BDMM-Prime analysis.  For the purpose of
@@ -84,6 +106,9 @@ If you've never used this software before, please consider working
 through the [[https://taming-the-beast.org/tutorials/Introduction-to-BEAST2/][Introduction to BEAST 2 tutorial]].
 
 *** Loading sequence data into BEAUti
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Loading-sequence-data-into-BEAUti
+:END:
 
 For this tutorial, we'll be using the example influenza data which is
 installed along with BDMM-Prime. This data, assembled from
@@ -108,6 +133,9 @@ The BEAUti window should now look something like the following:
 [[./figures/tutorial_seqloaded.png]]
 
 *** Setting up tip dates
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-tip-dates
+:END:
 
 The sequences in this data set are sampled at different times, so use
 the following instructions to import this information into the analysis.
@@ -125,6 +153,9 @@ character as a numerical tip time.
 [[./figures/tutorial_tipdates.png]]
 
 *** Setting the site model
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model
+:END:
 
 For this example, we will use the basic [[https://doi.org/10.1007%2FBF02101694][HKY]] subsitution model, with
 equilibrium nucleotide frequencies fixed to the empirical frequencies
@@ -142,6 +173,9 @@ For production analyses, these should probably be estimated, and
 Gamma-distributed site-to-site rate heterogeneity should also be used.
 
 *** Setting the clock model
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-clock-model
+:END:
 
 Since we have serially-sampled data, our analysis requires some kind
 of molecular clock.  For the sake of simplicity, we use a strict
@@ -156,6 +190,9 @@ Select the "Cock model" panel. Set the "mean clock rate" value to 0.005.
 [[./figures/tutorial_clock.png]]
 
 *** Selecting the tree prior
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Selecting-the-tree-prior
+:END:
 
 The tree prior (also known as the phylodynamic likelihood) is the
 component of the analysis which BDMM-Prime provides. Here we configure
@@ -169,6 +206,9 @@ the drop-down menu next to ~Tree.t:h3n2_2deme~ and select "BDMMPrime".
 [[./figures/tutorial_treeprior.png]]
 
 *** Setting up the sample types
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-the-sample-types
+:END:
 
 The next thing we want to do is to specify the locations associated with each of the
 samples included in our analysis.
@@ -187,6 +227,9 @@ The table should now be populated with types extracted from the sample names.
 [[./figures/tutorial_tiptypes2.png]]
 
 *** Configuring the multi-type model
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Configuring-the-multi-type-model
+:END:
 
 Now we get to the main part of the analysis setup, where we decide exactly how
 to model the generation of our data. In our case, we want to model a small part
@@ -280,6 +323,9 @@ Find the Migration Rate parameter, then:
 [[./figures/tutorial_migSetup.png]]
 
 *** Setting the remaining parameter priors
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors
+:END:
 
 With the multi-type model is configured, what remains is to define priors for
 each of the parameters we're estimating.  As in any ther BEAST analysis, this
@@ -304,6 +350,9 @@ Set the following parameter priors:
 #+end_quote
 
 *** MCMC and Logging setup
+:PROPERTIES:
+:CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup
+:END:
 
 Finall, we need to configure the details of the MCMC chain to run and the trees and
 parameters to be logged.
@@ -336,18 +385,24 @@ clicking the arrow buttons to their left and checking/unchecking the
 but trajectory logging is disabled.
 
 ** Saving and Running the analysis
+:PROPERTIES:
+:CUSTOM_ID: id-2-Getting-Started-Saving-and-Running-the-analysis
+:END:
 
 Now we can save and run the analysis:
 #+begin_quote
-1. Open the "File" menu and select "Save". Choose a sensible location in
-your filesystem in which to save the analysis file, which should be
-named ~h3n2.xml~.  (By default the location will be the examples/
-folder from which you loaded the sequences: you'll want to choose
-somewhere else, perhaps a folder on your desktop.)
+1. Open the "File" menu and select "Save". Choose a sensible location
+   in your filesystem in which to save the analysis file, which should
+   be named ~h3n2.xml~.  (By default the location will be the
+   examples/ folder from which you loaded the sequences: you'll want
+   to choose somewhere else, perhaps a folder on your desktop.)
 2. Launch BEAST, select the ~h3n2.xml~ as the input file, then run the analysis.
 #+end_quote
 
 ** Processing the results
+:PROPERTIES:
+:CUSTOM_ID: id-2-Getting-Started-Processing-the-results
+:END:
 
 Once the analysis is complete, we can have a look at the results.  (If
 you're impatient, note that BEAST 2 regularly appends to output files
@@ -423,41 +478,147 @@ This should produce something quite like the figure below:
 [[./analyses/summary_tree.png]]
 
 * Model specification using BEAUti
+:PROPERTIES:
+:CUSTOM_ID: id-1-Model-specification-using-BEAUti
+:END:
 
-In the following section we'll delve into the BDMM-Prime interface
-in more detail.  Unlike the tutorial, this section is written in a
-more general way rather than considering a specific data set.
+In the following section we'll delve into the BDMM-Prime interface in
+more detail.  Unlike the tutorial, this section is written in a more
+general way rather than considering a specific data set. However, we
+will occasionally refer to the example in the tutorial, so it would be
+helpful if you'd worked through that first before proceeding to the
+sections below.
 
 ** The BDMM-Prime Tree Prior
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior
+:END:
 
 Using BDMM-Prime amounts to selecting the BDMM-Prime tree prior when
-choosing priors for a particular analysis.
+choosing priors for a particular analysis. This is a very flexible
+tree prior, encompassing a wide variety of single- and multi-type
+birth-death-sampling models, allowing for fixed-rate and
+time-dependent-rate analyses.
+
+For earlier packages such as BDSKY and BDMM, the inputs to the relevant tree priors
+were organised in very flat manner, with the tree prior directly taking
+
+In contrast, inputs to the BDMM-Prime tree prior are organised in a hierarchical way
 
 
 ** Parameterizations
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Parameterizations
+:END:
 
-** Skyline Vector Parameters
+Unlike packages such as BDMM and BDSKY which provide a fixed set of
+(often overlapping) parameterizations to work with (even at the XML level),
+BDMM-Prime provides a plug-in mechanism for 
 
-** Skyline Matrix Parameters
+*** Canonical
+:PROPERTIES:
+:CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Canonical
+:END:
 
-** Sample distribution visualisation
+*** Epidemiological
+:PROPERTIES:
+:CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological
+:END:
+
+*** Fossilized birth-death process
+:PROPERTIES:
+:CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process
+:END:
+
+** Skyline Parameters
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Skyline-Parameters
+:END:
+
+*** Vector Parameters
+:PROPERTIES:
+:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Vector-Parameters
+:END:
+
+*** Matrix Parameters
+:PROPERTIES:
+:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Matrix-Parameters
+:END:
+
+*** Sample distribution visualisation
+:PROPERTIES:
+:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Sample-distribution-visualisation
+:END:
+
+** TypeTraitSet and StartTypeProbs
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-TypeTraitSet-and-StartTypeProbs
+:END:
+
+** Miscellaneous inputs
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Miscellaneous-inputs
+:END:
 
 * Sampling Latent Variables
+:PROPERTIES:
+:CUSTOM_ID: id-1-Sampling-Latent-Variables
+:END:
 
 ** Tree edge types and type transitions
+:PROPERTIES:
+:CUSTOM_ID: id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions
+:END:
 
 ** Multi-type trajectories
+:PROPERTIES:
+:CUSTOM_ID: id-2-Sampling-Latent-Variables-Multi-type-trajectories
+:END:
 
 * XML reference
+:PROPERTIES:
+:CUSTOM_ID: id-1-XML-reference
+:END:
 
 ** Model definition
+:PROPERTIES:
+:CUSTOM_ID: id-2-XML-reference-Model-definition
+:END:
 
 ** Special operators
+:PROPERTIES:
+:CUSTOM_ID: id-2-XML-reference-Special-operators
+:END:
 
 * License
+:PROPERTIES:
+:CUSTOM_ID: id-1-License
+:END:
 
 BDMM-Prime is free software.  It is made available under the terms of
 the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]]. Unlike many software
 licenses, this is designed to give you, the user, the freedom to use
 the software as you wish - including making and publishing
 modifications - provided you also extend the same freedoms to other users.
+
+
+# Evaluate the following block to update section IDs
+#
+#+begin_src emacs-lisp :cache no :exports none :results none
+  (org-map-entries
+     (lambda ()
+       (pcase (org-heading-components)
+         (`(,level ,_ ,_ ,_ ,title ,_)
+          (org-set-property "CUSTOM_ID"
+                            (string-replace " " "-"
+                             (string-join `("id"
+                                            ,(number-to-string level)
+                                            ,@(reverse (org-get-outline-path))
+                                            ,title)
+                                          "-")))))))
+#+end_src
+
+# Local Variables:
+# org-html-validation-link: nil
+# org-html-htmlize-output-type: css
+# End:

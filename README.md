@@ -80,7 +80,7 @@ original BDMM paper:
   ComputationalFramework to Quantify Population Structure from Genomic
   Data", MBE, 33:8, 2102-2116 (2016),
   [doi:10.1093/molbev/msw064](https://doi.org/10.1093/molbev/msw064).
-
+  
 License
 -------
 

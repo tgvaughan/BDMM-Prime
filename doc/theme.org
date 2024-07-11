@@ -23,5 +23,5 @@
 # Syntax highlighting
 #+HTML_HEAD: <link rel="stylesheet" type="text/css" href="css/syntaxhl.css" />
 
-## Include logo
-##+HTML_HEAD: <style>h1.title {display:none}</style>
+# Include logo
+#+HTML_HEAD: <style>h1.title {display:none}</style>
