@@ -502,18 +502,31 @@ time-dependent-rate analyses.
 
 For earlier packages such as BDSKY and BDMM, the inputs to the relevant tree priors
 were organised in very flat manner, with the tree prior directly taking
+inputs for birth and death rates, change times, including similar values for
+alternative parameterisations.
 
-In contrast, inputs to the BDMM-Prime tree prior are organised in a hierarchical way
+In contrast, inputs to the BDMM-Prime tree prior are organised in a
+hierarchical way which seeks to avoid repetition and improve
+flexibility.  At the top level, the BDMM-Prime tree prior takes only
+the following four main elements:
+1. The *tree*,
+2. *Tip type information* (if available) and *starting type probabilities*,
+3. A "*parameterization*" object defining how the model is to be parameterized, and
+4. Miscellaneous *tuning parameters*.
 
+The tree itself is automatically defined and provided to the tree prior by BEAUti.
+It therefore remains only to define the remaining three, which are detailed in the
+following sections.
 
 ** Parameterizations
 :PROPERTIES:
 :CUSTOM_ID: id-2-Model-specification-using-BEAUti-Parameterizations
 :END:
 
-Unlike packages such as BDMM and BDSKY which provide a fixed set of
-(often overlapping) parameterizations to work with (even at the XML level),
-BDMM-Prime provides a plug-in mechanism for 
+BDMM-Prime provides a simple plug-in mechanism for handling different
+parameterizations.  With only one minor exception for the FBD parameterisation
+(described below), all of these parameterizations provides perfectly equivalent
+specifications of the 
 
 *** Canonical
 :PROPERTIES:
