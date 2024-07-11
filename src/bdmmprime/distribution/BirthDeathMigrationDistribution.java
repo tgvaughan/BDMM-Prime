@@ -224,7 +224,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (conditionOnRootInput.get()) {
 
             int intervalIndex = parameterization.getIntervalIndex(0);
-            double totalRate = 0.0;
             for (int type1=0; type1<parameterization.getNTypes(); type1++) {
                 for (int type2=0; type2<parameterization.getNTypes(); type2++) {
                     double rate = type1 == type2
@@ -234,15 +233,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     if (rate == 0.0)
                         continue;
 
-                    totalRate += rate;
-
                    conditionDensity += rate* startTypeProbsInput.get().getArrayValue(type1)
                            * (1-extinctionProb[type1])
                            * (1-extinctionProb[type2]);
                 }
             }
-            conditionDensity /= totalRate;
-
         } else if (conditionOnSurvivalInput.get()) {
 
             for (int type = 0; type < parameterization.getNTypes(); type++)
