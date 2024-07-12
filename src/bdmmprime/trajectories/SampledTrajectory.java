@@ -345,6 +345,11 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     @Override
     public void log(long sample, PrintStream out) {
+        if (sample==0) {
+            out.print("NA\tNA\tNA\tNA\tNA\tNA");
+            return;
+        }
+
         if (mappedTree instanceof TypeMappedTree)
             ((TypeMappedTree) mappedTree).remapForLog(sample);
 
@@ -357,8 +362,6 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             out.print("NA\tNA\tNA\tNA\tNA\tNA");
         else
             traj.log(out, sample);
-
-        out.print("\t");
     }
 
     @Override

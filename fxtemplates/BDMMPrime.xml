@@ -74,7 +74,7 @@
                         bdmmprime.trajectories.SampledTrajectory.bdmmDistrib,
                         bdmmprime.trajectories.SampledTrajectory.typeLabel,
                         bdmmprime.trajectories.SampledTrajectory.finalSampleOffset,
-                        bdmmprime.trajectories.SampledTrajectory.startTypeProbs,
+                        bdmmprime.trajectories.SampledTrajectory.startTypePriorProbs,
                         bdmmprime.trajectories.SampledTrajectory.resampleOnLog"
                      inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
@@ -120,12 +120,13 @@
                         <taxa spec="beast.base.evolution.alignment.TaxonSet" alignment="@$(n)"/>
                     </typeTraitSet>
 
-                    <startTypePriorProbs id="startTypePriorProbs.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0"/>
+                    <startTypePriorProbs id="startTypePriorProbs.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                 </distribution>
 
                 <typeSet id="typeSetBDMMPrime.t:$(n)" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
 
-                <startTypeProbsLogger id="startTypeProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypePriorProbsLogger" typeSet="@typeSetBDMMPrime.t:$(n)" startTypeProbs="@startTypeProbs.t:$(n)"/>
+                <startTypePriorProbsLogger id="startTypePriorProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypePriorProbsLogger" typeSet="@typeSetBDMMPrime.t:$(n)" startTypePriorProbs="@startTypePriorProbs.t:$(n)"/>
+                <startTypePosteriorProbsLogger id="startTypePosteriorProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypePosteriorProbsLogger" bdmmTreePrior="@BDMMPrime.t:$(n)"/>
 
                 <origin spec="beast.base.inference.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
                 <prior id="originBDMMPrimePrior.t:$(n)" x="@originBDMMPrime.t:$(n)">
@@ -134,7 +135,7 @@
 
                 <operator id="originBDMMPrimeScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
 
-                <operator id="startTypeProbsExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@startTypeProbs.t:$(n)" delta="0.1" weight="1.0"/>
+                <operator id="startTypePriorProbsExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@startTypePriorProbs.t:$(n)" delta="0.1" weight="1.0"/>
 
                 <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
                 <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" lower="0.0" estimate="false"/>
@@ -151,7 +152,7 @@
                         enableLogger="true">
                     <log spec="bdmmprime.mapping.TypeMappedTree" id="typeMappedTree.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
                          mapOnInit="false" remapOnLog="true"
-                         startTypeProbs="@startTypeProbs.t:$(n)"
+                         startTypePriorProbs="@startTypePriorProbs.t:$(n)"
                          typeTraitSet="@typeTraitSet.t:$(n)"
                          typeLabel="type"
                          untypedTree="@Tree.t:$(n)"/>
@@ -175,7 +176,7 @@
                         fileName="$(filebase).$(tree).traj" logEvery="1000"
                         enableLogger="false">
                         <log spec="bdmmprime.trajectories.SampledTrajectory" id="typedTraj.t:$(n)" bdmmDistrib="@BDMMPrime.t:$(n)"
-                            startTypeProbs="@startTypeProbs.t:$(n)"
+                            startTypePriorProbs="@startTypePriorProbs.t:$(n)"
                             typeMappedTree="@typeMappedTree.t:$(n)"
                             typeLabel="type"
                             useTauLeaping="true"
@@ -219,14 +220,18 @@
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and startTypePriorProbs.t:$(n)/estimate=true"/>
-            <connect srcID="startTypeProbsExchanger.t:$(n)" targetID="mcmc" inputName="operator"
+            <connect srcID="startTypePriorProbsExchanger.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and startTypeProbs.t:$(n)/estimate=true"/>
-            <connect srcID="startTypeProbsLogger.t:$(n)" targetID="tracelog" inputName="log"
+                     and startTypePriorProbs.t:$(n)/estimate=true"/>
+            <connect srcID="startTypePriorProbsLogger.t:$(n)" targetID="tracelog" inputName="log"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and startTypeProbs.t:$(n)/estimate=true"/>
+                     and startTypePriorProbs.t:$(n)/estimate=true"/>
+
+            <connect srcID="startTypePosteriorProbsLogger.t:$(n)" targetID="tracelog" inputName="log"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))"/>
 
             <connect srcID="typedTreeLogger.t:$(n)" targetID="mcmc" inputName="logger"
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
