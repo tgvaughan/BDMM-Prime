@@ -25,12 +25,12 @@ import beast.base.inference.parameter.RealParameter;
 
 import java.io.PrintStream;
 
-public class StartTypeProbsLogger extends BEASTObject implements Loggable {
+public class StartTypePriorProbsLogger extends BEASTObject implements Loggable {
 
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
             "Type set used for analysis.", Input.Validate.REQUIRED);
 
-    public Input<RealParameter> startTypeProbsInput = new Input<>("startTypeProbs",
+    public Input<RealParameter> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
             "Probabilities of different start types.",
             Input.Validate.REQUIRED);
 
@@ -41,7 +41,7 @@ public class StartTypeProbsLogger extends BEASTObject implements Loggable {
     @Override
     public void initAndValidate() {
         typeSet = typeSetInput.get();
-        startTypeProbs = startTypeProbsInput.get();
+        startTypeProbs = startTypePriorProbsInput.get();
 
         prefix = (startTypeProbs.getID() != null ? startTypeProbs.getID()
                 : "startTypeProbs") + ".";

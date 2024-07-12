@@ -40,7 +40,7 @@ public class TrajectorySamplerTest {
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
@@ -56,7 +56,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -96,7 +96,7 @@ public class TrajectorySamplerTest {
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
@@ -115,7 +115,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -155,7 +155,7 @@ public class TrajectorySamplerTest {
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
@@ -172,7 +172,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -213,7 +213,7 @@ public class TrajectorySamplerTest {
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
@@ -233,7 +233,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -274,7 +274,7 @@ public class TrajectorySamplerTest {
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
@@ -290,7 +290,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -331,7 +331,7 @@ public class TrajectorySamplerTest {
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
@@ -350,7 +350,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -392,7 +392,7 @@ public class TrajectorySamplerTest {
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "minSamples", 2);
 
         System.out.println(simulatedTree);
@@ -410,7 +410,7 @@ public class TrajectorySamplerTest {
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -452,7 +452,7 @@ public class TrajectorySamplerTest {
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "minSamples", 2);
 
         System.out.println(simulatedTree);
@@ -470,7 +470,7 @@ public class TrajectorySamplerTest {
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "useAnalyticalSingleTypeSolution", true,
@@ -481,7 +481,7 @@ public class TrajectorySamplerTest {
         bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "useAnalyticalSingleTypeSolution", false,
@@ -540,7 +540,7 @@ public class TrajectorySamplerTest {
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "useAnalyticalSingleTypeSolution", true,
@@ -555,7 +555,7 @@ public class TrajectorySamplerTest {
     @Test
     public void tinyTypedTreeLikelihoodTest() {
 
-        RealParameter startTypeProbs = new RealParameter("0.5 0.5");
+        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
         int nTypes = 2;
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -589,7 +589,7 @@ public class TrajectorySamplerTest {
         sampledTrajectory.initByName("typeMappedTree", typedTree,
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "nParticles", 10000,
                 "resampThresh", 0.0,
                 "useTauLeaping", false);

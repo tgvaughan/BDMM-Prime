@@ -82,7 +82,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick,
                         false, false,
@@ -141,7 +141,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		density.initByName(
 				"parameterization", parameterization,
-				"startTypeProbs", new RealParameter("0.5 0.5"),
+				"startTypePriorProbs", new RealParameter("0.5 0.5"),
 				"conditionOnSurvival", false,
 				"tree", new TreeParser(newick,
 						false, false,
@@ -200,7 +200,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick,
                         false, false,
@@ -248,7 +248,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "typeLabel", "type",
@@ -264,7 +264,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
 		densityExact.initByName(
 				"parameterization", parameterization,
-				"startTypeProbs", new RealParameter("1.0"),
+				"startTypePriorProbs", new RealParameter("1.0"),
 				"conditionOnSurvival", false,
 				"tree", new TreeParser(newick, false, false, true,0),
 				"typeLabel", "type",
@@ -310,7 +310,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 				"parameterization", parameterization,
-				"startTypeProbs", new RealParameter("1.0"),
+				"startTypePriorProbs", new RealParameter("1.0"),
 				"conditionOnSurvival", false,
 				"tree", new TreeParser(newick, false, false, true,0),
 				"typeLabel", "type",
@@ -322,7 +322,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
 		densityExact.initByName(
 				"parameterization", parameterization,
-				"startTypeProbs", new RealParameter("1.0"),
+				"startTypePriorProbs", new RealParameter("1.0"),
 				"conditionOnSurvival", false,
 				"tree", new TreeParser(newick, false, false, true,0),
 				"typeLabel", "type",
@@ -375,7 +375,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "typeLabel", "type",
@@ -428,7 +428,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
 				"conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -517,7 +517,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -598,7 +598,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -672,7 +672,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -684,7 +684,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
 		densityExact.initByName("parameterization", parameterization,
-				"startTypeProbs", new RealParameter("1.0"),
+				"startTypePriorProbs", new RealParameter("1.0"),
 				"conditionOnSurvival", true,
 				"tree", tree,
 				"typeLabel", "type",
@@ -730,7 +730,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -779,7 +779,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -826,7 +826,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
 				"conditionOnRoot", true,
                 "tree", tree,
@@ -870,7 +870,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "state",
@@ -924,7 +924,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "state",
@@ -967,7 +967,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName("parameterization", parameterization,
-				"startTypeProbs", new RealParameter("1.0"),
+				"startTypePriorProbs", new RealParameter("1.0"),
 				"conditionOnSurvival", false,
 				"tree", tree,
 				"typeLabel", "state",
@@ -1012,7 +1012,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
 		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName("parameterization", parameterization,
-				"startTypeProbs", new RealParameter("1.0"),
+				"startTypePriorProbs", new RealParameter("1.0"),
 				"conditionOnSurvival", true,
 				"tree", tree,
 				"typeLabel", "state",
@@ -1069,7 +1069,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "state",
@@ -1173,7 +1173,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1218,7 +1218,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1264,7 +1264,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1309,7 +1309,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1356,7 +1356,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1403,7 +1403,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0 0.0"),
+                "startTypePriorProbs", new RealParameter("1.0 0.0"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1447,7 +1447,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter((1.0/3.0) + " " + (1.0/3.0) + " " + (1.0/3.0)),
+                "startTypePriorProbs", new RealParameter((1.0/3.0) + " " + (1.0/3.0) + " " + (1.0/3.0)),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1489,7 +1489,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1535,7 +1535,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1580,7 +1580,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new RealParameter("0.5 0.5"),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1625,7 +1625,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("0.6 0.4"),
+                "startTypePriorProbs", new RealParameter("0.6 0.4"),
                 "conditionOnSurvival", false,
 				"conditionOnRoot", true,
                 "tree", tree,
@@ -1669,7 +1669,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1806,7 +1806,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1852,7 +1852,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new RealParameter("1.0"),
                 "conditionOnSurvival", true,
 				"conditionOnRoot", true,
                 "tree", tree,
@@ -1927,7 +1927,7 @@ public class BirthDeathMigrationLikelihoodTest {
 		density.initByName(
 				"parameterization", parameterization,
 				"tree", new TreeParser(newick1, false, false, true,0),
-				"startTypeProbs", new RealParameter("0.5 0.5"),
+				"startTypePriorProbs", new RealParameter("0.5 0.5"),
 				"conditionOnSurvival", false,
 				"typeLabel", "type",
 				"parallelize", false

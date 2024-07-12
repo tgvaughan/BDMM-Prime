@@ -1,28 +1,29 @@
 package bdmmprime.distribution;
 
+import bdmmprime.parameterization.TypeSet;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
 import beast.base.inference.CalculationNode;
 
 import java.io.PrintStream;
 
-public class StartTypeProbLogger extends CalculationNode implements Loggable {
+public class StartTypePosteriorProbsLogger extends CalculationNode implements Loggable {
 
     public Input<BirthDeathMigrationDistribution> treePriorInput = new Input<>(
             "bdmmTreePrior",
             "Instance of BirthDeathMigrationModel which records the " +
-                    "initial type probabilities",
+                    "initial type posterior probabilities",
             Input.Validate.REQUIRED);
 
     BirthDeathMigrationDistribution treePrior;
+    TypeSet typeSet;
+    String prefix;
 
     @Override
     public void initAndValidate() {
         treePrior = treePriorInput.get();
-    }
+        typeSet = treePrior.parameterizationInput.get().getTypeSet();
 
-    @Override
-    public void init(PrintStream out) {
         String loggerID;
         if (getID() != null)
             loggerID = getID() + ".";
@@ -30,15 +31,24 @@ public class StartTypeProbLogger extends CalculationNode implements Loggable {
             loggerID = treePrior.getID() + ".";
         else loggerID = "";
 
-        double[] startTypeProbs = treePrior.getStartTypeProbs();
+        prefix = loggerID + "startTypePosteriorProbs.";
+    }
 
-        for (int i=0; i<startTypeProbs.length; i++)
-            out.print(loggerID + "probForStartType" + i + "\t");
+    @Override
+    public void init(PrintStream out) {
+        if (typeSet.getNTypes()==1)
+            return;
+
+        for (int i=0; i<typeSet.getNTypes(); i++)
+            out.print(prefix + typeSet.getTypeName(i) + "\t");
     }
 
     @Override
     public void log(long sample, PrintStream out) {
-        for (double startTypeProb : treePrior.getStartTypeProbs())
+        if (typeSet.getNTypes()==1)
+            return;
+
+        for (double startTypeProb : treePrior.getStartTypePosteriorProbs())
             out.print(startTypeProb + "\t");
     }
 

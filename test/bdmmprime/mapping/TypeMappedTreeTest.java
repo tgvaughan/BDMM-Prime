@@ -42,13 +42,13 @@ public class TypeMappedTreeTest {
                         null,
                         new RealParameter("1.0"), 2));
 
-        RealParameter startTypeProbs = new RealParameter("0.5 0.5");
+        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
 
         // Compute density using regular BDMM phylodynamic likelihood
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -59,7 +59,7 @@ public class TypeMappedTreeTest {
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "untypedTree", tree,
                 "typeLabel", "type");
 
@@ -70,7 +70,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type=0; type<parameterization.getNTypes(); type++) {
-            logProb += y[type+parameterization.getNTypes()]*Math.exp(logScaleFactor)*startTypeProbs.getValue(type);
+            logProb += y[type+parameterization.getNTypes()]*Math.exp(logScaleFactor)*startTypePriorProbs.getValue(type);
         }
 
         logProb = Math.log(logProb)
@@ -110,13 +110,13 @@ public class TypeMappedTreeTest {
                         new RealParameter("1.3 6.0"),
                         new RealParameter("0.1 0.2 0.25 0.5")));
 
-        RealParameter startTypeProbs = new RealParameter("0.5 0.5");
+        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
 
         // Compute density using regular BDMM phylodynamic likelihood
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -127,7 +127,7 @@ public class TypeMappedTreeTest {
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "untypedTree", tree,
                 "typeLabel", "type");
 
@@ -139,7 +139,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type=0; type<parameterization.getNTypes(); type++) {
-            logProb += y[type+parameterization.getNTypes()]*startTypeProbs.getValue(type);
+            logProb += y[type+parameterization.getNTypes()]*startTypePriorProbs.getValue(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
@@ -179,13 +179,13 @@ public class TypeMappedTreeTest {
                         new RealParameter("1.3 6.0"),
                         new RealParameter("0.1 0.2 0.25 0.5")));
 
-        RealParameter startTypeProbs = new RealParameter("0.5 0.5");
+        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
 
         // Compute density using regular BDMM phylodynamic likelihood
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -196,7 +196,7 @@ public class TypeMappedTreeTest {
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "untypedTree", tree,
                 "typeLabel", "type");
 
@@ -208,7 +208,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type=0; type<parameterization.getNTypes(); type++) {
-            logProb += y[type+parameterization.getNTypes()]*startTypeProbs.getValue(type);
+            logProb += y[type+parameterization.getNTypes()]*startTypePriorProbs.getValue(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
@@ -250,11 +250,11 @@ public class TypeMappedTreeTest {
                         null,
                         new RealParameter("1.0"), 2));
 
-        RealParameter startTypeProbs = new RealParameter("0.5 0.5");
+        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -267,7 +267,7 @@ public class TypeMappedTreeTest {
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "untypedTree", tree,
                 "typeLabel", "type");
 
@@ -276,7 +276,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type = 0; type < parameterization.getNTypes(); type++) {
-            logProb += y[type + parameterization.getNTypes()] * startTypeProbs.getValue(type);
+            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.getValue(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (tree.getInternalNodeCount() - tree.getDirectAncestorNodeCount())
@@ -312,19 +312,19 @@ public class TypeMappedTreeTest {
         );
 
         RealParameter finalSampleOffset = new RealParameter("0.0");
-        RealParameter startTypeProbs = new RealParameter("0.5 0.5");
+        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "minSamples", 2,
                 "simulateUntypedTree", true);
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "conditionOnSurvival", false,
                 "tree", simulatedTree,
                 "typeLabel", "type",
@@ -335,7 +335,7 @@ public class TypeMappedTreeTest {
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "untypedTree", simulatedTree,
                 "typeLabel", "type");
 
@@ -344,7 +344,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type = 0; type < parameterization.getNTypes(); type++) {
-            logProb += y[type + parameterization.getNTypes()] * startTypeProbs.getValue(type);
+            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.getValue(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (simulatedTree.getInternalNodeCount() - simulatedTree.getDirectAncestorNodeCount())
@@ -380,19 +380,19 @@ public class TypeMappedTreeTest {
         );
 
         RealParameter finalSampleOffset = new RealParameter("0.0");
-        RealParameter startTypeProbs = new RealParameter("0.5 0.5");
+        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "minSamples", 2,
                 "simulateUntypedTree", true);
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "conditionOnSurvival", false,
                 "tree", simulatedTree,
                 "typeLabel", "type",
@@ -403,7 +403,7 @@ public class TypeMappedTreeTest {
         TypeMappedTree typeMappedTree = new TypeMappedTree();
         typeMappedTree.initByName(
                 "parameterization", parameterization,
-                "startTypeProbs", startTypeProbs,
+                "startTypePriorProbs", startTypePriorProbs,
                 "untypedTree", simulatedTree,
                 "typeLabel", "type");
 
@@ -412,7 +412,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type = 0; type < parameterization.getNTypes(); type++) {
-            logProb += y[type + parameterization.getNTypes()] * startTypeProbs.getValue(type);
+            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.getValue(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (simulatedTree.getInternalNodeCount() - simulatedTree.getDirectAncestorNodeCount())

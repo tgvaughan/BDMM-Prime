@@ -120,12 +120,12 @@
                         <taxa spec="beast.base.evolution.alignment.TaxonSet" alignment="@$(n)"/>
                     </typeTraitSet>
 
-                    <startTypeProbs id="startTypeProbs.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0"/>
+                    <startTypePriorProbs id="startTypePriorProbs.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0"/>
                 </distribution>
 
                 <typeSet id="typeSetBDMMPrime.t:$(n)" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
 
-                <startTypeProbsLogger id="startTypeProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypeProbsLogger" typeSet="@typeSetBDMMPrime.t:$(n)" startTypeProbs="@startTypeProbs.t:$(n)"/>
+                <startTypeProbsLogger id="startTypeProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypePriorProbsLogger" typeSet="@typeSetBDMMPrime.t:$(n)" startTypeProbs="@startTypeProbs.t:$(n)"/>
 
                 <origin spec="beast.base.inference.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
                 <prior id="originBDMMPrimePrior.t:$(n)" x="@originBDMMPrime.t:$(n)">
@@ -215,10 +215,10 @@
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true"/>
 
-            <connect srcID="startTypeProbs.t:$(n)" targetID="state" inputName="stateNode"
+            <connect srcID="startTypePriorProbs.t:$(n)" targetID="state" inputName="stateNode"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and startTypeProbs.t:$(n)/estimate=true"/>
+                     and startTypePriorProbs.t:$(n)/estimate=true"/>
             <connect srcID="startTypeProbsExchanger.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))

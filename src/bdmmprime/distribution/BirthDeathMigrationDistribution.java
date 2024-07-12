@@ -43,8 +43,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "If provided, the difference in time between the final sample and the end of the BD process.",
             new RealParameter("0.0"));
 
-    public Input<RealParameter> startTypeProbsInput = new Input<>("startTypeProbs",
-            "The probabilities for the type of the first individual",
+    public Input<Function> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
+            "The prior probabilities for the type of the first individual",
             new RealParameter("1.0"));
 
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
@@ -102,7 +102,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private final boolean debug = false;
 //    private final boolean debug = true;
 
-    private double[] startTypeProbs, storedStartTypeProbs;
+    private double[] startTypePosteriorProbs, storedStartTypePosteriorProbs;
     private boolean[] isRhoTip;
 
     private Parameterization parameterization;
@@ -131,15 +131,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (parameterization.getNTypes() != 1 && (typeTraitSetInput.get() == null && typeLabelInput.get() == null))
             throw new RuntimeException("Error: For models with >1 type, either typeTraitSet or typeLabel must be specified.");
 
-        if (startTypeProbsInput.get().getDimension() != parameterization.getNTypes())
+        if (startTypePriorProbsInput.get().getDimension() != parameterization.getNTypes())
             throw new RuntimeException("Error: dimension of equilibrium frequencies " +
                     "parameter must match number of types.");
 
-        double freqSum = 0;
-        for (double f : startTypeProbsInput.get().getValues()) freqSum += f;
-        if (Math.abs(1.0 - freqSum) > 1e-10)
-            throw new RuntimeException("Error: equilibrium frequencies must add " +
-                    "up to 1 but currently add to " + freqSum + ".");
+        double probSum = 0;
+        for (double f : startTypePriorProbsInput.get().getDoubleValues()) probSum += f;
+        if (Math.abs(1.0 - probSum) > 1e-10)
+            throw new RuntimeException("Error: start type prior probabilities must add " +
+                    "up to 1 but currently add to " + probSum + ".");
 
         int nLeaves = tree.getLeafNodeCount();
 
@@ -159,8 +159,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             }
         }
 
-        startTypeProbs = new double[parameterization.getNTypes()];
-        storedStartTypeProbs = new double[parameterization.getNTypes()];
+        startTypePosteriorProbs = new double[parameterization.getNTypes()];
+        storedStartTypePosteriorProbs = new double[parameterization.getNTypes()];
 
         // Determine which, if any, of the leaf ages correspond exactly to
         // rho sampling times.
@@ -233,7 +233,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     if (rate == 0.0)
                         continue;
 
-                   conditionDensity += rate* startTypeProbsInput.get().getArrayValue(type1)
+                   conditionDensity += rate* startTypePriorProbsInput.get().getArrayValue(type1)
                            * (1-extinctionProb[type1])
                            * (1-extinctionProb[type2]);
                 }
@@ -241,7 +241,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         } else if (conditionOnSurvivalInput.get()) {
 
             for (int type = 0; type < parameterization.getNTypes(); type++)
-                conditionDensity += startTypeProbsInput.get().getArrayValue(type)
+                conditionDensity += startTypePriorProbsInput.get().getArrayValue(type)
                         * (1-extinctionProb[type]);
 
         } else {
@@ -303,20 +303,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             SmallNumber jointProb = finalP0Ge
                     .ge[startType]
-                    .scalarMultiplyBy(startTypeProbsInput.get().getArrayValue(startType));
+                    .scalarMultiplyBy(startTypePriorProbsInput.get().getArrayValue(startType));
 
             if (jointProb.getMantissa() > 0) {
-                startTypeProbs[startType] = jointProb.log();
+                startTypePosteriorProbs[startType] = jointProb.log();
                 PrSN = PrSN.addTo(jointProb);
             } else {
-                startTypeProbs[startType] = Double.NEGATIVE_INFINITY;
+                startTypePosteriorProbs[startType] = Double.NEGATIVE_INFINITY;
             }
         }
 
         // Normalize start type probs:
         for (int startType = 0; startType < parameterization.getNTypes(); startType++) {
-            startTypeProbs[startType] -= PrSN.log();
-            startTypeProbs[startType] = Math.exp(startTypeProbs[startType]);
+            startTypePosteriorProbs[startType] -= PrSN.log();
+            startTypePosteriorProbs[startType] = Math.exp(startTypePosteriorProbs[startType]);
         }
 
         PrSN = PrSN.scalarMultiplyBy(1 / conditionDensity);
@@ -588,10 +588,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     }
 
     /**
-     * @return retrieve current set of start type probabilities.
+     * @return retrieve current set of start type posterior probabilities.
      */
-    double[] getStartTypeProbs() {
-        return startTypeProbs;
+    double[] getStartTypePosteriorProbs() {
+        return startTypePosteriorProbs;
     }
 
     /**
@@ -1096,16 +1096,18 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public void store() {
         super.store();
 
-        System.arraycopy(startTypeProbs, 0, storedStartTypeProbs, 0, parameterization.getNTypes());
+        System.arraycopy(startTypePosteriorProbs, 0,
+                storedStartTypePosteriorProbs, 0,
+                parameterization.getNTypes());
     }
 
     @Override
     public void restore() {
         super.restore();
 
-        double[] tmp = startTypeProbs;
-        startTypeProbs = storedStartTypeProbs;
-        storedStartTypeProbs = tmp;
+        double[] tmp = startTypePosteriorProbs;
+        startTypePosteriorProbs = storedStartTypePosteriorProbs;
+        storedStartTypePosteriorProbs = tmp;
     }
 
     /*

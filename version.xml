@@ -26,7 +26,7 @@
     <provider classname="bdmmprime.util.Slice"/>
     <provider classname="bdmmprime.util.NodeAgeLogger"/>
     <provider classname="bdmmprime.util.OptionalLogger"/>
-    <provider classname="bdmmprime.util.StartTypeProbsLogger"/>
+    <provider classname="bdmmprime.util.StartTypePriorProbsLogger"/>
     <provider classname="bdmmprime.parameterization.TimedParameter"/>
     <provider classname="bdmmprime.parameterization.CanonicalParameterization"/>
     <provider classname="bdmmprime.parameterization.SkylineMatrixParameter"/>
@@ -37,7 +37,7 @@
     <provider classname="bdmmprime.parameterization.TypeSet"/>
     <provider classname="bdmmprime.distribution.BinomialDistribution"/>
     <provider classname="bdmmprime.distribution.BirthDeathMigrationDistribution"/>
-    <provider classname="bdmmprime.distribution.StartTypeProbLogger"/>
+    <provider classname="bdmmprime.distribution.StartTypePosteriorProbsLogger"/>
     <provider classname="bdmmprime.trajectories.simulation.SimulatedTrajectoryLogger"/>
     <provider classname="bdmmprime.trajectories.simulation.SimulatedTree"/>
     <provider classname="bdmmprime.trajectories.simulation.UntypedTreeFromTypedTree"/>

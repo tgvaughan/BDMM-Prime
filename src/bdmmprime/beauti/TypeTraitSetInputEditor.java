@@ -218,7 +218,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             typeSet.initAndValidate();
             int nTypes = typeSet.getNTypes();
 
-            RealParameter startTypeProbs = bdmmDistr.startTypeProbsInput.get();
+            RealParameter startTypeProbs = (RealParameter) bdmmDistr.startTypePriorProbsInput.get();
 
             if (startTypeProbs.getDimension() == nTypes)
                 continue;

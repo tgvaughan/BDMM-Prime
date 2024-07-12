@@ -52,7 +52,7 @@ public class SimulatedTree extends Tree {
             "The difference in time between the final sample and the end of the BD process. " +
                     "Will be set by the simulator.", Input.Validate.REQUIRED);
 
-    public Input<RealParameter> startTypeProbsInput = new Input<>("startTypeProbs",
+    public Input<RealParameter> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
             "The type probabilities for the first individual.",
             Input.Validate.REQUIRED);
 
@@ -92,7 +92,7 @@ public class SimulatedTree extends Tree {
     @Override
     public void initAndValidate() {
         param = parameterizationInput.get();
-        initialTypeProbs = startTypeProbsInput.get();
+        initialTypeProbs = startTypePriorProbsInput.get();
         simulationTime = param.processLengthInput.get().getArrayValue();
 
         minSamples = minSamplesInput.get();
