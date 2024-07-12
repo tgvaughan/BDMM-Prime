@@ -73,7 +73,7 @@ built-in package manager in the following way:
 BDMM-Prime should now be available to use on your system. (You will need to
 restart BEAUti before you can set up any analyses.)
 
-Aside: Eventually BDMM-Prime will be avaialable from the default BEAST 2
+Aside: Eventually BDMM-Prime will be available from the default BEAST 2
 repository.  However, while it is still in development, it must be
 installed from the above repository.
 
@@ -157,7 +157,7 @@ character as a numerical tip time.
 :CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model
 :END:
 
-For this example, we will use the basic [[https://doi.org/10.1007%2FBF02101694][HKY]] subsitution model, with
+For this example, we will use the basic [[https://doi.org/10.1007%2FBF02101694][HKY]] substitution model, with
 equilibrium nucleotide frequencies fixed to the empirical frequencies
 of characters in our alignment.  
 
@@ -305,7 +305,7 @@ Finally, we need to define how lineages change type in our multi-type
 model.  Like BDMM, BDMM-Prime allows both direct "migration" as well
 as "birth to a new type" styles of multi-type models.  Given we are
 modelling the movement of infected influenza hosts, migration suits
-our situtation best.  We also acknowledge that migration rates between
+our situation best.  We also acknowledge that migration rates between
 different pairs of types/locations may be different from one another.
 
 To incorporate these decisions, follow these instructions:
@@ -354,7 +354,7 @@ Set the following parameter priors:
 :CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup
 :END:
 
-Finall, we need to configure the details of the MCMC chain to run and the trees and
+Finally, we need to configure the details of the MCMC chain to run and the trees and
 parameters to be logged.
 
 #+begin_quote
@@ -393,10 +393,10 @@ Now we can save and run the analysis:
 #+begin_quote
 1. Open the "File" menu and select "Save". Choose a sensible location
    in your filesystem in which to save the analysis file, which should
-   be named ~h3n2.xml~.  (By default the location will be the
+   be named =h3n2.xml=.  (By default the location will be the
    examples/ folder from which you loaded the sequences: you'll want
    to choose somewhere else, perhaps a folder on your desktop.)
-2. Launch BEAST, select the ~h3n2.xml~ as the input file, then run the analysis.
+2. Launch BEAST, select the =h3n2.xml= as the input file, then run the analysis.
 #+end_quote
 
 ** Processing the results
@@ -406,7 +406,7 @@ Now we can save and run the analysis:
 
 Once the analysis is complete, we can have a look at the results.  (If
 you're impatient, note that BEAST 2 regularly appends to output files
-and that these files can also be studied in the followin way while
+and that these files can also be studied in the following way while
 BEAST is still running.)  The output files which should have been produced are
 
 - =h3n2.log= :: The parameter log file,
@@ -418,7 +418,7 @@ Firstly, let's open the parameter log file using the Tracer app (distributed wit
 
 #+begin_quote
 Open Tracer, select "Import trace file..." from the File menu.  Use the interface
-to explor the marginal distributions as estimated from the MCMC samples.
+to explore the marginal distributions as estimated from the MCMC samples.
 #+end_quote
 
 We see immediately that the ESS for many of the parameters is low,
@@ -428,9 +428,9 @@ than trying to seriously interpret the results.
 
 With this in mind, see firstly that each of the estimated parameters including ~Re~,
 ~becomeUninfectiousRate~ and ~migrationRate~ are represented in the log file
-by "ReSPEpi", "becomeUninfectiousRateSPEpi" and "migrationRateSPEpi".  The "SP"
+by =ReSPEpi=, =becomeUninfectiousRateSPEpi= and =migrationRateSPEpi=.  The "SP"
 indicates that the parameter is a "Skyline parameter" (as opposed to BEAST 2's
-regular RealParameter).
+regular ~RealParameter~).
 
 Also notice that when we have allowed type-specific (not scalar) values, as
 in the case of ~Re~, the parameter name appears multiple times with a suffix
@@ -443,7 +443,7 @@ of a specific interval, measured relative to the start time of the process.
 
 [[./analyses/tracer.png]]
 
-The untyped tree log file can be dealt with in the same way as all beast tree files.
+The untyped tree log file can be dealt with in the same way as all BEAST 2 tree files.
 However we also have tree log files containing sampled ancestral type information
 which we can use to learn about the type change process as it occurred on the tree.
 In this influenza case, this contains potentially interesting information about
@@ -451,7 +451,7 @@ global influenza spatial dynamics.
 
 While in principle the .typed.trees file contains the most detailed information,
 it is easier to jointly summarize these ancestral dynamics with the tree itself
-by applying the TreeAnnotator program to the .typed.node.trees file.
+by applying the TreeAnnotator program to the =.typed.node.trees= file.
 
 #+begin_quote
 1. Open TreeAnnotator (distributed with BEAST 2)
@@ -507,16 +507,82 @@ alternative parameterisations.
 
 In contrast, inputs to the BDMM-Prime tree prior are organised in a
 hierarchical way which seeks to avoid repetition and improve
-flexibility.  At the top level, the BDMM-Prime tree prior takes only
-the following four main elements:
-1. The *tree*,
-2. *Tip type information* (if available) and *starting type probabilities*,
-3. A "*parameterization*" object defining how the model is to be parameterized, and
-4. Miscellaneous *tuning parameters*.
+flexibility.  At the top level, the BDMM-Prime tree prior takes 
+the following five main elements:
+1. The tree,
+2. tip type information,
+3. starting type prior probabilities, and
+4. a "parameterization" object defining how the model is to be parameterized.
 
 The tree itself is automatically defined and provided to the tree prior by BEAUti.
 It therefore remains only to define the remaining three, which are detailed in the
 following sections.
+
+** Defining Tip Types
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-TypeTraitSet-and-StartTypeProbs
+:END:
+
+A "Type Trait Set" is used to associate types with each of the leaf nodes of the
+tree (i.e. each of the samples in the sequence alignment).
+It is completely analogous to the trait sets used associate times with
+leaf nodes.
+
+To set the tip types, open the Priors panel and ensure the BDMM-Prime tree prior 
+is expanded by clicking the arrow button on the left-hand side of the window.
+The relevant input editor is labeled "Type Trait Set" and can be found by scrolling down 
+past the "Parameterization" section.
+
+The input editor functions very similarly to the tip dates input editor.  All tips
+are initially given the same type, =UNSPECIFIED=. (There is nothing
+special about this value, only that it is shared among all tips, causing the model
+to include only one type.) Individual can be specified using any string, although
+problems may occur if strings contain spaces or other whitespace characters.
+
+To set the types, one can double-click on a specific value in the type
+column and enter a new value. This approach quickly becomes tedious,
+however, so I highly recommend that you instead click the
+=Auto-configure= button.  This presents a dialog box which allows you
+to assign types by either extracting type values from a portion of the
+taxon/sequence name, or by loading them in from an external file. (The
+required format of this file is described in the built-in help which
+can be accessed by pressing the button labeled =?=.)
+
+** Start type prior probabilities
+
+Start type prior probabilities are a little-discussed yet crucial
+aspect of multi-type birth-death model specification.  For a model
+with $M$ demes, the start type prior probabilities are $M$ positive
+numbers which sum to 1 and represent the (categorical) prior
+distribution over the possible types associated with the original
+individual in the multi-type birth-death process.
+
+To set these prior probabilities, find the relevant input editor within
+the tree prior input editor. (It is usually located between the Parameterization
+and Type Trait Set input sections.) For a model with two types, it appears as
+follows in its initial configuration:
+[[./figures/startTypePriorProbs.png]]
+Probabilities are entered as numerical values with spaces between
+them.  The number of values must match the number of demes in your
+model.  The $i^{\text{th}}$ number is the prior probability for the
+$i^{\text{th}}$ type when the types are sorted in lexicographical
+(generalized alphabetical) order.
+
+By default the prior probabilities are given a uniform prior.  In many
+cases this is a sensible choice, however it may be the case that you
+are certain that the birth-death process began (or did /not/ begin) in
+some particular state.  For instance, you might know - or be willing
+to assume - that an outbreak was seeded by travel cases other
+locations.  In such cases you can modify the probability values to reflect
+these prior assumptions.
+
+It is also possible to "estimate" these prior probabilities. Clicking
+the estimate button causes BEAUti to assign a flat Dirichlet
+"hyper-prior" to the probabilities (i.e. a uniform distribution
+subject only to the constraint that the probabilities must be positive
+and sum to 1). We advise against doing this, as doing so is
+completely equivalent to simply setting a uniform prior in the first
+place.
 
 ** Parameterizations
 :PROPERTIES:
@@ -524,19 +590,85 @@ following sections.
 :END:
 
 BDMM-Prime provides a simple plug-in mechanism for handling different
-parameterizations.  With only one minor exception for the FBD parameterisation
+parameterizations.  With only one minor exception for the FBD parameterization
 (described below), all of these parameterizations provides perfectly equivalent
-specifications of the 
+specifications of the birth-death model.
+
+Given this equivalence, one might wonder why multiple parameterizations
+are necessary at all. There are two main reasons these are important:
+1. Context-specific parameterizations allow for easier interpretation of inference results, and
+2. they allow appropriate field-specific prior information to be included.
+
+This second point is arguably the most important as, for instance, a
+paleontologist might conceivably have prior information on past speciation or diversification
+rates, while epidemiologists might be able to more confidently put bounds on $R_e$.
+
+Thus it is often a good idea to select the parameterization which
+best reflects your biological context.
+
+The following sections briefly describe the currently-available parameterizations 
+and their relationships to one another.
 
 *** Canonical
 :PROPERTIES:
 :CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Canonical
 :END:
 
+The "canonical" parameterization is in a sense the native mathematical
+description of the birth-death model; the its parameters reflect the rates of
+the basic reactions which make up the process.
+
+- Birth Rate ($\lambda_{ii}$) :: This is the (per individual per unit time) rate at which
+  each individual in the population produce new individuals
+  of their own type.
+- Death Rate ($\mu_i$) :: Similarly, this is the rate at which individuals in the population
+  are removed from the population. 
+- Sampling Rate ($\psi_i$) :: This is the rate at which individuals are "sampled". A non-zero
+  rate here corresponds to a process that will produce samples that are distributed
+  through time. (Sometimes referred to as $\psi$-sampling.)
+- Removal probability ($r_i$) :: This is the probability with which sampled individuals
+  are also removed from the population.
+
+In addition, the following rates parameterize reactions which allow type changes
+to occur.  In general these are specified as matrices, allowing for a unique
+rate for every ordered pair of distinct types.
+- Migration Rate ($m_{ij}$) :: 
+  This is the rate at which an individual with some type /becomes/
+  an individual of another type.
+- Birth Among Demes ($\lambda_{ij}$) :: $\lambda_{ij}$
+  This is the rate at which an individual with some type /produces/
+  an individual of another type.
+
+Finally, the following parameter expresses the total duration of the birth-death-sampling
+process. 
+- ProcessLength :: the time between the start of the process and the most recent sample.
+  (Here equivalent to the "origin" of the process.)
+
 *** Epidemiological
 :PROPERTIES:
 :CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological
 :END:
+
+The assumption behind the "epidemiological" parameterization is that individuals
+in the model represent infected individuals in a population. The basic birth, death and
+death and sampling parameters are
+
+- Re ($R_{ii}$) :: This is the type-specific effective reproductive number,
+  defined by $R_i=\lambda_{ii}/(\mu_i+r_i\psi_i)$.  Values above 1
+  correspond to growing (in expectation) numbers of infected
+  individuals.
+- Become uninfectious rate ($\delta_i$) :: This is the rate at which infected individuals
+  are removed from the infectious pool, either with or without sampling.
+  In terms of the canonical parameters, this is $\mu_i+r_i\psi_i$.
+- Sampling proportion ($s_i$) :: This is the probability with which infected individuals
+  are sampled through time, defined as $\psi_i/(\mu_i+r_i\psi_i)$.
+- Removal probability ($r_i$) :: This has the same definition as in the canonical parameterization.
+
+The type-change reactions are parameterized by
+- Migration rate ($m_{ij}$) :: This has the same definition as in the canonical parameterization.
+- Re Among Demes ($R_{ij}$) :: This is a generalisation of the effective reproductive number
+  to account for transmissions between epidemiological compartments. It is defined
+  as $R_{ij}=\lambda_{ij}/(\mu_i+r_i\psi_i)$.
 
 *** Fossilized birth-death process
 :PROPERTIES:
@@ -563,10 +695,6 @@ specifications of the
 :CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Sample-distribution-visualisation
 :END:
 
-** TypeTraitSet and StartTypeProbs
-:PROPERTIES:
-:CUSTOM_ID: id-2-Model-specification-using-BEAUti-TypeTraitSet-and-StartTypeProbs
-:END:
 
 ** Miscellaneous inputs
 :PROPERTIES:

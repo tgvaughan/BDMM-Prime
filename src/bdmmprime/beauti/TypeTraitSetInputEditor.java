@@ -29,6 +29,7 @@ import beastfx.app.inputeditor.GuessPatternDialog;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -199,6 +200,23 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         boxHoriz.getChildren().add(clearButton);
         boxVert.getChildren().add(boxHoriz);
         boxVert.getChildren().add(typeTable);
+
+        boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(new Label("Type index key: "));
+
+        StringBuilder typeIndexKeySB = new StringBuilder();
+        TypeSet typeSet = new TypeSet(traitSet.getTaxonValues());
+        for (int i=0; i<typeSet.getNTypes(); i++) {
+            if (i > 0)
+                typeIndexKeySB.append("\n");
+            typeIndexKeySB.append(i).append(": ")
+                    .append(typeSet.getTypeName(i));
+        }
+        boxHoriz.getChildren().add(new Label(typeIndexKeySB.toString()));
+        boxHoriz.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
+                BorderStrokeStyle.SOLID, null, null)));
+        boxVert.getChildren().add(boxHoriz);
+
         pane.getChildren().add(boxVert);
 
         getChildren().add(pane);
