@@ -619,15 +619,17 @@ description of the birth-death model; the its parameters reflect the rates of
 the basic reactions which make up the process.
 
 - Birth Rate ($\lambda_{ii}$) :: This is the (per individual per unit time) rate at which
-  each individual in the population produce new individuals
-  of their own type.
-- Death Rate ($\mu_i$) :: Similarly, this is the rate at which individuals in the population
+  each individual in the population $i$ produce new individuals of their own type.
+- Death Rate ($\mu_i$) :: Similarly, this is the rate at which individuals in population $i$
   are removed from the population. 
-- Sampling Rate ($\psi_i$) :: This is the rate at which individuals are "sampled". A non-zero
+- Sampling Rate ($\psi_i$) :: This is the rate at which individuals in population $i$ are "sampled". A non-zero
   rate here corresponds to a process that will produce samples that are distributed
   through time. (Sometimes referred to as $\psi$-sampling.)
 - Removal probability ($r_i$) :: This is the probability with which sampled individuals
-  are also removed from the population.
+  in population $i$ are also removed from the population.
+- Rho sampling ($\rho_i$) :: This parameterizes binomial sampling at a
+  particular time (usually the present). If enabled, each individual in 
+  population $i$ is considered in turn, and sampled with this probability.
 
 In addition, the following rates parameterize reactions which allow type changes
 to occur.  In general these are specified as matrices, allowing for a unique
@@ -649,9 +651,10 @@ process.
 :CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological
 :END:
 
-The assumption behind the "epidemiological" parameterization is that individuals
-in the model represent infected individuals in a population. The basic birth, death and
-death and sampling parameters are
+The assumption behind the "epidemiological" parameterization is that
+individuals in the model represent infected individuals in a
+population. In place of the canonical birth, death and sampling
+parameters we have
 
 - Re ($R_{ii}$) :: This is the type-specific effective reproductive number,
   defined by $R_i=\lambda_{ii}/(\mu_i+r_i\psi_i)$.  Values above 1
@@ -662,23 +665,69 @@ death and sampling parameters are
   In terms of the canonical parameters, this is $\mu_i+r_i\psi_i$.
 - Sampling proportion ($s_i$) :: This is the probability with which infected individuals
   are sampled through time, defined as $\psi_i/(\mu_i+r_i\psi_i)$.
-- Removal probability ($r_i$) :: This has the same definition as in the canonical parameterization.
 
-The type-change reactions are parameterized by
-- Migration rate ($m_{ij}$) :: This has the same definition as in the canonical parameterization.
+Besides the migration matrix, epidemiological compartment changes are parameterized by:
 - Re Among Demes ($R_{ij}$) :: This is a generalisation of the effective reproductive number
   to account for transmissions between epidemiological compartments. It is defined
   as $R_{ij}=\lambda_{ij}/(\mu_i+r_i\psi_i)$.
+
+(The rho sampling, removal probability, migration and process
+length parameters are identical to those described for the canonical
+parameterization.)
 
 *** Fossilized birth-death process
 :PROPERTIES:
 :CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process
 :END:
 
+The FBD parameterization is most appropriate when individuals in the
+model are intended to represent whole species, and birth and death
+events correspond to speciation and extinction.  In place of the
+canonical birth, death and sampling rate parameters we have
+
+- Diversification ($d_{ii}=\lambda_{ii}-\mu_i$) :: This is the rate at
+  which species richness increases through time.
+- Turnover ($t_{i}=\mu_i/\lambda_{ii}$) :: For $d_{ii}>0$, this
+  parameter indicates the relative frequency with which species go extinct before
+  speciation, and satisfies $0\leq t_i < 1$.
+- Sampling proportion ($s_i=\psi_i/(\mu_i+r_i\psi_i)$) :: Analogous to
+  the epdemiological parameterization, this indicates the probability
+  with which species leave fossils before going extinct.
+
+Besides the migration rate, species type changes are parameterized by:
+- Diversification between types ($d_{ij}=\lambda_{ij}-\mu_i$) :: This
+  is a generalisation of diversification rate, but allowing for one of the daughter
+  species to carry a new type.
+
+(The rho sampling, removal probability, migration and process
+length parameters are identical to those described for the canonical
+parameterization.)
+
+*Note*: Unlike the Canonical and Epidemiological parameterizations,
+the FBD parameterization on its own does not permit exploration of the
+whole parameter space.  In particular, it makes the assumption that
+diversification is always increasing ($d_{ii}>0$ and $t_{i}<1$).  If
+you want to also allow negative diversification, use the Canonical
+parameterization instead.
+
 ** Skyline Parameters
 :PROPERTIES:
 :CUSTOM_ID: id-2-Model-specification-using-BEAUti-Skyline-Parameters
 :END:
+
+Besides Parameterizations, an importance difference between BDMM-Prime
+and earlier packages like BDMM and BDSKY is the use of special-purpose
+"Skyline parameters" to describe piecewise-constant variation in rates and
+other parameters.
+
+Each "skyline parameter" has its own set of change times, which can be
+specified as times relative to the start of the process or ages
+relative to the most recent sample in the tree. These times or ages
+can be specified as absolute values or as fractions of the total
+process length.  Keeping these decisions close to the parameter they
+affect and independent of those affecting other parameters provides
+maximum flexibility and minimal confusion.
+
 
 *** Vector Parameters
 :PROPERTIES:
