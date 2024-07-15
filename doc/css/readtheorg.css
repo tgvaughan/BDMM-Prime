@@ -768,7 +768,7 @@ footer p{
 #content div.figure.align-center{
     text-align:center}
 
-#content .section>img,#content .section>a>img{
+#content .section>img,#content .section>a>img, figure>img{
     margin-bottom:24px}
 
 .verse{
