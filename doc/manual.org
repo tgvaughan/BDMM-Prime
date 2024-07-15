@@ -299,6 +299,9 @@ Find the Sampling Proportion parameter, then follow these steps:
    remembering to press "enter" after each change.
 #+end_quote
 
+Note *skyline parameter values of 0 are always fixed* in the analysis, regardless of
+whether or not the "estimate values" option is checked.
+
 [[./figures/tutorial_SampSetup.png]]
 
 Finally, we need to define how lineages change type in our multi-type
@@ -414,6 +417,12 @@ BEAST is still running.)  The output files which should have been produced are
 - =h3n2.h3n2_2deme.typed.trees= :: A tree log file with all ancestral types and type changes marked,
 - =h3n2.h3n2_2deme.typed.node.trees= :: A tree log  file with only types at ancestral nodes marked.
 
+
+*** The parameter log file
+:PROPERTIES:
+:CUSTOM_ID: id-3-Processing-the-results-Getting-Started-The-parameter-log-file
+:END:
+
 Firstly, let's open the parameter log file using the Tracer app (distributed with BEAST 2).
 
 #+begin_quote
@@ -443,6 +452,11 @@ of a specific interval, measured relative to the start time of the process.
 
 [[./analyses/tracer.png]]
 
+*** The tree log files
+:PROPERTIES:
+:CUSTOM_ID: id-3-Processing-the-results-Getting-Started-The-tree-log-files
+:END:
+
 The untyped tree log file can be dealt with in the same way as all BEAST 2 tree files.
 However we also have tree log files containing sampled ancestral type information
 which we can use to learn about the type change process as it occurred on the tree.
@@ -464,7 +478,8 @@ by applying the TreeAnnotator program to the =.typed.node.trees= file.
 
 [[./analyses/treeannotator.png]]
 
-Once complete, the
+Once complete, you can visualise the summary tree using any
+BEAST-compatible tree viewer, such as FigTree or IcyTree.
 #+begin_quote
 1. Navigate to https://icytree.org in a javascript-enabled web browser.
 2. Select "Load from file" from the File menu and select the =summary.tree= file
@@ -476,6 +491,12 @@ Once complete, the
 This should produce something quite like the figure below:
 
 [[./analyses/summary_tree.png]]
+
+Notice that we've chosen to colour the nodes themselves rather than the edges.
+This is done precisely because in the case of these node-typed symmary trees,
+it is only the types at the nodes that are being represented.  Please resist
+the urge to colour the edges based on these values!  While tree viewers make this
+easy, and it is frequently done, it is a misleading representation.
 
 * Model specification using BEAUti
 :PROPERTIES:
@@ -520,7 +541,7 @@ following sections.
 
 ** Defining Tip Types
 :PROPERTIES:
-:CUSTOM_ID: id-2-Model-specification-using-BEAUti-TypeTraitSet-and-StartTypeProbs
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Defining-Tip-Types
 :END:
 
 A "Type Trait Set" is used to associate types with each of the leaf nodes of the
@@ -549,6 +570,9 @@ required format of this file is described in the built-in help which
 can be accessed by pressing the button labeled =?=.)
 
 ** Start type prior probabilities
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities
+:END:
 
 Start type prior probabilities are a little-discussed yet crucial
 aspect of multi-type birth-death model specification.  For a model
@@ -637,7 +661,7 @@ rate for every ordered pair of distinct types.
 - Migration Rate ($m_{ij}$) :: 
   This is the rate at which an individual with some type /becomes/
   an individual of another type.
-- Birth Among Demes ($\lambda_{ij}$) :: $\lambda_{ij}$
+- Birth Among Demes ($\lambda_{ij}$) ::
   This is the rate at which an individual with some type /produces/
   an individual of another type.
 
@@ -717,38 +741,174 @@ parameterization instead.
 
 Besides Parameterizations, an importance difference between BDMM-Prime
 and earlier packages like BDMM and BDSKY is the use of special-purpose
-"Skyline parameters" to describe piecewise-constant variation in rates and
-other parameters.
+"Skyline parameters" to describe piecewise-constant variation in rates
+and other parameters. Each piecewise-constant function must be
+specified using a combination of "change times" and "epoch values",
+the latter determining the value of the function should take in each
+"epoch" between the change times. 
 
-Each "skyline parameter" has its own set of change times, which can be
+The relationship between epochs, change times and epoch values is
+illustrated in the following schematic:
+
+[[./figures/epochsAndChangeTimes.png]]
+
+Each skyline parameter has its own set of change times, which can be
 specified as times relative to the start of the process or ages
 relative to the most recent sample in the tree. These times or ages
 can be specified as absolute values or as fractions of the total
 process length.  Keeping these decisions close to the parameter they
 affect and independent of those affecting other parameters provides
-maximum flexibility and minimal confusion.
+maximum flexibility and minimal confusion.  The BDMM-Prime BEAUti
+interface provides each of these options for every relevant rate and
+probability parameter.
 
+Skyline parameters come in two main variants: Vector and Matrix
+skyline parameters.  These differ only in that they are applied to
+vector-valued and matrix-valued parameters, respectively.
 
-*** Vector Parameters
+*** Overview of the skyline parameter input editor
 :PROPERTIES:
-:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Vector-Parameters
+:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor
 :END:
 
-*** Matrix Parameters
+In this section we delve into the details of the BDMM-Prime
+skyline parameter user interface.  Although focus here on vector skyline
+parameters, everything here is also applicable to vector skyline parameters.
+
+The input editor BDMM-Prime uses for specifying skyline parameters is quite
+complex, reflecting the large number of ways in which these parameters
+can be configured.  The general layout is as follows:
+
+[[./figures/skylineLayout.png]]
+
+Here you can see that the configuration editor consists of three main parts:
+the epoch configuration, the value configuration and an epoch visualiser
+for helping with the configuration. The following sections detail each
+of these parts in turn.
+
+**** Epoch configuration
 :PROPERTIES:
-:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Matrix-Parameters
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration
 :END:
 
-*** Sample distribution visualisation
+The epoch configuration portion of the input editor is responsible for
+defining the number of times a skyline parameter will change, and the
+times at which these changes will happen.
+
+The "Number of change times" input specifies how many changes will take place.
+By default this is 0, indicating that the parameter will take a constant value
+at all times.  In this case, none of the user interface elements for
+defining the change times are displayed.  To see those, you need to specify
+at least 1 change time.
+
+If this condition is satisfied, other elements are displayed. The
+first of these requests the (initial) values of the change times.  By
+default these represent the "ages" of the change points prior to the
+most recent sample. Alternatively, by unchecking the "Times specified
+as ages" checkbox, the numbers are interpreted as times (increasing
+into the future) relative to the starting point of the process.  In
+any case, the values must increase left to right: when specified as an
+"age", the first change time represents the most recent change time
+looking into the past. Otherwise, the first change time represents the
+oldest change time looking from the start of the process into the
+future.
+
+By default, the change times are not estimated: they retain their chosen
+values through the whole analysis. If you choose, however, you can check
+the "Estimate change times" checkbox to tell BEAST to update these change
+times during the MCMC.  (Remember to configure a prior for the change times
+if you do this!)
+
+Finally, by checking the "Relative to process length" checkbox, one
+can cause the change times/ages to be interpreted as fractions of the
+process duration.  (I.e. the time between the start of the process and
+the most recent genetic sample.)  In this case, the numeric values
+provided for the change times must fall between 0 and 1. Note that the
+value of the "Times specified as ages" checkbox still determines
+whether these values increase into the past (default) or into the
+future.  Clicking the "Distribute evenly" button causes these relative
+times or ages to be distributed evenly between 0 and 1.
+
+**** Value configuration
 :PROPERTIES:
-:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Sample-distribution-visualisation
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration
 :END:
 
+The initial parameter values corresponding to each epoch are configured
+using an input table.  By default, the "Scalar values" option is checked,
+causing these values are applied to individuals of all types even when
+multiple types exist in the dataset.  If you're performing a multi-type
+analysis and want different types to have their own value of a given parameter,
+uncheck this option.
+
+*Beware:* When entering values using this table, always remember to
+press "Enter" (or "Return") after entering the value in order for
+BEAUti to make the requested modificiation.
+
+When estimating values, the "Link identical values" option causes BDMM-Prime to
+consider identical values as representing the same degree of freedom. With
+this enabled, any set of values which are initially identical will continue
+to be identical throughout the analysis.  This option is useful for setting
+up multi-type skyline analyses in which some of the type-specific
+values extend across epoch boundaries.
+
+**** Epoch visualisation
+:PROPERTIES:
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation
+:END:
+
+The option "Display epoch visualisation" is useful when analysing
+samples distributed through time, as enabling it displays a graphical
+depiction of the sample distribution alongside the specified epochs
+and change times. Sample times are depicted using red and orange
+circles, with the coloration changing between every pair of epochs,
+allowing one to determine at a glance which epoch a given sample is
+currently assigned to.
+
+This visualisation is particularly helpful when setting up sampling
+rate or proportion change times, which are often chosen based on the
+time of the oldest sample.  (For instance, in the tutorial we configured
+the sampling rate of H3N2 such that it was set to zero prior to the
+oldest sample included in the analysis.)
 
 ** Miscellaneous inputs
 :PROPERTIES:
 :CUSTOM_ID: id-2-Model-specification-using-BEAUti-Miscellaneous-inputs
 :END:
+
+Besides the main settings for the model described above, there are several
+minor options and settings that can also be configured.  Here they are
+in their default configuration:
+
+[[./figures/miscParams.png]]
+
+Below we describe each of them in turn.
+
+- Condition on Survival :: This is a modelling option which, when
+  enabled, causes the tree prior to include a term which conditions
+  the tree probability on having at least one sampled individual in
+  the dataset.
+
+- Use Analytical Single Type Solution :: When there is only a single
+  type in the dataset, this option tells BDMM-Prime to
+  use analytical (BDSKY) expressions for computing the tree probability
+  rather than to rely on numerical integration. For multi-type analyses
+  this option has no effect.  (Unless you are testing the numerical
+  integration code, there is really no reason to ever disable this option.)
+
+- Rel Tolerance and Abs Tolerance :: These parameters determine the tolerance
+  thresholds given to the numerical integration algorithm used to compute
+  the tree probability when multiple types are in play.  You should usually
+  leave these as-is.
+  
+- Parallelize :: This option determines whether or not BDMM-Prime will
+  use multiple execution threads in an attempt to speed up the tree prior
+  calculation on computers with multiple CPU cores available.
+  
+- Parallelization Factor :: This determines the fraction of
+  all of the tree nodes a subtree must contain for its tree prior
+  calculation to be assigned to a different thread. (Does nothing if
+  the Parallelize option is unchecked.)
 
 * Sampling Latent Variables
 :PROPERTIES:
