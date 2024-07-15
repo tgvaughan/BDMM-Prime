@@ -32,7 +32,7 @@ import java.util.*;
  * the canonical (lambda, mu, M, psi, rho, r, t_origin) parameters at different
  * times.  By "time" we mean a number that increases into the future from
  * some point in the past defined by the start of the birth-death process.
- * (We us "ages" to refer to numbers that increase into the past.)
+ * (We use "ages" to refer to numbers that increase into the past.)
  *
  * In accordance with birth-death skyline convention, the time period spanned by
  * the birth-death process is broken up into intervals at boundaries t_i.
