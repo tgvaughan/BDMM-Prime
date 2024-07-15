@@ -131,7 +131,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         CheckBox estimateValuesCheckBox = new CheckBox("Estimate values");
         estimateValuesCheckBox.setSelected(valuesParameter.isEstimatedInput.get());
         boxHoriz.getChildren().add(estimateValuesCheckBox);
-        CheckBox visualizerCheckBox = new CheckBox("Display visualization");
+        CheckBox visualizerCheckBox = new CheckBox("Display epoch visualization");
         visualizerCheckBox.setSelected(skylineParameter.epochVisualizerDisplayed);
         boxHoriz.getChildren().add(visualizerCheckBox);
         mainInputBox.getChildren().add(boxHoriz);
