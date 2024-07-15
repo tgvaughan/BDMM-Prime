@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="157.26846mm"
+   height="63.097412mm"
+   viewBox="0 0 157.26846 63.097412"
+   version="1.1"
+   id="svg1"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
+   sodipodi:docname="epochsAndChangeTimes.svg"
+   inkscape:export-filename="epochsAndChangeTimes.png"
+   inkscape:export-xdpi="123.15"
+   inkscape:export-ydpi="123.15"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:document-units="mm"
+     inkscape:zoom="1.6819304"
+     inkscape:cx="312.73589"
+     inkscape:cy="116.23549"
+     inkscape:window-width="1888"
+     inkscape:window-height="1218"
+     inkscape:window-x="0"
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="layer1" />
+  <defs
+     id="defs1">
+    <marker
+       style="overflow:visible"
+       id="ArrowWide"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Wide arrow"
+       markerWidth="1"
+       markerHeight="1"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         style="fill:none;stroke:context-stroke;stroke-width:1;stroke-linecap:butt"
+         d="M 3,-3 0,0 3,3"
+         transform="rotate(180,0.125,0)"
+         sodipodi:nodetypes="ccc"
+         id="path2" />
+    </marker>
+  </defs>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(-29.244833,-10.90547)">
+    <path
+       style="fill:none;stroke:#000000;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:none;stroke-opacity:1;marker-start:url(#ArrowWide);marker-end:url(#ArrowWide)"
+       d="m 33.815284,27.141215 v 34.48269 H 158.39791"
+       id="path1" />
+    <path
+       style="fill:none;stroke:#0000ff;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:2, 1;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 75.194514,61.623905 V 31.368126"
+       id="path3" />
+    <path
+       style="fill:none;stroke:#0000ff;stroke-width:0.5;stroke-linecap:butt;stroke-linejoin:miter;stroke-dasharray:2, 1;stroke-dashoffset:0;stroke-opacity:1"
+       d="M 117.01868,61.623905 V 30.923187"
+       id="path4" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.52778px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;stroke-width:0.264583"
+       x="-59.533764"
+       y="31.925119"
+       id="text4"
+       transform="rotate(-90)"><tspan
+         sodipodi:role="line"
+         id="tspan4"
+         style="font-size:3.52778px;stroke-width:0.264583"
+         x="-59.533764"
+         y="31.925119">Parameter value</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;stroke-width:0.264583"
+       x="161.29001"
+       y="63.52689"
+       id="text5"><tspan
+         sodipodi:role="line"
+         id="tspan5"
+         style="font-size:5.29167px;stroke-width:0.264583"
+         x="161.29001"
+         y="63.52689">Time/Age</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:27.9056px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;stroke-width:1.04646"
+       x="19.286291"
+       y="-35.277485"
+       id="text6"
+       transform="matrix(0,0.77391234,-1.292136,0,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan6"
+         style="stroke-width:1.04646"
+         x="19.286291"
+         y="-35.277485">{</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:27.9056px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;stroke-width:1.04646"
+       x="19.286291"
+       y="-65.984215"
+       id="text6-1"
+       transform="matrix(0,0.77391234,-1.292136,0,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan6-9"
+         style="stroke-width:1.04646"
+         x="19.286291"
+         y="-65.984215">{</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:29.3168px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;stroke-width:1.09938"
+       x="20.261635"
+       y="-94.763718"
+       id="text6-1-8"
+       transform="matrix(0,0.73665818,-1.3574817,0,0,0)"><tspan
+         sodipodi:role="line"
+         id="tspan6-9-6"
+         style="stroke-width:1.09938"
+         x="20.261635"
+         y="-94.763718">{</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;stroke-width:0.264583"
+       x="45.583309"
+       y="14.925899"
+       id="text7"><tspan
+         sodipodi:role="line"
+         id="tspan7"
+         style="font-size:5.29167px;stroke-width:0.264583"
+         x="45.583309"
+         y="14.925899">Epoch 1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;stroke-width:0.264583"
+       x="84.938354"
+       y="14.925899"
+       id="text7-9"><tspan
+         sodipodi:role="line"
+         id="tspan7-7"
+         style="font-size:5.29167px;stroke-width:0.264583"
+         x="84.938354"
+         y="14.925899">Epoch 2</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;stroke-width:0.264583"
+       x="129.38039"
+       y="14.925899"
+       id="text7-0"><tspan
+         sodipodi:role="line"
+         id="tspan7-5"
+         style="font-size:5.29167px;stroke-width:0.264583"
+         x="129.38039"
+         y="14.925899">Epoch 3</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:center;word-spacing:0px;text-anchor:middle;fill:#0000ff;stroke-width:0.264583"
+       x="74.925133"
+       y="67.263985"
+       id="text8"><tspan
+         sodipodi:role="line"
+         id="tspan8"
+         style="font-size:5.29167px;text-align:center;text-anchor:middle;fill:#0000ff;stroke-width:0.264583"
+         x="74.925133"
+         y="67.263985">Change</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:5.29167px;text-align:center;text-anchor:middle;fill:#0000ff;stroke-width:0.264583"
+         x="74.925133"
+         y="73.878571"
+         id="tspan11">time 1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;text-align:center;word-spacing:0px;text-anchor:middle;fill:#0000ff;stroke-width:0.264583"
+       x="117.2493"
+       y="67.321114"
+       id="text8-0"><tspan
+         sodipodi:role="line"
+         id="tspan8-5"
+         style="font-size:5.29167px;text-align:center;text-anchor:middle;fill:#0000ff;stroke-width:0.264583"
+         x="117.2493"
+         y="67.321114">Change</tspan><tspan
+         sodipodi:role="line"
+         style="font-size:5.29167px;text-align:center;text-anchor:middle;fill:#0000ff;stroke-width:0.264583"
+         x="117.2493"
+         y="73.935699"
+         id="tspan11-7">time 2</tspan></text>
+    <path
+       style="fill:none;stroke:#800080;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 33.815284,51.394824 H 75.295911"
+       id="path8" />
+    <path
+       style="fill:none;stroke:#800080;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 74.944512,37.824215 H 117.01868"
+       id="path9" />
+    <path
+       style="fill:none;stroke:#800080;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="m 117.01868,42.445988 h 40.70199"
+       id="path10" />
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;fill:#800080;stroke-width:0.264583"
+       x="43.852283"
+       y="49.276878"
+       id="text10"><tspan
+         sodipodi:role="line"
+         id="tspan10"
+         style="font-size:5.29167px;fill:#800080;stroke-width:0.264583"
+         x="43.852283"
+         y="49.276878">Value 1</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;fill:#800080;stroke-width:0.264583"
+       x="85.898247"
+       y="35.870094"
+       id="text10-9"><tspan
+         sodipodi:role="line"
+         id="tspan10-3"
+         style="font-size:5.29167px;fill:#800080;stroke-width:0.264583"
+         x="85.898247"
+         y="35.870094">Value 2</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:5.29167px;line-height:1.25;font-family:sans-serif;-inkscape-font-specification:sans-serif;word-spacing:0px;fill:#800080;stroke-width:0.264583"
+       x="127.67776"
+       y="40.590481"
+       id="text10-9-4"><tspan
+         sodipodi:role="line"
+         id="tspan10-3-0"
+         style="font-size:5.29167px;fill:#800080;stroke-width:0.264583"
+         x="127.67776"
+         y="40.590481">Value 3</tspan></text>
+  </g>
+</svg>
