@@ -905,40 +905,218 @@ Below we describe each of them in turn.
   use multiple execution threads in an attempt to speed up the tree prior
   calculation on computers with multiple CPU cores available.
   
-- Parallelization Factor :: This determines the fraction of
-  all of the tree nodes a subtree must contain for its tree prior
-  calculation to be assigned to a different thread. (Does nothing if
-  the Parallelize option is unchecked.)
+- Parallelization Factor :: When parallelization is enabled, this
+  determines the fraction of all of the tree nodes a subtree must
+  contain for its tree prior calculation to be assigned to a different
+  thread. The default value of 0.1 should be fine in most cases.
 
 * Sampling Latent Variables
 :PROPERTIES:
 :CUSTOM_ID: id-1-Sampling-Latent-Variables
 :END:
 
+One important distinguishing feature of BDMM-Prime over the earlier
+BDMM package is its ability to produce samples of ancestral lineage
+types and multi-type population trajectories from the joint posterior
+distribution, even though these variables are not sampled using the
+MCMC algorithm.  Instead, BDMM-Prime employs stochastic mapping and
+particle filtering to sample these latent variables during the logging
+procedure.  By applying these algorithms to only a small subset of
+the states visited by the MCMC algorithm, we obtain these latent
+variable samples for almost no computational cost at all.
+
+In BEAUti, both of these algorithms are configured in the MCMC
+pane (where the chain length and loggers are configured).
+
 ** Tree edge types and type transitions
 :PROPERTIES:
 :CUSTOM_ID: id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions
 :END:
+
+Tree edge types and type transitions are sampled using a stochastic
+mapping algorithm based on the work of [[https://doi.org/10.1101/555805][Höhna et al., 2019]].  The stochastic
+mapping procedure and the corresponding logging of edge-typed trees is
+enabled by default.  To enable/disable stochastic mapping, simply
+expand the =typedTreeLogger= and =nodeTypedTreeLogger= input editors
+check/uncheck the "Enable Logger" checkbox.
+
+[[./figures/mappingEnable.png]]
+
+These input editors can also be used to adjust important inputs such
+as the name of the output files and the number of MCMC steps between
+each call to the mapping algorithm.
+
+When enabled, these loggers produce two additional tree log files
+beyond the standard untyped tree log file produced by BEAST:
+1. a log file with the extension ".typed.trees" containing fully
+   edge-typed trees, and
+2. a log file with the extension ".typed.node.trees" containing trees
+   annotated only with the types at their internal nodes.
+
+These files are equivalent to those produced by packages such as
+MultiTypeTree and BDMM. Both of these files can be examined using tree
+viewers such as FigTree or IcyTree, however only the typed node tree
+file can be summarized using TreeAnnotator.
+(See the [[The tree log files][tutorial section]] for an example of using TreeAnnotator to
+summarize typed node trees.)
+
+Note that the most sophisticated use of these trees is in answering
+questions about the timing and type of events on the tree.  For
+instance, one can ask, "When did the first migration on the tree
+occur?"  To answer such a question, one could load the full
+.typed.trees file into R (using, for instance, the treeio package),
+then compute this time for every tree. This would yield a set of
+samples from the posterior distribution for this time, which could
+then be characterised.
 
 ** Multi-type trajectories
 :PROPERTIES:
 :CUSTOM_ID: id-2-Sampling-Latent-Variables-Multi-type-trajectories
 :END:
 
-* XML reference
+Multi-type trajectories are sampled using a phylogenetic particle
+filtering algorithm (PREPRINT).  For a given sampled tree and set of
+model parameters, this algorithm simulates an ensemble of possible
+histories, members of which are weighted by their agreement with the
+tree and parameters. One particular history is then sampled from this
+weighted distribution.  By applying this process to a subsample of
+the states visited by the MCMC chain, we are left with a set of
+trajectories drawn from the posterior distribution of the population
+history, given the genetic data.
+
+Because the output files can be rather large, trajectory sampling
+is disabled by default.  Like the stochast mapping algorithm, it
+can be enabled by expanding the relevant logger input editor -
+"trajLogger" in this case - and ensuring "Enable Logger" is checked.
+
+[[./figures/trajectoryEnable.png]]
+
+Once enabled, you can adjust the logging frequency by changing the
+"Log Every" value.  The default is 1000, meaning a trajectory will be
+sampled and recorded every 1000 steps.  This is probably too frequent,
+as trajectory files are large and you probably don't need more than a
+few hundred samples to characterise the posterior. Thus I suggest you
+increase this value to at least "10000" for most analyses.
+
+Further options to do with the particle filtering algorithm itself can
+be found by clicking the unlableled button next to the "typedTraj.t:"
+label, which brings up a dialog box as shown below:
+
+[[./figures/trajectoryOptions.png]]
+
+Here we can set the "N Particles" option, which determines the size of
+the weighted trajectory ensemble used to sample final trajectory. The
+default is 1000. Increasing this number will improve the accuracy of
+the calculation, but requires more computation. Ideally, one should
+always compare results generated using different trajectory ensemble
+sizes in order to test for convergence.
+
+The "Resamp Thresh" value indicates the effective size (relative to
+the total number of particles) of the particle ensemble that will
+trigger a resample, during the sequential monte carlo algorithm.
+The default value of 0.5 is appropriate for most situations.
+
+The "Use Tau Leaping" checkbox specifies whether to use exact
+Gillespie simulation or the approximate finite time step tau-leaping
+algorithm to simulate trajectories. The approximation is significantly
+faster and should generally be used, but if you run into numerical
+stability issues you might consider unchecking this option.
+
+The "Min Leap Count" and "Epsilon" values affect the tau leaping
+algorithm, when used.  "Min Leap Count" specifies the minimum number of
+stochastic integration steps which will be used to simulate a given trajectory,
+while "Epsilon" determines how conservative the algorithm should be when
+selecting step sizes, with smaller values yielding shorter step sizes.
+It's almost always okay to leave these parameters alone.
+
+
+*** Plotting sampled trajectories
+
+T
+
+The easiest way to plot trajectories sampled using BDMM-Prime is
+using the R packages dplyr and ggplot2.
+
+
+
+* Appendices
+** XML reference
 :PROPERTIES:
 :CUSTOM_ID: id-1-XML-reference
 :END:
 
-** Model definition
+*** Model definition
 :PROPERTIES:
 :CUSTOM_ID: id-2-XML-reference-Model-definition
 :END:
 
-** Special operators
+*** Special operators
 :PROPERTIES:
 :CUSTOM_ID: id-2-XML-reference-Special-operators
 :END:
+
+** Trajectory file format
+
+Trajectory files are tab-separated variable (TSV) files containing a
+table with 7 columns and a large number of rows.  The first row is
+a header row.  The file can be read into R using the =readr::read_tsv=
+function.
+
+The following is the start of a table generated by enabling trajectory
+sampling in the H3N2 example used in the tutorial:
+
+|--------+--------+------+----------+------+-------+-------|
+| Sample |      t |  age | variable | type | type2 | value |
+|--------+--------+------+----------+------+-------+-------|
+|  10000 |      0 | 8.67 | N        |    0 | NA    |     1 |
+|  10000 |      0 | 8.67 | N        |    1 | NA    |     0 |
+|  10000 |      0 | 8.67 | O        |   NA | NA    |    NA |
+|  10000 | 0.0865 | 8.58 | N        |    0 | NA    |     2 |
+|  10000 | 0.0865 | 8.58 | N        |    1 | NA    |     0 |
+|  10000 | 0.0865 | 8.58 | B        |    0 | 0     |     1 |
+|    ... |    ... |  ... | ...      |  ... | ...   |   ... |
+
+The sample column on the left indicates the MCMC iteration the
+trajectory belongs to.  (All rows with the same sample number
+correspond to the same MCMC iteration, i.e. the same population
+trajectory.) Each row reports either a population size or an event
+at a particular time, as indicated by the entry in the "variable"
+column.
+
+Population sizes are reported by rows with the "variable" column
+set to "N".  Each such row reports the population size associated
+with the type index given in the "type" column and the size
+in the "value" column. The size corresponds to the time immediately
+at and after the time given in the "t" column. (Respectively, the immedately
+before the age given in the "age" column.)
+
+Events are reported by rows with the following characters in the
+"variable" column:
+- B ::
+  This indicates that the event at the given time/age was a birth event.
+  The type column indicates the type of the individual that gave birth.
+  The child type is given by the value in type2. 
+- D :: 
+  This indicates that the event at the given time/age was a death event.
+  The type column indicates the type of the individual that died.
+  The value of type2 is always NA in this case.
+- S :: 
+  This indicates that the event at the given time/age was a sampling event.
+  The type column indicates the type of the sampled individual.
+  The value of type2 is always NA in this case.
+- M :: 
+  This indicates that the event at the given time/age was a migration event.
+  The type column indicates the original type of the migrating individual.
+  The value of type2 is the destination type.
+- O :: 
+  This is a dummy event that indicates the start of the stochastic process.
+  The type and value columns for this event are meaningless. There should be
+  exactly one such event per trajectory.
+
+For events, the "value" column indicates the multiplicity of the
+event. I.e., how many times it occurred.  (The approximate tau leaping
+simulation algorithm allows more than one event to occur at a given
+time.)
 
 * License
 :PROPERTIES:
@@ -949,11 +1127,11 @@ BDMM-Prime is free software.  It is made available under the terms of
 the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]]. Unlike many software
 licenses, this is designed to give you, the user, the freedom to use
 the software as you wish - including making and publishing
-modifications - provided you also extend the same freedoms to other users.
+modifications - provided you also extend the same freedom to other
+users.
 
 
-# Evaluate the following block to update section IDs
-#
+# Evaluate the following block to update section IDs #
 #+begin_src emacs-lisp :cache no :exports none :results none
   (org-map-entries
      (lambda ()
