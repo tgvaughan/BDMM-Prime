@@ -1576,12 +1576,12 @@ timing and probabilities for "rho sampling" events. These are the possible input
   worthwhile supplying this input if multiple types are in play to
   allow for additional checking and more easily-interpretable logging.
 - timesAreAges (=Boolean=, default false) :: 
-  When set to true, this input causes the change times supplied to =changeTimes= to be
+  When set to true, this input causes the times supplied to =times= to be
   interpreted as ages relative to the end of the birth-death
   process. (I.e. the time of the final sample + the value of
   =finalSampleOffset=.)  This also affects the ordering of the
-  assignment to epochs. (E.g. value $v_1$ will be associated with the most recent epoch
-  when =timesAreAges= is true, but the oldest epoch when it is false.)
+  assignment to events. (E.g. value $v_1$ will be associated with the most recent event
+  when =timesAreAges= is true, but the oldest event when it is false.)
 - timesAreRelative (=Boolean=, default false) :: 
   When set to true, times or ages are treated as relative fractions of the process length.
 - processLength (=Function=) ::
@@ -1597,16 +1597,166 @@ timing and probabilities for "rho sampling" events. These are the possible input
 </typeSet>
 #+end_src
 
-**** Stochastic mapping
+This object defines a set of types for a multi-type birth-death model.
 
-bdmmprime.mapping.TypeMappedTree
-bdmmprime.mapping.TypeNodeTreeLogger
-bdmmprime.mapping.TypeTreeStatsLogger
+- =value= (=String=) :: If provided, specifies a comma-delimited list of types.
+  For instance, the string ="New Zealand, Australia, Samoa" specifies 3 types
+  with those names.
+- =typeTraitSet= (=TraitSet=) :: If provided, specifies a trait set whose unique values
+  will be used to assemble the possible types.
+- =unknownTypeIdentifier (=String=, default "?") :: If provided, taxa
+  whose type trait value matches this string will be regarded as
+  having an "unknown" type.
 
-**** Trajectory sampling
+It is possible to specify values for both the =value= and =typeTraitSet= inputs. In this case,
+all types present in =value= will be included in the type set regardless of whether or not
+they are present in the trait set.  (This can be useful for including unsampled demes in
+an analysis.)
 
-bdmmprime.trajectories.SampledTrajctory
-bdmmprime.util.StartTypePosteriorProbsLogger
+*** Start type posterior logging
+
+#+begin_src xml
+  <log spec="bdmmprime.util.StartTypePosteriorProbsLogger">
+    <!-- Inputs -->
+  </log>
+#+end_src
+
+This logger logs the posterior distribution of the start type conditional on
+the current parameter values.  This posterior is computed by the ~BirthDeathMigrationDistribution~
+while evaluating the tree prior.  When averaged over the entire MCMC chain, these
+probabilities yield the complete marginal posterior distribution over the starting
+state conditional on the data.
+
+This object takes the following input:
+- =bdmmTreePrior= (=BirthDeathMigrationDistribution=) ::
+  Reference to the ~BirthDeathMigrationDistribution~ used in the analysis.
+
+*** Stochastic mapping
+
+#+begin_src xml
+  <log spec="bdmmprime.mapping.TypeMappedTree">
+    <!-- Inputs -->
+  </log>
+#+end_src
+
+Stochastic mapping is handled in BDMM-Prime by a =TypeMappedTree=
+object, which is intended to be logged.  The stochastic mapping calculation
+is performed on the input state only when the output has to be appended to
+the log file.
+
+The important inputs are:
+
+- =parameterization= (=Parameterization=) ::
+- =bdmmDistrib= (=BirthDeathMigrationDistribution=) :: 
+  One of these two inputs must be provided, as these provide the parameters
+  needed to sample the ancestral type distribution.
+- =untypedTree= (=Tree=, required) :: 
+  The tree on which the type changes are to be stochastically mapped.
+- =typeTraitSet= (=TraitSet=, required) :: 
+  Trait set specifying the taxon types.
+- =startTypePriorProbs= (=RealParameter=, required) ::
+  The prior probabilities for the initial individual type.
+- =typeLabel= (=String=, required) :: 
+  The label to be used for traits in the generated metadata. In other words, this is
+  the key used in the key-value pairs which will be used to annotate the tree with
+  the ancestral type information.
+- =finalSampleOffset= (=Function=, default 0) :: 
+  If provided, the difference in time between the final sample and the
+  end of the BD process.
+
+Because the =TypeMappedTree= class extends the =Tree= class it accepts
+many inputs that are not particularly relevant.  These have been omitted.
+
+**** Type mapped tree loggers
+
+#+begin_src xml
+  <log spec="bdmmprime.mapping.TypeNodeTreeLogger">
+    <!-- Inputs -->
+  </log>
+#+end_src
+
+This logger takes a type mapped tree as input and logs a filtered view of this
+tree which excludes changes along edges but retains type information at internal
+nodes.  Such "node-typed" trees are important as distributions of such
+trees can be summarized by the TreeAnnotator software.
+
+The main inputs for the =TypedNodeTreeLogger= are:
+- =typedTree= (=Tree=, required) ::
+  Typed tree whose node types to log.
+
+#+begin_src xml
+  <log spec="bdmmprime.mapping.TypeTreeStatsLogger">
+    <!-- Inputs -->
+  </log>
+#+end_src
+
+This logger is intended for inclusion in the main parameter ("trace") log, as
+it computes a number of potentially-interesting summary statistics from each
+type-mapped tree, including
+- the total edge length associated with each type, and
+- the total number of changes between each pair of types.
+
+It's primary inputs are:
+- =typedTree= (=Tree=, required) ::
+  Typed tree whose statistics to log.
+- =typeSet= (=TypeSet=, required) :: 
+  Type set specifying model types.  (This is used to label stastics
+  with meaningful type labels rather than simply type indices.)
+- =typeLabel= (=String=, required) ::
+ The type label which was used to store type information on the tree.
+ (Use the same label supplied to =TypeMappedTree=.)
+- =includeRootEdge= (=Boolean=, default false) :: 
+  If true, include root edge in summary statistics calculations.
+
+*** Trajectory sampling
+
+#+begin_src xml
+  <logger fileName="output.traj" logEvery="10000">
+    <log spec="bdmmprime.trajectories.SampledTrajctory">
+    </log>
+  </logger>
+#+end_src
+
+Trajectory sampling is handled in BDMM-Prime by a =SampledTrajectory=
+object, which is intended to be logged.  This implements a particle
+filtering calculation which is performed only when the output has to
+be appended to the log file.
+
+*Important*: The =SampledTrajectory= must be the only input passed to
+its parent logger.  Broken output files will result if this rule is
+violated!
+
+Objects of type =SampledTrajectory= accept the following inputs:
+- =parameterization= (=Parameterization=) :: 
+- =bdmmDistrib= (=BirthDeathMigrationDistribution=) :: 
+  One of these two inputs must be provided, as these provide the parameters
+  needed to sample the population dynamics.
+- =typeMappedTree= (=Tree=, required) ::
+  An edge-typed tree. Ideally a reference to a =TypeMappedTree=.
+- =typeLabel= (=String=, required) ::
+ The type label which was used to store type information on the tree.
+- =finalSampleOffset= (=Function=, default 0) :: 
+  If provided, the difference in time between the final sample and the
+  end of the BD process.
+- =nParticles= (=Integer=, default 1000) :: 
+  Size of particle ensemble used in particle filtering.  (Larger
+  values give more accurate results, but make the calculation more
+  involved.)
+- =resampThresh= (=Double=, default 0.5) :: 
+  Relative effective size of the weighted particle ensemble at which to trigger a
+  resampling step.
+- =useTauLeaping= (=Boolean=, default false) :: 
+  If true, use the faster but approximate tau-leaping algorithm to simulate population histories.
+  Otherwise, use the slower but statistically correct Gillespie algorithm.
+- =minLeapCount= (=Integer=, default 100) :: 
+  When tau leaping is enabled, at least this many steps are used to
+  simulate each population trajectory.
+- =epsilon= (=Double=, default 0.03) :: 
+  Controls the adaptive time step used in the tau leaping algorithm,
+  with lower values causing the step size propsals to be more
+  conservative (smaller steps).  For details, refer to [[https://doi.org/10.1063/1.2159468][Cao et al., 2006]].
+
+
 
 *** Special priors and operators
 :PROPERTIES:
