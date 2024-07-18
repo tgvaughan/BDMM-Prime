@@ -34,7 +34,7 @@ public class TypeSet extends BEASTObject {
     public Input<String> valueInput = new Input<>("value", "Comma-delmited list of types.");
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet", "Type trait set defining list of types.");
 
-    public Input<String> unknownTypeIndicatorInput = new Input<>("UnknownTypeIdentifier",
+    public Input<String> unknownTypeIndicatorInput = new Input<>("unknownTypeIdentifier",
             "String used to identify unknown types. (Default is '?'.)", "?");
 
     protected SortedSet<String> typeNameSet;
