@@ -17,18 +17,21 @@ flexibility and ease of use.  It incorporates the following enhancements:
 - a particle filtering algorithm allowing joint sampling of population trajectories,
 - a heavily refactored code base intended to make the package easier to use,
   extend and maintain.
-
+  
 As a result of the many changes that were required in making this transition,
 BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
 package will be maintained separately to ensure that BEAST 2 XMLs and packages
 that depend on it remain usable.
 
-BDMM-Prime is currently still in development and is not yet ready for general use.
-Instead, refer to the original [BDMM project](https://github.com/denisekuehnert/bdmm).
+This repository is primarily of interest to people keen on building BDMM-Prime
+from the source or contributing to its development.  If this doesn't include
+you, please instead visit the project web page at:
 
-However, if you are interested in playing around with the new version, you can install
-it by adding https://tgvaughan.github.io/BDMM-Prime/package.xml as a third party
-BEAST package repository and installing the package that appears.
+https://tgvaughan.github.io/BDMM-Prime
+
+There you'll find all relevant usage information including installation,
+a complete tutorial, as well as reference guides for using BDMM-Prime via
+the BEAUti interface together with detailed instructions on its XML interface.
 
 About the Name
 --------------
