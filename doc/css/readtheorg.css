@@ -158,6 +158,12 @@ dl dd{
     margin:0 0 12px 24px;
 }
 
+table.skylineMatrix > tbody {
+    border: 2px solid grey;
+    border-collapse: separate;
+    border-spacing: 4px;
+}
+
 @media print{
     .codeblock,pre.src{
         white-space:pre.src-wrap}

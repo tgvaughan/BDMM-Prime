@@ -1172,7 +1172,7 @@ are the number of years prior to this date.)
          aes(date, N, col=Location, fill=Location, y=med, ymin=low, ymax=high)) +
       geom_ribbon(alpha=0.5) +
       geom_line() + ylab("Population size") +
-      scale_x_date(date_breaks="1 year", date_labels="%Y") +
+      scale_x_date(date_breaks="1 year", date_labels="%Y")
 #+end_src
 
 [[./analyses/trajectories_CI_years.png]]
@@ -1185,11 +1185,14 @@ that both $R_e$ and the become uninfectious rate $\delta$ were assumed
 constant in the tutorial.  By fitting such a simple constant-rate
 birth-death model to this dataset, our parameters are forced to
 represent "effective" rates and "effective" population sizes which
-best fit the birth-death dynamics on this scale.  These effects are
-made very obvious by the population trajectory posteriors, and it's
-important to keep the possibility of these kinds of effects in mind
-when interpreting multi-type birth-death results and phylodynamic
-inference results in general, even when applied at smaller scales.
+best fit the birth-death dynamics on this scale.
+
+While these effects are made very obvious by the population trajectory
+posteriors, /they are no less present when performing birth-death
+analyses without trajectory sampling/. It is therefore always important to
+keep the possibility of these kinds of model-fitting effects in mind when
+interpreting birth-death results and phylodynamic inference
+results in general, even when applied at smaller scales. 
 
 * Appendices
 :PROPERTIES:
@@ -1200,17 +1203,423 @@ inference results in general, even when applied at smaller scales.
 :CUSTOM_ID: id-2-Appendices-XML-reference
 :END:
 
-
+While the BDMM-Prime BEAUti interface is quite flexible, there are vastly more
+possibilities for model configurations than those which are accessible via
+the graphical interface.  In this section we detail the important aspects of
+the BEAST 2 XML model description language as it pertains to BDMM-Prime.
 
 *** Model definition
 :PROPERTIES:
 :CUSTOM_ID: id-3-XML-reference-Appendices-Model-definition
 :END:
 
-*** Special operators
+**** The Birth-Death-Migration Distribution
+
+The principle object contained in every BDMM-Prime analysis is the
+=bdmmprime.distribution.BirthDeathMigrationDistribution= object representing
+the probability of a tree under some birth-death distribution.
+
+In the XML the element defining this object usually appears as the
+value of a =distribution= input to a higher leverl
+=CompoundDistribution= object in the following form:
+#+begin_src xml
+  <distribution spec="bdmmprime.distribution.BirthDeathMigrationDistribution">
+    <!-- Inputs -->
+  </distribution>
+#+end_src
+
+The main inputs defined for the =BirthDeathMigrationDistribution= are
+as follows:
+
+- =parameterization= (=Parameterization=, required) ::
+  This input expects an object of the abstract type =Parameterization= to
+  specify the birth-death model parameters. Existing =Parameterization= objects
+  are given in the next section.
+- =startTypePriorProbs= (=Function=, required for multiple types) :: This is a object
+  of type =Function=/=RealParameter= whose dimension is the number of types and
+  whose values represent the prior probability for the type of the initial
+  individual in the process belonging to each possible type.
+- =typeTraitSet= (=TraitSet=) :: This is a =TraitSet= specifying the type associated with
+  each Taxon.
+- =typeLabel= (=String=) :: If provided, this is a =String= specifying the node metadata key
+  from which the type information should be read.
+- =conditionOnSurvival= (=Boolean=, default true) :: This indicates
+  whether the tree prior should be conditioned on the presence of at
+  least one sample.
+- =conditionOnRoot= (=Boolean=, default false) ::  This indicates
+  whether the tree prior should be condigioned on the time and presence of the
+  root event.  **Note:** If enabled, all =processLength= inputs must also be
+  provided with the tree instead of an origin parameter.
+- =finalSampleOffset= (=Function=, default 0) :: If provided, this determines
+  the time between the final sample and the end of the birth-death-sampling process.
+  This input is important if you want the model to be able to include the absence of samples in this
+  period as information for inferring the various rates.  It is also important when
+  jointly estimating tip dates.  (See the tip date operators described in the
+  operator section below.)
+
+
+Besides these, the following inputs are also defined.  These are primarilly used
+for debugging and/or tuning the calculation performance:
+  
+- =useAnalyticalSingleTypeSolution= (=Boolean=, default true) :: This
+  indicates whether to use the fast analytical solution for the tree prior in the case
+  of single-type analyses.  Ideally this should always be left on.
+- =relTolerance= (=Double=, default 1e-7) :: Relative tolerance for
+  numerical integration algorithm.
+- =absTolerance= (=Double=, default 1e-100) :: Absolute tolerance for
+  numerical integration algorithm.
+- =parallelize= (=Boolean=, default true) :: Indicates whether to
+  spawn threads to parallelize the calculation of subtree likelihoods.
+- =parallelizationFactor= (=Double=, default 0.1) :: The minimum
+  relative size (number of nodes) the smallest of a pair of subtrees
+  must have in order for their calculations to be carried out in
+  separate threads.
+- =savePartialLikelihoodsTofile= (=String=) :: If provided, the name
+  of a file to which a tree annotated with partial likelihoods will be
+  written.  This is useful for debugging the cause of chain
+  initialization failures.
+
+**** Parameterizations
+
+The =Parameterization= is an abstract class of objects tasked with connecting parameter
+values to the internal representation of birth-death models used by =BirthDeathMigrationModel=.
+There are several concrete classes of this type, as detailed below.
+
+*Note*: Besides the parameterization-specific inputs, each parameterization object takes
+the following inputs:
+- =processLength= (=Function= or =Tree=, required) ::
+  This should be the duration of the process, either from the origin
+  or from the tree root, depending on whether =conditionOnRoot= is set
+  to true.  If the former, suppling an "origin" parameter is usual.
+  If the latter, the tree object itself should be supplied.
+- =typeSet= (=TypeSet=) :: 
+  A =TypeSet= defining the types present in the model.
+
+***** CanonincalParameterization
+#+begin_src xml
+  <parameterization spec="bdmmprime.parameterization.CanonicalParameterization">
+  <!-- Inputs -->
+  </parameterization>
+#+end_src
+
+The =CanonicalParameterization= parameterization type defines a parameterization
+in terms of the basic rates for birth, death, sampling and migration events.  These
+are defined by the following inputs:
+
+- =birthRate= (=SkylineVectorParameter=, required) :: The birth rate skyline.
+- =deathRate= (=SkylineVectorParameter=, required) :: The death rate skyline.
+- =samplingRate= (=SkylineVectorParameter=, required) :: The sampling rate skyline.
+- =removalProb= (=SkylineVectorParameter=, required) ::
+  A skyline parameter representing the probability of removal on sampling.
+- =rhoSampling= (=TimedParameter=) ::
+  Specifies the times and probabilities of contemporaneous sampling events.
+- =migrationRate= (=SkylineMatrixParameter=) ::
+  The migration rate matrix skyline.
+- =birthRateAmongDemes= (=SkylineMatrixParameter=) :: 
+  The rate matrix skyline describing the rates of births producing
+  children with types differing from the parent.
+
+***** EpiParameterization
+#+begin_src xml
+  <parameterization spec="bdmmprime.parameterization.EpiParameterization">
+  <!-- Inputs -->
+  </parameterization>
+#+end_src
+
+This defines a parameterization in terms of rates useful for
+epidemiological applications:
+
+- =Re= (=SkylineVectgorParameter=, required) :: The effective reproduction number skyline.
+- =becomeUninfectiousRate= (=SkylineVectgorParameter=, required) :: The become uninfectious rate skyline.
+- =samplingProportion= (=SkylineVectgorParameter=, required) :: The sampling proportion skyline.
+- =removalProb= (=SkylineVectorParameter=, required) ::
+  A skyline parameter representing the probability of removal on sampling.
+- =rhoSampling= (=TimedParameter=) ::
+  Specifies the times and probabilities of contemporaneous sampling events.
+- =migrationRate= (=SkylineMatrixParameter=) ::
+  The migration rate matrix skyline.
+- =ReAmongDemes= (=SkylineMatrixParameter=) :: 
+  A matrix skyline representing a generalized effective reproduction
+  number indicating parameterizing the average number of birth events
+  into a new compartment over the infectious period of an individual
+  in a source compartment.
+
+***** FBDParameterization
+#+begin_src xml
+  <parameterization spec="bdmmprime.parameterization.FBDParameterization">
+  <!-- Inputs -->
+  </parameterization>
+#+end_src
+
+This defines a parameterization in terms of rates useful for macroevolutionary
+applications. It uses the [[https://doi.org/10.1073/pnas.1319091111][Fossilized Birth-Death process (Heath et al., 2014)]]
+parameterization.
+
+- =diversificationRate= (=SkylineVectgorParameter=, required) ::
+  The diversification rate (difference of speciation and extinction rates) skyline.
+- =turnover= (=SkylineVectgorParameter=, required) ::
+  The turnover (ratio of extinction rate to birth rate) skyline.
+- =samplingProportion= (=SkylineVectgorParameter=, required) ::
+  The sampling proportion skyline.
+- =removalProb= (=SkylineVectorParameter=, required) ::
+  A skyline parameter representing the probability of removal on sampling.
+- =rhoSampling= (=TimedParameter=) ::
+  Specifies the times and probabilities of contemporaneous sampling events.
+- =migrationRate= (=SkylineMatrixParameter=) ::
+  The migration rate matrix skyline.
+- =diversificationRateAmongDemes= (=SkylineMatrixParameter=) :: 
+  A matrix skyline representing the difference between the speciation rate
+  into a new compartment and the extinction rate in that same compartment.
+
+*Warning*: The FBD parameterization as usually set up in BDMM-Prime
+produces MCMC chains that do not cross the $\lambda=\mu$
+boundary. That is, one always has either $\lambda>\mu$ (positive
+diversification rate) or $\lambda<\mu$ (negative diversification
+rate), as determined by the initial parameter values.  The reason for
+this is that proposing a sign change in the diversification rate
+requires a coincident inversion of the turnover, which is unsupported
+by the default operators.  Thus, if you don't want to make this strong
+/a priori/ assumption about the sign of the diversification rate, it's
+best to use the =CanonicalParameterization= instead.
+
+
+**** Skyline parameters
+
+For the most part, parameters supplied to the parameterizations listed above
+are "skyline parameters", which define matrix- or vector-valued piecewise
+constant functions of time, where the vector values associate rates
+with specific types, and the matrix values associate rates with
+specific type pairs. Additionally, the =rhoSampling= input requires
+a =TimedParameter= which specifies a vector of values together with a set of
+individual times associated with these values.
+
+The followinc sections describ the complete set of inputs to each of
+these types.
+
+***** SkylineVectorParameter
+
+#+begin_src xml
+  <parameter spec="bdmm.prime.parameterization.SkylineVectorParameter">
+  <!-- Inputs -->
+  </parameter>
+#+end_src
+
+The skyline vector parameter specifies a piecewise-constant function
+with, in general, type-specific values. It takes the following inputs:
+
+- =skylineValues= (=Function=, required) ::
+- =changeTimes= (=Function=) ::
+  Each of this pair of inputs takes a =Function= (such as a =RealParameter=).
+  Together they specify the change times and epoch values of the skyline
+  parameter, and how these values are distributed across types.
+  specifies the values associated with the piecewise-constant function.
+  The dimension $N$ of the skylineValues =Function= or =RealParameter=, in combination with the
+  dimension $K$ of the changeTimes =Function= or =RealParameter= (0 if this input is not set),
+  determine how these values are distributed among types and times.
+
+  Defining $D$ to be the number of distinct types in the model, there are two main
+  possibilities. Firstly, if $N=K+1$ (i.e. the number of epochs
+  implied by =changeTimes=), the elements $v_1,v_2,\ldots,v_N$ are
+  assumed to apply uniformly to all types in each epoch.  That is:
+  |-------+--------+-------+--------|
+  | Epoch | Type 0 | Type1 | Type 2 |
+  |-------+--------+-------+--------|
+  |     0 | v1     | v1    | v1     |
+  |     1 | v2     | v2    | v2     |
+  |     2 | v3     | v3    | v3     |
+  |   ... | ...    | ...   | ...    |
+  Alternatively, if $N=(K+1)\times D$,
+  the first $D$ skylineValues elements represent the values associated with types in the first epoch,
+  the next $D$ represent the values for types in the second epoch, and so on:
+  |-------+--------+--------+--------|
+  | Epoch | Type 0 | Type 1 | Type 2 |
+  |-------+--------+--------+--------|
+  |     0 | v1     | v2     | v3     |
+  |     1 | v4     | v5     | v6     |
+  |     2 | v7     | v8     | v9     |
+  |   ... | ...    | ...    | ...    |
+- typeSet (=TypeSet=) :: 
+  A reference to the =TypeSet= for the model. While optional, it's
+  worthwhile supplying this input if multiple types are in play to
+  allow for additional checking and more easily-interpretable logging.
+- timesAreAges (=Boolean=, default false) :: 
+  When set to true, this input causes the change times supplied to =changeTimes= to be
+  interpreted as ages relative to the end of the birth-death
+  process. (I.e. the time of the final sample + the value of
+  =finalSampleOffset=.)  This also affects the ordering of the
+  assignment to epochs. (E.g. value $v_1$ will be associated with the most recent epoch
+  when =timesAreAges= is true, but the oldest epoch when it is false.)
+- timesAreRelative (=Boolean=, default false) :: 
+  When set to true, times or ages are treated as relative fractions of the process length.
+- processLength (=Function=) ::
+  This is the object specifying the process length.  It is only
+  necessary when one or both of =timesAreAges= and =timesAreRelative=
+  are set to true.
+
+***** SkylineMatrixParameter
+
+#+begin_src xml
+  <parameter spec="bdmm.prime.parameterization.SkylineMatrixParameter">
+  <!-- Inputs -->
+  </parameter>
+#+end_src
+
+The skyline matrix parameter specifies a piecewise-constant function
+with, in general, type pair-specific values. It takes the following inputs:
+
+- =skylineValues= (=Function=, required) ::
+- =changeTimes= (=Function=) ::
+  Just as for =SkylineVectorParameter=, 
+  each of this pair of inputs takes a =Function= (such as a =RealParameter=).
+  Together they specify the change times and epoch values of the skyline
+  matrix parameter, and how these values are distributed across source/destination type pairs.
+  The dimension $N$ of the skylineValues =Function= or =RealParameter=, in combination with the
+  dimension $K$ of the changeTimes =Function= or =RealParameter= (0 if this input is not set),
+  determine how these values are distributed among types and times.
+
+  Defining $D$ to be the number of distinct types in the model, there are two main
+  possibilities. Firstly, if $N=K+1$ (i.e. the number of epochs
+  implied by =changeTimes=), the elements $v_1,v_2,\ldots,v_N$ are
+  assumed to apply uniformly to all types pairs in each epoch.  That is:
+  #+ATTR_HTML: :class skylineMatrix
+  |-------+-------------+-----------+----------+-----------|
+  | Epoch |             | To Type 0 | To Type1 | To Type 2 |
+  |-------+-------------+-----------+----------+-----------|
+  |     0 | From Type 0 | .         | v1       | v1        |
+  |       | From type 1 | v1        | .        | v1        |
+  |       | From type 2 | v1        | v1       | .         |
+  |-------+-------------+-----------+----------+-----------|
+  |     1 | From Type 0 | .         | v2       | v2        |
+  |       | From type 1 | v2        | .        | v2        |
+  |       | From type 2 | v2        | v2       | .         |
+  |-------+-------------+-----------+----------+-----------|
+  |   ... | ...         | ...       | ...      |           |
+  Alternatively, if $N=(K+1)\times D(D-1)$,
+  the first $D(D-1)$ skylineValues elements represent the values associated with type pairs in the first epoch,
+  the next $D(D-1)$ represent the values for types in the second epoch, and so on:
+  #+ATTR_HTML: :class skylineMatrix
+  |-------+-------------+-----------+----------+-----------|
+  | Epoch |             | To Type 0 | To Type1 | To Type 2 |
+  |-------+-------------+-----------+----------+-----------|
+  |     0 | From Type 0 | .         | v1       | v2        |
+  |       | From type 1 | v3        | .        | v4        |
+  |       | From type 2 | v5        | v6       | .         |
+  |-------+-------------+-----------+----------+-----------|
+  |     1 | From Type 0 | .         | v7       | v8        |
+  |       | From type 1 | v9        | .        | v10       |
+  |       | From type 2 | v11       | v12      | .         |
+  |-------+-------------+-----------+----------+-----------|
+  |   ... | ...         | ...       | ...      |           |
+- typeSet (=TypeSet=) :: 
+  A reference to the =TypeSet= for the model. While optional, it's
+  worthwhile supplying this input to allow for additional checking and
+  more easily-interpretable logging.
+- timesAreAges (=Boolean=, default false) :: 
+  When set to true, this input causes the change times supplied to =changeTimes= to be
+  interpreted as ages relative to the end of the birth-death
+  process. (I.e. the time of the final sample + the value of
+  =finalSampleOffset=.)  This also affects the ordering of the
+  assignment to epochs. (E.g. value $v_1$ will be associated with the most recent epoch
+  when =timesAreAges= is true, but the oldest epoch when it is false.)
+- timesAreRelative (=Boolean=, default false) :: 
+  When set to true, times or ages are treated as relative fractions of the process length.
+- processLength (=Function=) ::
+  This is the object specifying the process length.  It is only
+  necessary when one or both of =timesAreAges= and =timesAreRelative=
+  are set to true.
+
+
+***** TimedParameter
+
+#+begin_src xml
+  <parameter spec="bdmm.prime.parameterization.TimedParameter">
+  <!-- Inputs -->
+  </parameter>
+#+end_src
+
+The timed parameter specifies an, in general, type-dependent sequence
+of values associated with one or more times. It is used to define the
+timing and probabilities for "rho sampling" events. These are the possible inputs:
+
+- =values= (=Function=) ::
+- =times= (=Function=) ::
+  Each of this pair of inputs takes a =Function= (such as a =RealParameter=).
+  Together they specify the timing and sampling probabilities associated with
+  0 or more rho sampling events.
+  The dimension $N$ of the values =Function= or =RealParameter=, in combination with the
+  dimension $K$ of the times  =Function= or =RealParameter=,
+  determine how the probabilities provided are distributed among types and times.
+
+  Defining $D$ to be the number of distinct types in the model, there are two main
+  possibilities. Firstly, if $N=K$ (i.e. the number of events
+  implied by =times=), the elements $v_1,v_2,\ldots,v_N$ are
+  assumed to apply uniformly to all types at each event.  That is:
+  |-------+--------+-------+--------|
+  | Event | Type 0 | Type1 | Type 2 |
+  |-------+--------+-------+--------|
+  |     0 | v1     | v1    | v1     |
+  |     1 | v2     | v2    | v2     |
+  |     2 | v3     | v3    | v3     |
+  |   ... | ...    | ...   | ...    |
+  Alternatively, if $N=K\times D$,
+  the first $D$ elements represent the values associated with types for the first event,
+  the next $D$ represent the values for types for the second event, and so on:
+  |-------+--------+--------+--------|
+  | Event | Type 0 | Type 1 | Type 2 |
+  |-------+--------+--------+--------|
+  |     0 | v1     | v2     | v3     |
+  |     1 | v4     | v5     | v6     |
+  |     2 | v7     | v8     | v9     |
+  |   ... | ...    | ...    | ...    |
+- typeSet (=TypeSet=) :: 
+  A reference to the =TypeSet= for the model. While optional, it's
+  worthwhile supplying this input if multiple types are in play to
+  allow for additional checking and more easily-interpretable logging.
+- timesAreAges (=Boolean=, default false) :: 
+  When set to true, this input causes the change times supplied to =changeTimes= to be
+  interpreted as ages relative to the end of the birth-death
+  process. (I.e. the time of the final sample + the value of
+  =finalSampleOffset=.)  This also affects the ordering of the
+  assignment to epochs. (E.g. value $v_1$ will be associated with the most recent epoch
+  when =timesAreAges= is true, but the oldest epoch when it is false.)
+- timesAreRelative (=Boolean=, default false) :: 
+  When set to true, times or ages are treated as relative fractions of the process length.
+- processLength (=Function=) ::
+  This is the object specifying the process length.  It is only
+  necessary when one or both of =timesAreAges= and =timesAreRelative=
+  are set to true.
+
+**** The TypeSet
+
+#+begin_src xml
+<typeSet spec="bdmm.prime.parameterization.TypeSet">
+  <!-- Inputs -->
+</typeSet>
+#+end_src
+
+**** Stochastic mapping
+
+bdmmprime.mapping.TypeMappedTree
+bdmmprime.mapping.TypeNodeTreeLogger
+bdmmprime.mapping.TypeTreeStatsLogger
+
+**** Trajectory sampling
+
+bdmmprime.trajectories.SampledTrajctory
+bdmmprime.util.StartTypePosteriorProbsLogger
+
+*** Special priors and operators
 :PROPERTIES:
 :CUSTOM_ID: id-3-XML-reference-Appendices-Special-operators
 :END:
+
+bdmmprime.util.priors.SmartZeroExcludingPrior
+bdmmprime.util.operators.SmartScaleOperator
+
+bdmmprime.util.operators.TipDateOperator
+bdmmprime.util.operators.TipEdgeScaleOperator
+bdmmprime.util.priors.TipDatePrior
+
 
 ** Trajectory file format
 :PROPERTIES:
