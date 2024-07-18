@@ -52,9 +52,9 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
                     "single value is to be shared amongst several types.");
 
     public Input<Boolean> isScalarInput = new Input<>("isScalar",
-            "Input used internally by BEAUti to record whether to " +
-                    "regard parameter as scalar. Users should disregard " +
-                    "this parameter.", true);
+            "BEAUti hint to regard parameter as scalar. WARNING: " +
+                    "the value of this input has no impact outside of BEAUti!",
+            true);
 
     public Input<Boolean> linkIdenticalValuesInput = new Input<>("linkIdenticalValues",
             "BEAUti hint to create XMLs in which identical values are considered " +
