@@ -1804,6 +1804,9 @@ Objects of type =SampledTrajectory= accept the following inputs:
 :END:
 
 **** Easy parameter linking
+:PROPERTIES:
+:CUSTOM_ID: id-4-Special-priors-and-operators-XML-reference-Appendices-Easy-parameter-linking
+:END:
 
 When dealing with multi-type birth-death skyline models, one frequently
 needs to operate and place priors on skyline values which preserve the
@@ -1880,6 +1883,9 @@ floating point arithmetic, it is technically possible for such
 equivalence to arise by chance, although it is extremely unlikely.)
 
 **** Consistent tip date estimation
+:PROPERTIES:
+:CUSTOM_ID: id-4-Special-priors-and-operators-XML-reference-Appendices-Consistent-tip-date-estimation
+:END:
 
 BDMM-Prime's inclusion of the =finalSampleOffset= input to the
 =BirthDeathMigrationDistribution= allows us to jointly estimating all tip dates on a given tree.
@@ -1899,6 +1905,9 @@ We are then free to operate on all tip ages, provided the operators we use
 also correctly update this offset.
 
 ***** Operators
+:PROPERTIES:
+:CUSTOM_ID: id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Operators
+:END:
 
 BDMMPrime provides a pair of operators which act on both tip dates and the =finalSampleOffset=:
 
@@ -1942,6 +1951,9 @@ This takes the following inputs:
   Operator weight. (Unnormalized probability with which this operator is chosen.)
 
 ***** Prior
+:PROPERTIES:
+:CUSTOM_ID: id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Prior
+:END:
 
 In addition to the operators, the following is useful for specifying a large
 number of tip date priors simultaneously using a =TraitSet= pair:
@@ -1972,6 +1984,9 @@ It takes the following inputs:
   but should be disabled during the analysis itself.
 
 ***** Initialization
+:PROPERTIES:
+:CUSTOM_ID: id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Initialization
+:END:
 
 Finally, BDMM-Prime also provides the following class for initializing
 tip dates (useful when there are many constraints):

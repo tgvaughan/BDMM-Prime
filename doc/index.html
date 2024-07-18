@@ -1,0 +1,3205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- 2024-07-18 Thu 21:35 -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BDMM-Prime</title>
+<meta name="author" content="Tim Vaughan" />
+<meta name="generator" content="Org Mode" />
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" type="text/css" href="css/readtheorg.css"/>
+<script type="text/javascript" src="js/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/jquery.stickytableheaders.min.js"></script>
+<script type="text/javascript" src="js/readtheorg.js"></script>
+<link rel="stylesheet" type="text/css" href="css/katex.min.css" />
+<script defer type="text/javascript" src="js/katex.min.js"></script>
+<script defer type="text/javascript" src="js/katex-auto-render.min.js"></script>
+<script> document.addEventListener("DOMContentLoaded", function() {renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}, {left: '\\(', right: '\\)', display: false}, {left: '\\[', right: '\\]', display: true}], throwOnError : false});}); </script>
+<link rel="stylesheet" type="text/css" href="css/syntaxhl.css" />
+<style>h1.title {display:none}</style>
+</head>
+<body>
+<div id="content" class="content">
+<nav id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#id-1-Introduction">1. Introduction</a>
+<ul>
+<li><a href="#id-2-Introduction-Comparison-with-BDMM">1.1. Comparison with BDMM</a></li>
+</ul>
+</li>
+<li><a href="#id-1-Getting-Started">2. Getting Started</a>
+<ul>
+<li><a href="#id-2-Getting-Started-Installation">2.1. Installation</a></li>
+<li><a href="#id-2-Getting-Started-Setting-up-your-first-analysis">2.2. Setting up your first analysis</a>
+<ul>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-Loading-sequence-data-into-BEAUti">2.2.1. Loading sequence data into BEAUti</a></li>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-tip-dates">2.2.2. Setting up tip dates</a></li>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model">2.2.3. Setting the site model</a></li>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-clock-model">2.2.4. Setting the clock model</a></li>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-Selecting-the-tree-prior">2.2.5. Selecting the tree prior</a></li>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-the-sample-types">2.2.6. Setting up the sample types</a></li>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-Configuring-the-multi-type-model">2.2.7. Configuring the multi-type model</a></li>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors">2.2.8. Setting the remaining parameter priors</a></li>
+<li><a href="#id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup">2.2.9. MCMC and Logging setup</a></li>
+</ul>
+</li>
+<li><a href="#id-2-Getting-Started-Saving-and-Running-the-analysis">2.3. Saving and Running the analysis</a></li>
+<li><a href="#id-2-Getting-Started-Processing-the-results">2.4. Processing the results</a>
+<ul>
+<li><a href="#id-3-Processing-the-results-Getting-Started-The-parameter-log-file">2.4.1. The parameter log file</a></li>
+<li><a href="#id-3-Processing-the-results-Getting-Started-The-tree-log-files">2.4.2. The tree log files</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#id-1-Model-specification-using-BEAUti">3. Model specification using BEAUti</a>
+<ul>
+<li><a href="#id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior">3.1. The BDMM-Prime Tree Prior</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Defining-Tip-Types">3.2. Defining Tip Types</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities">3.3. Start type prior probabilities</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Parameterizations">3.4. Parameterizations</a>
+<ul>
+<li><a href="#id-3-Parameterizations-Model-specification-using-BEAUti-Canonical">3.4.1. Canonical</a></li>
+<li><a href="#id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological">3.4.2. Epidemiological</a></li>
+<li><a href="#id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process">3.4.3. Fossilized birth-death process</a></li>
+</ul>
+</li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Skyline-Parameters">3.5. Skyline Parameters</a>
+<ul>
+<li><a href="#id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor">3.5.1. Overview of the skyline parameter input editor</a>
+<ul>
+<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration">3.5.1.1. Epoch configuration</a></li>
+<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration">3.5.1.2. Value configuration</a></li>
+<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation">3.5.1.3. Epoch visualisation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">3.6. Miscellaneous inputs</a></li>
+</ul>
+</li>
+<li><a href="#id-1-Sampling-Latent-Variables">4. Sampling Latent Variables</a>
+<ul>
+<li><a href="#id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions">4.1. Tree edge types and type transitions</a></li>
+<li><a href="#id-2-Sampling-Latent-Variables-Multi-type-trajectories">4.2. Multi-type trajectories</a>
+<ul>
+<li><a href="#id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories">4.2.1. Plotting sampled trajectories</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#id-1-Appendices">5. Appendices</a>
+<ul>
+<li><a href="#id-2-Appendices-XML-reference">5.1. XML reference</a>
+<ul>
+<li><a href="#id-3-XML-reference-Appendices-Model-definition">5.1.1. Model definition</a>
+<ul>
+<li><a href="#id-4-Model-definition-XML-reference-Appendices-The-Birth-Death-Migration-Distribution">5.1.1.1. The Birth-Death-Migration Distribution</a></li>
+<li><a href="#id-4-Model-definition-XML-reference-Appendices-Parameterizations">5.1.1.2. Parameterizations</a></li>
+<li><a href="#id-4-Model-definition-XML-reference-Appendices-Skyline-parameters">5.1.1.3. Skyline parameters</a></li>
+<li><a href="#id-4-Model-definition-XML-reference-Appendices-The-TypeSet">5.1.1.4. The TypeSet</a></li>
+</ul>
+</li>
+<li><a href="#id-3-XML-reference-Appendices-Start-type-posterior-logging">5.1.2. Start type posterior logging</a></li>
+<li><a href="#id-3-XML-reference-Appendices-Stochastic-mapping">5.1.3. Stochastic mapping</a>
+<ul>
+<li><a href="#id-4-Stochastic-mapping-XML-reference-Appendices-Type-mapped-tree-loggers">5.1.3.1. Type mapped tree loggers</a></li>
+</ul>
+</li>
+<li><a href="#id-3-XML-reference-Appendices-Trajectory-sampling">5.1.4. Trajectory sampling</a></li>
+<li><a href="#id-3-XML-reference-Appendices-Special-priors-and-operators">5.1.5. Special priors and operators</a>
+<ul>
+<li><a href="#id-4-Special-priors-and-operators-XML-reference-Appendices-Easy-parameter-linking">5.1.5.1. Easy parameter linking</a></li>
+<li><a href="#id-4-Special-priors-and-operators-XML-reference-Appendices-Consistent-tip-date-estimation">5.1.5.2. Consistent tip date estimation</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#id-2-Appendices-Trajectory-file-format">5.2. Trajectory file format</a></li>
+</ul>
+</li>
+<li><a href="#id-1-License">6. License</a></li>
+</ul>
+</div>
+</nav>
+
+<figure id="org1d82898">
+<img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
+
+</figure>
+
+<p>
+Source code: <a href="https://github.com/tgvaughan/BDMM-Prime">https://github.com/tgvaughan/BDMM-Prime</a>
+</p>
+
+<div id="outline-container-id-1-Introduction" class="outline-2">
+<h2 id="id-1-Introduction"><span class="section-number-2">1.</span> Introduction</h2>
+<div class="outline-text-2" id="text-id-1-Introduction">
+<p>
+BDMM-Prime is a BEAST 2 package for performing phylodynamic inference
+under a variety of linear birth-death-sampling models with/without
+types.
+</p>
+</div>
+
+<div id="outline-container-id-2-Introduction-Comparison-with-BDMM" class="outline-3">
+<h3 id="id-2-Introduction-Comparison-with-BDMM"><span class="section-number-3">1.1.</span> Comparison with BDMM</h3>
+<div class="outline-text-3" id="text-id-2-Introduction-Comparison-with-BDMM">
+<p>
+The BDMM-Prime project is a hard fork of the original <a href="https://github.com/denisekuehnert/bdmm">BDMM project</a>.
+The intention is to extend the functionality of the original package,
+while improving its flexibility and ease of use.  It incorporates the
+following enhancements:
+</p>
+<ul class="org-ul">
+<li>an improved BEAUti interface that allows a much more diverse range of analyses to be configured,</li>
+<li>automatic fall-back to analytical solutions for unstructured (single type) analyses,</li>
+<li>use of stochastic mapping for sampling ancestral states,</li>
+<li>a particle filtering algorithm allowing joint sampling of population trajectories,</li>
+<li>a heavily refactored code base intended to make the package easier to use,
+extend and maintain.</li>
+</ul>
+
+<p>
+As a result of the many changes that were required in making this transition,
+BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
+package will be maintained separately to ensure that BEAST 2 XMLs and packages
+that depend on it remain usable.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-1-Getting-Started" class="outline-2">
+<h2 id="id-1-Getting-Started"><span class="section-number-2">2.</span> Getting Started</h2>
+<div class="outline-text-2" id="text-id-1-Getting-Started">
+</div>
+
+
+<div id="outline-container-id-2-Getting-Started-Installation" class="outline-3">
+<h3 id="id-2-Getting-Started-Installation"><span class="section-number-3">2.1.</span> Installation</h3>
+<div class="outline-text-3" id="text-id-2-Getting-Started-Installation">
+<p>
+BDMM-Prime requires a working installation of <a href="https://www.beast2.org">BEAST 2.7</a> which can be obtained from
+<a href="https://www.beast2.org/">https://www.beast2.org/</a>. The package itself can then be installed via the
+built-in package manager in the following way:
+</p>
+
+<ol class="org-ol">
+<li>Open BEAUti.</li>
+<li>From the <code>File</code> menu select <code>Manage Packages</code>.</li>
+<li>Click the <code>Package repositories</code> button at the bottom of the dialog box.</li>
+<li>Click <code>Add URL</code> and enter the following repository URL:<br>
+<a href="https://tgvaughan.github.io/BDMM-Prime/package.xml">https://tgvaughan.github.io/BDMM-Prime/package.xml</a>.<br>
+The list of repositories should now look like this:
+<img src="./figures/package_repo.png" alt="package_repo.png"></li>
+<li>Close the repository manager.</li>
+<li>The latest version of BDMM-Prime should now appear in the list of packages:
+<img src="./figures/package_manager.png" alt="package_manager.png">
+Select it, then click the <code>Install/Upgrade</code> button.</li>
+<li>Close the package manager.</li>
+</ol>
+
+<p>
+BDMM-Prime should now be available to use on your system. (You will need to
+restart BEAUti before you can set up any analyses.)
+</p>
+
+<p>
+Aside: Eventually BDMM-Prime will be available from the default BEAST 2
+repository.  However, while it is still in development, it must be
+installed from the above repository.
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-2-Getting-Started-Setting-up-your-first-analysis" class="outline-3">
+<h3 id="id-2-Getting-Started-Setting-up-your-first-analysis"><span class="section-number-3">2.2.</span> Setting up your first analysis</h3>
+<div class="outline-text-3" id="text-id-2-Getting-Started-Setting-up-your-first-analysis">
+<p>
+Here we will step through the process of setting up, running and
+interpreting a simple BDMM-Prime analysis.  For the purpose of
+demonstration, we will focus on applying a multi-type model to simple
+two-type epidemiological data set, but the same general approach can
+be taken to set up single-type analyses of other data sets too.
+</p>
+
+<p>
+BDMM-Prime analyses can be set up in BEAUti in much the same way that
+analyses under using other BEAST 2 models such as BDSKY or the
+Bayesian Skyline Plot can be set up. The only part unique to
+BDMM-Prime is "tree prior" configuration.  Nonetheless, below we
+describe the <i>complete</i> process of setting up a small BDMM-Prime
+analysis.
+</p>
+
+<p>
+<i>The following should be read like a short tutorial. Steps
+to perform on your computer are highlighted like this:</i>
+</p>
+<blockquote>
+<p>
+Start BEAUti.
+</p>
+</blockquote>
+
+<p>
+<b>Note:</b> the following assumes some limited familiarity with BEAST 2.
+If you've never used this software before, please consider working
+through the <a href="https://taming-the-beast.org/tutorials/Introduction-to-BEAST2/">Introduction to BEAST 2 tutorial</a>.
+</p>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Loading-sequence-data-into-BEAUti" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Loading-sequence-data-into-BEAUti"><span class="section-number-4">2.2.1.</span> Loading sequence data into BEAUti</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Loading-sequence-data-into-BEAUti">
+<p>
+For this tutorial, we'll be using the example influenza data which is
+installed along with BDMM-Prime. This data, assembled from
+publicly-available data downloaded from NCBI GenBank, is the same set
+used in <a href="https://taming-the-beast.org/tutorials/Structured-coalescent">this MultiTypeTree tutorial</a>. It consists of an aligned set of
+60 H3N2 HA sequences sampled from New Zealand and Hong Kong. To make
+finding this data easy, we first select the package working directory.
+</p>
+<blockquote>
+<p>
+Select "Set working dir" from the File menu, then choose "BDMM-Prime" from the sub-menu.
+</p>
+</blockquote>
+
+<p>
+To load the data, simply choose "Import alignment" from the File menu
+and select one or more FASTA files.
+</p>
+
+<blockquote>
+<p>
+Select "Import alignment" from the File menu to display a file
+selection dialog box.  Using this, open the <code>examples</code> subdirectory
+and select the file <code>h3n2_2deme.fna</code>.
+</p>
+</blockquote>
+
+<p>
+The BEAUti window should now look something like the following:
+<img src="./figures/tutorial_seqloaded.png" alt="tutorial_seqloaded.png">
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-tip-dates" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-tip-dates"><span class="section-number-4">2.2.2.</span> Setting up tip dates</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-tip-dates">
+<p>
+The sequences in this data set are sampled at different times, so use
+the following instructions to import this information into the analysis.
+(This step is unnecessary if sequences were collected at the same time,
+or near enough given the anticipated scale of the tree.)
+</p>
+
+<blockquote>
+<p>
+Select the Tip Dates panel and check the "Use tip dates" option. Then
+press the "Auto-configure" button to set the times based on values
+extracted from the sequence headers. Finally, use the radio button
+and dropdown menu to interpret everything after the last "<code>_</code>"
+character as a numerical tip time.
+</p>
+</blockquote>
+
+
+<figure id="org439e7cd">
+<img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
+
+</figure>
+</div>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model"><span class="section-number-4">2.2.3.</span> Setting the site model</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model">
+<p>
+For this example, we will use the basic <a href="https://doi.org/10.1007%2FBF02101694">HKY</a> substitution model, with
+equilibrium nucleotide frequencies fixed to the empirical frequencies
+of characters in our alignment.  
+</p>
+
+<blockquote>
+<p>
+Select the "Site model" panel. Select the HKY model with "empirical" nucleotide frequencies.
+</p>
+</blockquote>
+
+
+<figure id="org24b0dce">
+<img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
+
+</figure>
+
+<p>
+This choice to fix the equilibrium frequencies is made here only
+to reduce the computational complexity of the tutorial analysis.
+For production analyses, these should probably be estimated, and
+Gamma-distributed site-to-site rate heterogeneity should also be used.
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-clock-model" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-clock-model"><span class="section-number-4">2.2.4.</span> Setting the clock model</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-clock-model">
+<p>
+Since we have serially-sampled data, our analysis requires some kind
+of molecular clock.  For the sake of simplicity, we use a strict
+clock, setting the initial value of the clock rate to $5\times 10^{-3}$
+substitutions per site per year, which is close to the true
+value for influenza.
+</p>
+
+<blockquote>
+<p>
+Select the "Cock model" panel. Set the "mean clock rate" value to 0.005.
+</p>
+</blockquote>
+
+
+<figure id="org1116e6d">
+<img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
+
+</figure>
+</div>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Selecting-the-tree-prior" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Selecting-the-tree-prior"><span class="section-number-4">2.2.5.</span> Selecting the tree prior</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Selecting-the-tree-prior">
+<p>
+The tree prior (also known as the phylodynamic likelihood) is the
+component of the analysis which BDMM-Prime provides. Here we configure
+the particular birth-death model we will use to relate the tree to
+the various population-level parameters we'd like to learn about.
+</p>
+<blockquote>
+<p>
+Select the "Priors" panel.  To choose the BDMM-Prime tree prior, find
+the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime".
+</p>
+</blockquote>
+
+
+<figure id="org5bd0f50">
+<img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
+
+</figure>
+</div>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-the-sample-types" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-the-sample-types"><span class="section-number-4">2.2.6.</span> Setting up the sample types</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-the-sample-types">
+<p>
+The next thing we want to do is to specify the locations associated with each of the
+samples included in our analysis.
+</p>
+<blockquote>
+<p>
+Scroll down to end of the tree prior section and find the table associating tree leaves
+with locations. Notice that the sample names have the form <code>ID_Location_Date</code>. To
+extract the locations from the sample names, click the <code>Auto-configure</code> button,
+select <code>split on character</code>, ensure "<code>_</code>" is specified as the delimiter, and select
+"2" from the <code>take group(s)</code> drop-down menu.  Once this is complete, press "Ok".
+</p>
+</blockquote>
+
+
+<figure id="org407a836">
+<img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
+
+</figure>
+
+<p>
+The table should now be populated with types extracted from the sample names.
+</p>
+
+
+<figure id="org319fe08">
+<img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
+
+</figure>
+</div>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Configuring-the-multi-type-model" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Configuring-the-multi-type-model"><span class="section-number-4">2.2.7.</span> Configuring the multi-type model</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Configuring-the-multi-type-model">
+<p>
+Now we get to the main part of the analysis setup, where we decide exactly how
+to model the generation of our data. In our case, we want to model a small part
+of the global transmission dynamics of H3N2.
+</p>
+
+<p>
+The first thing to do is to is to select our desired parameterization
+of the birth-death model. In our case, as we're analysing pathogen
+sequences in an attempt to reconstruct transmission dynamics, we'll
+use the epidemiological parameterization.
+</p>
+<blockquote>
+<p>
+Expand the tree prior section by clicking the arrow next to <code>Tree.t:h3n2</code> on the
+left-hand side of of the screen.  Then select "Epi Parameterization" from the
+drop-down menu at the top of the expanded section.
+</p>
+</blockquote>
+
+
+<figure id="org0307b78">
+<img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
+
+</figure>
+
+<p>
+With this done, the next task is to define the dimensionality and
+initial values of the multi-type birth-death parameters. In BDMM-Prime,
+each of these parameters is considered a "skyline parameter" which can
+change in a piecewise-constant fashion through time.
+</p>
+
+<p>
+The first skyline parameter to consider is the Re parameter, representing
+the effective reproductive number.  By default parameter values are
+assumed to be the same across all types,
+</p>
+
+<blockquote>
+<p>
+For the Re skyline parameter, uncheck the "Scalar values" check box to
+allow this parameter to take type-dependent values.
+</p>
+</blockquote>
+
+
+<figure id="orgfa2217e">
+<img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
+
+</figure>
+
+<p>
+The next parameter is the "become uninfectious rate" parameter, representing
+the rate at which infected individuals become uninfectious. As this parameter
+is predominantly a function of the pathogen rather than location, we will
+assume it takes a single value which  is shared among types. Furthermore,
+as influenza infections often take a relatively short time to pass, we will initialise
+this value to correspond to an infectious period of 1 week.
+</p>
+
+<blockquote>
+<p>
+Find the Become Uninfectious Rate parameter, double-click the starting value and
+change it to 52 (per year).  <b>Be sure to press "Enter" to cause BEAUti to accept
+the new value.</b>
+</p>
+</blockquote>
+
+
+<figure id="org35ceae4">
+<img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
+
+</figure>
+
+<p>
+Now let's consider the Sampling Proportion parameter. This parameter requires
+special care, as the sampling assumptions of the model can dramatically influence
+inference results.  In our case we want (a) to allow for type-dependent sampling proportions
+and (b) to fix the sampling proportion to zero for all times earlier than the first
+sample.
+</p>
+
+<p>
+In BDMM-Prime, this configuration is reasonably simple to configure.
+</p>
+<blockquote>
+<p>
+Find the Sampling Proportion parameter, then follow these steps:
+</p>
+<ol class="org-ol">
+<li>Uncheck the "Scalar value" checkbox to allow for type-dependent values.</li>
+<li>Check "Display visualization" to see the distribution of sample times relative
+to the most recent sample.</li>
+<li>Set the "Number of change times" value to 1.  (Notice the appearance of the epoch
+boundary marker on the visualisation.)</li>
+<li>Set the change time for the boundary between epoch 1 and 2 to 5.7. (Notice that this
+value ensures the oldest sample remains in epoch 1.)</li>
+<li>In the "Values" table, double-click the entries corresponding to
+the sampling proportion values for Epoch 2 and change each to 0.0,
+remembering to press "enter" after each change.</li>
+</ol>
+</blockquote>
+
+<p>
+Note <b>skyline parameter values of 0 are always fixed</b> in the analysis, regardless of
+whether or not the "estimate values" option is checked.
+</p>
+
+
+<figure id="orgff145f4">
+<img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
+
+</figure>
+
+<p>
+Finally, we need to define how lineages change type in our multi-type
+model.  Like BDMM, BDMM-Prime allows both direct "migration" as well
+as "birth to a new type" styles of multi-type models.  Given we are
+modelling the movement of infected influenza hosts, migration suits
+our situation best.  We also acknowledge that migration rates between
+different pairs of types/locations may be different from one another.
+</p>
+
+<p>
+To incorporate these decisions, follow these instructions:
+</p>
+<blockquote>
+<p>
+Find the Migration Rate parameter, then:
+</p>
+<ol class="org-ol">
+<li>Double-click on the value and change it from it's default to the smaller
+rate of 0.1 (any infected individual has a 10% chance of moving between
+the two locations in any given year).</li>
+<li>Uncheck the "Scalar values" checkbox to allow rates to vary between pairs of
+locations.</li>
+<li>Check the "Estimate values" checkbox to ensure these migration
+rates are estimated.</li>
+</ol>
+</blockquote>
+
+
+<figure id="org08bd32e">
+<img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
+
+</figure>
+</div>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors"><span class="section-number-4">2.2.8.</span> Setting the remaining parameter priors</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors">
+<p>
+With the multi-type model is configured, what remains is to define priors for
+each of the parameters we're estimating.  As in any ther BEAST analysis, this
+includes parameters each of the various site, clock and phylodynamic models we've
+configured.
+</p>
+
+<p>
+Rather than describe in detail how to set these priors, here we will simply list
+a set of simple priors which can be used for the purpose of demonstrating the
+model. (Detailed information on setting up priors in BEAUti can be found elsewhere, see
+for instance the <a href="https://taming-the-beast.org/tutorials/Prior-selection/">Prior Selection tutorial</a> on the Taming the BEAST website.
+</p>
+
+<blockquote>
+<p>
+Set the following parameter priors:
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-left">Parameter</th>
+<th scope="col" class="org-left">Prior</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-left"><code>ReEpi.t:h3n2_2deme</code></td>
+<td class="org-left">LogNormal(0,0.5)</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>becomeUninfectiousRateEpi.t:h3n2_2deme</code></td>
+<td class="org-left">1/X</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>migrationRateEpi.t:h3n2_2deme</code></td>
+<td class="org-left">Exp(0.1)</td>
+</tr>
+
+<tr>
+<td class="org-left"><code>samplingProportionEpi.t:h3n2_2deme</code></td>
+<td class="org-left">Unif(0,1)</td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup" class="outline-4">
+<h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup"><span class="section-number-4">2.2.9.</span> MCMC and Logging setup</h4>
+<div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup">
+<p>
+Finally, we need to configure the details of the MCMC chain to run and the trees and
+parameters to be logged.
+</p>
+
+<blockquote>
+<p>
+Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
+</p>
+</blockquote>
+
+
+<figure id="orgba6fa3e">
+<img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
+
+</figure>
+
+<p>
+For this demonstration we will leave everything else as-is. Notice however that
+beyond the regular trace, screen and tree logs, there are three additional loggers.
+We'll discuss these in more detail 
+</p>
+
+<dl class="org-dl">
+<dt>typedTreeLogger</dt><dd>A logger which uses stochastic mapping to
+generate samples from the marginal posterior over edge-typed trees,
+which amount to hypotheses about when and where each type change
+occurred on the tree.</dd>
+
+<dt>nodeTypedTreeLogger</dt><dd>Similar to typedTreeLogger, but the sampled trees
+includes type information only at internal nodes.  Used to build summary trees
+with BEAST 2's TreeAnnotator utility.</dd>
+
+<dt>trajLogger</dt><dd>A logger which uses particle filtering to log samples
+from the marginal posterior of multi-type population trajectories.</dd>
+</dl>
+
+<p>
+Each of these loggers is optional, and can be enabled/disabled by
+clicking the arrow buttons to their left and checking/unchecking the
+"Enable logger" box.  By default edge-typed tree logging is enabled,
+but trajectory logging is disabled.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-2-Getting-Started-Saving-and-Running-the-analysis" class="outline-3">
+<h3 id="id-2-Getting-Started-Saving-and-Running-the-analysis"><span class="section-number-3">2.3.</span> Saving and Running the analysis</h3>
+<div class="outline-text-3" id="text-id-2-Getting-Started-Saving-and-Running-the-analysis">
+<p>
+Now we can save and run the analysis:
+</p>
+<blockquote>
+<ol class="org-ol">
+<li>Open the "File" menu and select "Save". Choose a sensible location
+in your filesystem in which to save the analysis file, which should
+be named <code>h3n2.xml</code>.  (By default the location will be the
+examples/ folder from which you loaded the sequences: you'll want
+to choose somewhere else, perhaps a folder on your desktop.)</li>
+<li>Launch BEAST, select the <code>h3n2.xml</code> as the input file, then run the analysis.</li>
+</ol>
+</blockquote>
+</div>
+</div>
+
+<div id="outline-container-id-2-Getting-Started-Processing-the-results" class="outline-3">
+<h3 id="id-2-Getting-Started-Processing-the-results"><span class="section-number-3">2.4.</span> Processing the results</h3>
+<div class="outline-text-3" id="text-id-2-Getting-Started-Processing-the-results">
+<p>
+Once the analysis is complete, we can have a look at the results.  (If
+you're impatient, note that BEAST 2 regularly appends to output files
+and that these files can also be studied in the following way while
+BEAST is still running.)  The output files which should have been produced are
+</p>
+
+<dl class="org-dl">
+<dt><code>h3n2.log</code></dt><dd>The parameter log file,</dd>
+<dt><code>h3n2-h3n2_2deme.trees</code></dt><dd>A tree log file with no types marked,</dd>
+<dt><code>h3n2.h3n2_2deme.typed.trees</code></dt><dd>A tree log file with all ancestral types and type changes marked,</dd>
+<dt><code>h3n2.h3n2_2deme.typed.node.trees</code></dt><dd>A tree log  file with only types at ancestral nodes marked.</dd>
+</dl>
+</div>
+
+
+<div id="outline-container-id-3-Processing-the-results-Getting-Started-The-parameter-log-file" class="outline-4">
+<h4 id="id-3-Processing-the-results-Getting-Started-The-parameter-log-file"><span class="section-number-4">2.4.1.</span> The parameter log file</h4>
+<div class="outline-text-4" id="text-id-3-Processing-the-results-Getting-Started-The-parameter-log-file">
+<p>
+Firstly, let's open the parameter log file using the Tracer app (distributed with BEAST 2).
+</p>
+
+<blockquote>
+<p>
+Open Tracer, select "Import trace file&#x2026;" from the File menu.  Use the interface
+to explore the marginal distributions as estimated from the MCMC samples.
+</p>
+</blockquote>
+
+<p>
+We see immediately that the ESS for many of the parameters is low,
+which is unsurprising for such a short run.  However, the focus here is on
+understanding how BDMM-Prime analysis results are presented in the log file rather
+than trying to seriously interpret the results.
+</p>
+
+<p>
+With this in mind, see firstly that each of the estimated parameters including <code>Re</code>,
+<code>becomeUninfectiousRate</code> and <code>migrationRate</code> are represented in the log file
+by <code>ReSPEpi</code>, <code>becomeUninfectiousRateSPEpi</code> and <code>migrationRateSPEpi</code>.  The "SP"
+indicates that the parameter is a "Skyline parameter" (as opposed to BEAST 2's
+regular <code>RealParameter</code>).
+</p>
+
+<p>
+Also notice that when we have allowed type-specific (not scalar) values, as
+in the case of <code>Re</code>, the parameter name appears multiple times with a suffix
+indicating the type associated with the specific value.
+</p>
+
+<p>
+Finally, notice that when we have allowed the parameter to change at a particular
+time, each epoch/interval receives its own set of parameter values. In this case
+an additional ".endtime" value is also recorded, which identifies the end time
+of a specific interval, measured relative to the start time of the process.
+</p>
+
+
+<figure id="orgf1e9809">
+<img src="./analyses/tracer.png" alt="tracer.png">
+
+</figure>
+</div>
+</div>
+
+<div id="outline-container-id-3-Processing-the-results-Getting-Started-The-tree-log-files" class="outline-4">
+<h4 id="id-3-Processing-the-results-Getting-Started-The-tree-log-files"><span class="section-number-4">2.4.2.</span> The tree log files</h4>
+<div class="outline-text-4" id="text-id-3-Processing-the-results-Getting-Started-The-tree-log-files">
+<p>
+The untyped tree log file can be dealt with in the same way as all BEAST 2 tree files.
+However we also have tree log files containing sampled ancestral type information
+which we can use to learn about the type change process as it occurred on the tree.
+In this influenza case, this contains potentially interesting information about
+global influenza spatial dynamics.
+</p>
+
+<p>
+While in principle the .typed.trees file contains the most detailed information,
+it is easier to jointly summarize these ancestral dynamics with the tree itself
+by applying the TreeAnnotator program to the <code>.typed.node.trees</code> file.
+</p>
+
+<blockquote>
+<ol class="org-ol">
+<li>Open TreeAnnotator (distributed with BEAST 2)</li>
+<li>For the node heights option, select "mean heights". (This produces
+less biased estimates of divergence times than the default.)</li>
+<li>Select <code>h3n2.h3n2_2deme.typed.node.trees</code> as the input file.</li>
+<li>Choose an appropriate output file name (e.g. <code>summary.tree</code>)</li>
+<li>Click "Run".</li>
+</ol>
+</blockquote>
+
+
+<figure id="orgf0fb6a6">
+<img src="./analyses/treeannotator.png" alt="treeannotator.png">
+
+</figure>
+
+<p>
+Once complete, you can visualise the summary tree using any
+BEAST-compatible tree viewer, such as FigTree or IcyTree.
+</p>
+<blockquote>
+<ol class="org-ol">
+<li>Navigate to <a href="https://icytree.org">https://icytree.org</a> in a javascript-enabled web browser.</li>
+<li>Select "Load from file" from the File menu and select the <code>summary.tree</code> file
+produced by TreeAnnotator.</li>
+<li>From the Style menu choose "colour nodes by" and then "type".</li>
+<li>Also from the Style menu choose "Node height error bars" and then "<code>height_95%_HPD</code>".</li>
+</ol>
+</blockquote>
+
+<p>
+This should produce something quite like the figure below:
+</p>
+
+
+<figure id="orgbc59b77">
+<img src="./analyses/summary_tree.png" alt="summary_tree.png">
+
+</figure>
+
+<p>
+Notice that we've chosen to colour the nodes themselves rather than the edges.
+This is done precisely because in the case of these node-typed symmary trees,
+it is only the types at the nodes that are being represented.  Please resist
+the urge to colour the edges based on these values!  While tree viewers make this
+easy, and it is frequently done, it is a misleading representation.
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-1-Model-specification-using-BEAUti" class="outline-2">
+<h2 id="id-1-Model-specification-using-BEAUti"><span class="section-number-2">3.</span> Model specification using BEAUti</h2>
+<div class="outline-text-2" id="text-id-1-Model-specification-using-BEAUti">
+<p>
+In the following section we'll delve into the BDMM-Prime interface in
+more detail.  Unlike the tutorial, this section is written in a more
+general way rather than considering a specific data set. However, we
+will occasionally refer to the example in the tutorial, so it would be
+helpful if you'd worked through that first before proceeding to the
+sections below.
+</p>
+</div>
+
+<div id="outline-container-id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior"><span class="section-number-3">3.1.</span> The BDMM-Prime Tree Prior</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior">
+<p>
+Using BDMM-Prime amounts to selecting the BDMM-Prime tree prior when
+choosing priors for a particular analysis. This is a very flexible
+tree prior, encompassing a wide variety of single- and multi-type
+birth-death-sampling models, allowing for fixed-rate and
+time-dependent-rate analyses.
+</p>
+
+<p>
+For earlier packages such as BDSKY and BDMM, the inputs to the relevant tree priors
+were organised in very flat manner, with the tree prior directly taking
+inputs for birth and death rates, change times, including similar values for
+alternative parameterisations.
+</p>
+
+<p>
+In contrast, inputs to the BDMM-Prime tree prior are organised in a
+hierarchical way which seeks to avoid repetition and improve
+flexibility.  At the top level, the BDMM-Prime tree prior takes 
+the following five main elements:
+</p>
+<ol class="org-ol">
+<li>The tree,</li>
+<li>tip type information,</li>
+<li>starting type prior probabilities, and</li>
+<li>a "parameterization" object defining how the model is to be parameterized.</li>
+</ol>
+
+<p>
+The tree itself is automatically defined and provided to the tree prior by BEAUti.
+It therefore remains only to define the remaining three, which are detailed in the
+following sections.
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Defining-Tip-Types" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Defining-Tip-Types"><span class="section-number-3">3.2.</span> Defining Tip Types</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Defining-Tip-Types">
+<p>
+A "Type Trait Set" is used to associate types with each of the leaf nodes of the
+tree (i.e. each of the samples in the sequence alignment).
+It is completely analogous to the trait sets used associate times with
+leaf nodes.
+</p>
+
+<p>
+To set the tip types, open the Priors panel and ensure the BDMM-Prime tree prior 
+is expanded by clicking the arrow button on the left-hand side of the window.
+The relevant input editor is labeled "Type Trait Set" and can be found by scrolling down 
+past the "Parameterization" section.
+</p>
+
+<p>
+The input editor functions very similarly to the tip dates input editor.  All tips
+are initially given the same type, <code>UNSPECIFIED</code>. (There is nothing
+special about this value, only that it is shared among all tips, causing the model
+to include only one type.) Individual can be specified using any string, although
+problems may occur if strings contain spaces or other whitespace characters.
+</p>
+
+<p>
+To set the types, one can double-click on a specific value in the type
+column and enter a new value. This approach quickly becomes tedious,
+however, so I highly recommend that you instead click the
+<code>Auto-configure</code> button.  This presents a dialog box which allows you
+to assign types by either extracting type values from a portion of the
+taxon/sequence name, or by loading them in from an external file. (The
+required format of this file is described in the built-in help which
+can be accessed by pressing the button labeled <code>?</code>.)
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities"><span class="section-number-3">3.3.</span> Start type prior probabilities</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities">
+<p>
+Start type prior probabilities are a little-discussed yet crucial
+aspect of multi-type birth-death model specification.  For a model
+with $M$ demes, the start type prior probabilities are $M$ positive
+numbers which sum to 1 and represent the (categorical) prior
+distribution over the possible types associated with the original
+individual in the multi-type birth-death process.
+</p>
+
+<p>
+To set these prior probabilities, find the relevant input editor within
+the tree prior input editor. (It is usually located between the Parameterization
+and Type Trait Set input sections.) For a model with two types, it appears as
+follows in its initial configuration:
+<img src="./figures/startTypePriorProbs.png" alt="startTypePriorProbs.png">
+Probabilities are entered as numerical values with spaces between
+them.  The number of values must match the number of demes in your
+model.  The $i^{\text{th}}$ number is the prior probability for the
+$i^{\text{th}}$ type when the types are sorted in lexicographical
+(generalized alphabetical) order.
+</p>
+
+<p>
+By default the prior probabilities are chosen to be uniform.  In many
+cases this is a sensible choice, however it may be the case that you
+are certain that the birth-death process began (or did <i>not</i> begin) in
+some particular state.  For instance, you might know - or be willing
+to assume - that an outbreak was seeded by travel cases other
+locations.  In such cases you can modify the probability values to reflect
+these prior assumptions.
+</p>
+
+<p>
+It is also possible to "estimate" these prior probabilities. Clicking
+the estimate button causes BEAUti to assign a flat Dirichlet
+"hyper-prior" to the probabilities (i.e. a uniform distribution
+subject only to the constraint that the probabilities must be positive
+and sum to 1). We advise against doing this, as doing so is
+completely equivalent to simply setting a uniform prior in the first
+place.
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Parameterizations" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Parameterizations"><span class="section-number-3">3.4.</span> Parameterizations</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Parameterizations">
+<p>
+BDMM-Prime provides a simple plug-in mechanism for handling different
+parameterizations.  With only one minor exception for the FBD parameterization
+(described below), all of these parameterizations provides perfectly equivalent
+specifications of the birth-death model.
+</p>
+
+<p>
+Given this equivalence, one might wonder why multiple parameterizations
+are necessary at all. There are two main reasons these are important:
+</p>
+<ol class="org-ol">
+<li>Context-specific parameterizations allow for easier interpretation of inference results, and</li>
+<li>they allow appropriate field-specific prior information to be included.</li>
+</ol>
+
+<p>
+This second point is arguably the most important as, for instance, a
+paleontologist might conceivably have prior information on past speciation or diversification
+rates, while epidemiologists might be able to more confidently put bounds on $R_e$.
+</p>
+
+<p>
+Thus it is often a good idea to select the parameterization which
+best reflects your biological context.
+</p>
+
+<p>
+The following sections briefly describe the currently-available parameterizations 
+and their relationships to one another.
+</p>
+</div>
+
+<div id="outline-container-id-3-Parameterizations-Model-specification-using-BEAUti-Canonical" class="outline-4">
+<h4 id="id-3-Parameterizations-Model-specification-using-BEAUti-Canonical"><span class="section-number-4">3.4.1.</span> Canonical</h4>
+<div class="outline-text-4" id="text-id-3-Parameterizations-Model-specification-using-BEAUti-Canonical">
+<p>
+The "canonical" parameterization is in a sense the native mathematical
+description of the birth-death model; the its parameters reflect the rates of
+the basic reactions which make up the process.
+</p>
+
+<dl class="org-dl">
+<dt>Birth Rate ($\lambda_{ii}$)</dt><dd>This is the (per individual per unit time) rate at which
+each individual in the population $i$ produce new individuals of their own type.</dd>
+<dt>Death Rate ($\mu_i$)</dt><dd>Similarly, this is the rate at which individuals in population $i$
+are removed from the population.</dd>
+<dt>Sampling Rate ($\psi_i$)</dt><dd>This is the rate at which individuals in population $i$ are "sampled". A non-zero
+rate here corresponds to a process that will produce samples that are distributed
+through time. (Sometimes referred to as $&psi;$-sampling.)</dd>
+<dt>Removal probability ($r_i$)</dt><dd>This is the probability with which sampled individuals
+in population $i$ are also removed from the population.</dd>
+<dt>Rho sampling ($\rho_i$)</dt><dd>This parameterizes binomial sampling at a
+particular time (usually the present). If enabled, each individual in 
+population $i$ is considered in turn, and sampled with this probability.</dd>
+</dl>
+
+<p>
+In addition, the following rates parameterize reactions which allow type changes
+to occur.  In general these are specified as matrices, allowing for a unique
+rate for every ordered pair of distinct types.
+</p>
+<dl class="org-dl">
+<dt>Migration Rate ($m_{ij}$)</dt><dd>This is the rate at which an individual with some type <i>becomes</i>
+an individual of another type.</dd>
+<dt>Birth Among Demes ($\lambda_{ij}$)</dt><dd>This is the rate at which an individual with some type <i>produces</i>
+an individual of another type.</dd>
+</dl>
+
+<p>
+Finally, the following parameter expresses the total duration of the birth-death-sampling
+process. 
+</p>
+<dl class="org-dl">
+<dt>ProcessLength</dt><dd>the time between the start of the process and the most recent sample.
+(Here equivalent to the "origin" of the process.)</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological" class="outline-4">
+<h4 id="id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological"><span class="section-number-4">3.4.2.</span> Epidemiological</h4>
+<div class="outline-text-4" id="text-id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological">
+<p>
+The assumption behind the "epidemiological" parameterization is that
+individuals in the model represent infected individuals in a
+population. In place of the canonical birth, death and sampling
+parameters we have
+</p>
+
+<dl class="org-dl">
+<dt>Re ($R_{ii}$)</dt><dd>This is the type-specific effective reproductive number,
+defined by $R_i=\lambda_{ii}/(\mu_i+r_i\psi_i)$.  Values above 1
+correspond to growing (in expectation) numbers of infected
+individuals.</dd>
+<dt>Become uninfectious rate ($\delta_i$)</dt><dd>This is the rate at which infected individuals
+are removed from the infectious pool, either with or without sampling.
+In terms of the canonical parameters, this is $\mu_i+r_i\psi_i$.</dd>
+<dt>Sampling proportion ($s_i$)</dt><dd>This is the probability with which infected individuals
+are sampled through time, defined as $\psi_i/(\mu_i+r_i\psi_i)$.</dd>
+</dl>
+
+<p>
+Besides the migration matrix, epidemiological compartment changes are parameterized by:
+</p>
+<dl class="org-dl">
+<dt>Re Among Demes ($R_{ij}$)</dt><dd>This is a generalisation of the effective reproductive number
+to account for transmissions between epidemiological compartments. It is defined
+as $R_{ij}=\lambda_{ij}/(\mu_i+r_i\psi_i)$.</dd>
+</dl>
+
+<p>
+(The rho sampling, removal probability, migration and process
+length parameters are identical to those described for the canonical
+parameterization.)
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process" class="outline-4">
+<h4 id="id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process"><span class="section-number-4">3.4.3.</span> Fossilized birth-death process</h4>
+<div class="outline-text-4" id="text-id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process">
+<p>
+The FBD parameterization is most appropriate when individuals in the
+model are intended to represent whole species, and birth and death
+events correspond to speciation and extinction.  In place of the
+canonical birth, death and sampling rate parameters we have
+</p>
+
+<dl class="org-dl">
+<dt>Diversification ($d_{ii}=\lambda_{ii}-\mu_i$)</dt><dd>This is the rate at
+which species richness increases through time.</dd>
+<dt>Turnover ($t_{i}=\mu_i/\lambda_{ii}$)</dt><dd>For $d_{ii}&gt;0$, this
+parameter indicates the relative frequency with which species go extinct before
+speciation, and satisfies $0\leq t_i &lt; 1$.</dd>
+<dt>Sampling proportion ($s_i=\psi_i/(\mu_i+r_i\psi_i)$)</dt><dd>Analogous to
+the epdemiological parameterization, this indicates the probability
+with which species leave fossils before going extinct.</dd>
+</dl>
+
+<p>
+Besides the migration rate, species type changes are parameterized by:
+</p>
+<dl class="org-dl">
+<dt>Diversification between types ($d_{ij}=\lambda_{ij}-\mu_i$)</dt><dd>This
+is a generalisation of diversification rate, but allowing for one of the daughter
+species to carry a new type.</dd>
+</dl>
+
+<p>
+(The rho sampling, removal probability, migration and process
+length parameters are identical to those described for the canonical
+parameterization.)
+</p>
+
+<p>
+<b>Note</b>: Unlike the Canonical and Epidemiological parameterizations,
+the FBD parameterization on its own does not permit exploration of the
+whole parameter space.  In particular, it makes the assumption that
+diversification is always increasing ($d_{ii}&gt;0$ and $t_{i}&lt;1$).  If
+you want to also allow negative diversification, use the Canonical
+parameterization instead.
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Skyline-Parameters" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Skyline-Parameters"><span class="section-number-3">3.5.</span> Skyline Parameters</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Skyline-Parameters">
+<p>
+Besides Parameterizations, an importance difference between BDMM-Prime
+and earlier packages like BDMM and BDSKY is the use of special-purpose
+"Skyline parameters" to describe piecewise-constant variation in rates
+and other parameters. Each piecewise-constant function must be
+specified using a combination of "change times" and "epoch values",
+the latter determining the value of the function should take in each
+"epoch" between the change times. 
+</p>
+
+<p>
+The relationship between epochs, change times and epoch values is
+illustrated in the following schematic:
+</p>
+
+
+<figure id="orgfc7e97e">
+<img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
+
+</figure>
+
+<p>
+Each skyline parameter has its own set of change times, which can be
+specified as times relative to the start of the process or ages
+relative to the most recent sample in the tree. These times or ages
+can be specified as absolute values or as fractions of the total
+process length.  Keeping these decisions close to the parameter they
+affect and independent of those affecting other parameters provides
+maximum flexibility and minimal confusion.  The BDMM-Prime BEAUti
+interface provides each of these options for every relevant rate and
+probability parameter.
+</p>
+
+<p>
+Skyline parameters come in two main variants: Vector and Matrix
+skyline parameters.  These differ only in that they are applied to
+vector-valued and matrix-valued parameters, respectively.
+</p>
+</div>
+
+<div id="outline-container-id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor" class="outline-4">
+<h4 id="id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor"><span class="section-number-4">3.5.1.</span> Overview of the skyline parameter input editor</h4>
+<div class="outline-text-4" id="text-id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor">
+<p>
+In this section we delve into the details of the BDMM-Prime
+skyline parameter user interface.  Although focus here on vector skyline
+parameters, everything here is also applicable to vector skyline parameters.
+</p>
+
+<p>
+The input editor BDMM-Prime uses for specifying skyline parameters is quite
+complex, reflecting the large number of ways in which these parameters
+can be configured.  The general layout is as follows:
+</p>
+
+
+<figure id="org087ae1b">
+<img src="./figures/skylineLayout.png" alt="skylineLayout.png">
+
+</figure>
+
+<p>
+Here you can see that the configuration editor consists of three main parts:
+the epoch configuration, the value configuration and an epoch visualiser
+for helping with the configuration. The following sections detail each
+of these parts in turn.
+</p>
+</div>
+
+<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration" class="outline-5">
+<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration"><span class="section-number-5">3.5.1.1.</span> Epoch configuration</h5>
+<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration">
+<p>
+The epoch configuration portion of the input editor is responsible for
+defining the number of times a skyline parameter will change, and the
+times at which these changes will happen.
+</p>
+
+<p>
+The "Number of change times" input specifies how many changes will take place.
+By default this is 0, indicating that the parameter will take a constant value
+at all times.  In this case, none of the user interface elements for
+defining the change times are displayed.  To see those, you need to specify
+at least 1 change time.
+</p>
+
+<p>
+If this condition is satisfied, other elements are displayed. The
+first of these requests the (initial) values of the change times.  By
+default these represent the "ages" of the change points prior to the
+most recent sample. Alternatively, by unchecking the "Times specified
+as ages" checkbox, the numbers are interpreted as times (increasing
+into the future) relative to the starting point of the process.  In
+any case, the values must increase left to right: when specified as an
+"age", the first change time represents the most recent change time
+looking into the past. Otherwise, the first change time represents the
+oldest change time looking from the start of the process into the
+future.
+</p>
+
+<p>
+By default, the change times are not estimated: they retain their chosen
+values through the whole analysis. If you choose, however, you can check
+the "Estimate change times" checkbox to tell BEAST to update these change
+times during the MCMC.  (Remember to configure a prior for the change times
+if you do this!)
+</p>
+
+<p>
+Finally, by checking the "Relative to process length" checkbox, one
+can cause the change times/ages to be interpreted as fractions of the
+process duration.  (I.e. the time between the start of the process and
+the most recent genetic sample.)  In this case, the numeric values
+provided for the change times must fall between 0 and 1. Note that the
+value of the "Times specified as ages" checkbox still determines
+whether these values increase into the past (default) or into the
+future.  Clicking the "Distribute evenly" button causes these relative
+times or ages to be distributed evenly between 0 and 1.
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration" class="outline-5">
+<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration"><span class="section-number-5">3.5.1.2.</span> Value configuration</h5>
+<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration">
+<p>
+The initial parameter values corresponding to each epoch are configured
+using an input table.  By default, the "Scalar values" option is checked,
+causing these values are applied to individuals of all types even when
+multiple types exist in the dataset.  If you're performing a multi-type
+analysis and want different types to have their own value of a given parameter,
+uncheck this option.
+</p>
+
+<p>
+<b>Beware:</b> When entering values using this table, always remember to
+press "Enter" (or "Return") after entering the value in order for
+BEAUti to make the requested modificiation.
+</p>
+
+<p>
+When estimating values, the "Link identical values" option causes BDMM-Prime to
+consider identical values as representing the same degree of freedom. With
+this enabled, any set of values which are initially identical will continue
+to be identical throughout the analysis.  This option is useful for setting
+up multi-type skyline analyses in which some of the type-specific
+values extend across epoch boundaries.
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation" class="outline-5">
+<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation"><span class="section-number-5">3.5.1.3.</span> Epoch visualisation</h5>
+<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation">
+<p>
+The option "Display epoch visualisation" is useful when analysing
+samples distributed through time, as enabling it displays a graphical
+depiction of the sample distribution alongside the specified epochs
+and change times. Sample times are depicted using red and orange
+circles, with the coloration changing between every pair of epochs,
+allowing one to determine at a glance which epoch a given sample is
+currently assigned to.
+</p>
+
+<p>
+This visualisation is particularly helpful when setting up sampling
+rate or proportion change times, which are often chosen based on the
+time of the oldest sample.  (For instance, in the tutorial we configured
+the sampling rate of H3N2 such that it was set to zero prior to the
+oldest sample included in the analysis.)
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Miscellaneous-inputs" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Miscellaneous-inputs"><span class="section-number-3">3.6.</span> Miscellaneous inputs</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">
+<p>
+Besides the main settings for the model described above, there are several
+minor options and settings that can also be configured.  Here they are
+in their default configuration:
+</p>
+
+
+<figure id="org0930935">
+<img src="./figures/miscParams.png" alt="miscParams.png">
+
+</figure>
+
+<p>
+Below we describe each of them in turn.
+</p>
+
+<dl class="org-dl">
+<dt>Condition on Survival</dt><dd>This is a modelling option which, when
+enabled, causes the tree prior to include a term which conditions
+the tree probability on having at least one sampled individual in
+the dataset.</dd>
+
+<dt>Use Analytical Single Type Solution</dt><dd>When there is only a single
+type in the dataset, this option tells BDMM-Prime to
+use analytical (BDSKY) expressions for computing the tree probability
+rather than to rely on numerical integration. For multi-type analyses
+this option has no effect.  (Unless you are testing the numerical
+integration code, there is really no reason to ever disable this option.)</dd>
+
+<dt>Rel Tolerance and Abs Tolerance</dt><dd>These parameters determine the tolerance
+thresholds given to the numerical integration algorithm used to compute
+the tree probability when multiple types are in play.  You should usually
+leave these as-is.</dd>
+
+<dt>Parallelize</dt><dd>This option determines whether or not BDMM-Prime will
+use multiple execution threads in an attempt to speed up the tree prior
+calculation on computers with multiple CPU cores available.</dd>
+
+<dt>Parallelization Factor</dt><dd>When parallelization is enabled, this
+determines the fraction of all of the tree nodes a subtree must
+contain for its tree prior calculation to be assigned to a different
+thread. The default value of 0.1 should be fine in most cases.</dd>
+</dl>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-1-Sampling-Latent-Variables" class="outline-2">
+<h2 id="id-1-Sampling-Latent-Variables"><span class="section-number-2">4.</span> Sampling Latent Variables</h2>
+<div class="outline-text-2" id="text-id-1-Sampling-Latent-Variables">
+<p>
+One important distinguishing feature of BDMM-Prime over the earlier
+BDMM package is its ability to produce samples of ancestral lineage
+types and multi-type population trajectories from the joint posterior
+distribution, even though these variables are not sampled using the
+MCMC algorithm.  Instead, BDMM-Prime employs stochastic mapping and
+particle filtering to sample these latent variables during the logging
+procedure.  By applying these algorithms to only a small subset of
+the states visited by the MCMC algorithm, we obtain these latent
+variable samples for almost no computational cost at all.
+</p>
+
+<p>
+In BEAUti, both of these algorithms are configured in the MCMC
+pane (where the chain length and loggers are configured).
+</p>
+</div>
+
+<div id="outline-container-id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions" class="outline-3">
+<h3 id="id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions"><span class="section-number-3">4.1.</span> Tree edge types and type transitions</h3>
+<div class="outline-text-3" id="text-id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions">
+<p>
+Tree edge types and type transitions are sampled using a stochastic
+mapping algorithm based on the work of <a href="https://doi.org/10.1101/555805">Höhna et al., 2019</a>.  The stochastic
+mapping procedure and the corresponding logging of edge-typed trees is
+enabled by default.  To enable/disable stochastic mapping, simply
+expand the <code>typedTreeLogger</code> and <code>nodeTypedTreeLogger</code> input editors
+check/uncheck the "Enable Logger" checkbox.
+</p>
+
+
+<figure id="org3c3bad5">
+<img src="./figures/mappingEnable.png" alt="mappingEnable.png">
+
+</figure>
+
+<p>
+These input editors can also be used to adjust important inputs such
+as the name of the output files and the number of MCMC steps between
+each call to the mapping algorithm.
+</p>
+
+<p>
+When enabled, these loggers produce two additional tree log files
+beyond the standard untyped tree log file produced by BEAST:
+</p>
+<ol class="org-ol">
+<li>a log file with the extension ".typed.trees" containing fully
+edge-typed trees, and</li>
+<li>a log file with the extension ".typed.node.trees" containing trees
+annotated only with the types at their internal nodes.</li>
+</ol>
+
+<p>
+These files are equivalent to those produced by packages such as
+MultiTypeTree and BDMM. Both of these files can be examined using tree
+viewers such as FigTree or IcyTree, however only the typed node tree
+file can be summarized using TreeAnnotator.
+(See the <a href="#id-3-Processing-the-results-Getting-Started-The-tree-log-files">tutorial section</a> for an example of using TreeAnnotator to
+summarize typed node trees.)
+</p>
+
+<p>
+Note that the most sophisticated use of these trees is in answering
+questions about the timing and type of events on the tree.  For
+instance, one can ask, "When did the first migration on the tree
+occur?"  To answer such a question, one could load the full
+.typed.trees file into R (using, for instance, the treeio package),
+then compute this time for every tree. This would yield a set of
+samples from the posterior distribution for this time, which could
+then be characterised.
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-2-Sampling-Latent-Variables-Multi-type-trajectories" class="outline-3">
+<h3 id="id-2-Sampling-Latent-Variables-Multi-type-trajectories"><span class="section-number-3">4.2.</span> Multi-type trajectories</h3>
+<div class="outline-text-3" id="text-id-2-Sampling-Latent-Variables-Multi-type-trajectories">
+<p>
+Multi-type trajectories are sampled using a phylogenetic particle
+filtering algorithm based on the method described by
+<a href="https://doi.org/10.1093/molbev/msz106">Vaughan et al., 2019</a>.  For a given sampled tree and set of model
+parameters, this algorithm simulates an ensemble of possible
+histories, members of which are weighted by their agreement with the
+tree and parameters. One particular history is then sampled from this
+weighted distribution.  By applying this process to a subsample of the
+states visited by the MCMC chain, we are left with a set of
+trajectories drawn from the posterior distribution of the population
+history, given the genetic data.
+</p>
+
+<p>
+Because the output files can be rather large, trajectory sampling
+is disabled by default.  Like the stochastic mapping algorithm, it
+can be enabled by expanding the relevant logger input editor -
+"trajLogger" in this case - and ensuring "Enable Logger" is checked.
+</p>
+
+
+<figure id="org43675d6">
+<img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
+
+</figure>
+
+<p>
+Once enabled, you can adjust the logging frequency by changing the
+"Log Every" value.  The default is 1000, meaning a trajectory will be
+sampled and recorded every 1000 steps.  This is probably too frequent,
+as trajectory files are large and you probably don't need more than a
+few hundred samples to characterise the posterior. Thus I suggest you
+increase this value to at least "10000" for most analyses.
+</p>
+
+<p>
+Further options to do with the particle filtering algorithm itself can
+be found by clicking the unlableled button next to the "typedTraj.t:"
+label, which brings up a dialog box as shown below:
+</p>
+
+
+<figure id="org196970f">
+<img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
+
+</figure>
+
+<p>
+Here we can set the "N Particles" option, which determines the size of
+the weighted trajectory ensemble used to sample final trajectory. The
+default is 1000. Increasing this number will improve the accuracy of
+the calculation, but requires more computation. Ideally, one should
+always compare results generated using different trajectory ensemble
+sizes in order to test for convergence.
+</p>
+
+<p>
+The "Resamp Thresh" value indicates the effective size (relative to
+the total number of particles) of the particle ensemble that will
+trigger a resample, during the sequential monte carlo algorithm.
+The default value of 0.5 is appropriate for most situations.
+</p>
+
+<p>
+The "Use Tau Leaping" checkbox specifies whether to use exact
+Gillespie simulation or the approximate finite time step tau-leaping
+algorithm to simulate trajectories. The approximation is significantly
+faster and should generally be used, but if you run into numerical
+stability issues you might consider unchecking this option.
+</p>
+
+<p>
+The "Min Leap Count" and "Epsilon" values affect the tau leaping
+algorithm, when used.  "Min Leap Count" specifies the minimum number of
+stochastic integration steps which will be used to simulate a given trajectory,
+while "Epsilon" determines how conservative the algorithm should be when
+selecting step sizes, with smaller values yielding shorter step sizes.
+It's almost always okay to leave these parameters alone.
+</p>
+</div>
+
+<div id="outline-container-id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories" class="outline-4">
+<h4 id="id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories"><span class="section-number-4">4.2.1.</span> Plotting sampled trajectories</h4>
+<div class="outline-text-4" id="text-id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories">
+<blockquote>
+<p>
+For our example here, we use the trajectory file generated by the 
+analysis from the <a href="#id-2-Getting-Started-Setting-up-your-first-analysis">tutorial section</a> with trajectory logging enabled as
+above.
+</p>
+</blockquote>
+
+<p>
+Trajectory data generated by BDMM-Prime is stored as a simple table in
+the plain text file with the extension ".traj".  The format of this
+file is described in detail in <a href="#id-2-Appendices-Trajectory-file-format">the appendix</a>.
+</p>
+
+<p>
+The easiest way to plot trajectories sampled using BDMM-Prime is
+using the <a href="https://tidyverse.org">tidyverse</a> suite of R packages. To install these in R (if you haven't already), simply
+issue the following command from the R command line:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R">install.packages(<span class="org-string">"tidyverse"</span>)
+</pre>
+</div>
+
+<p>
+(You'll only have to do that once.) With the packages installed you'll need
+make them available in your current R session by issuing the command:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R"><span class="org-ess-modifiers">library</span>(tidyverse)
+</pre>
+</div>
+
+<p>
+The first step is to load the trajectory file using the <code>read_tsv</code> command.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R">traj <span class="org-ess-assignment">&lt;-</span> read_tsv(<span class="org-string">"h3n2.h3n2_2deme.traj"</span>)
+</pre>
+</div>
+
+<p>
+When doing this it is a good idea to omit some of the early trajectories
+to account for burn-in.  (Examining the parameter log file is one way to
+get an idea of how much to remove.)
+As described in the <a href="#id-2-Appendices-Trajectory-file-format">trajectory file format</a> section, the table has several
+columns, one of which is "Sample", which indicates the MCMC iteration
+a particular trajectory belongs.  We can use this to remove trajectories
+</p>
+
+<p>
+For example, the following removes trajectories belonging to the first 10% of
+samples, assuming $10^6$ samples overall:
+</p>
+<div class="org-src-container">
+<pre class="src src-R">traj <span class="org-ess-assignment">&lt;-</span> traj <span class="org-ess-XopX">%&gt;%</span> filter(Sample&gt;=100000)
+</pre>
+</div>
+
+<p>
+Another column in the table is named "variable", and is used to
+indicate the type of information a given row provides about the trajectory.
+To plot population sizes, we are only interested in rows where the variable
+has the value "N", which means that the row contains information about a population size.
+Thus, we can further filter our table to include only these rows:
+</p>
+<div class="org-src-container">
+<pre class="src src-R">traj <span class="org-ess-assignment">&lt;-</span> traj <span class="org-ess-XopX">%&gt;%</span> filter(variable==<span class="org-string">"N"</span>)
+</pre>
+</div>
+
+<p>
+To actually plot the distribution, we use the fact that each row now
+contains an "age" relative to the end of the process, a "type"
+indicating the type of the population, and a "value" indicating the
+size of the population immediately before age.
+</p>
+<div class="org-src-container">
+<pre class="src src-R">ggplot(traj, aes(age, value, col=factor(type), group_by=factor(Sample))) +
+  geom_line(alpha=0.2) + xlim(0,10) +
+  ylab(<span class="org-string">"Population size"</span>)
+</pre>
+</div>
+<p>
+Here we've chosen to simply plot all of the sampled trajectories together,
+with each trajectory coloured by its type.  Note the <code>group_by</code> option, which
+is used to tell ggplot that rows with the same "Sample" value belong to
+the same trajectory.  The use of <code>factor()</code> is important, as without this
+ggplot will treat the type and Sample indices as continuous variables rather
+than integers.  The <code>xlim(0,10)</code> command is included to focus on the time
+domain covered by the majority of the trajectories.
+</p>
+
+
+<figure id="org0c00115">
+<img src="./analyses/trajectories.png" alt="trajectories.png">
+
+</figure>
+
+<p>
+Notice that the types are indicated using an integer rather than the original label.
+As described in the section on <a href="#id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities">start type prior probabilities</a>, these integers are
+simply the indices of the type names when sorted lexicographically
+(generalized alphabetically). Thus in this case, 0 stands for Hong
+Kong and 1 stands for New Zealand.
+</p>
+
+<p>
+While plotting all of the trajectories in this way can be interesting,
+it's often more useful to display precise credible intervals for the
+population sizes through time, similar to the approach often used to
+visualize the results of Bayesian skyline plot analyses.
+</p>
+
+<p>
+To do this, we first define a vector of ages which will span the time
+domain of our plot. In our case, we'll use 1001 values spread evenly between
+ages 0 and 10:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-R">ages <span class="org-ess-assignment">&lt;-</span> seq(0,10,length.out=1001)
+</pre>
+</div>
+
+<p>
+Then, we need to determine the population size in each trajectory at
+every one of these ages.  We can do this by making use of the
+<code>approx()</code> function, which is a base R procedure for interpolating
+function sampled at discrete time points.
+</p>
+<div class="org-src-container">
+<pre class="src src-R">gridded_traj <span class="org-ess-assignment">&lt;-</span> traj <span class="org-ess-XopX">%&gt;%</span>
+  group_by(Sample, type) <span class="org-ess-XopX">%&gt;%</span>
+  reframe(N=approx(age, value, ages, method=<span class="org-string">"constant"</span>, f=0, yright=0)$y,
+          age=ages)
+</pre>
+</div>
+<p>
+We can then summarize the distribution at each time point by computing
+the 50%, 2.5%, and 97.5% quantiles, corresponding respectively to the median
+and the lower and upper bounds of the 95% central posterior density (CPD).
+</p>
+<div class="org-src-container">
+<pre class="src src-R">gridded_traj <span class="org-ess-assignment">&lt;-</span> gridded_traj <span class="org-ess-XopX">%&gt;%</span>
+  group_by(type,age) <span class="org-ess-XopX">%&gt;%</span>
+  summarize(low=quantile(N,0.025),
+            high=quantile(N,0.975),
+            med=quantile(N,0.5))
+</pre>
+</div>
+<p>
+These values can be nicely plotted using <code>geom_ribbon()</code> to display the CPD boundaries
+and a <code>geom_line()</code> to display the medians.
+</p>
+<div class="org-src-container">
+<pre class="src src-R">ggplot(gridded_traj,
+       aes(age, N, col=factor(type), fill=factor(type), y=med, ymin=low, ymax=high)) +
+    geom_ribbon(alpha=0.5) +
+  geom_line() +
+  ylab(<span class="org-string">"Population size"</span>)
+</pre>
+</div>
+<p>
+This yields the following graphic:
+</p>
+
+
+<figure id="orgfc726c3">
+<img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
+
+</figure>
+
+<p>
+This can be further improved by including actual calendar times on the time axis.
+To do this we use our knowledge that the final included sample is from September 1, 2005,
+meaning that this is the date relative to which our ages are computed.  (Our ages
+are the number of years prior to this date.)
+</p>
+<div class="org-src-container">
+<pre class="src src-R">ggplot(gridded_traj <span class="org-ess-XopX">%&gt;%</span>
+       mutate(Date=ymd(<span class="org-string">"2005/09/01"</span>)-age*365) <span class="org-ess-XopX">%&gt;%</span>
+       mutate(Location=recode(factor(type),
+                         <span class="org-string">"0"</span>=<span class="org-string">"Hong Kong"</span>,
+                         <span class="org-string">"1"</span>=<span class="org-string">"New Zealand"</span>)),
+       aes(date, N, col=Location, fill=Location, y=med, ymin=low, ymax=high)) +
+    geom_ribbon(alpha=0.5) +
+    geom_line() + ylab(<span class="org-string">"Population size"</span>) +
+    scale_x_date(date_breaks=<span class="org-string">"1 year"</span>, date_labels=<span class="org-string">"%Y"</span>)
+</pre>
+</div>
+
+
+<figure id="orgdd2e200">
+<img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
+
+</figure>
+
+<p>
+As an aside, you may have noticed that the population sizes inferred
+in these example analyses are extremely small, given that these are
+intended to reflect global Influenza H3N2 dynamics with sampled sequences
+drawn from different countries across several years.  Recall however
+that both $R_e$ and the become uninfectious rate $\delta$ were assumed
+constant in the tutorial.  By fitting such a simple constant-rate
+birth-death model to this dataset, our parameters are forced to
+represent "effective" rates and "effective" population sizes which
+best fit the birth-death dynamics on this scale.
+</p>
+
+<p>
+While these effects are made very obvious by the population trajectory
+posteriors, <i>they are no less present when performing birth-death
+analyses without trajectory sampling</i>. It is therefore always important to
+keep the possibility of these kinds of model-fitting effects in mind when
+interpreting birth-death results and phylodynamic inference
+results in general, even when applied at smaller scales. 
+</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-1-Appendices" class="outline-2">
+<h2 id="id-1-Appendices"><span class="section-number-2">5.</span> Appendices</h2>
+<div class="outline-text-2" id="text-id-1-Appendices">
+</div>
+<div id="outline-container-id-2-Appendices-XML-reference" class="outline-3">
+<h3 id="id-2-Appendices-XML-reference"><span class="section-number-3">5.1.</span> XML reference</h3>
+<div class="outline-text-3" id="text-id-2-Appendices-XML-reference">
+<p>
+While the BDMM-Prime BEAUti interface is quite flexible, there are vastly more
+possibilities for model configurations than those which are accessible via
+the graphical interface.  In this section we detail the important aspects of
+the BEAST 2 XML model description language as it pertains to BDMM-Prime.
+</p>
+</div>
+
+<div id="outline-container-id-3-XML-reference-Appendices-Model-definition" class="outline-4">
+<h4 id="id-3-XML-reference-Appendices-Model-definition"><span class="section-number-4">5.1.1.</span> Model definition</h4>
+<div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Model-definition">
+</div>
+
+<div id="outline-container-id-4-Model-definition-XML-reference-Appendices-The-Birth-Death-Migration-Distribution" class="outline-5">
+<h5 id="id-4-Model-definition-XML-reference-Appendices-The-Birth-Death-Migration-Distribution"><span class="section-number-5">5.1.1.1.</span> The Birth-Death-Migration Distribution</h5>
+<div class="outline-text-5" id="text-id-4-Model-definition-XML-reference-Appendices-The-Birth-Death-Migration-Distribution">
+<p>
+The principle object contained in every BDMM-Prime analysis is the
+<code>bdmmprime.distribution.BirthDeathMigrationDistribution</code> object representing
+the probability of a tree under some birth-death distribution.
+</p>
+
+<p>
+In the XML the element defining this object usually appears as the
+value of a <code>distribution</code> input to a higher leverl
+<code>CompoundDistribution</code> object in the following form:
+</p>
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">distribution</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.distribution.BirthDeathMigrationDistribution"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">distribution</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+The main inputs defined for the <code>BirthDeathMigrationDistribution</code> are
+as follows:
+</p>
+
+<dl class="org-dl">
+<dt><code>parameterization</code> (<code>Parameterization</code>, required)</dt><dd>This input expects an object of the abstract type <code>Parameterization</code> to
+specify the birth-death model parameters. Existing <code>Parameterization</code> objects
+are given in the next section.</dd>
+<dt><code>startTypePriorProbs</code> (<code>Function</code>, required for multiple types)</dt><dd>This is a object
+of type <code>Function=/=RealParameter</code> whose dimension is the number of types and
+whose values represent the prior probability for the type of the initial
+individual in the process belonging to each possible type.</dd>
+<dt><code>typeTraitSet</code> (<code>TraitSet</code>)</dt><dd>This is a <code>TraitSet</code> specifying the type associated with
+each Taxon.</dd>
+<dt><code>typeLabel</code> (<code>String</code>)</dt><dd>If provided, this is a <code>String</code> specifying the node metadata key
+from which the type information should be read.</dd>
+<dt><code>conditionOnSurvival</code> (<code>Boolean</code>, default true)</dt><dd>This indicates
+whether the tree prior should be conditioned on the presence of at
+least one sample.</dd>
+<dt><code>conditionOnRoot</code> (<code>Boolean</code>, default false)</dt><dd>This indicates
+whether the tree prior should be condigioned on the time and presence of the
+root event.  <b><b>Note:</b></b> If enabled, all <code>processLength</code> inputs must also be
+provided with the tree instead of an origin parameter.</dd>
+<dt><code>finalSampleOffset</code> (<code>Function</code>, default 0)</dt><dd>If provided, this determines
+the time between the final sample and the end of the birth-death-sampling process.
+This input is important if you want the model to be able to include the absence of samples in this
+period as information for inferring the various rates.  It is also important when
+jointly estimating tip dates.  (See the tip date operators described in the
+operator section below.)</dd>
+</dl>
+
+
+<p>
+Besides these, the following inputs are also defined.  These are primarily used
+for debugging and/or tuning the calculation performance:
+</p>
+
+<dl class="org-dl">
+<dt><code>useAnalyticalSingleTypeSolution</code> (<code>Boolean</code>, default true)</dt><dd>This
+indicates whether to use the fast analytical solution for the tree prior in the case
+of single-type analyses.  Ideally this should always be left on.</dd>
+<dt><code>relTolerance</code> (<code>Double</code>, default 1e-7)</dt><dd>Relative tolerance for
+numerical integration algorithm.</dd>
+<dt><code>absTolerance</code> (<code>Double</code>, default 1e-100)</dt><dd>Absolute tolerance for
+numerical integration algorithm.</dd>
+<dt><code>parallelize</code> (<code>Boolean</code>, default true)</dt><dd>Indicates whether to
+spawn threads to parallelize the calculation of subtree likelihoods.</dd>
+<dt><code>parallelizationFactor</code> (<code>Double</code>, default 0.1)</dt><dd>The minimum
+relative size (number of nodes) the smallest of a pair of subtrees
+must have in order for their calculations to be carried out in
+separate threads.</dd>
+<dt><code>savePartialLikelihoodsTofile</code> (<code>String</code>)</dt><dd>If provided, the name
+of a file to which a tree annotated with partial likelihoods will be
+written.  This is useful for debugging the cause of chain
+initialization failures.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-4-Model-definition-XML-reference-Appendices-Parameterizations" class="outline-5">
+<h5 id="id-4-Model-definition-XML-reference-Appendices-Parameterizations"><span class="section-number-5">5.1.1.2.</span> Parameterizations</h5>
+<div class="outline-text-5" id="text-id-4-Model-definition-XML-reference-Appendices-Parameterizations">
+<p>
+The <code>Parameterization</code> is an abstract class of objects tasked with connecting parameter
+values to the internal representation of birth-death models used by <code>BirthDeathMigrationModel</code>.
+There are several concrete classes of this type, as detailed below.
+</p>
+
+<p>
+<b>Note</b>: Besides the parameterization-specific inputs, each parameterization object takes
+the following inputs:
+</p>
+<dl class="org-dl">
+<dt><code>processLength</code> (<code>Function</code> or <code>Tree</code>, required)</dt><dd>This should be the duration of the process, either from the origin
+or from the tree root, depending on whether <code>conditionOnRoot</code> is set
+to true.  If the former, suppling an "origin" parameter is usual.
+If the latter, the tree object itself should be supplied.</dd>
+<dt><code>typeSet</code> (<code>TypeSet</code>)</dt><dd>A <code>TypeSet</code> defining the types present in the model.</dd>
+</dl>
+</div>
+
+<div id="outline-container-id-5-Parameterizations-Model-definition-XML-reference-Appendices-CanonincalParameterization" class="outline-6">
+<h6 id="id-5-Parameterizations-Model-definition-XML-reference-Appendices-CanonincalParameterization"><span class="section-number-6">5.1.1.2.1.</span> CanonincalParameterization</h6>
+<div class="outline-text-6" id="text-id-5-Parameterizations-Model-definition-XML-reference-Appendices-CanonincalParameterization">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">parameterization</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.parameterization.CanonicalParameterization"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+<span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">parameterization</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+The <code>CanonicalParameterization</code> parameterization type defines a parameterization
+in terms of the basic rates for birth, death, sampling and migration events.  These
+are defined by the following inputs:
+</p>
+
+<dl class="org-dl">
+<dt><code>birthRate</code> (<code>SkylineVectorParameter</code>, required)</dt><dd>The birth rate skyline.</dd>
+<dt><code>deathRate</code> (<code>SkylineVectorParameter</code>, required)</dt><dd>The death rate skyline.</dd>
+<dt><code>samplingRate</code> (<code>SkylineVectorParameter</code>, required)</dt><dd>The sampling rate skyline.</dd>
+<dt><code>removalProb</code> (<code>SkylineVectorParameter</code>, required)</dt><dd>A skyline parameter representing the probability of removal on sampling.</dd>
+<dt><code>rhoSampling</code> (<code>TimedParameter</code>)</dt><dd>Specifies the times and probabilities of contemporaneous sampling events.</dd>
+<dt><code>migrationRate</code> (<code>SkylineMatrixParameter</code>)</dt><dd>The migration rate matrix skyline.</dd>
+<dt><code>birthRateAmongDemes</code> (<code>SkylineMatrixParameter</code>)</dt><dd>The rate matrix skyline describing the rates of births producing
+children with types differing from the parent.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-5-Parameterizations-Model-definition-XML-reference-Appendices-EpiParameterization" class="outline-6">
+<h6 id="id-5-Parameterizations-Model-definition-XML-reference-Appendices-EpiParameterization"><span class="section-number-6">5.1.1.2.2.</span> EpiParameterization</h6>
+<div class="outline-text-6" id="text-id-5-Parameterizations-Model-definition-XML-reference-Appendices-EpiParameterization">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">parameterization</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.parameterization.EpiParameterization"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+<span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">parameterization</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This defines a parameterization in terms of rates useful for
+epidemiological applications:
+</p>
+
+<dl class="org-dl">
+<dt><code>Re</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The effective reproduction number skyline.</dd>
+<dt><code>becomeUninfectiousRate</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The become uninfectious rate skyline.</dd>
+<dt><code>samplingProportion</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The sampling proportion skyline.</dd>
+<dt><code>removalProb</code> (<code>SkylineVectorParameter</code>, required)</dt><dd>A skyline parameter representing the probability of removal on sampling.</dd>
+<dt><code>rhoSampling</code> (<code>TimedParameter</code>)</dt><dd>Specifies the times and probabilities of contemporaneous sampling events.</dd>
+<dt><code>migrationRate</code> (<code>SkylineMatrixParameter</code>)</dt><dd>The migration rate matrix skyline.</dd>
+<dt><code>ReAmongDemes</code> (<code>SkylineMatrixParameter</code>)</dt><dd>A matrix skyline representing a generalized effective reproduction
+number indicating parameterizing the average number of birth events
+into a new compartment over the infectious period of an individual
+in a source compartment.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-5-Parameterizations-Model-definition-XML-reference-Appendices-FBDParameterization" class="outline-6">
+<h6 id="id-5-Parameterizations-Model-definition-XML-reference-Appendices-FBDParameterization"><span class="section-number-6">5.1.1.2.3.</span> FBDParameterization</h6>
+<div class="outline-text-6" id="text-id-5-Parameterizations-Model-definition-XML-reference-Appendices-FBDParameterization">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">parameterization</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.parameterization.FBDParameterization"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+<span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">parameterization</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This defines a parameterization in terms of rates useful for macroevolutionary
+applications. It uses the <a href="https://doi.org/10.1073/pnas.1319091111">Fossilized Birth-Death process (Heath et al., 2014)</a>
+parameterization.
+</p>
+
+<dl class="org-dl">
+<dt><code>diversificationRate</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The diversification rate (difference of speciation and extinction rates) skyline.</dd>
+<dt><code>turnover</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The turnover (ratio of extinction rate to birth rate) skyline.</dd>
+<dt><code>samplingProportion</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The sampling proportion skyline.</dd>
+<dt><code>removalProb</code> (<code>SkylineVectorParameter</code>, required)</dt><dd>A skyline parameter representing the probability of removal on sampling.</dd>
+<dt><code>rhoSampling</code> (<code>TimedParameter</code>)</dt><dd>Specifies the times and probabilities of contemporaneous sampling events.</dd>
+<dt><code>migrationRate</code> (<code>SkylineMatrixParameter</code>)</dt><dd>The migration rate matrix skyline.</dd>
+<dt><code>diversificationRateAmongDemes</code> (<code>SkylineMatrixParameter</code>)</dt><dd>A matrix skyline representing the difference between the speciation rate
+into a new compartment and the extinction rate in that same compartment.</dd>
+</dl>
+
+<p>
+<b>Warning</b>: The FBD parameterization as usually set up in BDMM-Prime
+produces MCMC chains that do not cross the $\lambda=\mu$
+boundary. That is, one always has either $\lambda&gt;\mu$ (positive
+diversification rate) or $\lambda&lt;\mu$ (negative diversification
+rate), as determined by the initial parameter values.  The reason for
+this is that proposing a sign change in the diversification rate
+requires a coincident inversion of the turnover, which is unsupported
+by the default operators.  Thus, if you don't want to make this strong
+<i>a priori</i> assumption about the sign of the diversification rate, it's
+best to use the <code>CanonicalParameterization</code> instead.
+</p>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-id-4-Model-definition-XML-reference-Appendices-Skyline-parameters" class="outline-5">
+<h5 id="id-4-Model-definition-XML-reference-Appendices-Skyline-parameters"><span class="section-number-5">5.1.1.3.</span> Skyline parameters</h5>
+<div class="outline-text-5" id="text-id-4-Model-definition-XML-reference-Appendices-Skyline-parameters">
+<p>
+For the most part, parameters supplied to the parameterizations listed above
+are "skyline parameters", which define matrix- or vector-valued piecewise
+constant functions of time, where the vector values associate rates
+with specific types, and the matrix values associate rates with
+specific type pairs. Additionally, the <code>rhoSampling</code> input requires
+a <code>TimedParameter</code> which specifies a vector of values together with a set of
+individual times associated with these values.
+</p>
+
+<p>
+The followinc sections describ the complete set of inputs to each of
+these types.
+</p>
+</div>
+
+<div id="outline-container-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineVectorParameter" class="outline-6">
+<h6 id="id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineVectorParameter"><span class="section-number-6">5.1.1.3.1.</span> SkylineVectorParameter</h6>
+<div class="outline-text-6" id="text-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineVectorParameter">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">parameter</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmm.prime.parameterization.SkylineVectorParameter"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+<span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">parameter</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+The skyline vector parameter specifies a piecewise-constant function
+with, in general, type-specific values. It takes the following inputs:
+</p>
+
+<dl class="org-dl">
+<dt><code>skylineValues</code> (<code>Function</code>, required)</dt><dd></dd>
+
+<dt><code>changeTimes</code> (<code>Function</code>)</dt><dd><p>
+Each of this pair of inputs takes a <code>Function</code> (such as a <code>RealParameter</code>).
+Together they specify the change times and epoch values of the skyline
+parameter, and how these values are distributed across types.
+specifies the values associated with the piecewise-constant function.
+The dimension $N$ of the skylineValues <code>Function</code> or <code>RealParameter</code>, in combination with the
+dimension $K$ of the changeTimes <code>Function</code> or <code>RealParameter</code> (0 if this input is not set),
+determine how these values are distributed among types and times.
+</p>
+
+<p>
+Defining $D$ to be the number of distinct types in the model, there are two main
+possibilities. Firstly, if $N=K+1$ (i.e. the number of epochs
+implied by <code>changeTimes</code>), the elements $v_1,v_2,\ldots,v_N$ are
+assumed to apply uniformly to all types in each epoch.  That is:
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">Epoch</th>
+<th scope="col" class="org-left">Type 0</th>
+<th scope="col" class="org-left">Type1</th>
+<th scope="col" class="org-left">Type 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0</td>
+<td class="org-left">v1</td>
+<td class="org-left">v1</td>
+<td class="org-left">v1</td>
+</tr>
+
+<tr>
+<td class="org-right">1</td>
+<td class="org-left">v2</td>
+<td class="org-left">v2</td>
+<td class="org-left">v2</td>
+</tr>
+
+<tr>
+<td class="org-right">2</td>
+<td class="org-left">v3</td>
+<td class="org-left">v3</td>
+<td class="org-left">v3</td>
+</tr>
+
+<tr>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+</tr>
+</tbody>
+</table>
+<p>
+Alternatively, if $N=(K+1)\times D$,
+the first $D$ skylineValues elements represent the values associated with types in the first epoch,
+the next $D$ represent the values for types in the second epoch, and so on:
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">Epoch</th>
+<th scope="col" class="org-left">Type 0</th>
+<th scope="col" class="org-left">Type 1</th>
+<th scope="col" class="org-left">Type 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0</td>
+<td class="org-left">v1</td>
+<td class="org-left">v2</td>
+<td class="org-left">v3</td>
+</tr>
+
+<tr>
+<td class="org-right">1</td>
+<td class="org-left">v4</td>
+<td class="org-left">v5</td>
+<td class="org-left">v6</td>
+</tr>
+
+<tr>
+<td class="org-right">2</td>
+<td class="org-left">v7</td>
+<td class="org-left">v8</td>
+<td class="org-left">v9</td>
+</tr>
+
+<tr>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+</tr>
+</tbody>
+</table></dd>
+<dt>typeSet (<code>TypeSet</code>)</dt><dd>A reference to the <code>TypeSet</code> for the model. While optional, it's
+worthwhile supplying this input if multiple types are in play to
+allow for additional checking and more easily-interpretable logging.</dd>
+<dt>timesAreAges (<code>Boolean</code>, default false)</dt><dd>When set to true, this input causes the change times supplied to <code>changeTimes</code> to be
+interpreted as ages relative to the end of the birth-death
+process. (I.e. the time of the final sample + the value of
+<code>finalSampleOffset</code>.)  This also affects the ordering of the
+assignment to epochs. (E.g. value $v_1$ will be associated with the most recent epoch
+when <code>timesAreAges</code> is true, but the oldest epoch when it is false.)</dd>
+<dt>timesAreRelative (<code>Boolean</code>, default false)</dt><dd>When set to true, times or ages are treated as relative fractions of the process length.</dd>
+<dt>processLength (<code>Function</code>)</dt><dd>This is the object specifying the process length.  It is only
+necessary when one or both of <code>timesAreAges</code> and <code>timesAreRelative</code>
+are set to true.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineMatrixParameter" class="outline-6">
+<h6 id="id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineMatrixParameter"><span class="section-number-6">5.1.1.3.2.</span> SkylineMatrixParameter</h6>
+<div class="outline-text-6" id="text-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineMatrixParameter">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">parameter</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmm.prime.parameterization.SkylineMatrixParameter"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+<span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">parameter</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+The skyline matrix parameter specifies a piecewise-constant function
+with, in general, type pair-specific values. It takes the following inputs:
+</p>
+
+<dl class="org-dl">
+<dt><code>skylineValues</code> (<code>Function</code>, required)</dt><dd></dd>
+
+<dt><code>changeTimes</code> (<code>Function</code>)</dt><dd><p>
+Just as for <code>SkylineVectorParameter</code>, 
+each of this pair of inputs takes a <code>Function</code> (such as a <code>RealParameter</code>).
+Together they specify the change times and epoch values of the skyline
+matrix parameter, and how these values are distributed across source/destination type pairs.
+The dimension $N$ of the skylineValues <code>Function</code> or <code>RealParameter</code>, in combination with the
+dimension $K$ of the changeTimes <code>Function</code> or <code>RealParameter</code> (0 if this input is not set),
+determine how these values are distributed among types and times.
+</p>
+
+<p>
+Defining $D$ to be the number of distinct types in the model, there are two main
+possibilities. Firstly, if $N=K+1$ (i.e. the number of epochs
+implied by <code>changeTimes</code>), the elements $v_1,v_2,\ldots,v_N$ are
+assumed to apply uniformly to all types pairs in each epoch.  That is:
+</p>
+<table class="skylineMatrix">
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">Epoch</th>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">To Type 0</th>
+<th scope="col" class="org-left">To Type1</th>
+<th scope="col" class="org-left">To Type 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0</td>
+<td class="org-left">From Type 0</td>
+<td class="org-left">.</td>
+<td class="org-left">v1</td>
+<td class="org-left">v1</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">From type 1</td>
+<td class="org-left">v1</td>
+<td class="org-left">.</td>
+<td class="org-left">v1</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">From type 2</td>
+<td class="org-left">v1</td>
+<td class="org-left">v1</td>
+<td class="org-left">.</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-right">1</td>
+<td class="org-left">From Type 0</td>
+<td class="org-left">.</td>
+<td class="org-left">v2</td>
+<td class="org-left">v2</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">From type 1</td>
+<td class="org-left">v2</td>
+<td class="org-left">.</td>
+<td class="org-left">v2</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">From type 2</td>
+<td class="org-left">v2</td>
+<td class="org-left">v2</td>
+<td class="org-left">.</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table>
+<p>
+Alternatively, if $N=(K+1)\times D(D-1)$,
+the first $D(D-1)$ skylineValues elements represent the values associated with type pairs in the first epoch,
+the next $D(D-1)$ represent the values for types in the second epoch, and so on:
+</p>
+<table class="skylineMatrix">
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">Epoch</th>
+<th scope="col" class="org-left">&#xa0;</th>
+<th scope="col" class="org-left">To Type 0</th>
+<th scope="col" class="org-left">To Type1</th>
+<th scope="col" class="org-left">To Type 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0</td>
+<td class="org-left">From Type 0</td>
+<td class="org-left">.</td>
+<td class="org-left">v1</td>
+<td class="org-left">v2</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">From type 1</td>
+<td class="org-left">v3</td>
+<td class="org-left">.</td>
+<td class="org-left">v4</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">From type 2</td>
+<td class="org-left">v5</td>
+<td class="org-left">v6</td>
+<td class="org-left">.</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-right">1</td>
+<td class="org-left">From Type 0</td>
+<td class="org-left">.</td>
+<td class="org-left">v7</td>
+<td class="org-left">v8</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">From type 1</td>
+<td class="org-left">v9</td>
+<td class="org-left">.</td>
+<td class="org-left">v10</td>
+</tr>
+
+<tr>
+<td class="org-right">&#xa0;</td>
+<td class="org-left">From type 2</td>
+<td class="org-left">v11</td>
+<td class="org-left">v12</td>
+<td class="org-left">.</td>
+</tr>
+</tbody>
+<tbody>
+<tr>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#xa0;</td>
+</tr>
+</tbody>
+</table></dd>
+<dt>typeSet (<code>TypeSet</code>)</dt><dd>A reference to the <code>TypeSet</code> for the model. While optional, it's
+worthwhile supplying this input to allow for additional checking and
+more easily-interpretable logging.</dd>
+<dt>timesAreAges (<code>Boolean</code>, default false)</dt><dd>When set to true, this input causes the change times supplied to <code>changeTimes</code> to be
+interpreted as ages relative to the end of the birth-death
+process. (I.e. the time of the final sample + the value of
+<code>finalSampleOffset</code>.)  This also affects the ordering of the
+assignment to epochs. (E.g. value $v_1$ will be associated with the most recent epoch
+when <code>timesAreAges</code> is true, but the oldest epoch when it is false.)</dd>
+<dt>timesAreRelative (<code>Boolean</code>, default false)</dt><dd>When set to true, times or ages are treated as relative fractions of the process length.</dd>
+<dt>processLength (<code>Function</code>)</dt><dd>This is the object specifying the process length.  It is only
+necessary when one or both of <code>timesAreAges</code> and <code>timesAreRelative</code>
+are set to true.</dd>
+</dl>
+</div>
+</div>
+
+
+<div id="outline-container-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-TimedParameter" class="outline-6">
+<h6 id="id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-TimedParameter"><span class="section-number-6">5.1.1.3.3.</span> TimedParameter</h6>
+<div class="outline-text-6" id="text-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-TimedParameter">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">parameter</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmm.prime.parameterization.TimedParameter"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+<span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">parameter</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+The timed parameter specifies an, in general, type-dependent sequence
+of values associated with one or more times. It is used to define the
+timing and probabilities for "rho sampling" events. These are the possible inputs:
+</p>
+
+<dl class="org-dl">
+<dt><code>values</code> (<code>Function</code>)</dt><dd></dd>
+
+<dt><code>times</code> (<code>Function</code>)</dt><dd><p>
+Each of this pair of inputs takes a <code>Function</code> (such as a <code>RealParameter</code>).
+Together they specify the timing and sampling probabilities associated with
+0 or more rho sampling events.
+The dimension $N$ of the values <code>Function</code> or <code>RealParameter</code>, in combination with the
+dimension $K$ of the times  <code>Function</code> or <code>RealParameter</code>,
+determine how the probabilities provided are distributed among types and times.
+</p>
+
+<p>
+Defining $D$ to be the number of distinct types in the model, there are two main
+possibilities. Firstly, if $N=K$ (i.e. the number of events
+implied by <code>times</code>), the elements $v_1,v_2,\ldots,v_N$ are
+assumed to apply uniformly to all types at each event.  That is:
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">Event</th>
+<th scope="col" class="org-left">Type 0</th>
+<th scope="col" class="org-left">Type1</th>
+<th scope="col" class="org-left">Type 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0</td>
+<td class="org-left">v1</td>
+<td class="org-left">v1</td>
+<td class="org-left">v1</td>
+</tr>
+
+<tr>
+<td class="org-right">1</td>
+<td class="org-left">v2</td>
+<td class="org-left">v2</td>
+<td class="org-left">v2</td>
+</tr>
+
+<tr>
+<td class="org-right">2</td>
+<td class="org-left">v3</td>
+<td class="org-left">v3</td>
+<td class="org-left">v3</td>
+</tr>
+
+<tr>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+</tr>
+</tbody>
+</table>
+<p>
+Alternatively, if $N=K\times D$,
+the first $D$ elements represent the values associated with types for the first event,
+the next $D$ represent the values for types for the second event, and so on:
+</p>
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-left">
+
+<col  class="org-left">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">Event</th>
+<th scope="col" class="org-left">Type 0</th>
+<th scope="col" class="org-left">Type 1</th>
+<th scope="col" class="org-left">Type 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">0</td>
+<td class="org-left">v1</td>
+<td class="org-left">v2</td>
+<td class="org-left">v3</td>
+</tr>
+
+<tr>
+<td class="org-right">1</td>
+<td class="org-left">v4</td>
+<td class="org-left">v5</td>
+<td class="org-left">v6</td>
+</tr>
+
+<tr>
+<td class="org-right">2</td>
+<td class="org-left">v7</td>
+<td class="org-left">v8</td>
+<td class="org-left">v9</td>
+</tr>
+
+<tr>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+</tr>
+</tbody>
+</table></dd>
+<dt>typeSet (<code>TypeSet</code>)</dt><dd>A reference to the <code>TypeSet</code> for the model. While optional, it's
+worthwhile supplying this input if multiple types are in play to
+allow for additional checking and more easily-interpretable logging.</dd>
+<dt>timesAreAges (<code>Boolean</code>, default false)</dt><dd>When set to true, this input causes the times supplied to <code>times</code> to be
+interpreted as ages relative to the end of the birth-death
+process. (I.e. the time of the final sample + the value of
+<code>finalSampleOffset</code>.)  This also affects the ordering of the
+assignment to events. (E.g. value $v_1$ will be associated with the most recent event
+when <code>timesAreAges</code> is true, but the oldest event when it is false.)</dd>
+<dt>timesAreRelative (<code>Boolean</code>, default false)</dt><dd>When set to true, times or ages are treated as relative fractions of the process length.</dd>
+<dt>processLength (<code>Function</code>)</dt><dd>This is the object specifying the process length.  It is only
+necessary when one or both of <code>timesAreAges</code> and <code>timesAreRelative</code>
+are set to true.</dd>
+</dl>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-4-Model-definition-XML-reference-Appendices-The-TypeSet" class="outline-5">
+<h5 id="id-4-Model-definition-XML-reference-Appendices-The-TypeSet"><span class="section-number-5">5.1.1.4.</span> The TypeSet</h5>
+<div class="outline-text-5" id="text-id-4-Model-definition-XML-reference-Appendices-The-TypeSet">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">typeSet</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmm.prime.parameterization.TypeSet"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">typeSet</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This object defines a set of types for a multi-type birth-death model.
+</p>
+
+<dl class="org-dl">
+<dt><code>value</code> (<code>String</code>)</dt><dd>If provided, specifies a comma-delimited list of types.
+For instance, the string ="New Zealand, Australia, Samoa" specifies 3 types
+with those names.</dd>
+<dt><code>typeTraitSet</code> (<code>TraitSet</code>)</dt><dd>If provided, specifies a trait set whose unique values
+will be used to assemble the possible types.</dd>
+<dt><code>unknownTypeIdentifier (=String</code>, default "?")</dt><dd>If provided, taxa
+whose type trait value matches this string will be regarded as
+having an "unknown" type.</dd>
+</dl>
+
+<p>
+It is possible to specify values for both the <code>value</code> and <code>typeTraitSet</code> inputs. In this case,
+all types present in <code>value</code> will be included in the type set regardless of whether or not
+they are present in the trait set.  (This can be useful for including unsampled demes in
+an analysis.)
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-3-XML-reference-Appendices-Start-type-posterior-logging" class="outline-4">
+<h4 id="id-3-XML-reference-Appendices-Start-type-posterior-logging"><span class="section-number-4">5.1.2.</span> Start type posterior logging</h4>
+<div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Start-type-posterior-logging">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">log</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.util.StartTypePosteriorProbsLogger"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">log</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This logger logs the posterior distribution of the start type conditional on
+the current parameter values.  This posterior is computed by the <code>BirthDeathMigrationDistribution</code>
+while evaluating the tree prior.  When averaged over the entire MCMC chain, these
+probabilities yield the complete marginal posterior distribution over the starting
+state conditional on the data.
+</p>
+
+<p>
+This object takes the following input:
+</p>
+<dl class="org-dl">
+<dt><code>bdmmTreePrior</code> (<code>BirthDeathMigrationDistribution</code>)</dt><dd>Reference to the <code>BirthDeathMigrationDistribution</code> used in the analysis.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-3-XML-reference-Appendices-Stochastic-mapping" class="outline-4">
+<h4 id="id-3-XML-reference-Appendices-Stochastic-mapping"><span class="section-number-4">5.1.3.</span> Stochastic mapping</h4>
+<div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Stochastic-mapping">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">log</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.mapping.TypeMappedTree"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">log</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+Stochastic mapping is handled in BDMM-Prime by a <code>TypeMappedTree</code>
+object, which is intended to be logged.  The stochastic mapping calculation
+is performed on the input state only when the output has to be appended to
+the log file.
+</p>
+
+<p>
+The important inputs are:
+</p>
+
+<dl class="org-dl">
+<dt><code>parameterization</code> (<code>Parameterization</code>)</dt><dd></dd>
+
+<dt><code>bdmmDistrib</code> (<code>BirthDeathMigrationDistribution</code>)</dt><dd>One of these two inputs must be provided, as these provide the parameters
+needed to sample the ancestral type distribution.</dd>
+<dt><code>untypedTree</code> (<code>Tree</code>, required)</dt><dd>The tree on which the type changes are to be stochastically mapped.</dd>
+<dt><code>typeTraitSet</code> (<code>TraitSet</code>, required)</dt><dd>Trait set specifying the taxon types.</dd>
+<dt><code>startTypePriorProbs</code> (<code>RealParameter</code>, required)</dt><dd>The prior probabilities for the initial individual type.</dd>
+<dt><code>typeLabel</code> (<code>String</code>, required)</dt><dd>The label to be used for traits in the generated metadata. In other words, this is
+the key used in the key-value pairs which will be used to annotate the tree with
+the ancestral type information.</dd>
+<dt><code>finalSampleOffset</code> (<code>Function</code>, default 0)</dt><dd>If provided, the difference in time between the final sample and the
+end of the BD process.</dd>
+</dl>
+
+<p>
+Because the <code>TypeMappedTree</code> class extends the <code>Tree</code> class it accepts
+many inputs that are not particularly relevant.  These have been omitted.
+</p>
+</div>
+
+<div id="outline-container-id-4-Stochastic-mapping-XML-reference-Appendices-Type-mapped-tree-loggers" class="outline-5">
+<h5 id="id-4-Stochastic-mapping-XML-reference-Appendices-Type-mapped-tree-loggers"><span class="section-number-5">5.1.3.1.</span> Type mapped tree loggers</h5>
+<div class="outline-text-5" id="text-id-4-Stochastic-mapping-XML-reference-Appendices-Type-mapped-tree-loggers">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">log</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.mapping.TypeNodeTreeLogger"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">log</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This logger takes a type mapped tree as input and logs a filtered view of this
+tree which excludes changes along edges but retains type information at internal
+nodes.  Such "node-typed" trees are important as distributions of such
+trees can be summarized by the TreeAnnotator software.
+</p>
+
+<p>
+The main inputs for the <code>TypedNodeTreeLogger</code> are:
+</p>
+<dl class="org-dl">
+<dt><code>typedTree</code> (<code>Tree</code>, required)</dt><dd>Typed tree whose node types to log.</dd>
+</dl>
+
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">log</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.mapping.TypeTreeStatsLogger"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">log</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This logger is intended for inclusion in the main parameter ("trace") log, as
+it computes a number of potentially-interesting summary statistics from each
+type-mapped tree, including
+</p>
+<ul class="org-ul">
+<li>the total edge length associated with each type, and</li>
+<li>the total number of changes between each pair of types.</li>
+</ul>
+
+<p>
+It's primary inputs are:
+</p>
+<dl class="org-dl">
+<dt><code>typedTree</code> (<code>Tree</code>, required)</dt><dd>Typed tree whose statistics to log.</dd>
+<dt><code>typeSet</code> (<code>TypeSet</code>, required)</dt><dd>Type set specifying model types.  (This is used to label statistics
+with meaningful type labels rather than simply type indices.)</dd>
+<dt><code>typeLabel</code> (<code>String</code>, required)</dt><dd>The type label which was used to store type information on the tree.
+(Use the same label supplied to <code>TypeMappedTree</code>.)</dd>
+<dt><code>includeRootEdge</code> (<code>Boolean</code>, default false)</dt><dd>If true, include root edge in summary statistics calculations.</dd>
+</dl>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-3-XML-reference-Appendices-Trajectory-sampling" class="outline-4">
+<h4 id="id-3-XML-reference-Appendices-Trajectory-sampling"><span class="section-number-4">5.1.4.</span> Trajectory sampling</h4>
+<div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Trajectory-sampling">
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">logger</span> <span class="org-nxml-attribute-local-name">fileName</span>=<span class="org-string">"output.traj"</span> <span class="org-nxml-attribute-local-name">logEvery</span>=<span class="org-string">"10000"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">log</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.trajectories.SampledTrajctory"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">log</span><span class="org-nxml-tag-delimiter">&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">logger</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+Trajectory sampling is handled in BDMM-Prime by a <code>SampledTrajectory</code>
+object, which is intended to be logged.  This implements a particle
+filtering calculation which is performed only when the output has to
+be appended to the log file.
+</p>
+
+<p>
+<b>Important</b>: The <code>SampledTrajectory</code> must be the only input passed to
+its parent logger.  Broken output files will result if this rule is
+violated!
+</p>
+
+<p>
+Objects of type <code>SampledTrajectory</code> accept the following inputs:
+</p>
+<dl class="org-dl">
+<dt><code>parameterization</code> (<code>Parameterization</code>)</dt><dd></dd>
+
+<dt><code>bdmmDistrib</code> (<code>BirthDeathMigrationDistribution</code>)</dt><dd>One of these two inputs must be provided, as these provide the parameters
+needed to sample the population dynamics.</dd>
+<dt><code>typeMappedTree</code> (<code>Tree</code>, required)</dt><dd>An edge-typed tree. Ideally a reference to a <code>TypeMappedTree</code>.</dd>
+<dt><code>typeLabel</code> (<code>String</code>, required)</dt><dd>The type label which was used to store type information on the tree.</dd>
+<dt><code>finalSampleOffset</code> (<code>Function</code>, default 0)</dt><dd>If provided, the difference in time between the final sample and the
+end of the BD process.</dd>
+<dt><code>nParticles</code> (<code>Integer</code>, default 1000)</dt><dd>Size of particle ensemble used in particle filtering.  (Larger
+values give more accurate results, but make the calculation more
+involved.)</dd>
+<dt><code>resampThresh</code> (<code>Double</code>, default 0.5)</dt><dd>Relative effective size of the weighted particle ensemble at which to trigger a
+resampling step.</dd>
+<dt><code>useTauLeaping</code> (<code>Boolean</code>, default false)</dt><dd>If true, use the faster but approximate tau-leaping algorithm to simulate population histories.
+Otherwise, use the slower but statistically correct Gillespie algorithm.</dd>
+<dt><code>minLeapCount</code> (<code>Integer</code>, default 100)</dt><dd>When tau leaping is enabled, at least this many steps are used to
+simulate each population trajectory.</dd>
+<dt><code>epsilon</code> (<code>Double</code>, default 0.03)</dt><dd>Controls the adaptive time step used in the tau leaping algorithm,
+with lower values causing the step size propsals to be more
+conservative (smaller steps).  For details, refer to <a href="https://doi.org/10.1063/1.2159468">Cao et al., 2006</a>.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-3-XML-reference-Appendices-Special-priors-and-operators" class="outline-4">
+<h4 id="id-3-XML-reference-Appendices-Special-priors-and-operators"><span class="section-number-4">5.1.5.</span> Special priors and operators</h4>
+<div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Special-priors-and-operators">
+</div>
+
+<div id="outline-container-id-4-Special-priors-and-operators-XML-reference-Appendices-Easy-parameter-linking" class="outline-5">
+<h5 id="id-4-Special-priors-and-operators-XML-reference-Appendices-Easy-parameter-linking"><span class="section-number-5">5.1.5.1.</span> Easy parameter linking</h5>
+<div class="outline-text-5" id="text-id-4-Special-priors-and-operators-XML-reference-Appendices-Easy-parameter-linking">
+<p>
+When dealing with multi-type birth-death skyline models, one frequently
+needs to operate and place priors on skyline values which preserve the
+identity of some elements and not others.  For instance, when a single
+skyline parameter is used to define sampling rates for several different
+types, one might also want to add change times to disable sampling
+in each type at a different time.  Since change times affect all types
+in the skyline simultaneously, this introduces more elements in the
+parameter supplied to the <code>skylineValues</code> input than there are degrees
+of freedom.
+</p>
+
+<p>
+The two objects below are intended to address exactly this situation.
+Firstly, we have the following prior distribution:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">distribution</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.util.priors.SmartZeroExcludingPrior"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">distribution</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This prior is intended as a drop-in replacement for the standard
+"beast.base.inference.distribution.Prior" used to define parametric priors
+on <code>RealParameters</code>. Indeed, it takes almost the same inputs:
+</p>
+<dl class="org-dl">
+<dt><code>x</code> (<code>Function</code>, required)</dt><dd>Parameter to which prior is applied.</dd>
+<dt><code>distr</code> (<code>ParametricDistribution</code>, required)</dt><dd>Specifies which parametric distribution to apply, e.g. <code>LogNormal</code>, <code>Exponential</code>, etc.</dd>
+<dt><code>classesToExclude</code> (<code>Function</code>)</dt><dd>Elements possessing any of these values will be excluded from the prior calculation.</dd>
+</dl>
+
+<p>
+Unlike the standard <code>Prior</code> distribution though, <code>SmartZeroExcludingPrior</code> does the following:
+</p>
+<ol class="org-ol">
+<li>It excludes any elements having the value 0 from the prior
+calculation.  For rates and probabilities, zero-valued parameters
+are almost never estimated in BEAST, and the presence of fixed
+zeros in parameters otherwise causes issues when applying prior
+distributions (e.g. <code>LogNormal</code>) which have no support at zero.</li>
+<li>It counts sets of identical element values (e.g. 1.2 and 1.2) only once, treating
+them as a single degree of freedom in the prior calculation.</li>
+</ol>
+
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">distribution</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.util.operators.SmartScaleOperator"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">distribution</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This operator provides the other half of the mechanism for linking elements.
+It behaves as a drop-in replacement for the "beast.base.evolution.operator.ScaleOperator",
+at least as it applies to a <code>RealParameter</code>.  It takes the following inputs:
+</p>
+<dl class="org-dl">
+<dt><code>parameter</code> (<code>[RealParameter]</code>, at least one required)</dt><dd>One or more parameters to operate on.</dd>
+<dt><code>scaleFactor</code> (<code>Double</code>, default 0.75)</dt><dd>The scaling operation will scale some parameter elements by a value
+chosen uniformly at random from the interval [scaleFactor,1/scaleFactor].</dd>
+<dt><code>optimize</code> (<code>Boolean</code>, default true)</dt><dd>Flag to indicate that the <code>scaleFactor</code> is to be adapted during the MCMC
+to achieve a good acceptance rate.</dd>
+<dt><code>classesToExclude</code> (<code>Function</code>)</dt><dd>Elements posessing any of these values will not be operated on.</dd>
+<dt><code>weight</code> (<code>Double</code>, required)</dt><dd>Operator weight. (Unnormalized probability with which this operator is chosen.)</dd>
+</dl>
+
+<p>
+The principle difference between this operator and the standard <code>ScaleOperator</code> is
+that like the <code>SmartZeroExcludingPrior</code>, the <code>SmartScaleOperator</code> groups identical
+values together and treats them as a single degree of freedom.  That is, if
+two elements of the input <code>parameter</code> possess the identical value 1.237, those
+two elements will be operated on as if they were a single value, ensuring that
+this equivalence is preserved.
+</p>
+
+<p>
+Take extreme care when relying on these classes to provide linkage that you do
+not include any additional operators on the target parameter which might break
+the equivalence between linked elements, or indeed introduce equivalence between
+initially distinct elements.  (Due to the finite precision involved in
+floating point arithmetic, it is technically possible for such
+equivalence to arise by chance, although it is extremely unlikely.)
+</p>
+</div>
+</div>
+
+<div id="outline-container-id-4-Special-priors-and-operators-XML-reference-Appendices-Consistent-tip-date-estimation" class="outline-5">
+<h5 id="id-4-Special-priors-and-operators-XML-reference-Appendices-Consistent-tip-date-estimation"><span class="section-number-5">5.1.5.2.</span> Consistent tip date estimation</h5>
+<div class="outline-text-5" id="text-id-4-Special-priors-and-operators-XML-reference-Appendices-Consistent-tip-date-estimation">
+<p>
+BDMM-Prime's inclusion of the <code>finalSampleOffset</code> input to the
+<code>BirthDeathMigrationDistribution</code> allows us to jointly estimating all tip dates on a given tree.
+</p>
+
+<p>
+This is ordinarily problematic due to the fact that node times, and
+the times of other events including rate shifts, in are in BEAST 2
+always expressed as ages relative to the most recent sample. Thus if
+the time of the most recent sample is unknown (i.e. estimated), or
+if an earlier tip has the potential to become the most recent tip,
+anything point in time measured relative to the most recent tip becomes
+uncertain.
+</p>
+
+<p>
+The inclusion of the <code>finalSampleOffset</code> has the potiential to solve this
+problem, since it allows us to measure all event times relative to some external
+fixed calendar time (coinciding with the end of the birth-death-sampling process).
+We are then free to operate on all tip ages, provided the operators we use
+also correctly update this offset.
+</p>
+</div>
+
+<div id="outline-container-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Operators" class="outline-6">
+<h6 id="id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Operators"><span class="section-number-6">5.1.5.2.1.</span> Operators</h6>
+<div class="outline-text-6" id="text-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Operators">
+<p>
+BDMMPrime provides a pair of operators which act on both tip dates and the <code>finalSampleOffset</code>:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">operator</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.util.operators.TipDateOperator"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">operator</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This takes the following inputs:
+</p>
+<dl class="org-dl">
+<dt><code>tree</code> (<code>Tree</code>, required)</dt><dd>The tree on whose tips to operate.</dd>
+<dt><code>finalSampleOffset</code> (<code>RealParameter</code>, required)</dt><dd>The corresponding <code>finalSampleOffset</code> parameter to jointly update as required.</dd>
+<dt><code>taxonSet</code> (<code>TaxonSet</code>)</dt><dd>Taxon set contaiing taxa specifying leaves on which to operate. (Default is
+to operate on all leaves.)</dd>
+<dt><code>windowSize</code> (<code>Double</code>, default 1.0)</dt><dd>The width of time window used to uniformly draw new node times from.</dd>
+<dt><code>weight</code> (<code>Double</code>, required)</dt><dd>Operator weight. (Unnormalized probability with which this operator is chosen.)</dd>
+</dl>
+
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">operator</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.util.operators.TipEdgeScaleOperator"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">operator</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+This takes the following inputs:
+</p>
+<dl class="org-dl">
+<dt><code>tree</code> (<code>Tree</code>, required)</dt><dd>The tree on whose tips to operate.</dd>
+<dt><code>finalSampleOffset</code> (<code>RealParameter</code>, required)</dt><dd>The corresponding <code>finalSampleOffset</code> parameter to jointly update as required.</dd>
+<dt><code>taxonSet</code> (<code>TaxonSet</code>)</dt><dd>Taxon set contaiing taxa specifying leaves on which to operate. (Default is
+to operate on all leaves.)</dd>
+<dt><code>scaleFactor</code> (<code>Double</code>, default 0.8)</dt><dd>Edge length above tip is scaled by a value chosen uniformly at random from
+the interval [scaleFactor, 1/scaleFactor].</dd>
+<dt><code>weight</code> (<code>Double</code>, required)</dt><dd>Operator weight. (Unnormalized probability with which this operator is chosen.)</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Prior" class="outline-6">
+<h6 id="id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Prior"><span class="section-number-6">5.1.5.2.2.</span> Prior</h6>
+<div class="outline-text-6" id="text-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Prior">
+<p>
+In addition to the operators, the following is useful for specifying a large
+number of tip date priors simultaneously using a <code>TraitSet</code> pair:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">distribution</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.util.priors.TipDatePrior"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">distribution</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+It takes the following inputs:
+</p>
+<dl class="org-dl">
+<dt><code>tree</code> (<code>Tree</code>, required)</dt><dd>Tree whose tip dates we wish to place a prior on.</dd>
+<dt><code>finalSampleOffset</code> (<code>Function</code>, required)</dt><dd>Final sample offset parameter.</dd>
+<dt><code>earlierBound</code> (<code>TraitSet</code>, required)</dt><dd>Trait set specifying earliest possible time for each tip in ages
+relative to the end of the birth-death-sampling process.</dd>
+<dt><code>laterBound</code> (<code>TraitSet</code>, required)</dt><dd>Trait set specifying latest possible time for each tip in ages
+relative to the end of the birth-death-sampling process.</dd>
+<dt><code>endOfSamplingTime</code> (<code>Function</code>)</dt><dd>Time of the point when sampling ends.  (Necessary only when
+upper and lower bounds are given forwards in time.)</dd>
+<dt><code>reportBoundsViolations</code> (<code>Boolean</code>, default false)</dt><dd>Causes the distribution to report which taxon exceeded its bounds in
+each case.  Useful for diagnosing initialization problems,
+but should be disabled during the analysis itself.</dd>
+</dl>
+</div>
+</div>
+
+<div id="outline-container-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Initialization" class="outline-6">
+<h6 id="id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Initialization"><span class="section-number-6">5.1.5.2.3.</span> Initialization</h6>
+<div class="outline-text-6" id="text-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Initialization">
+<p>
+Finally, BDMM-Prime also provides the following class for initializing
+tip dates (useful when there are many constraints):
+</p>
+
+<div class="org-src-container">
+<pre class="src src-xml"><span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-element-local-name">init</span> <span class="org-nxml-attribute-local-name">spec</span>=<span class="org-string">"bdmmprime.util.operators.TipDateInitializer"</span><span class="org-nxml-tag-delimiter">&gt;</span>
+  <span class="org-comment-delimiter">&lt;!-- </span><span class="org-comment">Inputs</span><span class="org-comment-delimiter"> --&gt;</span>
+<span class="org-nxml-tag-delimiter">&lt;</span><span class="org-nxml-tag-slash">/</span><span class="org-nxml-element-local-name">init</span><span class="org-nxml-tag-delimiter">&gt;</span>
+</pre>
+</div>
+
+<p>
+It takes the following inputs:
+</p>
+<dl class="org-dl">
+<dt><code>tree</code> (<code>Tree</code>, required)</dt><dd>Tree whose tip dates to initialize.</dd>
+<dt><code>finalSampleOffset (=RealParameter</code>, required)</dt><dd>Final sample offset parameter.</dd>
+<dt><code>tipDatesTrait</code> (<code>TraitSet</code>, required)</dt><dd>Trait set specifying initial tip dates.</dd>
+<dt><code>endOfSamplingTime</code> (<code>Function</code>)</dt><dd>Time of the point when sampling ends.  (Necessary only when
+upper and lower bounds are given forwards in time.)</dd>
+<dt><code>adjustInternalNodes</code> (<code>Boolean</code>, default false)</dt><dd>If true, original divergence times of input tree are preserved.</dd>
+<dt><code>internalNodeSpacing</code> (<code>Function</code>, default 1.0)</dt><dd>Default spacing used when adjusting internal node times.</dd>
+</dl>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-2-Appendices-Trajectory-file-format" class="outline-3">
+<h3 id="id-2-Appendices-Trajectory-file-format"><span class="section-number-3">5.2.</span> Trajectory file format</h3>
+<div class="outline-text-3" id="text-id-2-Appendices-Trajectory-file-format">
+<p>
+Trajectory files are tab-separated variable (TSV) files containing a
+table with 7 columns and a large number of rows.  The first row is
+a header row.  The file can be read into R using the <code>readr::read_tsv</code>
+function.
+</p>
+
+<p>
+The following is the start of a table generated by enabling trajectory
+sampling in the H3N2 example used in the tutorial:
+</p>
+
+<table>
+
+
+<colgroup>
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-right">
+
+<col  class="org-left">
+
+<col  class="org-right">
+</colgroup>
+<thead>
+<tr>
+<th scope="col" class="org-right">Sample</th>
+<th scope="col" class="org-right">t</th>
+<th scope="col" class="org-right">age</th>
+<th scope="col" class="org-left">variable</th>
+<th scope="col" class="org-right">type</th>
+<th scope="col" class="org-left">type2</th>
+<th scope="col" class="org-right">value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0</td>
+<td class="org-right">8.67</td>
+<td class="org-left">N</td>
+<td class="org-right">0</td>
+<td class="org-left">NA</td>
+<td class="org-right">1</td>
+</tr>
+
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0</td>
+<td class="org-right">8.67</td>
+<td class="org-left">N</td>
+<td class="org-right">1</td>
+<td class="org-left">NA</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0</td>
+<td class="org-right">8.67</td>
+<td class="org-left">O</td>
+<td class="org-right">NA</td>
+<td class="org-left">NA</td>
+<td class="org-right">NA</td>
+</tr>
+
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0.0865</td>
+<td class="org-right">8.58</td>
+<td class="org-left">N</td>
+<td class="org-right">0</td>
+<td class="org-left">NA</td>
+<td class="org-right">2</td>
+</tr>
+
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0.0865</td>
+<td class="org-right">8.58</td>
+<td class="org-left">N</td>
+<td class="org-right">1</td>
+<td class="org-left">NA</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0.0865</td>
+<td class="org-right">8.58</td>
+<td class="org-left">B</td>
+<td class="org-right">0</td>
+<td class="org-left">0</td>
+<td class="org-right">1</td>
+</tr>
+
+<tr>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+<td class="org-left">&#x2026;</td>
+<td class="org-right">&#x2026;</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+The sample column on the left indicates the MCMC iteration the
+trajectory belongs to.  (All rows with the same sample number
+correspond to the same MCMC iteration, i.e. the same population
+trajectory.) Each row reports either a population size or an event
+at a particular time, as indicated by the entry in the "variable"
+column.
+</p>
+
+<p>
+Population sizes are reported by rows with the "variable" column
+set to "N".  Each such row reports the population size associated
+with the type index given in the "type" column and the size
+in the "value" column. The size corresponds to the time immediately
+at and after the time given in the "t" column. (Respectively, the immedately
+before the age given in the "age" column.)
+</p>
+
+<p>
+Events are reported by rows with the following characters in the
+"variable" column:
+</p>
+<dl class="org-dl">
+<dt>B</dt><dd>This indicates that the event at the given time/age was a birth event.
+The type column indicates the type of the individual that gave birth.
+The child type is given by the value in type2.</dd>
+<dt>D</dt><dd>This indicates that the event at the given time/age was a death event.
+The type column indicates the type of the individual that died.
+The value of type2 is always NA in this case.</dd>
+<dt>S</dt><dd>This indicates that the event at the given time/age was a sampling event.
+The type column indicates the type of the sampled individual.
+The value of type2 is always NA in this case.</dd>
+<dt>M</dt><dd>This indicates that the event at the given time/age was a migration event.
+The type column indicates the original type of the migrating individual.
+The value of type2 is the destination type.</dd>
+<dt>O</dt><dd>This is a dummy event that indicates the start of the stochastic process.
+The type and value columns for this event are meaningless. There should be
+exactly one such event per trajectory.</dd>
+</dl>
+
+<p>
+For events, the "value" column indicates the multiplicity of the
+event. I.e., how many times it occurred.  (The approximate tau leaping
+simulation algorithm allows more than one event to occur in a single
+simulation step.)
+</p>
+</div>
+</div>
+</div>
+
+<div id="outline-container-id-1-License" class="outline-2">
+<h2 id="id-1-License"><span class="section-number-2">6.</span> License</h2>
+<div class="outline-text-2" id="text-id-1-License">
+<p>
+BDMM-Prime is free software.  It is made available under the terms of
+the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public Licence version 3</a>. Unlike many software
+licenses, this is designed to give you, the user, the freedom to use
+the software as you wish - including making and publishing
+modifications - provided you also extend the same freedom to other
+users.
+</p>
+</div>
+</div>
+</div>
+<div id="postamble" class="status">
+<p class="author">Author: Tim Vaughan</p>
+<p class="date">Created: 2024-07-18 Thu 21:35</p>
+</div>
+</body>
+</html>
