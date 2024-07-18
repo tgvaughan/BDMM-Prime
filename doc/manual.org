@@ -1214,6 +1214,9 @@ the BEAST 2 XML model description language as it pertains to BDMM-Prime.
 :END:
 
 **** The Birth-Death-Migration Distribution
+:PROPERTIES:
+:CUSTOM_ID: id-4-Model-definition-XML-reference-Appendices-The-Birth-Death-Migration-Distribution
+:END:
 
 The principle object contained in every BDMM-Prime analysis is the
 =bdmmprime.distribution.BirthDeathMigrationDistribution= object representing
@@ -1280,6 +1283,9 @@ for debugging and/or tuning the calculation performance:
   initialization failures.
 
 **** Parameterizations
+:PROPERTIES:
+:CUSTOM_ID: id-4-Model-definition-XML-reference-Appendices-Parameterizations
+:END:
 
 The =Parameterization= is an abstract class of objects tasked with connecting parameter
 values to the internal representation of birth-death models used by =BirthDeathMigrationModel=.
@@ -1296,6 +1302,9 @@ the following inputs:
   A =TypeSet= defining the types present in the model.
 
 ***** CanonincalParameterization
+:PROPERTIES:
+:CUSTOM_ID: id-5-Parameterizations-Model-definition-XML-reference-Appendices-CanonincalParameterization
+:END:
 #+begin_src xml
   <parameterization spec="bdmmprime.parameterization.CanonicalParameterization">
   <!-- Inputs -->
@@ -1320,6 +1329,9 @@ are defined by the following inputs:
   children with types differing from the parent.
 
 ***** EpiParameterization
+:PROPERTIES:
+:CUSTOM_ID: id-5-Parameterizations-Model-definition-XML-reference-Appendices-EpiParameterization
+:END:
 #+begin_src xml
   <parameterization spec="bdmmprime.parameterization.EpiParameterization">
   <!-- Inputs -->
@@ -1345,6 +1357,9 @@ epidemiological applications:
   in a source compartment.
 
 ***** FBDParameterization
+:PROPERTIES:
+:CUSTOM_ID: id-5-Parameterizations-Model-definition-XML-reference-Appendices-FBDParameterization
+:END:
 #+begin_src xml
   <parameterization spec="bdmmprime.parameterization.FBDParameterization">
   <!-- Inputs -->
@@ -1384,6 +1399,9 @@ best to use the =CanonicalParameterization= instead.
 
 
 **** Skyline parameters
+:PROPERTIES:
+:CUSTOM_ID: id-4-Model-definition-XML-reference-Appendices-Skyline-parameters
+:END:
 
 For the most part, parameters supplied to the parameterizations listed above
 are "skyline parameters", which define matrix- or vector-valued piecewise
@@ -1397,6 +1415,9 @@ The followinc sections describ the complete set of inputs to each of
 these types.
 
 ***** SkylineVectorParameter
+:PROPERTIES:
+:CUSTOM_ID: id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineVectorParameter
+:END:
 
 #+begin_src xml
   <parameter spec="bdmm.prime.parameterization.SkylineVectorParameter">
@@ -1457,6 +1478,9 @@ with, in general, type-specific values. It takes the following inputs:
   are set to true.
 
 ***** SkylineMatrixParameter
+:PROPERTIES:
+:CUSTOM_ID: id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineMatrixParameter
+:END:
 
 #+begin_src xml
   <parameter spec="bdmm.prime.parameterization.SkylineMatrixParameter">
@@ -1530,6 +1554,9 @@ with, in general, type pair-specific values. It takes the following inputs:
 
 
 ***** TimedParameter
+:PROPERTIES:
+:CUSTOM_ID: id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-TimedParameter
+:END:
 
 #+begin_src xml
   <parameter spec="bdmm.prime.parameterization.TimedParameter">
@@ -1590,6 +1617,9 @@ timing and probabilities for "rho sampling" events. These are the possible input
   are set to true.
 
 **** The TypeSet
+:PROPERTIES:
+:CUSTOM_ID: id-4-Model-definition-XML-reference-Appendices-The-TypeSet
+:END:
 
 #+begin_src xml
 <typeSet spec="bdmm.prime.parameterization.TypeSet">
@@ -1614,6 +1644,9 @@ they are present in the trait set.  (This can be useful for including unsampled 
 an analysis.)
 
 *** Start type posterior logging
+:PROPERTIES:
+:CUSTOM_ID: id-3-XML-reference-Appendices-Start-type-posterior-logging
+:END:
 
 #+begin_src xml
   <log spec="bdmmprime.util.StartTypePosteriorProbsLogger">
@@ -1632,6 +1665,9 @@ This object takes the following input:
   Reference to the ~BirthDeathMigrationDistribution~ used in the analysis.
 
 *** Stochastic mapping
+:PROPERTIES:
+:CUSTOM_ID: id-3-XML-reference-Appendices-Stochastic-mapping
+:END:
 
 #+begin_src xml
   <log spec="bdmmprime.mapping.TypeMappedTree">
@@ -1668,6 +1704,9 @@ Because the =TypeMappedTree= class extends the =Tree= class it accepts
 many inputs that are not particularly relevant.  These have been omitted.
 
 **** Type mapped tree loggers
+:PROPERTIES:
+:CUSTOM_ID: id-4-Stochastic-mapping-XML-reference-Appendices-Type-mapped-tree-loggers
+:END:
 
 #+begin_src xml
   <log spec="bdmmprime.mapping.TypeNodeTreeLogger">
@@ -1709,6 +1748,9 @@ It's primary inputs are:
   If true, include root edge in summary statistics calculations.
 
 *** Trajectory sampling
+:PROPERTIES:
+:CUSTOM_ID: id-3-XML-reference-Appendices-Trajectory-sampling
+:END:
 
 #+begin_src xml
   <logger fileName="output.traj" logEvery="10000">
@@ -1756,20 +1798,204 @@ Objects of type =SampledTrajectory= accept the following inputs:
   with lower values causing the step size propsals to be more
   conservative (smaller steps).  For details, refer to [[https://doi.org/10.1063/1.2159468][Cao et al., 2006]].
 
-
-
 *** Special priors and operators
 :PROPERTIES:
-:CUSTOM_ID: id-3-XML-reference-Appendices-Special-operators
+:CUSTOM_ID: id-3-XML-reference-Appendices-Special-priors-and-operators
 :END:
 
-bdmmprime.util.priors.SmartZeroExcludingPrior
-bdmmprime.util.operators.SmartScaleOperator
+**** Easy parameter linking
 
-bdmmprime.util.operators.TipDateOperator
-bdmmprime.util.operators.TipEdgeScaleOperator
-bdmmprime.util.priors.TipDatePrior
+When dealing with multi-type birth-death skyline models, one frequently
+needs to operate and place priors on skyline values which preserve the
+identity of some elements and not others.  For instance, when a single
+skyline parameter is used to define sampling rates for several different
+types, one might also want to add change times to disable sampling
+in each type at a different time.  Since change times affect all types
+in the skyline simultanouesly, this introduces more elements in the
+parameter supplied to the =skylineValues= input than there are degrees
+of freedom.
 
+The two objects below are intended to address exactly this situation.
+Firstly, we have the following prior distribution:
+
+#+begin_src xml
+  <distribution spec="bdmmprime.util.priors.SmartZeroExcludingPrior">
+    <!-- Inputs -->
+  </distribution>
+#+end_src
+
+This prior is intended as a drop-in replacement for the standard
+"beast.base.inference.distribution.Prior" used to define parametric priors
+on ~RealParameters~. Indeed, it takes almost the same inputs:
+- =x= (=Function=, required) ::
+  Parameter to which prior is applied.
+- =distr= (=ParametricDistribution=, required) ::
+  Specifies which parametric distribution to apply, e.g. ~LogNormal~, ~Exponential~, etc.
+- =classesToExclude= (=Function=) ::
+  Elements possessing any of these values will be excluded from the prior calculation.
+
+Unlike the standard ~Prior~ distribution though, ~SmartZeroExcludingPrior~ does the following:
+1. It excludes any elements having the value 0 from the prior
+   calculation.  For rates and probabilities, zero-valued parameters
+   are almost never estimated in BEAST, and the presence of fixed
+   zeros in parameters otherwise causes issues when applying prior
+   distributions (e.g. ~LogNormal~) which have no support at zero.
+2. It counts sets of identical element values (e.g. 1.2 and 1.2) only once, treating
+   them as a single degree of freedom in the prior calculation.
+
+#+begin_src xml
+  <distribution spec="bdmmprime.util.operators.SmartScaleOperator">
+    <!-- Inputs -->
+  </distribution>
+#+end_src
+
+This operator provides the other half of the mechanism for linking elements.
+It behaves as a drop-in replacement for the "beast.base.evolution.operator.ScaleOperator",
+at least as it applies to a ~RealParameter~.  It takes the following inputs:
+- =parameter= (=[RealParameter]=, at least one required) ::
+  One or more parameters to operate on.
+- =scaleFactor= (=Double=, default 0.75) ::
+  The scaling operation will scale some parameter elements by a value
+  chosen uniformly at random from the interval [scaleFactor,1/scaleFactor].
+- =optimize= (=Boolean=, default true) ::
+  Flag to indicate that the =scaleFactor= is to be adapted during the MCMC
+  to achieve a good acceptance rate.
+- =classesToExclude= (=Function=) :: 
+  Elements posessing any of these values will not be operated on.
+- =weight= (=Double=, required) :: 
+  Operator weight. (Unnormalized probability with which this operator is chosen.)
+
+The principle difference between this operator and the standard ~ScaleOperator~ is
+that like the ~SmartZeroExcludingPrior~, the ~SmartScaleOperator~ groups identical
+values together and treats them as a single degree of freedom.  That is, if
+two elements of the input =parameter= posess the identical value 1.237, those
+two elements will be operated on as if they were a single value, ensuring that
+this equivalence is preserved.
+
+Take extreme care when relying on these classes to provide linkage that you do
+not include any additional operators on the target parameter which might break
+the equivalence between linked elements, or indeed introduce equivalence between
+initially distinct elements.  (Due to the finite precision involved in
+floating point arithmetic, it is technically possible for such
+equivalence to arise by chance, although it is extremely unlikely.)
+
+**** Consistent tip date estimation
+
+BDMM-Prime's inclusion of the =finalSampleOffset= input to the
+=BirthDeathMigrationDistribution= allows us to jointly estimating all tip dates on a given tree.
+
+This is ordinarily problematic due to the fact that node times, and
+the times of other events including rate shifts, in are in BEAST 2
+always expressed as ages relative to the most recent sample. Thus if
+the time of the most recent sample is unknown (i.e. estimated), or
+if an earlier tip has the potential to become the most recent tip,
+anything point in time measured relative to the most recent tip becomes
+uncertain.
+
+The inclusion of the =finalSampleOffset= has the potiential to solve this
+problem, since it allows us to measure all event times relative to some external
+fixed calendar time (coinciding with the end of the birth-death-sampling process).
+We are then free to operate on all tip ages, provided the operators we use
+also correctly update this offset.
+
+***** Operators
+
+BDMMPrime provides a pair of operators which act on both tip dates and the =finalSampleOffset=:
+
+#+begin_src xml
+  <operator spec="bdmmprime.util.operators.TipDateOperator">
+    <!-- Inputs -->
+  </operator>
+#+end_src
+
+This takes the following inputs:
+- =tree= (=Tree=, required) ::
+  The tree on whose tips to operate.
+- =finalSampleOffset= (=RealParameter=, required) ::
+  The corresponding =finalSampleOffset= parameter to jointly update as required.
+- =taxonSet= (=TaxonSet=) :: 
+  Taxon set contaiing taxa specifying leaves on which to operate. (Default is
+  to operate on all leaves.)
+- =windowSize= (=Double=, default 1.0) :: 
+  The width of time window used to uniformly draw new node times from.
+- =weight= (=Double=, required) ::
+  Operator weight. (Unnormalized probability with which this operator is chosen.)
+
+#+begin_src xml
+  <operator spec="bdmmprime.util.operators.TipEdgeScaleOperator">
+    <!-- Inputs -->
+  </operator>
+#+end_src
+
+This takes the following inputs:
+- =tree= (=Tree=, required) ::
+  The tree on whose tips to operate.
+- =finalSampleOffset= (=RealParameter=, required) ::
+  The corresponding =finalSampleOffset= parameter to jointly update as required.
+- =taxonSet= (=TaxonSet=) :: 
+  Taxon set contaiing taxa specifying leaves on which to operate. (Default is
+  to operate on all leaves.)
+- =scaleFactor= (=Double=, default 0.8) :: 
+  Edge length above tip is scaled by a value chosen uniformly at random from
+  the interval [scaleFactor, 1/scaleFactor].
+- =weight= (=Double=, required) ::
+  Operator weight. (Unnormalized probability with which this operator is chosen.)
+
+***** Prior
+
+In addition to the operators, the following is useful for specifying a large
+number of tip date priors simultaneously using a =TraitSet= pair:
+
+#+begin_src xml
+  <distribution spec="bdmmprime.util.priors.TipDatePrior">
+    <!-- Inputs -->
+  </distribution>
+#+end_src
+
+It takes the following inputs:
+- =tree= (=Tree=, required) ::
+  Tree whose tip dates we wish to place a prior on.
+- =finalSampleOffset= (=Function=, required) :: 
+  Final sample offset parmeter.
+- =earlierBound= (=TraitSet=, required) :: 
+  Trait set specifying earliest possible time for each tip in ages
+  relative to the end of the birth-death-sampling process.
+- =laterBound= (=TraitSet=, required) :: 
+  Trait set specifying latest possible time for each tip in ages
+  relative to the end of the birth-death-sampling process.
+- =endOfSamplingTime= (=Function=) :: 
+  Time of the point when sampling ends.  (Necessary only when
+  upper and lower bounds are given forwards in time.)
+- =reportBoundsViolations= (=Boolean=, default false) :: 
+  Causes the distribution to report which taxon exceeded its bounds in
+  each case.  Useful for diagnosing initialization problems,
+  but should be disabled during the analysis itself.
+
+***** Initialization
+
+Finally, BDMM-Prime also provdies the following class for initializing
+tip dates (useful when there are many constraints):
+
+#+begin_src xml
+  <init spec="bdmmprime.util.operators.TipDateInitializer">
+    <!-- Inputs -->
+  </init>
+#+end_src
+
+It takes the following inputs:
+- =tree= (=Tree=, required) ::
+  Tree whose tip dates to initialize.
+- =finalSampleOffset (=RealParameter=, required) :: 
+  Final sample offset parameter.
+- =tipDatesTrait= (=TraitSet=, required) :: 
+  Trait set specifying initial tip dates.
+- =endOfSamplingTime= (=Function=) :: 
+  Time of the point when sampling ends.  (Necessary only when
+  upper and lower bounds are given forwards in time.)
+- =adjustInternalNodes= (=Boolean=, default false) :: 
+  If true, original divergence times of input tree are preserved.
+- =internalNodeSpacing= (=Function=, default 1.0) :: 
+  Default spacing used when adjusting internal node times.
 
 ** Trajectory file format
 :PROPERTIES:
