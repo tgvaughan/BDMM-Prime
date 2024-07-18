@@ -986,7 +986,7 @@ trajectories drawn from the posterior distribution of the population
 history, given the genetic data.
 
 Because the output files can be rather large, trajectory sampling
-is disabled by default.  Like the stochast mapping algorithm, it
+is disabled by default.  Like the stochastic mapping algorithm, it
 can be enabled by expanding the relevant logger input editor -
 "trajLogger" in this case - and ensuring "Enable Logger" is checked.
 
@@ -1261,7 +1261,7 @@ as follows:
   operator section below.)
 
 
-Besides these, the following inputs are also defined.  These are primarilly used
+Besides these, the following inputs are also defined.  These are primarily used
 for debugging and/or tuning the calculation performance:
   
 - =useAnalyticalSingleTypeSolution= (=Boolean=, default true) :: This
@@ -1739,7 +1739,7 @@ It's primary inputs are:
 - =typedTree= (=Tree=, required) ::
   Typed tree whose statistics to log.
 - =typeSet= (=TypeSet=, required) :: 
-  Type set specifying model types.  (This is used to label stastics
+  Type set specifying model types.  (This is used to label statistics
   with meaningful type labels rather than simply type indices.)
 - =typeLabel= (=String=, required) ::
  The type label which was used to store type information on the tree.
@@ -1811,7 +1811,7 @@ identity of some elements and not others.  For instance, when a single
 skyline parameter is used to define sampling rates for several different
 types, one might also want to add change times to disable sampling
 in each type at a different time.  Since change times affect all types
-in the skyline simultanouesly, this introduces more elements in the
+in the skyline simultaneously, this introduces more elements in the
 parameter supplied to the =skylineValues= input than there are degrees
 of freedom.
 
@@ -1868,7 +1868,7 @@ at least as it applies to a ~RealParameter~.  It takes the following inputs:
 The principle difference between this operator and the standard ~ScaleOperator~ is
 that like the ~SmartZeroExcludingPrior~, the ~SmartScaleOperator~ groups identical
 values together and treats them as a single degree of freedom.  That is, if
-two elements of the input =parameter= posess the identical value 1.237, those
+two elements of the input =parameter= possess the identical value 1.237, those
 two elements will be operated on as if they were a single value, ensuring that
 this equivalence is preserved.
 
@@ -1956,7 +1956,7 @@ It takes the following inputs:
 - =tree= (=Tree=, required) ::
   Tree whose tip dates we wish to place a prior on.
 - =finalSampleOffset= (=Function=, required) :: 
-  Final sample offset parmeter.
+  Final sample offset parameter.
 - =earlierBound= (=TraitSet=, required) :: 
   Trait set specifying earliest possible time for each tip in ages
   relative to the end of the birth-death-sampling process.
@@ -1973,7 +1973,7 @@ It takes the following inputs:
 
 ***** Initialization
 
-Finally, BDMM-Prime also provdies the following class for initializing
+Finally, BDMM-Prime also provides the following class for initializing
 tip dates (useful when there are many constraints):
 
 #+begin_src xml
