@@ -84,6 +84,8 @@ original BDMM paper:
   Data", MBE, 33:8, 2102-2116 (2016),
   [doi:10.1093/molbev/msw064](https://doi.org/10.1093/molbev/msw064).
   
+(A manuscript describing BDMM-Prime itself is in preparation.)
+  
 License
 -------
 
