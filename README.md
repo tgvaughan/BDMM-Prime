@@ -12,7 +12,9 @@ The BDMM-Prime project is a fork of the original
 extend the functionality of the original package, while improving its
 flexibility and ease of use.  It incorporates the following enhancements:
 - an improved BEAUti interface that allows a much more diverse range of analyses to be configured,
-- automatic fall-back to analytical solutions for unstructured (single type) analyses,
+- automatic fall-back to analytical solutions for unstructured (single
+  type) analyses (meaning BDMM-Prime includes much of the
+  functionality of [BDSKY](https://github.com/BEAST2-Dev/bdsky)),
 - use of stochastic mapping for sampling ancestral states,
 - a particle filtering algorithm allowing joint sampling of population trajectories,
 - a heavily refactored code base intended to make the package easier to use,
