@@ -75,7 +75,9 @@
                         bdmmprime.trajectories.SampledTrajectory.typeLabel,
                         bdmmprime.trajectories.SampledTrajectory.finalSampleOffset,
                         bdmmprime.trajectories.SampledTrajectory.startTypePriorProbs,
-                        bdmmprime.trajectories.SampledTrajectory.resampleOnLog"
+                        bdmmprime.trajectories.SampledTrajectory.resampleOnLog,
+                        bdmmprime.util.priors.SmartZeroExcludingPrior.classesToExclude,
+                        bdmmprime.util.priors.SmartZeroExcludingPrior.x"
                      inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
