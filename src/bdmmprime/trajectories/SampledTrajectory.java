@@ -337,7 +337,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     @Override
     public void init(PrintStream out) {
-        out.print("t\tage\tvariable\ttype\ttype2\tvalue");
+        Trajectory.init(out);
     }
 
     Trajectory traj = null;
@@ -346,7 +346,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     @Override
     public void log(long sample, PrintStream out) {
         if (sample==0) {
-            out.print("NA\tNA\tNA\tNA\tNA\tNA");
+            Trajectory.logEmpty(out);
             return;
         }
 
@@ -359,9 +359,9 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         }
 
         if (traj==null)
-            out.print("NA\tNA\tNA\tNA\tNA\tNA");
+            Trajectory.logEmpty(out);
         else
-            traj.log(out, sample);
+            Trajectory.log(sample, traj.getStateList(), traj.events, out);
     }
 
     @Override

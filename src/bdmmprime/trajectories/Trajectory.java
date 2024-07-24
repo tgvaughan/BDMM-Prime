@@ -165,8 +165,9 @@ public class Trajectory {
      * @param stateIdx
      * @param isFirst
      */
-    public void addToLog(PrintStream ps, long sample,
+    public static void addToLog(PrintStream ps, long sample,
                          List<double[]> states,
+                         List<TrajectoryEvent> events,
                          int stateIdx, boolean isFirst) {
 
         double[] state = states.get(stateIdx);
@@ -191,13 +192,22 @@ public class Trajectory {
         }
     }
 
-    public void log (PrintStream out, long sample) {
-        List<double[]> states = getStateList();
+    public static void init(PrintStream out) {
+        out.print("t\tage\tvariable\ttype\ttype2\tvalue");
+    }
 
-        addToLog(out, sample, states, 0, true);
+    public static void logEmpty(PrintStream out) {
+        out.print("NA\tNA\tNA\tNA\tNA\tNA");
+    }
+
+    public static void log (long sample, List<double[]> states,
+                            List<TrajectoryEvent> events,
+                            PrintStream out) {
+
+        addToLog(out, sample, states, events, 0, true);
 
         for (int i = 1; i < states.size(); i++)
-            addToLog(out, sample, states, i, false);
+            addToLog(out, sample, states, events, i, false);
 
         out.print("\t");
     }

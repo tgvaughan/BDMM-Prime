@@ -17,6 +17,7 @@
 
 package bdmmprime.trajectories.simulation;
 
+import bdmmprime.trajectories.Trajectory;
 import beast.base.core.BEASTObject;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
@@ -38,21 +39,17 @@ public class SimulatedTrajectoryLogger extends BEASTObject implements Loggable {
 
     @Override
     public void init(PrintStream out) {
-        if (getID() == null)
-            out.print("trajectory\t");
-        else
-            out.print(getID() + "\t");
+        Trajectory.init(out);
     }
-
 
     @Override
     public void log(long sample, PrintStream out) {
         if (simulatedTree.traj == null)
-            out.print("NA");
+            Trajectory.logEmpty(out);
         else
-            out.print(simulatedTree.traj);
-
-        out.print("\t");
+            Trajectory.log(sample, simulatedTree.traj.getStateList(),
+                    simulatedTree.traj.events,
+                    out);
     }
 
     @Override
