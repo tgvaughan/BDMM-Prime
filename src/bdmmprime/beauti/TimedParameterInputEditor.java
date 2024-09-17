@@ -73,7 +73,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         HBox timesBoxRow = FXUtils.newHBox();
         CheckBox timesAreAgesCheckBox = new CheckBox("Times specified as ages");
         timesBoxRow.getChildren().add(timesAreAgesCheckBox);
-        CheckBox estimateTimesCheckBox = new CheckBox("Estimate change times");
+        CheckBox estimateTimesCheckBox = new CheckBox("Estimate times");
         timesBoxRow.getChildren().add(estimateTimesCheckBox);
         timesAndValuesBox.getChildren().add(timesBoxRow);
 

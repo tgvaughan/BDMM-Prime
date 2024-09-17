@@ -36,7 +36,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import static org.apache.commons.math.special.Gamma.logGamma;
 
@@ -272,7 +271,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
         List<Node> internalNodes = tree.getInternalNodes().stream()
                 .filter(n -> !n.isFake())
-                .collect(Collectors.toList());
+                .toList();
 
         for (Node node : internalNodes) {
             if (node.getChildCount() == 1) {
