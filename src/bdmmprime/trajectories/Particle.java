@@ -181,7 +181,7 @@ public class Particle {
                 }
 
                 // Cross birth
-                a_temp = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
+                a_temp = trajectory.currentState[s]*param.getCrossBirthRates2()[interval][s][sp];
                 if (a_temp > 0.0) {
                     // The following probability is for _any_ observable event produced as a result
                     // of a cross-birth, either a type change or a coalescence.

@@ -72,7 +72,7 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
 			    if (i==j)
 			        continue;
 
-                yDot[i] += param.getCrossBirthRates()[interval][i][j] * (y[i] - y[i]*y[j]);
+                yDot[i] += param.getCrossBirthRates2()[interval][i][j] * (y[i] - y[i]*y[j]);
                 yDot[i] += param.getMigRates()[interval][i][j] * (y[i] - y[j]);
 			}
 
@@ -88,7 +88,7 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
                 if (i==j)
 			        continue;
 
-                yDot[nTypes + i] += param.getCrossBirthRates()[interval][i][j]
+                yDot[nTypes + i] += param.getCrossBirthRates2()[interval][i][j]
                         * (y[nTypes+i] - (y[nTypes+i]*y[j] + y[nTypes+j]*y[i]));
 
                 yDot[nTypes + i] += param.getMigRates()[interval][i][j]

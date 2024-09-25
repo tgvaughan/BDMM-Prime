@@ -228,7 +228,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 for (int type2=0; type2<parameterization.getNTypes(); type2++) {
                     double rate = type1 == type2
                             ? parameterization.getBirthRates()[intervalIndex][type1]
-                            : parameterization.getCrossBirthRates()[intervalIndex][type1][type2];
+                            : parameterization.getCrossBirthRates2()[intervalIndex][type1][type2];
 
                     if (rate == 0.0)
                         continue;
@@ -274,7 +274,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 for (int type2=0; type2<parameterization.getNTypes(); type2++) {
                     double rate = type2 == type1
                             ? parameterization.getBirthRates()[intervalIndex][type1]
-                            : parameterization.getCrossBirthRates()[intervalIndex][type1][type2];
+                            : parameterization.getCrossBirthRates2()[intervalIndex][type1][type2];
 
                     if (rate == 0.0)
                         continue;

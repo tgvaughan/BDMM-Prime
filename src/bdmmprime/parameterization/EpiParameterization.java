@@ -61,11 +61,10 @@ public class EpiParameterization extends Parameterization {
         return birthRateChangeTimes;
     }
 
-
     private double[] crossBirthRateChangeTimes;
 
     @Override
-    public double[] getCrossBirthRateChangeTimes() {
+    public double[] getCrossBirthRate2ChangeTimes() {
         if (ReAmongDemesInput.get() == null)
             return EMPTY_TIME_ARRAY;
 
@@ -76,6 +75,10 @@ public class EpiParameterization extends Parameterization {
         return crossBirthRateChangeTimes;
     }
 
+    @Override
+    public double[] getCrossBirthRate3ChangeTimes() {
+        return EMPTY_TIME_ARRAY;
+    }
 
     private double[] deathRateChangeTimes;
 
@@ -116,7 +119,7 @@ public class EpiParameterization extends Parameterization {
     @Override
     protected double[][] getMigRateValues(double time) {
         if (migRateInput.get() == null)
-            return ZERO_VALUE_MATRIX;
+            return ZERO_VALUE_ARRAY2;
 
         return migRateInput.get().getValuesAtTime(time);
     }
@@ -133,9 +136,9 @@ public class EpiParameterization extends Parameterization {
     }
 
     @Override
-    protected double[][] getCrossBirthRateValues(double time) {
+    protected double[][] getCrossBirthRate2Values(double time) {
         if (ReAmongDemesInput.get() == null)
-            return ZERO_VALUE_MATRIX;
+            return ZERO_VALUE_ARRAY2;
 
         double[][] res = ReAmongDemesInput.get().getValuesAtTime(time);
         double[] buVals = becomeUninfectiousRateInput.get().getValuesAtTime(time);
@@ -150,6 +153,11 @@ public class EpiParameterization extends Parameterization {
         }
 
         return res;
+    }
+
+    @Override
+    protected double[][][] getCrossBirthRate3Values(double time) {
+        return ZERO_VALUE_ARRAY3;
     }
 
     @Override

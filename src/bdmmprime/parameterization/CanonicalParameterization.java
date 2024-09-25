@@ -39,7 +39,7 @@ public class CanonicalParameterization extends Parameterization {
     public Input<SkylineMatrixParameter> migRateInput = new Input<>("migrationRate",
             "Migration rate skyline.");
 
-    public Input<SkylineMatrixParameter> crossBirthRateInput = new Input<>("birthRateAmongDemes",
+    public Input<SkylineMatrixParameter> birthRateAmongDemesInput = new Input<>("birthRateAmongDemes",
             "Birth rate among demes skyline.");
 
     @Override
@@ -56,11 +56,16 @@ public class CanonicalParameterization extends Parameterization {
     }
 
     @Override
-    public double[] getCrossBirthRateChangeTimes() {
-        if (crossBirthRateInput.get() == null)
+    public double[] getCrossBirthRate2ChangeTimes() {
+        if (birthRateAmongDemesInput.get() == null)
             return EMPTY_TIME_ARRAY;
 
-        return crossBirthRateInput.get().getChangeTimes();
+        return birthRateAmongDemesInput.get().getChangeTimes();
+    }
+
+    @Override
+    public double[] getCrossBirthRate3ChangeTimes() {
+        return EMPTY_TIME_ARRAY;
     }
 
     @Override
@@ -89,7 +94,7 @@ public class CanonicalParameterization extends Parameterization {
     @Override
     protected double[][] getMigRateValues(double time) {
         if (migRateInput.get() == null)
-            return ZERO_VALUE_MATRIX;
+            return ZERO_VALUE_ARRAY2;
 
         return migRateInput.get().getValuesAtTime(time);
     }
@@ -100,11 +105,16 @@ public class CanonicalParameterization extends Parameterization {
     }
 
     @Override
-    protected double[][] getCrossBirthRateValues(double time) {
-        if (crossBirthRateInput.get() == null)
-            return ZERO_VALUE_MATRIX;
+    protected double[][] getCrossBirthRate2Values(double time) {
+        if (birthRateAmongDemesInput.get() == null)
+            return ZERO_VALUE_ARRAY2;
 
-        return crossBirthRateInput.get().getValuesAtTime(time);
+        return birthRateAmongDemesInput.get().getValuesAtTime(time);
+    }
+
+    @Override
+    protected double[][][] getCrossBirthRate3Values(double time) {
+        return ZERO_VALUE_ARRAY3;
     }
 
     @Override
@@ -145,8 +155,8 @@ public class CanonicalParameterization extends Parameterization {
                 && migRateInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Migration rate skyline type count does not match type count of model.");
 
-        if (crossBirthRateInput.get() != null
-                && crossBirthRateInput.get().getNTypes() != getNTypes())
+        if (birthRateAmongDemesInput.get() != null
+                && birthRateAmongDemesInput.get().getNTypes() != getNTypes())
             throw new IllegalArgumentException("Birth rate among demes skyline type count does not match type count of model.");
 
         if (removalProbInput.get().getNTypes() != getNTypes())

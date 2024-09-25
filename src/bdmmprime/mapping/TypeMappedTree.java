@@ -500,7 +500,7 @@ public class TypeMappedTree extends Tree {
                     y[N+type] += param.getBirthRates()[nodeInterval][type]
                             *yLeft[N+type]*yRight[N+type];
                 } else {
-                    y[N+type] += 0.5*param.getCrossBirthRates()[nodeInterval][type][typeOther]
+                    y[N+type] += 0.5*param.getCrossBirthRates2()[nodeInterval][type][typeOther]
                             *(yLeft[N+type]*yRight[N+typeOther] + yLeft[N+typeOther]*yRight[N+type]);
                 }
             }
@@ -702,7 +702,7 @@ public class TypeMappedTree extends Tree {
                             *y1[param.getNTypes()+type1]*y2[param.getNTypes()+type1];
                 } else {
                     int newType = type1 != parentType ? type1 : type2;
-                    probs[type1][type2] = param.getCrossBirthRates()[interval][parentType][newType]
+                    probs[type1][type2] = param.getCrossBirthRates2()[interval][parentType][newType]
                             * 0.5 * y1[param.getNTypes()+type1]*y2[param.getNTypes()+type2];
                 }
 
@@ -748,7 +748,7 @@ public class TypeMappedTree extends Tree {
                 continue;
             }
 
-            result[type] = (param.getCrossBirthRates()[interval][fromType][type] * y[fromType]
+            result[type] = (param.getCrossBirthRates2()[interval][fromType][type] * y[fromType]
                         + param.getMigRates()[interval][fromType][type])
                         * y[param.getNTypes() + type];
         }

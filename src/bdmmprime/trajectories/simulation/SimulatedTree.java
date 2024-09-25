@@ -171,7 +171,7 @@ public class SimulatedTree extends Tree {
                         continue;
 
                     a_migration[s][sp] = traj.currentState[s] * param.getMigRates()[interval][s][sp];
-                    a_crossbirth[s][sp] = traj.currentState[s] * param.getCrossBirthRates()[interval][s][sp];
+                    a_crossbirth[s][sp] = traj.currentState[s] * param.getCrossBirthRates2()[interval][s][sp];
                     a_tot += a_migration[s][sp] + a_crossbirth[s][sp];
                 }
             }

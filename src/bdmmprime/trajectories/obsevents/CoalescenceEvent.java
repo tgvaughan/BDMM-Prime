@@ -67,7 +67,7 @@ public class CoalescenceEvent extends ObservedEvent {
         } else {
             // Cross-birth
 
-            double crossbirth_prop = trajectory.currentState[s]*param.getCrossBirthRates()[interval][s][sp];
+            double crossbirth_prop = trajectory.currentState[s]*param.getCrossBirthRates2()[interval][s][sp];
             logWeightContrib += Math.log(crossbirth_prop)
                     - Math.log(trajectory.currentState[s]*(trajectory.currentState[sp] + 1.0));
 

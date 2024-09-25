@@ -41,7 +41,7 @@ public class P0System implements FirstOrderDifferentialEquations {
 		this.rho = parameterization.getRhoValues();
 
 		this.M = parameterization.getMigRates();
-        this.b_ij = parameterization.getCrossBirthRates();
+        this.b_ij = parameterization.getCrossBirthRates2();
 
         this.totalProcessLength = parameterization.getTotalProcessLength();
 

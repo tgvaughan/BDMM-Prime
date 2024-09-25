@@ -62,7 +62,7 @@ public class ParameterizationTest {
                         continue;
 
                     Assert.assertEquals(migRate, parameterization.getMigRates()[interval][state1][state2], TOLERANCE);
-                    Assert.assertEquals(0.0, parameterization.getCrossBirthRates()[interval][state1][state2], TOLERANCE);
+                    Assert.assertEquals(0.0, parameterization.getCrossBirthRates2()[interval][state1][state2], TOLERANCE);
                 }
             }
         }

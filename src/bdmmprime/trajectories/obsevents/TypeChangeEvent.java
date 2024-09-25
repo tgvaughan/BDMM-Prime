@@ -53,7 +53,7 @@ public class TypeChangeEvent extends ObservedEvent {
 
         for (int i=0; i<multiplicity; i++) {
             double migration_prop = trajectory.currentState[s] * param.getMigRates()[interval][s][sp];
-            double crossbirth_prop = trajectory.currentState[s] * param.getCrossBirthRates()[interval][s][sp];
+            double crossbirth_prop = trajectory.currentState[s] * param.getCrossBirthRates2()[interval][s][sp];
 
             logWeightContrib += Math.log(migration_prop + crossbirth_prop);
 
