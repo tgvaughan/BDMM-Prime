@@ -201,7 +201,7 @@ substitutions per site per year, which is close to the true
 value for influenza.
 
 #+begin_quote
-Select the "Cock model" panel. Set the "mean clock rate" value to 0.005.
+Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 #+end_quote
 
 [[./figures/tutorial_clock.png]]
