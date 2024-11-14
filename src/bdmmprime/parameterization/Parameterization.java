@@ -238,8 +238,10 @@ public abstract class Parameterization extends CalculationNode {
                     System.arraycopy(migRateMatrix[i], 0, migRates[interval][i], 0, nTypes);
                     System.arraycopy(crossBirthRate2Matrix[i], 0, crossBirthRates2[interval][i], 0, nTypes);
 
-                    for (int j=0; j < nTypes; j++) {
-                        System.arraycopy(crossBirthRate3Matrix[i][j], 0, crossBirthRates3[interval][i][j], 0, nTypes);
+                    if (crossBirthRate3Matrix != null) {
+                        for (int j = 0; j < nTypes; j++) {
+                            System.arraycopy(crossBirthRate3Matrix[i][j], 0, crossBirthRates3[interval][i][j], 0, nTypes);
+                        }
                     }
                 }
             }
@@ -292,6 +294,12 @@ public abstract class Parameterization extends CalculationNode {
         update();
 
         return crossBirthRates3;
+    }
+
+    public boolean hasCrossBirthRates3() {
+        update();
+
+        return crossBirthRates3 != null;
     }
 
     /**

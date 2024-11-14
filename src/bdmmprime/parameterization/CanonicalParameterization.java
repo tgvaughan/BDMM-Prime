@@ -114,7 +114,7 @@ public class CanonicalParameterization extends Parameterization {
 
     @Override
     protected double[][][] getCrossBirthRate3Values(double time) {
-        return ZERO_VALUE_ARRAY3;
+        return null;
     }
 
     @Override
