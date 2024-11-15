@@ -561,25 +561,37 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 if (debug) debugMessage("Infection at time " + tBottom, depth);
 
-                for (int childType = 0; childType < parameterization.getNTypes(); childType++) {
+                for (int i = 0; i < parameterization.getNTypes(); i++) {
 
-                    state.p0[childType] = childState1.p0[childType];
-                    state.ge[childType] = childState1.ge[childType]
-                            .multiplyBy(childState2.ge[childType])
-                            .scalarMultiplyBy(system.b[intervalIdx][childType]);
+                    state.p0[i] = childState1.p0[i];
+                    state.ge[i] = childState1.ge[i]
+                            .multiplyBy(childState2.ge[i])
+                            .scalarMultiplyBy(system.b[intervalIdx][i]);
 
-                    for (int otherChildType = 0; otherChildType < parameterization.getNTypes(); otherChildType++) {
-                        if (otherChildType == childType)
+                    for (int j = 0; j < parameterization.getNTypes(); j++) {
+                        if (j == i)
                             continue;
 
-                        state.ge[childType] = state.ge[childType]
-                                .addTo((childState1.ge[childType].multiplyBy(childState2.ge[otherChildType]))
-                                        .addTo(childState1.ge[otherChildType].multiplyBy(childState2.ge[childType]))
-                                        .scalarMultiplyBy(0.5 * system.b_ij[intervalIdx][childType][otherChildType]));
+                        state.ge[i] = state.ge[i]
+                                .addTo((childState1.ge[i].multiplyBy(childState2.ge[j]))
+                                        .addTo(childState1.ge[j].multiplyBy(childState2.ge[i]))
+                                        .scalarMultiplyBy(0.5 * system.b_ij[intervalIdx][i][j]));
+
+                        if (system.b_ijk != null) {
+                            for (int k=0; k<=j; k++) {
+                                if (k == i)
+                                    continue;
+
+                                state.ge[i] = state.ge[i]
+                                        .addTo((childState1.ge[j].multiplyBy(childState2.ge[k]))
+                                                .addTo(childState1.ge[k].multiplyBy(childState2.ge[j]))
+                                                .scalarMultiplyBy(0.5*system.b_ijk[intervalIdx][i][j][k]));
+                            }
+                        }
                     }
 
 
-                    if (Double.isInfinite(state.p0[childType])) {
+                    if (Double.isInfinite(state.p0[i])) {
                         throw new RuntimeException("infinite likelihood");
                     }
                 }

@@ -16,6 +16,7 @@ public class P0System implements FirstOrderDifferentialEquations {
 
 	public double[][] b, d, s, r,rho;
 	public double[][][] M, b_ij;
+	public double[][][][] b_ijk;
 
     public double totalProcessLength;
 
@@ -42,6 +43,7 @@ public class P0System implements FirstOrderDifferentialEquations {
 
 		this.M = parameterization.getMigRates();
         this.b_ij = parameterization.getCrossBirthRates2();
+		this.b_ijk = parameterization.getCrossBirthRates3();
 
         this.totalProcessLength = parameterization.getTotalProcessLength();
 
@@ -82,6 +84,16 @@ public class P0System implements FirstOrderDifferentialEquations {
 
                 yDot[i] += M[interval][i][j] * y[i];
                 yDot[i] -= M[interval][i][j] * y[j];
+
+				if (b_ijk != null) {
+					for (int k=0; k<=j; k++) {
+						if (k==i)
+							continue;
+
+						yDot[i] += b_ijk[interval][i][j][k]*y[i];
+						yDot[i] -= b_ijk[interval][i][j][k]*y[j]*y[k];
+					}
+				}
 			}
 		}
 
