@@ -335,8 +335,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         return logP;
     }
 
+    /**
+     * Retrieve type associated with given (leaf) node.
+     *
+     * @param node Node object
+     * @param init true if we're initializing
+     * @return associated type
+     */
     private int getNodeType(Node node, Boolean init) {
-
 
         if (storeNodeTypesInput.get() && !init)
             return nodeStates[node.getNr()];
@@ -370,10 +376,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
 
     /**
-     * @param node    Node below edge.
-     * @param tTop    Time of start (top) of edge.
-     * @param tBottom Time of end (bottom) of edge.
-     * @param system  Object describing ODEs to integrate.
+     * Compute probability of subtree below time tTop on edge ending
+     * with the specified node.
+     *
+     * @param node Node below edge.
+     * @param tTop Time of start (top) of edge
+     * @param tBottom Time of end (bottom) of edge
+     * @param system Object describing ODEs to integrate
+     * @param depth Recursion depth (initially 0)
      * @return State at top of edge.
      */
     private P0GeState calculateSubtreeLikelihood(Node node, double tTop, double tBottom,
@@ -444,22 +454,25 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {   // found a sampled ancestor
 
-                int childIndex = 0;
-
-                if (node.getChild(childIndex).isDirectAncestor())
-                    childIndex = 1;
+                Node sampleNode = node.getChild(0);
+                Node childNode = node.getChild(1);
+                if (childNode.isDirectAncestor()) {
+                    Node tmp = childNode;
+                    childNode = sampleNode;
+                    sampleNode = tmp;
+                }
 
                 P0GeState g = calculateSubtreeLikelihood(
-                        node.getChild(childIndex), tBottom,
-                        parameterization.getNodeTime(node.getChild(childIndex), finalSampleOffset.getArrayValue()),
+                        childNode, tBottom,
+                        parameterization.getNodeTime(childNode, finalSampleOffset.getArrayValue()),
                         system, depth + 1);
 
-                int saNodeType = getNodeType(node.getChild(childIndex ^ 1), false); // get state of direct ancestor, XOR operation gives 1 if childIndex is 0 and vice versa
+                int saNodeType = getNodeType(sampleNode, false);
 
                 //TODO test if properly implemented (not tested!)
                 if (saNodeType == -1) { // unknown state
                     for (int type = 0; type < parameterization.getNTypes(); type++) {
-                        if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
+                        if (!isRhoTip[sampleNode.getNr()]) {
 
                             state.p0[type] = g.p0[type];
                             state.ge[type] = g.ge[type].scalarMultiplyBy(system.s[intervalIdx][type]
@@ -474,7 +487,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                         }
                     }
                 } else {
-                    if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
+                    if (!isRhoTip[sampleNode.getNr()]) {
 
                         if (parameterization.getNTypes() >= 0) {
                             System.arraycopy(g.p0, 0, state.p0, 0, parameterization.getNTypes());
@@ -498,11 +511,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 }
             } else {   // birth / infection event
 
-                int indexFirstChild = 0;
-                if (node.getChild(1).getNr() > node.getChild(0).getNr())
-                    indexFirstChild = 1; // always start with the same child to avoid numerical differences
-
-                int indexSecondChild = Math.abs(indexFirstChild - 1);
+                // For the purpose of numerical reproducibility, first child is
+                // always the one with the largest nodeNr:
+                Node firstChild = node.getChild(0);
+                Node secondChild = node.getChild(1);
+                if (secondChild.getNr()>firstChild.getNr()) {
+                    Node tmp = secondChild;
+                    secondChild = firstChild;
+                    firstChild = tmp;
+                }
 
                 P0GeState childState1 = null, childState2 = null;
 
@@ -510,19 +527,19 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 // between one new thread and the currrent thread and run in parallel.
 
                 if (isParallelizedCalculation
-                        && weightOfNodeSubTree[node.getChild(indexFirstChild).getNr()] > parallelizationThreshold
-                        && weightOfNodeSubTree[node.getChild(indexSecondChild).getNr()] > parallelizationThreshold) {
+                        && weightOfNodeSubTree[firstChild.getNr()] > parallelizationThreshold
+                        && weightOfNodeSubTree[secondChild.getNr()] > parallelizationThreshold) {
 
                     try {
                         // start a new thread to take care of the second subtree
                         Future<P0GeState> secondChildTraversal = pool.submit(
-                                new TraversalService(node.getChild(indexSecondChild), tBottom,
-                                        parameterization.getNodeTime(node.getChild(indexSecondChild), finalSampleOffset.getArrayValue()),
+                                new TraversalService(secondChild, tBottom,
+                                        parameterization.getNodeTime(secondChild, finalSampleOffset.getArrayValue()),
                                         depth + 1));
 
                         childState1 = calculateSubtreeLikelihood(
-                                node.getChild(indexFirstChild), tBottom,
-                                parameterization.getNodeTime(node.getChild(indexFirstChild), finalSampleOffset.getArrayValue()),
+                                firstChild, tBottom,
+                                parameterization.getNodeTime(firstChild, finalSampleOffset.getArrayValue()),
                                 system, depth + 1);
                         childState2 = secondChildTraversal.get();
                     } catch (InterruptedException | ExecutionException e) {
@@ -533,12 +550,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     }
 
                 } else {
-                    childState1 = calculateSubtreeLikelihood(node.getChild(
-                            indexFirstChild), tBottom,
-                            parameterization.getNodeTime(node.getChild(indexFirstChild), finalSampleOffset.getArrayValue()),
+                    childState1 = calculateSubtreeLikelihood(firstChild, tBottom,
+                            parameterization.getNodeTime(firstChild, finalSampleOffset.getArrayValue()),
                             system, depth + 1);
-                    childState2 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), tBottom,
-                            parameterization.getNodeTime(node.getChild(indexSecondChild), finalSampleOffset.getArrayValue()),
+                    childState2 = calculateSubtreeLikelihood(secondChild, tBottom,
+                            parameterization.getNodeTime(secondChild, finalSampleOffset.getArrayValue()),
                             system, depth + 1);
                 }
 
