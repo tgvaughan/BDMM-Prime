@@ -74,6 +74,16 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
 
                 yDot[i] += param.getCrossBirthRates2()[interval][i][j] * (y[i] - y[i]*y[j]);
                 yDot[i] += param.getMigRates()[interval][i][j] * (y[i] - y[j]);
+
+                if (param.getCrossBirthRates3() != null) {
+                    for (int k = 0; k <= j; k++) {
+                        if (k == i)
+                            continue;
+
+                        yDot[i] += param.getCrossBirthRates3()[interval][i][j][k]
+                                * (y[i] - y[j] * y[k]);
+                    }
+                }
 			}
 
 			/*  ge equations: (dim .. 2*dim-1) */
@@ -84,8 +94,7 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
                     - 2*param.getBirthRates()[interval][i]*y[nTypes+i]*y[i];
 
 			for (int j = 0; j< nTypes; j++) {
-
-                if (i==j)
+                if (j==i)
 			        continue;
 
                 yDot[nTypes + i] += param.getCrossBirthRates2()[interval][i][j]
@@ -93,6 +102,16 @@ public class ODESystem implements FirstOrderDifferentialEquations, EventHandler 
 
                 yDot[nTypes + i] += param.getMigRates()[interval][i][j]
                         * (y[nTypes+i] - y[nTypes+j]);
+
+                if (param.getCrossBirthRates3() != null) {
+                    for (int k = 0; k <= j; k++) {
+                        if (k == i)
+                            continue;
+
+                        yDot[nTypes + i] += param.getCrossBirthRates3()[interval][i][j][k]
+                                * (y[nTypes + i] - (y[nTypes + j] * y[k] + y[nTypes + k] * y[j]));
+                    }
+                }
 			}
 		}
 

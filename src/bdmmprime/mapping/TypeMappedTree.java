@@ -149,7 +149,6 @@ public class TypeMappedTree extends Tree {
      */
     private void doStochasticMapping() {
          // Prepare the backward-time integrator!
-
         odeIntegrator = new DormandPrince54Integrator(
                 param.getTotalProcessLength()*BACKWARD_INTEGRATION_MIN_STEP,
                 param.getTotalProcessLength()*BACKWARD_INTEGRATION_MAX_STEP,
@@ -157,7 +156,6 @@ public class TypeMappedTree extends Tree {
 
         // Prepare the ODE system and the arrays used to store the backward-time
         // integration results.
-
         odeSystem = new ODESystem(param);
         integrationResults = new ContinuousOutputModel[untypedTree.getNodeCount()];
         geScaleFactors = new double[untypedTree.getNodeCount()];
@@ -169,11 +167,9 @@ public class TypeMappedTree extends Tree {
         double[] y = backwardsIntegrateSubtree(untypedTree.getRoot(), 0.0);
 
         // Sample starting type
-
         double[] startTypeProbs = new double[param.getNTypes()];
-
         for (int type=0; type<param.getNTypes(); type++)
-            startTypeProbs[type] = y[type+param.getNTypes()]* startTypePriorProbsInput.get().getValue(type);
+            startTypeProbs[type] = y[type+param.getNTypes()]*startTypePriorProbsInput.get().getValue(type);
 
         // (startTypeProbs are unnormalized: this is okay for randomChoicePDF.)
         int startType = Randomizer.randomChoicePDF(startTypeProbs);
@@ -182,7 +178,6 @@ public class TypeMappedTree extends Tree {
         // As tiny numerical errors can very occasionally lead to this failing,
         // the mapping is attempted up to 3 times, with additional failures leading
         // to a runtime exception.
-
         int failures = 0;
         boolean success = false;
         Node typedRoot = null;
@@ -491,17 +486,28 @@ public class TypeMappedTree extends Tree {
 
         int N = param.getNTypes();
 
-        for (int type = 0; type< param.getNTypes(); type++) {
-            y[type] = yLeft[type];
-            y[N+type] = 0.0;
+        for (int i = 0; i< param.getNTypes(); i++) {
+            y[i] = yLeft[i];
+            y[N+i] = 0.0;
 
-            for (int typeOther=0; typeOther<N; typeOther++) {
-                if (typeOther == type) {
-                    y[N+type] += param.getBirthRates()[nodeInterval][type]
-                            *yLeft[N+type]*yRight[N+type];
-                } else {
-                    y[N+type] += 0.5*param.getCrossBirthRates2()[nodeInterval][type][typeOther]
-                            *(yLeft[N+type]*yRight[N+typeOther] + yLeft[N+typeOther]*yRight[N+type]);
+            y[N+i] += param.getBirthRates()[nodeInterval][i]
+                    *yLeft[N+i]*yRight[N+i];
+
+            for (int j=0; j<N; j++) {
+                if (j == i)
+                    continue;
+
+                y[N+i] += 0.5*param.getCrossBirthRates2()[nodeInterval][i][j]
+                        *(yLeft[N+i]*yRight[N+j] + yLeft[N+j]*yRight[N+i]);
+
+                if (param.getCrossBirthRates3() != null) {
+                    for (int k = 0; k <= j; k++) {
+                        if (k == i)
+                            continue;
+
+                        y[N + i] += 0.5 * param.getCrossBirthRates3()[nodeInterval][i][j][k]
+                                * (yLeft[N + j] * yRight[N + k] + yLeft[N + k] * yRight[N + j]);
+                    }
                 }
             }
         }
@@ -692,18 +698,39 @@ public class TypeMappedTree extends Tree {
         for (int type1=0; type1<param.getNTypes(); type1++) {
             for (int type2=0; type2<param.getNTypes(); type2++) {
 
-                if (type1 != parentType && type2 != parentType) {
-                    probs[type1][type2] = 0.0;
-                    continue;
-                }
-
                 if (type1 == type2) {
-                    probs[type1][type1] = param.getBirthRates()[interval][type1]
-                            *y1[param.getNTypes()+type1]*y2[param.getNTypes()+type1];
+                    if (type1 == parentType) {
+                        probs[type1][type1] = param.getBirthRates()[interval][type1]
+                                * y1[param.getNTypes() + type1] * y2[param.getNTypes() + type1];
+                    } else {
+                        if (param.getCrossBirthRates3() != null) {
+                            probs[type1][type1] = param.getCrossBirthRates3()[interval][parentType][type1][type1]
+                                    * y1[param.getNTypes() + type1] * y2[param.getNTypes() + type1];
+                        } else {
+                            probs[type1][type1] = 0.0;
+                        }
+                    }
                 } else {
-                    int newType = type1 != parentType ? type1 : type2;
-                    probs[type1][type2] = param.getCrossBirthRates2()[interval][parentType][newType]
-                            * 0.5 * y1[param.getNTypes()+type1]*y2[param.getNTypes()+type2];
+                    if (type1 == parentType || type2 == parentType) {
+                        int newType = type1 != parentType ? type1 : type2;
+                        probs[type1][type2] = param.getCrossBirthRates2()[interval][parentType][newType]
+                                * 0.5 * y1[param.getNTypes() + type1] * y2[param.getNTypes() + type2];
+                    } else {
+                        if (param.getCrossBirthRates3() != null) {
+                            int smallType, largeType;
+                            if (type1>type2) {
+                                smallType = type1;
+                                largeType = type2;
+                            } else {
+                                smallType = type2;
+                                largeType = type1;
+                            }
+                            probs[type1][type2] = param.getCrossBirthRates3()[interval][parentType][smallType][largeType]
+                                    * 0.5 * y1[param.getNTypes() + type1] * y2[param.getNTypes() + type2];
+                        } else {
+                            probs[type1][type2] = 0.0;
+                        }
+                    }
                 }
 
                 totalMass += probs[type1][type2];
@@ -748,9 +775,24 @@ public class TypeMappedTree extends Tree {
                 continue;
             }
 
-            result[type] = (param.getCrossBirthRates2()[interval][fromType][type] * y[fromType]
-                        + param.getMigRates()[interval][fromType][type])
-                        * y[param.getNTypes() + type];
+            result[type] = param.getCrossBirthRates2()[interval][fromType][type] * y[fromType]
+                    + param.getMigRates()[interval][fromType][type];
+
+            if (param.getCrossBirthRates3() != null) {
+                for (int k=0; k<type; k++) {
+                    if (k != fromType)
+                        result[type] += param.getCrossBirthRates3()[interval][fromType][type][k] * y[k];
+                }
+
+                // lambda_ijj provides two possibilities for an i->j transition:
+                result[type] += 2 * param.getCrossBirthRates3()[interval][fromType][type][type] * y[type];
+
+                for (int k = type + 1; k < param.getNTypes(); k++)
+                    if (k != fromType)
+                        result[type] += param.getCrossBirthRates3()[interval][fromType][k][type] * y[k];
+            }
+
+            result[type] *= y[param.getNTypes() + type];
         }
 
         if (y[param.getNTypes()+fromType]<=0.0) {
