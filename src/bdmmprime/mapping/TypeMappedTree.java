@@ -500,7 +500,7 @@ public class TypeMappedTree extends Tree {
                 y[N+i] += 0.5*param.getCrossBirthRates2()[nodeInterval][i][j]
                         *(yLeft[N+i]*yRight[N+j] + yLeft[N+j]*yRight[N+i]);
 
-                if (param.getCrossBirthRates3() != null) {
+                if (param.hasCrossBirthRates3()) {
                     for (int k = 0; k <= j; k++) {
                         if (k == i)
                             continue;
@@ -703,7 +703,7 @@ public class TypeMappedTree extends Tree {
                         probs[type1][type1] = param.getBirthRates()[interval][type1]
                                 * y1[param.getNTypes() + type1] * y2[param.getNTypes() + type1];
                     } else {
-                        if (param.getCrossBirthRates3() != null) {
+                        if (param.hasCrossBirthRates3()) {
                             probs[type1][type1] = param.getCrossBirthRates3()[interval][parentType][type1][type1]
                                     * y1[param.getNTypes() + type1] * y2[param.getNTypes() + type1];
                         } else {
@@ -716,7 +716,7 @@ public class TypeMappedTree extends Tree {
                         probs[type1][type2] = param.getCrossBirthRates2()[interval][parentType][newType]
                                 * 0.5 * y1[param.getNTypes() + type1] * y2[param.getNTypes() + type2];
                     } else {
-                        if (param.getCrossBirthRates3() != null) {
+                        if (param.hasCrossBirthRates3()) {
                             int smallType, largeType;
                             if (type1>type2) {
                                 smallType = type1;
@@ -778,7 +778,7 @@ public class TypeMappedTree extends Tree {
             result[type] = param.getCrossBirthRates2()[interval][fromType][type] * y[fromType]
                     + param.getMigRates()[interval][fromType][type];
 
-            if (param.getCrossBirthRates3() != null) {
+            if (param.hasCrossBirthRates3()) {
                 for (int k=0; k<type; k++) {
                     if (k != fromType)
                         result[type] += param.getCrossBirthRates3()[interval][fromType][type][k] * y[k];
