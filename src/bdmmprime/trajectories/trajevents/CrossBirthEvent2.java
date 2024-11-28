@@ -23,18 +23,18 @@ import beast.base.util.Randomizer;
 
 import java.util.List;
 
-public class CrossBirthEvent extends TrajectoryEvent {
+public class CrossBirthEvent2 extends TrajectoryEvent {
 
     int srcType, destType;
 
-    public CrossBirthEvent(double time, int srcType, int destType, int multiplicity) {
+    public CrossBirthEvent2(double time, int srcType, int destType, int multiplicity) {
         this.time = time;
         this.srcType = srcType;
         this.destType = destType;
         this.multiplicity = multiplicity;
     }
 
-    public CrossBirthEvent(double time, int srcType, int destType) {
+    public CrossBirthEvent2(double time, int srcType, int destType) {
         this(time, srcType, destType, 1);
     }
 
@@ -91,11 +91,11 @@ public class CrossBirthEvent extends TrajectoryEvent {
                 "srcType=" + srcType +
                 ", destType=" + destType +
                 ", multiplicity=" + multiplicity +
-                '}';
+                "}";
     }
 
     @Override
-    public String getEventCode() {
+    public String getEventCode(int nTypes) {
         return "B\t" + srcType + "\t" + destType + "\t" + multiplicity;
     }
 }

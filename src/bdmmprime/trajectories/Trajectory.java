@@ -188,7 +188,7 @@ public class Trajectory {
         if (stateIdx==0) {
             ps.print("O\tNA\tNA\tNA");
         } else {
-            ps.print(events.get(stateIdx-1).getEventCode());
+            ps.print(events.get(stateIdx-1).getEventCode(state.length));
         }
     }
 

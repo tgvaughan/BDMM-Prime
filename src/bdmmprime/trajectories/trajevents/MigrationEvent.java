@@ -84,7 +84,7 @@ public class MigrationEvent extends TrajectoryEvent {
     }
 
     @Override
-    public String getEventCode() {
+    public String getEventCode(int nTypes) {
         return "M\t" + srcType + "\t" + destType + "\t" + multiplicity;
     }
 }

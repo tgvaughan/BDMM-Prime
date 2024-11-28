@@ -20,7 +20,7 @@ package bdmmprime.trajectories.obsevents;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.BirthEvent;
-import bdmmprime.trajectories.trajevents.CrossBirthEvent;
+import bdmmprime.trajectories.trajevents.CrossBirthEvent2;
 
 public class CoalescenceEvent extends ObservedEvent {
 
@@ -71,7 +71,7 @@ public class CoalescenceEvent extends ObservedEvent {
             logWeightContrib += Math.log(crossbirth_prop)
                     - Math.log(trajectory.currentState[s]*(trajectory.currentState[sp] + 1.0));
 
-            trajectory.addEvent(new CrossBirthEvent(time, s, sp));
+            trajectory.addEvent(new CrossBirthEvent2(time, s, sp));
         }
 
         return logWeightContrib;

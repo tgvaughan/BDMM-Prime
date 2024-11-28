@@ -61,5 +61,5 @@ public abstract class TrajectoryEvent {
             simulateSingleTreeEvent(state, activeLineages, factory, untypedTree);
     }
 
-    public abstract String getEventCode();
+    public abstract String getEventCode(int nTypes);
 }

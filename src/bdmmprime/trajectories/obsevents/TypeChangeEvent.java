@@ -19,7 +19,7 @@ package bdmmprime.trajectories.obsevents;
 
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
-import bdmmprime.trajectories.trajevents.CrossBirthEvent;
+import bdmmprime.trajectories.trajevents.CrossBirthEvent2;
 import bdmmprime.trajectories.trajevents.MigrationEvent;
 import beast.base.util.Randomizer;
 
@@ -74,7 +74,7 @@ public class TypeChangeEvent extends ObservedEvent {
                 logWeightContrib += Math.log(1.0 - lineages[s] / trajectory.currentState[s])
                         - Math.log(trajectory.currentState[sp] + 1);
 
-                trajectory.addEvent(new CrossBirthEvent(time, s, sp));
+                trajectory.addEvent(new CrossBirthEvent2(time, s, sp));
             }
         }
 

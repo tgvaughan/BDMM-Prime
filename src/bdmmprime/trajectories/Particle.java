@@ -45,7 +45,7 @@ public class Particle {
      */
     double a_tot, a_illegal_tot;
     double[] a_birth, a_death;
-    double[][] a_migration, a_crossbirth;
+    double[][] a_migration, a_crossbirth2;
 
     boolean useTauLeaping;
     int minLeapCount;
@@ -62,7 +62,7 @@ public class Particle {
         a_birth = new double[nTypes];
         a_death = new double[nTypes];
         a_migration = new double[nTypes][nTypes];
-        a_crossbirth = new double[nTypes][nTypes];
+        a_crossbirth2 = new double[nTypes][nTypes];
 
         trajectory = new Trajectory(initialState);
         logWeight = 0.0;
@@ -180,18 +180,18 @@ public class Particle {
                     a_illegal_tot += a_temp;
                 }
 
-                // Cross birth
+                // Cross birth 2
                 a_temp = trajectory.currentState[s]*param.getCrossBirthRates2()[interval][s][sp];
                 if (a_temp > 0.0) {
                     // The following probability is for _any_ observable event produced as a result
                     // of a cross-birth, either a type change or a coalescence.
                     // This is why we don't include a factor lineages[s]/currentState[s].
                     p_obs = observedEvent.lineages[sp] / (trajectory.currentState[sp] + 1.0);
-                    a_crossbirth[s][sp] = a_temp * (1.0 - p_obs);
-                    a_tot += a_crossbirth[s][sp];
+                    a_crossbirth2[s][sp] = a_temp * (1.0 - p_obs);
+                    a_tot += a_crossbirth2[s][sp];
                     a_illegal_tot += a_temp * p_obs;
                 } else {
-                    a_crossbirth[s][sp] = 0.0;
+                    a_crossbirth2[s][sp] = 0.0;
                 }
             }
         }
@@ -247,11 +247,11 @@ public class Particle {
                     }
                     u -= a_migration[s][sp];
 
-                    if (u < a_crossbirth[s][sp]) {
-                        event = new CrossBirthEvent(t, s, sp);
+                    if (u < a_crossbirth2[s][sp]) {
+                        event = new CrossBirthEvent2(t, s, sp);
                         break;
                     }
-                    u -= a_crossbirth[s][sp];
+                    u -= a_crossbirth2[s][sp];
                 }
                 if (event != null)
                     break;
@@ -291,8 +291,8 @@ public class Particle {
                if (i == j)
                    continue;
 
-               mu[i] += a_migration[j][i] - a_migration[i][j] + a_crossbirth[j][i];
-               sigma2[i] += a_migration[j][i] + a_migration[i][j] + a_crossbirth[j][i];
+               mu[i] += a_migration[j][i] - a_migration[i][j] + a_crossbirth2[j][i];
+               sigma2[i] += a_migration[j][i] + a_migration[i][j] + a_crossbirth2[j][i];
            }
 
            if (mu[i] != 0)
@@ -340,10 +340,10 @@ public class Particle {
                             trajectory.addEvent(new MigrationEvent(t, s, sp, nMigs));
                     }
 
-                    if (a_crossbirth[s][sp] > 0) {
-                        int nCrossBirths = (int)Randomizer.nextPoisson(a_crossbirth[s][sp]*dt);
+                    if (a_crossbirth2[s][sp] > 0) {
+                        int nCrossBirths = (int)Randomizer.nextPoisson(a_crossbirth2[s][sp]*dt);
                         if (nCrossBirths > 0)
-                            trajectory.addEvent(new CrossBirthEvent(t, s, sp, nCrossBirths));
+                            trajectory.addEvent(new CrossBirthEvent2(t, s, sp, nCrossBirths));
                     }
                 }
             }

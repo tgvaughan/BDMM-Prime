@@ -78,7 +78,8 @@ public class SimulatedTree extends Tree {
     double simulationTime;
 
     double[] a_birth, a_death, a_sampling;
-    double[][] a_migration, a_crossbirth;
+    double[][] a_migration, a_crossbirth2;
+    double[][][] a_crossbirth3;
 
     int nTypes;
     String typeLabel;
@@ -106,7 +107,8 @@ public class SimulatedTree extends Tree {
         a_death = new double[nTypes];
         a_sampling = new double[nTypes];
         a_migration = new double[nTypes][nTypes];
-        a_crossbirth = new double[nTypes][nTypes];
+        a_crossbirth2 = new double[nTypes][nTypes];
+        a_crossbirth3 = new double[nTypes][nTypes][nTypes];
 
         traj = null;
         do {
@@ -171,8 +173,19 @@ public class SimulatedTree extends Tree {
                         continue;
 
                     a_migration[s][sp] = traj.currentState[s] * param.getMigRates()[interval][s][sp];
-                    a_crossbirth[s][sp] = traj.currentState[s] * param.getCrossBirthRates2()[interval][s][sp];
-                    a_tot += a_migration[s][sp] + a_crossbirth[s][sp];
+                    a_crossbirth2[s][sp] = traj.currentState[s] * param.getCrossBirthRates2()[interval][s][sp];
+                    a_tot += a_migration[s][sp] + a_crossbirth2[s][sp];
+
+                    if (param.hasCrossBirthRates3()) {
+                        for (int spp=0; spp<=sp; spp++) {
+                            if (spp == s)
+                                continue;
+
+                            a_crossbirth3[s][sp][spp] = traj.currentState[s]
+                                    * param.getCrossBirthRates3()[interval][s][sp][spp];
+                            a_tot += a_crossbirth3[s][sp][spp];
+                        }
+                    }
                 }
             }
 
@@ -248,11 +261,26 @@ public class SimulatedTree extends Tree {
                     }
                     u -= a_migration[s][sp];
 
-                    if (u < a_crossbirth[s][sp]) {
-                        event = new CrossBirthEvent(t, s, sp);
+                    if (u < a_crossbirth2[s][sp]) {
+                        event = new CrossBirthEvent2(t, s, sp);
                         break;
                     }
-                    u -= a_crossbirth[s][sp];
+                    u -= a_crossbirth2[s][sp];
+
+                    if (param.hasCrossBirthRates3()) {
+                        for (int spp=0; spp<=sp; spp++) {
+                            if (spp == s)
+                                continue;
+
+                            if (u < a_crossbirth3[s][sp][spp]) {
+                                event = new CrossBirthEvent3(t, s, sp, spp);
+                                break;
+                            }
+                            u -= a_crossbirth3[s][sp][spp];
+                        }
+                        if (event != null)
+                            break;
+                    }
                 }
 
                 if (event != null)

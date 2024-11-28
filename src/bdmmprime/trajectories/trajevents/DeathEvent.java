@@ -60,7 +60,7 @@ public class DeathEvent extends TrajectoryEvent {
     }
 
     @Override
-    public String getEventCode() {
+    public String getEventCode(int nTypes) {
         return "D\t" + type + "\tNA\t" + multiplicity;
     }
 }
