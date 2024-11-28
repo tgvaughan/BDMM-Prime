@@ -725,7 +725,7 @@ public class TypeMappedTree extends Tree {
                                 smallType = type2;
                                 largeType = type1;
                             }
-                            probs[type1][type2] = param.getCrossBirthRates3()[interval][parentType][smallType][largeType]
+                            probs[type1][type2] = param.getCrossBirthRates3()[interval][parentType][largeType][smallType]
                                     * 0.5 * y1[param.getNTypes() + type1] * y2[param.getNTypes() + type2];
                         } else {
                             probs[type1][type2] = 0.0;
