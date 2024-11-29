@@ -284,7 +284,7 @@ public class Particle {
                     u -= a_crossbirth2[s][sp];
 
                     if (param.hasCrossBirthRates3()) {
-                        for (int spp=0; spp<=sp; sp++) {
+                        for (int spp=0; spp<=sp; spp++) {
                             if (spp == s)
                                 continue;
 
