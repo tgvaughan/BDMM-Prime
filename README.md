@@ -34,6 +34,7 @@ There you'll find all relevant usage information including installation,
 a complete tutorial, as well as reference guides for using BDMM-Prime via
 the BEAUti interface together with detailed instructions on its XML interface.
 
+
 Building from Source
 --------------------
 
@@ -58,6 +59,7 @@ in the directory `../beastfx` relative to the BDMM-Prime root, the build
 script will attempt to download them automatically.  Thus, most builds
 will require a network connection.
 
+
 Acknowledgements
 ----------------
 
@@ -77,8 +79,7 @@ If you use this package as part of your research, please cite these papers:
   Data", MBE, 33:8, 2102-2116 (2016),
   [doi:10.1093/molbev/msw064](https://doi.org/10.1093/molbev/msw064).
   
-(A manuscript describing BDMM-Prime itself is in preparation.)
-  
+
 License
 -------
 
