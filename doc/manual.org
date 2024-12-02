@@ -43,9 +43,9 @@ BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
 package will be maintained separately to ensure that BEAST 2 XMLs and packages
 that depend on it remain usable.
 
-** Acknowledgements
+** Acknowledgements and Citations
 :PROPERTIES:
-:CUSTOM_ID: id-2-Introduction-Acknowledgements
+:CUSTOM_ID: id-2-Introduction-Acknowledgements-and-Citations
 :END:
 
 As this is a fork of [[https://github.com/denisekuehnert/bdmm][BDMM]], BDMM-Prime owes a huge debt to the
@@ -57,8 +57,6 @@ If you use this package as part of your research, please cite these papers:
 - Vaughan and Stadler, /Bayesian phylodynamic inference of multi-type population trajectories using genomic data/, [[https://doi.org/10.1101/2024.11.26.625381][doi:10.1101/2024.11.26.625381]] (preprint)
 - Scire et al., /Robust Phylodynamic Analysis of Genetic Sequencing Data from Structured Populations/, Viruses, 14:8, 1648 (2022), doi:10.3390/v14081648
 - Kühnert et al., /Phylodynamics with Migration: A ComputationalFramework to Quantify Population Structure from Genomic Data/, MBE, 33:8, 2102-2116 (2016), doi:10.1093/molbev/msw064.
-
-(A manuscript describing BDMM-Prime itself is in preparation.)
 
 * Getting Started
 :PROPERTIES:

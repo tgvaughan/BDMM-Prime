@@ -60,8 +60,8 @@ script will attempt to download them automatically.  Thus, most builds
 will require a network connection.
 
 
-Acknowledgements
-----------------
+Acknowledgements and Citations
+------------------------------
 
 As this is a fork of [BDMM](https://github.com/denisekuehnert/bdmm),
 BDMM-Prime owes its existence to the authors and contributors of
