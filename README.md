@@ -68,6 +68,7 @@ and [Jérémie Scire](https://github.com/jscire).
 
 If you use this package as part of your research, please cite these papers:
 
+* Vaughan and Stadler, "Bayesian phylodynamic inference of multi-type population trajectories using genomic data", [doi:10.1101/2024.11.26.625381](https://doi.org/10.1101/2024.11.26.625381) (preprint)
 * Kühnert, et al., "Phylodynamics with Migration: A
   ComputationalFramework to Quantify Population Structure from Genomic
   Data", MBE, 33:8, 2102-2116 (2016),
