@@ -89,9 +89,6 @@ built-in package manager in the following way:
 BDMM-Prime should now be available to use on your system. (You will need to
 restart BEAUti before you can set up any analyses.)
 
-Aside: Eventually BDMM-Prime will be available from the default BEAST 2
-repository.  However, while it is still in development, it must be
-installed from the above repository.
 
 ** Setting up your first analysis
 :PROPERTIES:
