@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2024-10-09 Wed 10:26 -->
+<!-- 2024-12-06 Fri 09:59 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -30,7 +30,7 @@
 <li><a href="#id-1-Introduction">1. Introduction</a>
 <ul>
 <li><a href="#id-2-Introduction-Comparison-with-BDMM">1.1. Comparison with BDMM</a></li>
-<li><a href="#id-2-Introduction-Acknowledgements">1.2. Acknowledgements</a></li>
+<li><a href="#id-2-Introduction-Acknowledgements-and-Citations">1.2. Acknowledgements and Citations</a></li>
 </ul>
 </li>
 <li><a href="#id-1-Getting-Started">2. Getting Started</a>
@@ -129,7 +129,7 @@
 </div>
 </nav>
 
-<figure id="org0099d7e">
+<figure id="orgcacf729">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -176,9 +176,9 @@ that depend on it remain usable.
 </div>
 </div>
 
-<div id="outline-container-id-2-Introduction-Acknowledgements" class="outline-3">
-<h3 id="id-2-Introduction-Acknowledgements"><span class="section-number-3">1.2.</span> Acknowledgements</h3>
-<div class="outline-text-3" id="text-id-2-Introduction-Acknowledgements">
+<div id="outline-container-id-2-Introduction-Acknowledgements-and-Citations" class="outline-3">
+<h3 id="id-2-Introduction-Acknowledgements-and-Citations"><span class="section-number-3">1.2.</span> Acknowledgements and Citations</h3>
+<div class="outline-text-3" id="text-id-2-Introduction-Acknowledgements-and-Citations">
 <p>
 As this is a fork of <a href="https://github.com/denisekuehnert/bdmm">BDMM</a>, BDMM-Prime owes a huge debt to the
 authors and contributors of that project, in particular Denise Kühnert
@@ -189,14 +189,11 @@ and Jérémie Scire.
 If you use this package as part of your research, please cite these papers:
 </p>
 
-<ol class="org-ol">
-<li>Kühnert et al., <i>Phylodynamics with Migration: A ComputationalFramework to Quantify Population Structure from Genomic Data</i>, MBE, 33:8, 2102-2116 (2016), <a href="https://doi.org/10.1093/molbev/msw064">https://doi.org/10.1093/molbev/msw064</a>.</li>
+<ul class="org-ul">
+<li>Vaughan and Stadler, <i>Bayesian phylodynamic inference of multi-type population trajectories using genomic data</i>, <a href="https://doi.org/10.1101/2024.11.26.625381">doi:10.1101/2024.11.26.625381</a> (preprint)</li>
 <li>Scire et al., <i>Robust Phylodynamic Analysis of Genetic Sequencing Data from Structured Populations</i>, Viruses, 14:8, 1648 (2022), <a href="https://doi.org/10.3390/v14081648">https://doi.org/10.3390/v14081648</a></li>
-</ol>
-
-<p>
-(A manuscript describing BDMM-Prime itself is in preparation.)
-</p>
+<li>Kühnert et al., <i>Phylodynamics with Migration: A ComputationalFramework to Quantify Population Structure from Genomic Data</i>, MBE, 33:8, 2102-2116 (2016), <a href="https://doi.org/10.1093/molbev/msw064">https://doi.org/10.1093/molbev/msw064</a>.</li>
+</ul>
 </div>
 </div>
 </div>
@@ -235,14 +232,9 @@ Select it, then click the <code>Install/Upgrade</code> button.</li>
 BDMM-Prime should now be available to use on your system. (You will need to
 restart BEAUti before you can set up any analyses.)
 </p>
+</div>
+</div>
 
-<p>
-Aside: Eventually BDMM-Prime will be available from the default BEAST 2
-repository.  However, while it is still in development, it must be
-installed from the above repository.
-</p>
-</div>
-</div>
 
 <div id="outline-container-id-2-Getting-Started-Setting-up-your-first-analysis" class="outline-3">
 <h3 id="id-2-Getting-Started-Setting-up-your-first-analysis"><span class="section-number-3">2.2.</span> Setting up your first analysis</h3>
@@ -339,7 +331,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="org09e4053">
+<figure id="orge59e1d0">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -362,7 +354,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="orgfbaeb65">
+<figure id="org59ace0b">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -394,7 +386,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="orge38fa8c">
+<figure id="orgaf36b45">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -418,7 +410,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="orgb5797d6">
+<figure id="org1b5e34a">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -443,7 +435,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="orgc1d02d4">
+<figure id="orgdd3f31a">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -453,7 +445,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="org7f3a8ca">
+<figure id="org8156a94">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -484,7 +476,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="org32a28e0">
+<figure id="org827d3bf">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -510,7 +502,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="org68e52ba">
+<figure id="orgd797a4e">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -533,7 +525,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="orgd79a7e8">
+<figure id="orgecc1dfa">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -573,7 +565,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="org94ad2f0">
+<figure id="orgff196f0">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -606,7 +598,7 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="orgcc0ae5a">
+<figure id="org7c56393">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
@@ -689,7 +681,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="org4cf3a05">
+<figure id="org2268902">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -805,7 +797,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="org1daa261">
+<figure id="orgd27f0e2">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -841,7 +833,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="org723baec">
+<figure id="orgd5d0f0b">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -865,7 +857,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="org94fe01b">
+<figure id="orge930b0e">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -1208,7 +1200,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org74c114e">
+<figure id="org0d47c3e">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1248,7 +1240,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="orge3e6283">
+<figure id="org86cfe92">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1378,7 +1370,7 @@ in their default configuration:
 </p>
 
 
-<figure id="orgfb5023f">
+<figure id="org20aa055">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1452,7 +1444,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="orgfc745d3">
+<figure id="org542f404">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1520,7 +1512,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="org9c25e81">
+<figure id="org56726e6">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1541,7 +1533,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="orgbc4234f">
+<figure id="org4d1f5ea">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1680,7 +1672,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="org27c8639">
+<figure id="org0c10c63">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1754,7 +1746,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="org5a6e6f2">
+<figure id="org664ff81">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1779,7 +1771,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="orgbc564da">
+<figure id="org8dc5654">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -3225,7 +3217,7 @@ users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2024-10-09 Wed 10:26</p>
+<p class="date">Created: 2024-12-06 Fri 09:59</p>
 </div>
 </body>
 </html>

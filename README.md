@@ -34,6 +34,7 @@ There you'll find all relevant usage information including installation,
 a complete tutorial, as well as reference guides for using BDMM-Prime via
 the BEAUti interface together with detailed instructions on its XML interface.
 
+
 Building from Source
 --------------------
 
@@ -58,8 +59,9 @@ in the directory `../beastfx` relative to the BDMM-Prime root, the build
 script will attempt to download them automatically.  Thus, most builds
 will require a network connection.
 
-Acknowledgements
-----------------
+
+Acknowledgements and Citations
+------------------------------
 
 As this is a fork of [BDMM](https://github.com/denisekuehnert/bdmm),
 BDMM-Prime owes its existence to the authors and contributors of
@@ -68,16 +70,16 @@ and [Jérémie Scire](https://github.com/jscire).
 
 If you use this package as part of your research, please cite these papers:
 
+* Vaughan and Stadler, "Bayesian phylodynamic inference of multi-type population trajectories using genomic data", [doi:10.1101/2024.11.26.625381](https://doi.org/10.1101/2024.11.26.625381) (preprint)
+* Scire et al., "Robust Phylodynamic Analysis of Genetic Sequencing
+  Data from Structured Populations", Viruses, 14:8, 1648 (2022),
+  [doi:10.3390/v14081648](https://doi.org/10.3390/v14081648).
 * Kühnert, et al., "Phylodynamics with Migration: A
   ComputationalFramework to Quantify Population Structure from Genomic
   Data", MBE, 33:8, 2102-2116 (2016),
   [doi:10.1093/molbev/msw064](https://doi.org/10.1093/molbev/msw064).
-* Scire et al., "Robust Phylodynamic Analysis of Genetic Sequencing
-  Data from Structured Populations", Viruses, 14:8, 1648 (2022),
-  [doi:10.3390/v14081648](https://doi.org/10.3390/v14081648).
   
-(A manuscript describing BDMM-Prime itself is in preparation.)
-  
+
 License
 -------
 
