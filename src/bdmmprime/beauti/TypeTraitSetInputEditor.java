@@ -28,10 +28,7 @@ import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.GuessPatternDialog;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
@@ -42,13 +39,14 @@ import java.util.stream.Collectors;
 /**
  * BEAUti input editor for type traits.
  *
- * @author Tim Vaughan (tgvaughan@gmail.com)
+ * @author Tim Vaughan
  */
 public class TypeTraitSetInputEditor extends InputEditor.Base {
 
     TableView<TaxonEntry> typeTable;
     TraitSet traitSet;
     TaxonSet taxonSet;
+    TypeSet typeSet;
 
     public static class TaxonEntry {
         String taxon;
@@ -103,6 +101,15 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
         traitSet = (TraitSet)input.get();
         taxonSet = traitSet.taxaInput.get();
+
+        for (BEASTInterface obj : traitSet.getOutputs()) {
+            if (obj instanceof TypeSet) {
+                typeSet = (TypeSet) obj;
+                break;
+            }
+        }
+        if (typeSet == null)
+            throw new RuntimeException("TypeTraitSetInputEditor: Could not find typeSet in outputs.");
 
         typeTable = new TableView<>();
         typeTable.setEditable(true);
@@ -189,6 +196,14 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             refreshPanel();
         });
 
+        TextField additionalTypes = new TextField(typeSet.valueInput.get());
+        additionalTypes.setOnAction(e -> {
+            typeSet.valueInput.setValue(additionalTypes.getText(), typeSet);
+            typeSet.initAndValidate();
+
+            refreshPanel();
+        });
+
         addInputLabel();
 
         VBox boxVert = FXUtils.newVBox();
@@ -202,10 +217,17 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         boxVert.getChildren().add(typeTable);
 
         boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(new Label("Additional types (comma-delimited): "));
+        boxHoriz.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
+                BorderStrokeStyle.SOLID, null, null)));
+        boxHoriz.getChildren().add(additionalTypes);
+        boxVert.getChildren().add(boxHoriz);
+
+        boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(new Label("Type index key: "));
 
         StringBuilder typeIndexKeySB = new StringBuilder();
-        TypeSet typeSet = new TypeSet(traitSet.getTaxonValues());
+
         for (int i=0; i<typeSet.getNTypes(); i++) {
             if (i > 0)
                 typeIndexKeySB.append("\n");
