@@ -208,7 +208,7 @@ public class EpochVisualizerPane extends Canvas {
                 rowNum = 0;
             } else {
                 Node node = tree.getNode(nodeNr);
-                String typeName = typeTraitSet.getStringValue(node.getID());
+                String typeName = typeTraitSet.getStringValue(tree.getTaxonId(node));
                 rowNum = param.getNTypes()-1-typeSet.getTypeIndex(typeName);
             }
 
