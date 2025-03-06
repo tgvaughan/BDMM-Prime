@@ -6,9 +6,6 @@ import beast.base.inference.Operator;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.util.Randomizer;
 
-/**
- * @author Tim Vaughan <tgvaughan@gmail.com>
- */
 @Description("Scale elements of a change time vector, maintaining order " +
         "of elements.")
 public class ChangeTimeScaler extends Operator {

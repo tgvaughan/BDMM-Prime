@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Tim Vaughan (tgvaughan@gmail.com)
+ * Copyright (C) 2017-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,8 +38,6 @@ import java.util.stream.Collectors;
 
 /**
  * BEAUti input editor for type traits.
- *
- * @author Tim Vaughan
  */
 public class TypeTraitSetInputEditor extends InputEditor.Base {
 

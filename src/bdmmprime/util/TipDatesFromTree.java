@@ -6,9 +6,6 @@ import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
 
-/**
- * @author Tim Vaughan <tgvaughan@gmail.com>
- */
 @Description("Traitset for tip dates obtained from input tree")
 public class TipDatesFromTree extends TraitSet{
 
