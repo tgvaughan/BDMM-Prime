@@ -18,13 +18,13 @@
 package bdmmprime.trajectories.simulation;
 
 import bdmmprime.trajectories.Trajectory;
-import beast.base.core.BEASTObject;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
+import beast.base.inference.CalculationNode;
 
 import java.io.PrintStream;
 
-public class SimulatedTrajectoryLogger extends BEASTObject implements Loggable {
+public class SimulatedTrajectoryLogger extends CalculationNode implements Loggable {
 
     public Input<SimulatedTree> simulatedTreeInput = new Input<>("simulatedTree",
             "Simulated tree whose trajectory you want to log.",
