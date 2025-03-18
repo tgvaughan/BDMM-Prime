@@ -78,4 +78,14 @@ public class BirthEvent extends TrajectoryEvent {
     public String getEventCode() {
         return "B\t" + type + "\t" + type + "\t" + multiplicity;
     }
+
+    @Override
+    public String getEventFingerprint() {
+        return "B\t" + type + "\t" + type;
+    }
+
+    @Override
+    public BirthEvent copy() {
+        return new BirthEvent(time, type, multiplicity);
+    }
 }

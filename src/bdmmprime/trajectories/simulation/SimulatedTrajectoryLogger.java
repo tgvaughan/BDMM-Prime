@@ -30,6 +30,12 @@ public class SimulatedTrajectoryLogger extends CalculationNode implements Loggab
             "Simulated tree whose trajectory you want to log.",
             Input.Validate.REQUIRED);
 
+    public Input<Double> discretizationTimeStepInput = new Input<>(
+            "discretizationTimeStep",
+            "If provided, trajectory event sequence will be coarse-grained " +
+                    "using a time grid with this spacing. Useful for reducing size of " +
+                    "trajectory log files.");
+
     SimulatedTree simulatedTree;
 
     @Override
@@ -46,10 +52,18 @@ public class SimulatedTrajectoryLogger extends CalculationNode implements Loggab
     public void log(long sample, PrintStream out) {
         if (simulatedTree.traj == null)
             Trajectory.logEmpty(out);
-        else
-            Trajectory.log(sample, simulatedTree.traj.getStateList(),
-                    simulatedTree.traj.events,
+        else {
+            Trajectory trajTolog;
+            if (discretizationTimeStepInput.get() != null)
+                trajTolog = simulatedTree.traj.getDiscretized(discretizationTimeStepInput.get());
+            else
+                trajTolog = simulatedTree.traj;
+
+            Trajectory.log(sample, trajTolog.getStateList(),
+                    trajTolog.events,
+                    simulatedTree.simulationTime,
                     out);
+        }
     }
 
     @Override

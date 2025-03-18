@@ -360,7 +360,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         if (traj==null)
             Trajectory.logEmpty(out);
         else
-            Trajectory.log(sample, traj.getStateList(), traj.events, out);
+            Trajectory.log(sample, traj.getStateList(), traj.events,
+                    param.getTotalProcessLength(), out);
     }
 
     @Override

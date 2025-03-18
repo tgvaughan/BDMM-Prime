@@ -98,4 +98,14 @@ public class CrossBirthEvent extends TrajectoryEvent {
     public String getEventCode() {
         return "B\t" + srcType + "\t" + destType + "\t" + multiplicity;
     }
+
+    @Override
+    public String getEventFingerprint() {
+        return "B\t" + srcType + "\t" + destType;
+    }
+
+    @Override
+    public CrossBirthEvent copy() {
+        return new CrossBirthEvent(time, srcType, destType, multiplicity);
+    }
 }

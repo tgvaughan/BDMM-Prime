@@ -87,4 +87,14 @@ public class MigrationEvent extends TrajectoryEvent {
     public String getEventCode() {
         return "M\t" + srcType + "\t" + destType + "\t" + multiplicity;
     }
+
+    @Override
+    public String getEventFingerprint() {
+        return "M\t" + srcType + "\t" + destType;
+    }
+
+    @Override
+    public MigrationEvent copy() {
+        return new MigrationEvent(time, srcType, destType, multiplicity);
+    }
 }

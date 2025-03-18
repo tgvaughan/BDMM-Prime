@@ -63,4 +63,14 @@ public class DeathEvent extends TrajectoryEvent {
     public String getEventCode() {
         return "D\t" + type + "\tNA\t" + multiplicity;
     }
+
+    @Override
+    public String getEventFingerprint() {
+        return "D\t" + type + "\tNA";
+    }
+
+    @Override
+    public DeathEvent copy() {
+        return new DeathEvent(time, type, multiplicity);
+    }
 }

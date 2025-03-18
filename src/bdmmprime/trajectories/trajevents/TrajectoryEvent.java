@@ -62,4 +62,15 @@ public abstract class TrajectoryEvent {
     }
 
     public abstract String getEventCode();
+
+    /**
+     * Produces a string which uniquely identifies the event class and type.
+     * In most cases simply the event code minus the multiplicity.
+     * Used to coarse-grain trajectories for logging.
+     *
+     * @return fingerprint string.
+     */
+    public abstract String getEventFingerprint();
+
+    public abstract TrajectoryEvent copy();
 }
