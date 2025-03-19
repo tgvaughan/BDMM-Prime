@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 ETH Zurich
+ * Copyright (C) 2019-2025 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ public class SimulatedTrajectoryLogger extends CalculationNode implements Loggab
 
             Trajectory.log(sample, trajTolog.getStateList(),
                     trajTolog.events,
-                    simulatedTree.simulationTime,
+                    simulatedTree.parameterizationInput.get().getTotalProcessLength(),
                     out);
         }
     }
