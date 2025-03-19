@@ -33,9 +33,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static bdmmprime.util.Utils.nextBinomial;
-import static org.apache.commons.math3.stat.StatUtils.sum;
-
 /**
  * Simulates a tree from a multi-type birth-death skyline process.
  *
