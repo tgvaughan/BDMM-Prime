@@ -220,13 +220,18 @@ public class Trajectory {
         double eventTime = stateIdx > 0 ? events.get(stateIdx-1).time : 0.0;
         double eventAge = processLength - eventTime;
 
+        // Only include population size following last event recorded at a given time.
+        boolean includePopSize = stateIdx==states.size()-1 || events.get(stateIdx).time>eventTime;
+
         for (int s=0; s<state.length; s++) {
             if (s>0 || !isFirst ) {
                 ps.print("\n" + sample + "\t");
             }
 
             ps.print(eventTime + "\t" + eventAge + "\t");
-            ps.print("N\t" + s + "\tNA\t" + state[s]);
+
+            if (includePopSize)
+                ps.print("N\t" + s + "\tNA\t" + state[s]);
         }
 
         ps.print("\n" + sample + "\t" + eventTime + "\t" + eventAge + "\t");
