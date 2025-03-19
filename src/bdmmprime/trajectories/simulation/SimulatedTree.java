@@ -85,11 +85,12 @@ public class SimulatedTree extends Tree {
     @Override
     public void initAndValidate() {
         Parameterization param = parameterizationInput.get();
+        nTypes = param.getNTypes();
 
         int minSamples = minSamplesInput.get();
         typeLabel = typeLabelInput.get();
         simulateUntypedTree = simulateUntypedTreeInput.get();
-        trajectorySimulator = new TrajectorySimulator(parameterizationInput.get(),
+        trajectorySimulator = new TrajectorySimulator(param,
                 startTypePriorProbsInput.get());
 
         traj = null;

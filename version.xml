@@ -38,6 +38,7 @@
     <provider classname="bdmmprime.parameterization.TypeSet"/>
     <provider classname="bdmmprime.distribution.BirthDeathMigrationDistribution"/>
     <provider classname="bdmmprime.trajectories.simulation.SimulatedTrajectoryLogger"/>
+    <provider classname="bdmmprime.trajectories.simulation.UnconditionedTrajectoryLogger"/>
     <provider classname="bdmmprime.trajectories.simulation.SimulatedTree"/>
     <provider classname="bdmmprime.trajectories.simulation.UntypedTreeFromTypedTree"/>
     <provider classname="bdmmprime.trajectories.SampledTrajectory"/>
