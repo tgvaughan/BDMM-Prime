@@ -2056,12 +2056,12 @@ trajectory.) Each row reports either a population size or an event
 at a particular time, as indicated by the entry in the "variable"
 column.
 
-Population sizes are reported by rows with the "variable" column
-set to "N".  Each such row reports the population size associated
-with the type index given in the "type" column and the size
-in the "value" column. The size corresponds to the time immediately
-at and after the time given in the "t" column. (Respectively, the immedately
-before the age given in the "age" column.)
+Population sizes are reported by rows with the "variable" column set
+to "N".  Each such row reports the population size associated with the
+type index given in the "type" column and the size in the "value"
+column. The size corresponds to the time immediately at and after the
+time given in the "t" column. (Respectively, the age immedately before
+the age given in the "age" column.)
 
 Events are reported by rows with the following characters in the
 "variable" column:
