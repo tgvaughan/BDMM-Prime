@@ -70,6 +70,11 @@ public class SimulatedTree extends Tree {
             "If true, an untyped tree will be simulated (i.e. migration events will be removed).",
             false);
 
+    public Input<Boolean> appendTypesToTaxonNamesInput = new Input<>(
+            "appendTypesToTaxonNames",
+            "If true, append types to taxon names with the delimiter |. " +
+                    "Default is false.", false);
+
     int nTypes;
     String typeLabel;
 
@@ -142,7 +147,8 @@ public class SimulatedTree extends Tree {
             activeLineages.add(new ArrayList<>());
 
         NodeFactory nodeFactory = new NodeFactory(traj.getFinalSampleTime(), traj.getSampleCount(),
-                typeLabel, parameterizationInput.get().getTypeSet());
+                typeLabel, parameterizationInput.get().getTypeSet(),
+                appendTypesToTaxonNamesInput.get());
 
         for (TrajectoryEvent event : events) {
                 event.simulateTreeEvent(state, activeLineages, nodeFactory, simulateUntypedTree);
