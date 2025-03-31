@@ -110,6 +110,8 @@ public class TypeMappedTree extends Tree {
     double[] geScaleFactors;
     private FirstOrderIntegrator odeIntegrator;
 
+    private long calculationTime;
+
     /**
      * Parameters for backward-time numerical integration.
      */
@@ -148,8 +150,11 @@ public class TypeMappedTree extends Tree {
      * Called both during initialization and at when logging.
      */
     private void doStochasticMapping() {
-         // Prepare the backward-time integrator!
 
+        // Record time at start of calculation
+        calculationTime = System.currentTimeMillis();
+
+         // Prepare the backward-time integrator!
         odeIntegrator = new DormandPrince54Integrator(
                 param.getTotalProcessLength()*BACKWARD_INTEGRATION_MIN_STEP,
                 param.getTotalProcessLength()*BACKWARD_INTEGRATION_MAX_STEP,
@@ -203,6 +208,9 @@ public class TypeMappedTree extends Tree {
         numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
 
         assignFromWithoutID(new Tree(typedRoot));
+
+        // Store wall time taken by calculation for performance metrics
+        calculationTime = System.currentTimeMillis() - calculationTime;
     }
 
     /**
@@ -841,6 +849,16 @@ public class TypeMappedTree extends Tree {
 
         doStochasticMapping();
         lastRemapSample = sample;
+    }
+
+    /**
+     * Return the duration in milliseconds of the previous stochastic
+     * mapping calculation.  Used for performance monitoring.
+     *
+     * @return duration of previous stochastic mapping calculation
+     */
+    public long getPrevCalculationTime() {
+        return calculationTime;
     }
 
     @Override

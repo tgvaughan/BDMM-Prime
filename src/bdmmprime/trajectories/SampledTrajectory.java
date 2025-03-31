@@ -128,7 +128,12 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public double logTreeProbEstimate;
 
+    private long calculationTime;
+
     public Trajectory sampleTrajectory() {
+        // Record start time of calculation for performance monitoring
+        calculationTime = System.currentTimeMillis();
+
         logTreeProbEstimate = 0.0;
 
         List<ObservedEvent> observedEvents = getObservedEventList(mappedTree);
@@ -202,6 +207,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             t = observedEvent.time;
         }
 
+
+        // Store duration of calculation for performance monitoring
+        calculationTime = System.currentTimeMillis() - calculationTime;
+
         // WLOG choose 0th particle as the particle to return:
 
         return particles[0].trajectory;
@@ -236,6 +245,16 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         }
 
         return logTreeProbEstimate - logGamma(mappedTree.getLeafNodeCount() + 1);
+    }
+
+    /**
+     * Return the duration in milliseconds of the previous trajectory sampling
+     * calculation.  This is used for performance monitoring.
+     *
+     * @return duration of previous trajectory sampling calculation
+     */
+    public long getPrevCalculationTime() {
+        return calculationTime;
     }
 
     /**
