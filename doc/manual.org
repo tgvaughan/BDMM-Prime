@@ -552,6 +552,10 @@ The tree itself is automatically defined and provided to the tree prior by BEAUt
 It therefore remains only to define the remaining three, which are detailed in the
 following sections.
 
+*Important:* Be sure to define all model linkages between partitions /before/
+configuring the BDMM-Prime tree prior.  Modifying linkages later on can result
+in broken BEAST 2 models.
+
 ** Defining Tip Types
 :PROPERTIES:
 :CUSTOM_ID: id-2-Model-specification-using-BEAUti-Defining-Tip-Types
@@ -922,7 +926,7 @@ Below we describe each of them in turn.
   determines the fraction of all of the tree nodes a subtree must
   contain for its tree prior calculation to be assigned to a different
   thread. The default value of 0.1 should be fine in most cases.
-
+  
 * Sampling Latent Variables
 :PROPERTIES:
 :CUSTOM_ID: id-1-Sampling-Latent-Variables
