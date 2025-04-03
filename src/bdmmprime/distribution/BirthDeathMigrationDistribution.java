@@ -12,6 +12,8 @@ import beast.base.inference.State;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
+import org.apache.commons.math3.exception.MathIllegalNumberException;
+import org.apache.commons.math3.exception.MathIllegalStateException;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -224,7 +226,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         updateParallelizationThreshold();
 
-        updateInitialConditionsForP();
+        try {
+            updateInitialConditionsForP();
+        } catch (MathIllegalStateException | MathIllegalNumberException ex) {
+            Log.warning("Warning: BDMM-Prime tree prior integration failure.");
+            logP = Double.NEGATIVE_INFINITY;
+            return logP;
+        }
+
 
         double conditionDensity = 0.0;
         double[] extinctionProb = pInitialConditions[pInitialConditions.length - 1];
