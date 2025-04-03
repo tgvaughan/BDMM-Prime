@@ -187,6 +187,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         Node root = tree.getRoot();
 
+        if (!parameterization.valuesAreValid()) {
+            if (savePartialLikelihoodsToFileInput.get() != null)
+                Log.err("One or more birth-death parameters out of bounds.");
+            logP = Double.NEGATIVE_INFINITY;
+            return logP;
+        }
+
         if (Utils.lessThanWithPrecision(parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()), 0)) {
             if (savePartialLikelihoodsToFileInput.get() != null)
                 Log.err("Tree MRCA older than start of process.");
