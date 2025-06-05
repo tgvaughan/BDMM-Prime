@@ -328,7 +328,7 @@ To incorporate these decisions, follow these instructions:
 #+begin_quote
 Find the Migration Rate parameter, then:
 1. Double-click on the value and change it from it's default to the smaller
-   rate of 0.1 (any infected individual has a 10% chance of moving between
+   rate of 0.1 (any infected individual has a roughly 10% chance of moving between
    the two locations in any given year).
 2. Uncheck the "Scalar values" checkbox to allow rates to vary between pairs of
    locations.
