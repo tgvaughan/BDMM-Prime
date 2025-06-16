@@ -70,7 +70,8 @@ and [Jérémie Scire](https://github.com/jscire).
 
 If you use this package as part of your research, please cite these papers:
 
-* Vaughan and Stadler, "Bayesian phylodynamic inference of multi-type population trajectories using genomic data", [doi:10.1101/2024.11.26.625381](https://doi.org/10.1101/2024.11.26.625381) (preprint)
+* Vaughan and Stadler, "Bayesian phylodynamic inference of multi-type population trajectories using genomic data",
+  MBE, 42:msaf130 (2025) [doi:10.1093/molbev/msaf130](https://doi.org/10.1093/molbev/msaf130)
 * Scire et al., "Robust Phylodynamic Analysis of Genetic Sequencing
   Data from Structured Populations", Viruses, 14:8, 1648 (2022),
   [doi:10.3390/v14081648](https://doi.org/10.3390/v14081648).

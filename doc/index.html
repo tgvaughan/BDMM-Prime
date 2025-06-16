@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-06-05 Thu 17:43 -->
+<!-- 2025-06-16 Mon 11:17 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -129,7 +129,7 @@
 </div>
 </nav>
 
-<figure id="orgf2df304">
+<figure id="org9e46d1e">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -187,9 +187,9 @@ If you use this package as part of your research, please cite these papers:
 </p>
 
 <ul class="org-ul">
-<li>Vaughan and Stadler, <i>Bayesian phylodynamic inference of multi-type population trajectories using genomic data</i>, <a href="https://doi.org/10.1101/2024.11.26.625381">doi:10.1101/2024.11.26.625381</a> (preprint)</li>
-<li>Scire et al., <i>Robust Phylodynamic Analysis of Genetic Sequencing Data from Structured Populations</i>, Viruses, 14:8, 1648 (2022), <a href="https://doi.org/10.3390/v14081648">https://doi.org/10.3390/v14081648</a></li>
-<li>Kühnert et al., <i>Phylodynamics with Migration: A ComputationalFramework to Quantify Population Structure from Genomic Data</i>, MBE, 33:8, 2102-2116 (2016), <a href="https://doi.org/10.1093/molbev/msw064">https://doi.org/10.1093/molbev/msw064</a>.</li>
+<li>Vaughan and Stadler, <i>Bayesian phylodynamic inference of multi-type population trajectories using genomic data</i>, Molecular Biology and Evolution 42:msaf130 (2025), <a href="https://doi.org/10.1093/molbev/msaf130">doi:10.1093/molbev/msaf130</a>. (BDMM-Prime, trajectory inference)</li>
+<li>Scire et al., <i>Robust Phylodynamic Analysis of Genetic Sequencing Data from Structured Populations</i>, Viruses 14:1648 (2022), <a href="https://doi.org/10.3390/v14081648">https://doi.org/10.3390/v14081648</a>. (BDMM)</li>
+<li>Kühnert et al., <i>Phylodynamics with Migration: A Computational Framework to Quantify Population Structure from Genomic Data</i>, Molecular Biology and Evolution 33:2102-2116 (2016), <a href="https://doi.org/10.1093/molbev/msw064">https://doi.org/10.1093/molbev/msw064</a>. (BDMM)</li>
 </ul>
 </div>
 </div>
@@ -321,7 +321,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="orge745fde">
+<figure id="orga1d1e2e">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -343,7 +343,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="orgaca03a3">
+<figure id="orgbbb1c8d">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -374,7 +374,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="org42a6019">
+<figure id="org88e9eaf">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -397,7 +397,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="org08bab8a">
+<figure id="orgec08d7e">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -421,7 +421,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="orgdbe13b4">
+<figure id="orgb6112f6">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -431,7 +431,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="orgc617c17">
+<figure id="org0b24788">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -461,7 +461,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="orgfcc7ef6">
+<figure id="org58bc73f">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -487,7 +487,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="orgd478a6d">
+<figure id="org3382480">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -510,7 +510,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="orgfc27b54">
+<figure id="orgec77119">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -550,7 +550,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="org91bf5bb">
+<figure id="org1e35997">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -583,7 +583,7 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org2feaaf7">
+<figure id="org8ee63f5">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
@@ -664,7 +664,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="orgfd8b59f">
+<figure id="orge7a6126">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -776,7 +776,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="orgf09229c">
+<figure id="orga904e1a">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -811,7 +811,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="org12ce799">
+<figure id="org5921857">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -835,7 +835,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="org6972a49">
+<figure id="orgcc81e98">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -1175,7 +1175,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org88f67f6">
+<figure id="org9de6c62">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1214,7 +1214,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="org15d6ffe">
+<figure id="org3041e11">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1340,7 +1340,7 @@ in their default configuration:
 </p>
 
 
-<figure id="org844b12e">
+<figure id="org91ae65a">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1412,7 +1412,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="orgee1e985">
+<figure id="org0d51d6f">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1479,7 +1479,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="orgc9e9e83">
+<figure id="org2d1ee04">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1500,7 +1500,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="orgd5873be">
+<figure id="org398cef6">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1638,7 +1638,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="orge6e3b98">
+<figure id="orgf41db79">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1712,7 +1712,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="org1f42ac4">
+<figure id="org58b3021">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1737,7 +1737,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="org4895c3d">
+<figure id="org994414a">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -3157,7 +3157,7 @@ users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2025-06-05 Thu 17:43</p>
+<p class="date">Created: 2025-06-16 Mon 11:17</p>
 </div>
 </body>
 </html>

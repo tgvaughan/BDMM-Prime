@@ -20,6 +20,7 @@ package bdmmprime.mapping;
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
+import beast.base.core.Citation;
 import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
@@ -35,7 +36,7 @@ import java.io.PrintStream;
 
 /**
  * <p>An instance of this class is a tree equivalent to untypedTree but with
- * ancestral type changes mapped according the the given multi-type birth-death
+ * ancestral type changes mapped according to the given multi-type birth-death
  * model.</p>
  *
  * <p>Note that there is a degree of duplication between the code in this class
@@ -61,6 +62,10 @@ import java.io.PrintStream;
  * Events which _are_ coincident are handled as part of the ODE boundary
  * condition calculations done at each node.</p>
  */
+@Citation(value = """
+        Vaughan and Stadler, \"Bayesian phylodynamic inference of multi-type population trajectories using genomic data\"
+        Molecular Biology and Evolution 42:msaf130 (2025), doi:10.1093/molbev/msaf130."""
+        , DOI = "10.1093/molbev/msaf130", year = 2025, firstAuthorSurname = "Vaughan")
 public class TypeMappedTree extends Tree {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",

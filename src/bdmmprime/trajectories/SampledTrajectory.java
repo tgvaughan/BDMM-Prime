@@ -22,12 +22,9 @@ import bdmmprime.mapping.TypeMappedTree;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.*;
 import bdmmprime.util.Utils;
+import beast.base.core.*;
 import beast.base.inference.CalculationNode;
-import beast.base.core.Function;
-import beast.base.core.Input;
-import beast.base.core.Loggable;
 import beast.base.inference.parameter.RealParameter;
-import beast.base.core.Log;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 
@@ -39,6 +36,10 @@ import java.util.List;
 
 import static org.apache.commons.math.special.Gamma.logGamma;
 
+@Citation(value = """
+        Vaughan and Stadler, \"Bayesian phylodynamic inference of multi-type population trajectories using genomic data\"
+        Molecular Biology and Evolution 42:msaf130 (2025), doi:10.1093/molbev/msaf130."""
+        , DOI = "10.1093/molbev/msaf130", year = 2025, firstAuthorSurname = "Vaughan")
 public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public Input<Tree> mappedTreeInput = new Input<>("typeMappedTree",
