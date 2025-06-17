@@ -242,7 +242,7 @@
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
 
             <connect srcID="typedTreeStats.t:$(n)" targetID="tracelog" inputName="log"
-                     if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
+                     if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n)) and typedTreeLogger.t:$(n)/enableLogger=true"/>
 
             <connect srcID="trajLogger.t:$(n)" targetID="mcmc" inputName="logger"
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
