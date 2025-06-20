@@ -32,7 +32,7 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
             "Parameter containing change times for skyline function.");
 
     public Input<Boolean> timesAreRelativeInput = new Input<>("timesAreRelative",
-            "True if times are relative to origin. (Default false.)",
+            "True if times are relative to process start. (Default false.)",
             false);
 
     public Input<Boolean> timesAreAgesInput = new Input<>("timesAreAges",
