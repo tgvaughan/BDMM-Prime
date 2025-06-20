@@ -18,7 +18,7 @@
     <provider classname="bdmmprime.util.priors.TipDatePrior"/>
     <provider classname="bdmmprime.util.priors.MultivariateLogNormal"/>
     <provider classname="bdmmprime.util.operators.SmartScaleOperator"/>
-    <provider classname="bdmmprime.util.operators.ChangeTimeScaler"/>
+    <provider classname="bdmmprime.util.operators.ChangeTimeOperator"/>
     <provider classname="bdmmprime.util.operators.TipEdgeScaleOperator"/>
     <provider classname="bdmmprime.util.operators.TipDateInitialiser"/>
     <provider classname="bdmmprime.util.operators.TipDateOperator"/>
