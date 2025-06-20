@@ -542,7 +542,7 @@ alternative parameterisations.
 In contrast, inputs to the BDMM-Prime tree prior are organised in a
 hierarchical way which seeks to avoid repetition and improve
 flexibility.  At the top level, the BDMM-Prime tree prior takes 
-the following five main elements:
+the following main elements:
 1. The tree,
 2. tip type information,
 3. starting type prior probabilities, and
