@@ -830,11 +830,13 @@ looking into the past. Otherwise, the first change time represents the
 oldest change time looking from the start of the process into the
 future.
 
-By default, the change times are not estimated: they retain their chosen
+By default, the change times/ages are not estimated: they retain their chosen
 values through the whole analysis. If you choose, however, you can check
 the "Estimate change times" checkbox to tell BEAST to update these change
-times during the MCMC.  (Remember to configure a prior for the change times
-if you do this!)
+times/ages during the MCMC.  If you choose this, be sure to place
+appropriate upper and lower bounds using the corresponding prior.  The default
+distribution is uniform over possible change times/ages, equivalent to a
+flat Dirichlet prior on the intervals between the times/ages.
 
 Finally, by checking the "Relative to process length" checkbox, one
 can cause the change times/ages to be interpreted as fractions of the
@@ -879,7 +881,7 @@ samples distributed through time, as enabling it displays a graphical
 depiction of the sample distribution alongside the specified epochs
 and change times. Sample times are depicted using red and orange
 circles, with the coloration changing between every pair of epochs,
-allowing one to determine at a glance which epoch a given sample is
+allowing you to determine at a glance which epoch a given sample is
 currently assigned to.
 
 This visualisation is particularly helpful when setting up sampling

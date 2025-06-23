@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-06-20 Fri 15:59 -->
+<!-- 2025-06-23 Mon 11:52 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -129,7 +129,7 @@
 </div>
 </nav>
 
-<figure id="orgf62c3a0">
+<figure id="orga6334b7">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -321,7 +321,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="orgfc9aafa">
+<figure id="org9a4c7e5">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -343,7 +343,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="org245c84d">
+<figure id="org2090663">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -374,7 +374,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="orgfef422c">
+<figure id="org4e6cd75">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -397,7 +397,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="org08ee0a9">
+<figure id="orgb378323">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -421,7 +421,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="org5f17037">
+<figure id="org9af1881">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -431,7 +431,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="org5facf64">
+<figure id="org486d37b">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -461,7 +461,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="org566ce8e">
+<figure id="orgfd66344">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -487,7 +487,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="orgc984414">
+<figure id="org79b8a76">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -510,7 +510,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="org7b263e0">
+<figure id="org635ef11">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -550,7 +550,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="org15d6272">
+<figure id="org4cf8645">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -583,7 +583,7 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org984fc4c">
+<figure id="org51fa58a">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
@@ -664,7 +664,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="orgac487ff">
+<figure id="orgb551d4d">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -776,7 +776,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="orgd80dd48">
+<figure id="orge5a7936">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -811,7 +811,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="orgb783d22">
+<figure id="org8a2b431">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -835,7 +835,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="org7f7353b">
+<figure id="orgcd0b9a0">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -1175,7 +1175,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org1941974">
+<figure id="org6677b40">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1214,7 +1214,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="org13059bf">
+<figure id="org096e7c2">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1258,11 +1258,13 @@ future.
 </p>
 
 <p>
-By default, the change times are not estimated: they retain their chosen
+By default, the change times/ages are not estimated: they retain their chosen
 values through the whole analysis. If you choose, however, you can check
 the "Estimate change times" checkbox to tell BEAST to update these change
-times during the MCMC.  (Remember to configure a prior for the change times
-if you do this!)
+times/ages during the MCMC.  If you choose this, be sure to place
+appropriate upper and lower bounds using the corresponding prior.  The default
+distribution is uniform over possible change times/ages, equivalent to a
+flat Dirichlet prior on the intervals between the times/ages.
 </p>
 
 <p>
@@ -1315,7 +1317,7 @@ samples distributed through time, as enabling it displays a graphical
 depiction of the sample distribution alongside the specified epochs
 and change times. Sample times are depicted using red and orange
 circles, with the coloration changing between every pair of epochs,
-allowing one to determine at a glance which epoch a given sample is
+allowing you to determine at a glance which epoch a given sample is
 currently assigned to.
 </p>
 
@@ -1340,7 +1342,7 @@ in their default configuration:
 </p>
 
 
-<figure id="org3034572">
+<figure id="org54ee13d">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1412,7 +1414,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="org64c93d7">
+<figure id="org1eb5f7c">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1479,7 +1481,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="org0092a65">
+<figure id="org2c89191">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1500,7 +1502,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="org33db296">
+<figure id="org18f07bf">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1638,7 +1640,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="org85ac351">
+<figure id="orgf76744b">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1712,7 +1714,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="orgea51884">
+<figure id="org8098e9e">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1737,7 +1739,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="orgb657023">
+<figure id="org6def85b">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -3157,7 +3159,7 @@ users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2025-06-20 Fri 15:59</p>
+<p class="date">Created: 2025-06-23 Mon 11:52</p>
 </div>
 </body>
 </html>
