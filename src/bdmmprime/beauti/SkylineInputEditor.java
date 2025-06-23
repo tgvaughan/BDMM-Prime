@@ -2,24 +2,24 @@ package bdmmprime.beauti;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.SkylineParameter;
+import bdmmprime.util.operators.JointSkylineScaleOperator;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
+import beast.base.inference.MCMC;
 import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
-import javafx.beans.value.ChangeListener;
-import javafx.beans.value.ObservableValue;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
-import javafx.scene.text.Font;
 import javafx.util.Duration;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public abstract class SkylineInputEditor extends InputEditor.Base {
@@ -350,4 +350,39 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     abstract void updateValuesUI();
 
     public abstract static class ValuesTableEntry { }
+
+    /**
+     * This is a custom connector method referenced in the BDMMPrime template
+     * and discovered and called by BEAUti using reflection.  (Don't be fooled
+     * by your IDE saying it's unused - it is used!)
+     *
+     * This custom connector ensures that JointSkylineScaleOperators possessing
+     * no state nodes are removed from the model.  Such operators can be left
+     * around when all parameters are fixed in the analysis.  This causes
+     * problems since BEAST will refuse to run unless every operator has
+     * at least one state node to operate on.
+     *
+     * @param doc BEAUti document for the connector to check/update
+     */
+    public static void customConnector(BeautiDoc doc) {
+        List<BEASTInterface> treePartitions = doc.getPartitions("TreeModel");
+        MCMC mcmc = (MCMC) doc.pluginmap.get("mcmc");
+        System.out.println("JointSkylineScaleOperator custom connector:");
+
+        for (BEASTInterface treePartition : treePartitions) {
+            System.out.println("\tProcessing partition " + treePartition.getID());
+            String partitionID = BeautiDoc.parsePartition(treePartition.getID());
+            if (doc.pluginmap.containsKey("JointBDMMPrimeSkylineScaleOperator.t:" + partitionID)) {
+                JointSkylineScaleOperator op = (JointSkylineScaleOperator)
+                        doc.pluginmap.get("JointBDMMPrimeSkylineScaleOperator.t:" + partitionID);
+
+                if (op.listStateNodes().isEmpty()) {
+                    System.out.println("\tNo statenodes, disconnecting operator");
+                    mcmc.operatorsInput.get().remove(op);
+                } else
+                    System.out.println("\tFound statenodes, keeping operator");
+            } else
+                System.out.println("\tNo JointSkylineScaleOperator found for partition.");
+        }
+    }
 }

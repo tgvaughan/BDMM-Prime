@@ -23,6 +23,7 @@
     <provider classname="bdmmprime.util.operators.TipDateInitialiser"/>
     <provider classname="bdmmprime.util.operators.TipDateOperator"/>
     <provider classname="bdmmprime.util.operators.SmartRealRandomWalkOperator"/>
+    <provider classname="bdmmprime.util.operators.JointSkylineScaleOperator"/>
     <provider classname="bdmmprime.util.InitializedTraitSet"/>
     <provider classname="bdmmprime.util.Slice"/>
     <provider classname="bdmmprime.util.NodeAgeLogger"/>

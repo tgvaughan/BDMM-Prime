@@ -139,6 +139,8 @@
 
                 <operator id="startTypePriorProbsExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@startTypePriorProbs.t:$(n)" delta="0.1" weight="1.0"/>
 
+                <operator id="JointBDMMPrimeSkylineScaleOperator.t:$(n)" spec="bdmmprime.util.operators.JointSkylineScaleOperator" scaleFactor="0.75" weight="3"/>
+
                 <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
                 <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" lower="0.0" estimate="false"/>
                 <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
@@ -218,6 +220,10 @@
                      and inposterior(Tree.t:$(n))
                      and originBDMMPrime.t:$(n)/estimate=true"/>
 
+            <connect srcID='JointBDMMPrimeSkylineScaleOperator.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))'/>
+
             <connect srcID="startTypePriorProbs.t:$(n)" targetID="state" inputName="stateNode"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
@@ -246,6 +252,8 @@
 
             <connect srcID="trajLogger.t:$(n)" targetID="mcmc" inputName="logger"
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
+
+            <connect method="bdmmprime.beauti.SkylineInputEditor.customConnector"/>
         </subtemplate>
 
     </mergewith>

@@ -58,7 +58,8 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
 
     public Input<Boolean> linkIdenticalValuesInput = new Input<>("linkIdenticalValues",
             "BEAUti hint to create XMLs in which identical values are considered " +
-                    "linked. WARNING: The value of this input has no impact outside of BEAUti!",
+                    "linked. WARNING: The value of this input usually has no impact " +
+                    "outside of BEAUti!",
             false);
 
     boolean timesAreAges, timesAreRelative;
