@@ -1,0 +1,68 @@
+<beast version="2.7"
+       namespace="beast.base.inference">
+
+  <skyline id="x" spec="bdmmprime.parameterization.SkylineVectorParameter"
+           linkIdenticalValues="true">
+    <skylineValues id="xvalues" spec="parameter.RealParameter" value="1 1 2 2 2"/>
+    <changeTimes id="xtimes" spec="parameter.RealParameter" value="1 2 3 4"/>
+  </skyline>
+
+  <skyline id="y" spec="bdmmprime.parameterization.SkylineVectorParameter"
+           linkIdenticalValues="true">
+    <skylineValues id="yvalues" spec="parameter.RealParameter" value="1 1 2 2 2"/>
+    <changeTimes id="ytimes" spec="parameter.RealParameter" value="1 2 3 4"/>
+  </skyline>
+
+  <skyline id="z" spec="bdmmprime.parameterization.SkylineVectorParameter"
+           linkIdenticalValues="false">
+    <skylineValues id="zvalues" spec="parameter.RealParameter" value="3 3"/>
+    <changeTimes id="ztimes" spec="parameter.RealParameter" value="1"/>
+  </skyline>
+
+  <run spec="MCMC" chainLength="10000000">
+    <state>
+      <stateNode idref="xvalues"/>
+      <stateNode idref="yvalues"/>
+      <stateNode idref="zvalues"/>
+    </state>
+
+    <distribution spec="CompoundDistribution">
+      <distribution spec="distribution.Prior" x="@xvalues">
+        <distr spec="distribution.Uniform" lower="0" upper="10"/>
+      </distribution>
+      <distribution spec="distribution.Prior" x="@yvalues">
+        <distr spec="distribution.Uniform" lower="0" upper="10"/>
+      </distribution>
+      <distribution spec="distribution.Prior" x="@zvalues">
+        <distr spec="distribution.Uniform" lower="0" upper="10"/>
+      </distribution>
+    </distribution>
+
+    <operator spec="bdmmprime.util.operators.SmartScaleOperator" scaleAll="false"
+              parameter="@xvalues" weight="1"/>
+    <operator spec="bdmmprime.util.operators.SmartScaleOperator" scaleAll="false"
+              parameter="@yvalues" weight="1"/>
+    <operator spec="beast.base.evolution.operator.ScaleOperator"
+              parameter="@zvalues" weight="1"/>
+
+    <operator spec="bdmmprime.util.operators.JointSkylineScaleOperator" weight="1">
+      <skylineParameter idref="x"/>
+      <skylineParameter idref="y"/>
+      <skylineParameter idref="z"/>
+    </operator>
+
+    <logger fileName="$(filebase).log" logEvery="1000">
+      <!-- <log idref="x"/> -->
+      <log idref="xvalues"/>
+      <log idref="yvalues"/>
+      <log idref="zvalues"/>
+    </logger>
+
+    <logger logEvery="100000">
+      <!-- <log idref="x"/> -->
+      <log idref="xvalues"/>
+      <log idref="yvalues"/>
+      <log idref="zvalues"/>
+    </logger>
+  </run>
+</beast>
