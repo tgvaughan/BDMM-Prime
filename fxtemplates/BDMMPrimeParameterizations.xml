@@ -67,6 +67,9 @@
 
         <fragment id="CanonicalBDMMPrimeChangeTimes" spec="beastfx.app.beauti.Fragment">
             <![CDATA[
+            <distribution spec="beast.base.inference.distribution.Prior" id='$(thisparam)CanonicalPrior.t:$(n)' x='@$(thisparam)Canonical.t:$(n)'>
+                   <distr spec="beast.base.inference.distribution.Uniform" lower="0.0" upper="10.0"/>
+            </distribution>
             <operator id="$(thisparam)CanonicalOperator.t:$(n)" spec="bdmmprime.util.operators.ChangeTimeOperator" scaleFactor="0.75" windowSize="1" weight="3" changeTimes="@$(thisparam)Canonical.t:$(n)"/>
             ]]>
 
@@ -76,7 +79,12 @@
                      and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
                      and inposterior($(thisparam)Canonical.t:$(n))
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
-
+            <connect srcID='$(thisparam)CanonicalPrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)Canonical.t:$(n))
+                     and $(thisparam)Canonical.t:$(n)/estimate=true'/>
             <connect srcID="$(thisparam)CanonicalOperator.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
@@ -148,6 +156,9 @@
 
         <fragment id="EpiBDMMPrimeChangeTimes" spec="beastfx.app.beauti.Fragment">
             <![CDATA[
+            <distribution spec="beast.base.inference.distribution.Prior" id='$(thisparam)EpiPrior.t:$(n)' x='@$(thisparam)Epi.t:$(n)'>
+                   <distr spec="beast.base.inference.distribution.Uniform" lower="0.0" upper="10.0"/>
+            </distribution>
             <operator id="$(thisparam)EpiOperator.t:$(n)" spec="bdmmprime.util.operators.ChangeTimeOperator" scaleFactor="0.75" windowSize="1" weight="3" changeTimes="@$(thisparam)Epi.t:$(n)"/>
             ]]>
 
@@ -157,7 +168,12 @@
                      and inposterior(EpiBDMMPrimeParameterization.t:$(n))
                      and inposterior($(thisparam)Epi.t:$(n))
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
-
+            <connect srcID='$(thisparam)EpiPrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
             <connect srcID="$(thisparam)EpiOperator.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
@@ -229,6 +245,9 @@
 
         <fragment id="FBDBDMMPrimeChangeTimes" spec="beastfx.app.beauti.Fragment">
             <![CDATA[
+            <distribution spec="beast.base.inference.distribution.Prior" id='$(thisparam)FBDPrior.t:$(n)' x='@$(thisparam)FBD.t:$(n)'>
+                   <distr spec="beast.base.inference.distribution.Uniform" lower="0.0" upper="10.0"/>
+            </distribution>
             <operator id="$(thisparam)FBDOperator.t:$(n)" spec="bdmmprime.util.operators.ChangeTimeOperator" scaleFactor="0.75" windowSize="1" weight="3" changeTimes="@$(thisparam)FBD.t:$(n)"/>
             ]]>
 
@@ -238,7 +257,12 @@
                      and inposterior(FBDBDMMPrimeParameterization.t:$(n))
                      and inposterior($(thisparam)FBD.t:$(n))
                      and $(thisparam)FBD.t:$(n)/estimate=true'/>
-
+            <connect srcID='$(thisparam)FBDPrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and $(thisparam)FBD.t:$(n)/estimate=true'/>
             <connect srcID="$(thisparam)FBDOperator.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
