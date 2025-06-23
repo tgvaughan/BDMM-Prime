@@ -189,7 +189,7 @@
 
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
                    range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb,rhoSamplingProb"/>
-            <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
+            <plate fragment="CanonicalBDMMPrimeChangeTimes" var="thisparam"
                    range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="CanonicalBDMMPrimeSkylineLoggers" var="thisparam"
                    range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb,rhoSamplingProb"/>

@@ -65,6 +65,26 @@
                      and $(thisparam)Canonical.t:$(n)/estimate=true'/>
         </fragment>
 
+        <fragment id="CanonicalBDMMPrimeChangeTimes" spec="beastfx.app.beauti.Fragment">
+            <![CDATA[
+            <operator id="$(thisparam)CanonicalOperator.t:$(n)" spec="bdmmprime.util.operators.ChangeTimeOperator" scaleFactor="0.75" windowSize="1" weight="3" changeTimes="@$(thisparam)Canonical.t:$(n)"/>
+            ]]>
+
+            <connect srcID='$(thisparam)Canonical.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)Canonical.t:$(n))
+                     and $(thisparam)Canonical.t:$(n)/estimate=true'/>
+
+            <connect srcID="$(thisparam)CanonicalOperator.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(CanonicalBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)Canonical.t:$(n))
+                     and $(thisparam)Canonical.t:$(n)/estimate=true" />
+        </fragment>
+
         <fragment id="CanonicalBDMMPrimeSkylineLoggers" spec="beastfx.app.beauti.Fragment">
             <connect srcID='$(thisparam)SPCanonical.t:$(n)' targetID='tracelog' inputName='log'
                      if='inposterior(BDMMPrime.t:$(n))
@@ -126,6 +146,26 @@
                      and $(thisparam)Epi.t:$(n)/estimate=true'/>
         </fragment>
 
+        <fragment id="EpiBDMMPrimeChangeTimes" spec="beastfx.app.beauti.Fragment">
+            <![CDATA[
+            <operator id="$(thisparam)EpiOperator.t:$(n)" spec="bdmmprime.util.operators.ChangeTimeOperator" scaleFactor="0.75" windowSize="1" weight="3" changeTimes="@$(thisparam)Epi.t:$(n)"/>
+            ]]>
+
+            <connect srcID='$(thisparam)Epi.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+
+            <connect srcID="$(thisparam)EpiOperator.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and $(thisparam)Epi.t:$(n)/estimate=true" />
+        </fragment>
+
         <fragment id="EpiBDMMPrimeSkylineLoggers" spec="beastfx.app.beauti.Fragment">
             <connect srcID='$(thisparam)SPEpi.t:$(n)' targetID='tracelog' inputName='log'
                      if='inposterior(BDMMPrime.t:$(n))
@@ -185,6 +225,26 @@
                      and inposterior(FBDBDMMPrimeParameterization.t:$(n))
                      and $(thisparam)SPFBD.t:$(n)/linkIdenticalValues=true
                      and $(thisparam)FBD.t:$(n)/estimate=true'/>
+        </fragment>
+
+        <fragment id="FBDBDMMPrimeChangeTimes" spec="beastfx.app.beauti.Fragment">
+            <![CDATA[
+            <operator id="$(thisparam)FBDOperator.t:$(n)" spec="bdmmprime.util.operators.ChangeTimeOperator" scaleFactor="0.75" windowSize="1" weight="3" changeTimes="@$(thisparam)FBD.t:$(n)"/>
+            ]]>
+
+            <connect srcID='$(thisparam)FBD.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and $(thisparam)FBD.t:$(n)/estimate=true'/>
+
+            <connect srcID="$(thisparam)FBDOperator.t:$(n)" targetID="mcmc" inputName="operator"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior(FBDBDMMPrimeParameterization.t:$(n))
+                     and inposterior($(thisparam)FBD.t:$(n))
+                     and $(thisparam)FBD.t:$(n)/estimate=true" />
         </fragment>
 
         <fragment id="FBDBDMMPrimeSkylineLoggers" spec="beastfx.app.beauti.Fragment">
@@ -252,7 +312,7 @@
         ]]>
             <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
                    range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb,rhoSamplingProb"/>
-            <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
+            <plate fragment="CanonicalBDMMPrimeChangeTimes" var="thisparam"
                    range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="CanonicalBDMMPrimeSkylineLoggers" var="thisparam"
                    range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb,rhoSamplingProb"/>
@@ -312,7 +372,7 @@
 
             <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
                    range="Re,ReAmongDemes,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb,rhoSamplingProb"/>
-            <plate fragment="EpiBDMMPrimeParameters" var="thisparam"
+            <plate fragment="EpiBDMMPrimeChangeTimes" var="thisparam"
                    range="ReChangeTimes,ReAmongDemesChangeTimes,becomeUninfectiousRateChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="EpiBDMMPrimeSkylineLoggers" var="thisparam"
                    range="Re,ReAmongDemes,becomeUninfectiousRate,migrationRate,samplingProportion,removalProb,rhoSamplingProb"/>
@@ -367,7 +427,7 @@
 
             <plate fragment="FBDBDMMPrimeParameters" var="thisparam"
                    range="diversificationRate,diversificationRateAmongDemes,turnover,migrationRate,samplingProportion,rhoSamplingProb"/>
-            <plate fragment="FBDBDMMPrimeParameters" var="thisparam"
+            <plate fragment="FBDBDMMPrimeChangeTimes" var="thisparam"
                    range="diversificationRateChangeTimes,diversificationRateAmongDemesChangeTimes,turnoverChangeTimes,migrationRateChangeTimes,samplingProportionChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="FBDBDMMPrimeSkylineLoggers" var="thisparam"
                    range="diversificationRate,diversificationRateAmongDSemes,turnover,migrationRate,samplingProportion,rhoSamplingProb"/>
