@@ -253,7 +253,7 @@
             <connect srcID="trajLogger.t:$(n)" targetID="mcmc" inputName="logger"
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
 
-            <connect method="bdmmprime.beauti.SkylineInputEditor.customConnector"/>
+            <connect method="bdmmprime.util.operators.JointSkylineScaleOperator.customConnector"/>
         </subtemplate>
 
     </mergewith>

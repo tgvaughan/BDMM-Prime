@@ -22,10 +22,12 @@ import beast.base.core.BEASTInterface;
 import beast.base.core.Description;
 import beast.base.core.Function;
 import beast.base.core.Input;
+import beast.base.inference.MCMC;
 import beast.base.inference.Operator;
 import beast.base.inference.StateNode;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.util.Randomizer;
+import beastfx.app.inputeditor.BeautiDoc;
 
 import java.util.*;
 
@@ -111,5 +113,40 @@ public class JointSkylineScaleOperator extends Operator {
             stateNodes.add((RealParameter) parameter.skylineValuesInput.get());
 
         return stateNodes;
+    }
+
+    /**
+     * This is a custom connector method referenced in the BDMMPrime template
+     * and discovered and called by BEAUti using reflection.  (Don't be fooled
+     * by your IDE saying it's unused - it is used!)
+     *
+     * This custom connector ensures that JointSkylineScaleOperators possessing
+     * no state nodes are removed from the model.  Such operators can be left
+     * around when all parameters are fixed in the analysis.  This causes
+     * problems since BEAST will refuse to run unless every operator has
+     * at least one state node to operate on.
+     *
+     * @param doc BEAUti document for the connector to check/update
+     */
+    public static void customConnector(BeautiDoc doc) {
+        List<BEASTInterface> treePartitions = doc.getPartitions("TreeModel");
+        MCMC mcmc = (MCMC) doc.pluginmap.get("mcmc");
+        System.out.println("JointSkylineScaleOperator custom connector:");
+
+        for (BEASTInterface treePartition : treePartitions) {
+            System.out.println("\tProcessing partition " + treePartition.getID());
+            String partitionID = BeautiDoc.parsePartition(treePartition.getID());
+            if (doc.pluginmap.containsKey("JointBDMMPrimeSkylineScaleOperator.t:" + partitionID)) {
+                JointSkylineScaleOperator op = (JointSkylineScaleOperator)
+                        doc.pluginmap.get("JointBDMMPrimeSkylineScaleOperator.t:" + partitionID);
+
+                if (op.listStateNodes().isEmpty()) {
+                    System.out.println("\tNo statenodes, disconnecting operator");
+                    mcmc.operatorsInput.get().remove(op);
+                } else
+                    System.out.println("\tFound statenodes, keeping operator");
+            } else
+                System.out.println("\tNo JointSkylineScaleOperator found for partition.");
+        }
     }
 }
