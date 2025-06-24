@@ -409,32 +409,53 @@ public class TypeMappedTree extends Tree {
         }
 
         int leafType = getLeafType(leafNode);
+        boolean leafTypeKnown = (leafType>=0);
 
         if (nodeIsRhoSampled(leafNode)) {
 
             int rhoSamplingInterval = getRhoSamplingInterval(leafNode);
 
-            for (int type = 0; type< param.getNTypes(); type++) {
-                double rho = param.getRhoValues()[rhoSamplingInterval][type];
-                y[type] *= 1.0 - rho;
-                y[type + param.getNTypes()] =
-                        type==leafType
-                                ? rho
-                                : 0.0;
+            if (leafTypeKnown) {
+                // Known leaf type
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                    y[type] *= 1.0 - rho;
+                    y[type + param.getNTypes()] =
+                            type == leafType
+                                    ? rho
+                                    : 0.0;
+                }
+            } else {
+                // Unknown tip type
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                    y[type] *= 1.0 - rho;
+                    y[type + param.getNTypes()] = rho;
+                }
             }
 
         } else {
 
             int nodeInterval = param.getNodeIntervalIndex(leafNode, finalSampleOffset.getArrayValue());
 
-            for (int type = 0; type< param.getNTypes(); type++) {
-                double psi = param.getSamplingRates()[nodeInterval][type];
-                double r = param.getRemovalProbs()[nodeInterval][type];
+            if (leafTypeKnown) {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double psi = param.getSamplingRates()[nodeInterval][type];
+                    double r = param.getRemovalProbs()[nodeInterval][type];
 
-                y[type + param.getNTypes()] =
-                        type==leafType
-                                ? psi*(r + (1.0-r)*y[type])
-                                : 0.0;
+                    y[type + param.getNTypes()] =
+                            type == leafType
+                                    ? psi * (r + (1.0 - r) * y[type])
+                                    : 0.0;
+                }
+            } else {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double psi = param.getSamplingRates()[nodeInterval][type];
+                    double r = param.getRemovalProbs()[nodeInterval][type];
+
+                    y[type + param.getNTypes()] =
+                            psi * (r + (1.0 - r) * y[type]);
+                }
             }
         }
 
@@ -451,34 +472,54 @@ public class TypeMappedTree extends Tree {
         double[] y = backwardsIntegrateSubtree(saNode.getNonDirectAncestorChild(), saNodeTime);
 
         int saType = getLeafType(saNode.getDirectAncestorChild());
+        boolean saTypeKnown = (saType>=0);
 
         if (nodeIsRhoSampled(saNode.getDirectAncestorChild())) {
 
             int rhoSamplingInterval = getRhoSamplingInterval(saNode);
 
-            for (int type = 0; type< param.getNTypes(); type++) {
-                double rho = param.getRhoValues()[rhoSamplingInterval][type];
-                double r = param.getRemovalProbs()[rhoSamplingInterval][type];
+            if (saTypeKnown) {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                    double r = param.getRemovalProbs()[rhoSamplingInterval][type];
 
-                y[type] *= 1.0 - rho;
-                y[type+ param.getNTypes()] *=
-                        type==saType
-                                ? rho*(1-r)
-                                : 0.0;
+                    y[type] *= 1.0 - rho;
+                    y[type + param.getNTypes()] *=
+                            type == saType
+                                    ? rho * (1 - r)
+                                    : 0.0;
+                }
+            } else {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                    double r = param.getRemovalProbs()[rhoSamplingInterval][type];
+
+                    y[type] *= 1.0 - rho;
+                    y[type + param.getNTypes()] *= rho * (1 - r);
+                }
             }
 
         } else {
 
             int nodeInterval = param.getNodeIntervalIndex(saNode, finalSampleOffset.getArrayValue());
 
-            for (int type = 0; type< param.getNTypes(); type++) {
-                double psi = param.getSamplingRates()[nodeInterval][type];
-                double r = param.getRemovalProbs()[nodeInterval][type];
+            if (saTypeKnown) {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double psi = param.getSamplingRates()[nodeInterval][type];
+                    double r = param.getRemovalProbs()[nodeInterval][type];
 
-                y[type + param.getNTypes()] *=
-                        type==saType
-                                ? psi*(1-r)
-                                : 0.0;
+                    y[type + param.getNTypes()] *=
+                            type == saType
+                                    ? psi * (1 - r)
+                                    : 0.0;
+                }
+            } else {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double psi = param.getSamplingRates()[nodeInterval][type];
+                    double r = param.getRemovalProbs()[nodeInterval][type];
+
+                    y[type + param.getNTypes()] *= psi * (1 - r);
+                }
             }
         }
 
