@@ -181,7 +181,7 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             for (String taxonName : taxonSet.asStringList()) {
                 if (!traitStringBuilder.isEmpty())
                     traitStringBuilder.append(",");
-                traitStringBuilder.append(taxonName).append("=0");
+                traitStringBuilder.append(taxonName).append("=NOT_SET");
             }
             traitSet.traitsInput.setValue(traitStringBuilder.toString(), traitSet);
             try {
