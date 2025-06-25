@@ -8,6 +8,7 @@
     <provider classname="bdmmprime.mapping.TypeMappedTree"/>
     <provider classname="bdmmprime.mapping.TypedTreeStatsLogger"/>
     <provider classname="bdmmprime.mapping.TypedNodeTreeLogger"/>
+    <provider classname="bdmmprime.mapping.TypedTipTreeLogger"/>
     <provider classname="bdmmprime.mapping.TransitionTimeLogger"/>
     <provider classname="bdmmprime.mapping.TypeMappingDurationLogger"/>
     <provider classname="bdmmprime.util.TipDatesFromTree"/>
