@@ -523,9 +523,9 @@ will occasionally refer to the example in the tutorial, so it would be
 helpful if you'd worked through that first before proceeding to the
 sections below.
 
-** The BDMM-Prime Tree Prior
+** The BDMM-Prime tree prior
 :PROPERTIES:
-:CUSTOM_ID: id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-The-BDMM-Prime-tree-prior
 :END:
 
 Using BDMM-Prime amounts to selecting the BDMM-Prime tree prior when
@@ -556,9 +556,9 @@ following sections.
 configuring the BDMM-Prime tree prior.  Modifying linkages later on can result
 in broken BEAST 2 models.
 
-** Defining Tip Types
+** Defining tip types
 :PROPERTIES:
-:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Defining-Tip-Types
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Defining-tip-types
 :END:
 
 A "Type Trait Set" is used to associate types with each of the leaf nodes of the
@@ -588,7 +588,7 @@ can be accessed by pressing the button labeled =?=.)
 
 *** Leaves with unknown type
 :PROPERTIES:
-:CUSTOM_ID: id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Leaves-with-unknown-type
+:CUSTOM_ID: id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type
 :END:
 
 Sometimes you may not know to which type a tip should be assigned.  In this case
@@ -603,9 +603,9 @@ additional symmetry-breaking constraints, e.g. =birthRate[0]>birthRate[1]=.
 (Imposing these is currently outside the scope of this manual. If
 you'd like to hear more about this please get in touch with me.)
 
-*** Defining additional (unsampled) types
+*** Defining additional types
 :PROPERTIES:
-:CUSTOM_ID: id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Defining-additional-(unsampled)-types
+:CUSTOM_ID: id-3-Defining-tip-types-Model-specification-using-BEAUti-Defining-additional-types
 :END:
 
 It is occasionally the case that there are additional types which are
@@ -785,9 +785,9 @@ diversification is always increasing ($d_{ii}>0$ and $t_{i}<1$).  If
 you want to also allow negative diversification, use the Canonical
 parameterization instead.
 
-** Skyline Parameters
+** Skyline parameters
 :PROPERTIES:
-:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Skyline-Parameters
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Skyline-parameters
 :END:
 
 Besides Parameterizations, an importance difference between BDMM-Prime
@@ -819,7 +819,7 @@ vector-valued and matrix-valued parameters, respectively.
 
 *** Overview of the skyline parameter input editor
 :PROPERTIES:
-:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor
+:CUSTOM_ID: id-3-Skyline-parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor
 :END:
 
 In this section we delve into the details of the BDMM-Prime
@@ -839,7 +839,7 @@ of these parts in turn.
 
 **** Epoch configuration
 :PROPERTIES:
-:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-configuration
 :END:
 
 The epoch configuration portion of the input editor is responsible for
@@ -884,7 +884,7 @@ times or ages to be distributed evenly between 0 and 1.
 
 **** Value configuration
 :PROPERTIES:
-:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Value-configuration
 :END:
 
 The initial parameter values corresponding to each epoch are configured
@@ -907,7 +907,7 @@ values extend across epoch boundaries.
 
 **** Epoch visualisation
 :PROPERTIES:
-:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-visualisation
 :END:
 
 The option "Display epoch visualisation" is useful when analysing
