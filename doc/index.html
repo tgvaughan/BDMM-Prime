@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-06-23 Mon 11:52 -->
+<!-- 2025-06-26 Thu 13:57 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -61,7 +61,12 @@
 <li><a href="#id-1-Model-specification-using-BEAUti">3. Model specification using BEAUti</a>
 <ul>
 <li><a href="#id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior">3.1. The BDMM-Prime Tree Prior</a></li>
-<li><a href="#id-2-Model-specification-using-BEAUti-Defining-Tip-Types">3.2. Defining Tip Types</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Defining-Tip-Types">3.2. Defining Tip Types</a>
+<ul>
+<li><a href="#id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Leaves-with-unknown-type">3.2.1. Leaves with unknown type</a></li>
+<li><a href="#id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Defining-additional-(unsampled)-types">3.2.2. Defining additional (unsampled) types</a></li>
+</ul>
+</li>
 <li><a href="#id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities">3.3. Start type prior probabilities</a></li>
 <li><a href="#id-2-Model-specification-using-BEAUti-Parameterizations">3.4. Parameterizations</a>
 <ul>
@@ -129,7 +134,7 @@
 </div>
 </nav>
 
-<figure id="orga6334b7">
+<figure id="org386d2fe">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -321,7 +326,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="org9a4c7e5">
+<figure id="orgbf2f11e">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -343,7 +348,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="org2090663">
+<figure id="org0e5f081">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -374,7 +379,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="org4e6cd75">
+<figure id="org37962e5">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -397,7 +402,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="orgb378323">
+<figure id="org79c7ae6">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -421,7 +426,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="org9af1881">
+<figure id="orgcf81f9d">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -431,7 +436,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="org486d37b">
+<figure id="org99561b5">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -461,7 +466,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="orgfd66344">
+<figure id="org90b4b0e">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -487,7 +492,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="org79b8a76">
+<figure id="org63d7198">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -510,7 +515,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="org635ef11">
+<figure id="org981c930">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -550,7 +555,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="org4cf8645">
+<figure id="org58f5bc8">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -583,7 +588,7 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org51fa58a">
+<figure id="orgbffa7de">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
@@ -664,7 +669,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="orgb551d4d">
+<figure id="org1d0ab5a">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -776,7 +781,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="orge5a7936">
+<figure id="org9fd6702">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -811,7 +816,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="org8a2b431">
+<figure id="orgc1cae61">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -835,7 +840,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="orgcd0b9a0">
+<figure id="org757a1e3">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -926,10 +931,10 @@ past the "Parameterization" section.
 
 <p>
 The input editor functions very similarly to the tip dates input editor.  All tips
-are initially given the same type, <code>UNSPECIFIED</code>. (There is nothing
+are initially given the same type, <code>NOT_SET</code>. (There is nothing
 special about this value, only that it is shared among all tips, causing the model
 to include only one type.) Individual can be specified using any string, although
-problems may occur if strings contain spaces or other whitespace characters.
+problems may occur if strings contain spaces.
 </p>
 
 <p>
@@ -942,6 +947,42 @@ taxon/sequence name, or by loading them in from an external file. (The
 required format of this file is described in the built-in help which
 can be accessed by pressing the button labeled <code>?</code>.)
 </p>
+</div>
+<div id="outline-container-id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Leaves-with-unknown-type" class="outline-4">
+<h4 id="id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Leaves-with-unknown-type"><span class="section-number-4">3.2.1.</span> Leaves with unknown type</h4>
+<div class="outline-text-4" id="text-id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Leaves-with-unknown-type">
+<p>
+Sometimes you may not know to which type a tip should be assigned.  In this case
+you can set the type to a "?" which indicates that the type is unknown. In this
+case the phylodynamic likelihood will be evaluated under the assumption that type
+information for this tip is unavailable.
+</p>
+
+<p>
+Beware that designating all of your tip types as unknown can easily
+result in unidentifiability with respect to permutation of the mapping
+between types and rates. To avoid this you'll need to impose some
+additional symmetry-breaking constraints, e.g. <code>birthRate[0]&gt;birthRate[1]</code>.
+(Imposing these is currently outside the scope of this manual. If
+you'd like to hear more about this please get in touch with me.)
+</p>
+</div>
+</div>
+<div id="outline-container-id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Defining-additional-(unsampled)-types" class="outline-4">
+<h4 id="id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Defining-additional-(unsampled)-types"><span class="section-number-4">3.2.2.</span> Defining additional (unsampled) types</h4>
+<div class="outline-text-4" id="text-id-3-Defining-Tip-Types-Model-specification-using-BEAUti-Defining-additional-(unsampled)-types">
+<p>
+It is occasionally the case that there are additional types which are
+absent from your sampled data which you nonetheless wish to include in
+your model.  For instance, in an (E)xposed-(I)nfectious
+epidemiological model your samples likely correspond only to
+infectious individuals.  To accommodate this, you can add a
+comma-delimited list of type names to the "Additional types" text field below the
+tip type assignment table:
+<img src="./figures/additional_types.png" alt="additional_types.png">
+(You can also include the names of sampled types in this list: duplication has no effect.)
+</p>
+</div>
 </div>
 </div>
 <div id="outline-container-id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities" class="outline-3">
@@ -974,9 +1015,9 @@ By default the prior probabilities are chosen to be uniform.  In many
 cases this is a sensible choice, however it may be the case that you
 are certain that the birth-death process began (or did <i>not</i> begin) in
 some particular state.  For instance, you might know - or be willing
-to assume - that an outbreak was seeded by travel cases other
+to assume - that an outbreak was seeded by travel cases from other
 locations.  In such cases you can modify the probability values to reflect
-these prior assumptions.
+these prior assumptions, although take care that the values still sum to 1.
 </p>
 
 <p>
@@ -984,9 +1025,11 @@ It is also possible to "estimate" these prior probabilities. Clicking
 the estimate button causes BEAUti to assign a flat Dirichlet
 "hyper-prior" to the probabilities (i.e. a uniform distribution
 subject only to the constraint that the probabilities must be positive
-and sum to 1). We advise against doing this, as doing so is
-completely equivalent to simply setting a uniform prior in the first
-place.
+and sum to 1). We advise against doing this, as doing so is completely
+equivalent to simply setting a uniform prior in the first place.  This
+option is provided to allow for compatibility with previous
+implementations of this model, and beware that the values so estimated
+do not represent the posterior probabilities of the starting state.
 </p>
 </div>
 </div>
@@ -1175,7 +1218,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org6677b40">
+<figure id="org5f6fc42">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1214,7 +1257,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="org096e7c2">
+<figure id="orga5eb875">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1342,7 +1385,7 @@ in their default configuration:
 </p>
 
 
-<figure id="org54ee13d">
+<figure id="org9906b26">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1414,7 +1457,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="org1eb5f7c">
+<figure id="org0b63751">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1481,7 +1524,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="org2c89191">
+<figure id="org3c24f51">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1502,7 +1545,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="org18f07bf">
+<figure id="org12d74d6">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1640,7 +1683,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="orgf76744b">
+<figure id="org0d2b70b">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1714,7 +1757,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="org8098e9e">
+<figure id="org6dae65e">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1739,7 +1782,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="org6def85b">
+<figure id="orgf04a4a5">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -3159,7 +3202,7 @@ users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2025-06-23 Mon 11:52</p>
+<p class="date">Created: 2025-06-26 Thu 13:57</p>
 </div>
 </body>
 </html>
