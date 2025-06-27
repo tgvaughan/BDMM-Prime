@@ -19,6 +19,9 @@ package bdmmprime.util.operators;
 
 import bdmmprime.parameterization.SkylineMatrixParameter;
 import bdmmprime.parameterization.SkylineVectorParameter;
+import bdmmprime.util.priors.SmartZeroExcludingPrior;
+import bdmmprime.util.priors.ZeroExcludingPrior;
+import beast.base.evolution.operator.ScaleOperator;
 import beast.base.inference.*;
 import beast.base.inference.distribution.Prior;
 import beast.base.inference.distribution.Uniform;
@@ -35,25 +38,28 @@ public class JointSkylineScaleOperatorTest extends OperatorTest {
 
     @Test
     public void test() throws IOException, ParserConfigurationException, SAXException {
-        Randomizer.setSeed(53);
+        Randomizer.setSeed(42);
 
         RealParameter sv1vals = new RealParameter("1 1 2 3 3");
         sv1vals.setLower(0.0);
         sv1vals.setUpper(10.0);
+        sv1vals.setID("sv1vals");
         RealParameter sv2vals = new RealParameter("1 2 2 2 2");
         sv2vals.setLower(0.0);
         sv2vals.setUpper(10.0);
+        sv2vals.setID("sv2vals");
         RealParameter smvals = new RealParameter("1 2 2 2 2 3");
         smvals.setLower(0.0);
         smvals.setUpper(10.0);
+        smvals.setID("smvals");
 
         SkylineVectorParameter sv1 = new SkylineVectorParameter(
                 null, sv1vals, 5);
         sv1.linkIdenticalValuesInput.setValue(true, sv1);
 
         SkylineVectorParameter sv2 = new SkylineVectorParameter(
-                null, sv1vals, 5);
-        sv2.linkIdenticalValuesInput.setValue(true, sv2);
+                null, sv2vals, 5);
+        sv2.linkIdenticalValuesInput.setValue(false, sv2);
 
         SkylineMatrixParameter sm = new SkylineMatrixParameter(
                 null, smvals, 3);
@@ -63,11 +69,11 @@ public class JointSkylineScaleOperatorTest extends OperatorTest {
         unif.initByName("lower", 0.0,
                 "upper", 10.0);
 
-        Prior sv1valsPrior = new Prior();
+        Prior sv1valsPrior = new SmartZeroExcludingPrior();
         sv1valsPrior.initByName("x", sv1vals, "distr", unif);
-        Prior sv2valsPrior = new Prior();
+        Prior sv2valsPrior = new ZeroExcludingPrior();
         sv2valsPrior.initByName("x", sv2vals, "distr", unif);
-        Prior smvalsPrior = new Prior();
+        Prior smvalsPrior = new SmartZeroExcludingPrior();
         smvalsPrior.initByName("x", smvals, "distr", unif);
 
         Distribution target = new CompoundDistribution();
@@ -78,12 +84,15 @@ public class JointSkylineScaleOperatorTest extends OperatorTest {
         Operator sv1Op = new SmartScaleOperator();
         sv1Op.initByName("weight", 1.0,
                 "parameter", sv1vals);
-        Operator sv2Op = new SmartScaleOperator();
-        sv2Op.initByName("weight", 1.0,
+
+        Operator sv2Op = new ScaleOperator();
+        sv2Op.initByName("weight", 2.0,
                 "parameter", sv2vals);
+
         Operator smOp = new SmartScaleOperator();
         smOp.initByName("weight", 1.0,
                 "parameter", smvals);
+
         Operator opJoint = new JointSkylineScaleOperator();
         opJoint.initByName("weight", 1.0,
                 "skylineParameter", sv1,
@@ -133,9 +142,9 @@ public class JointSkylineScaleOperatorTest extends OperatorTest {
         Assert.assertEquals(sv1vals.getArrayValue(3),sv1vals.getArrayValue(4), 1e-10);
 
         Assert.assertNotEquals(sv2vals.getArrayValue(0),sv2vals.getArrayValue(1), 1e-10);
-        Assert.assertEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(2), 1e-10);
-        Assert.assertEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(3), 1e-10);
-        Assert.assertEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(4), 1e-10);
+        Assert.assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(2), 1e-10);
+        Assert.assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(3), 1e-10);
+        Assert.assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(4), 1e-10);
 
         Assert.assertNotEquals(smvals.getArrayValue(0),smvals.getArrayValue(1), 1e-10);
         Assert.assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(2), 1e-10);
