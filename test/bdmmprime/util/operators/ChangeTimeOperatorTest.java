@@ -31,7 +31,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 
-public class ChangeTimeOperatorTest extends OperatorTest {
+public class ChangeTimeOperatorTest extends OperatorTestParent {
 
     @Test
     public void test() throws IOException, ParserConfigurationException, SAXException {

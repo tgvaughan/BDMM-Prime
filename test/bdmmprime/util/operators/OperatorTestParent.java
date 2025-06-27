@@ -21,10 +21,9 @@ import beast.base.core.BEASTObject;
 import beast.base.core.Function;
 import beast.base.inference.Logger;
 
-import java.io.IOException;
 import java.util.*;
 
-public abstract class OperatorTest {
+public abstract class OperatorTestParent {
 
     public class TestLogger extends Logger {
 
@@ -40,7 +39,7 @@ public abstract class OperatorTest {
 
 
         @Override
-        public void init() throws IOException {
+        public void init() {
             N = 0;
             for (BEASTObject loggable : loggersInput.get()) {
                 if (!(loggable instanceof Function loggableFunction))

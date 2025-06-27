@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
 
-public class JointSkylineScaleOperatorTest extends OperatorTest {
+public class JointSkylineScaleOperatorTest extends OperatorTestParent {
 
     @Test
     public void test() throws IOException, ParserConfigurationException, SAXException {

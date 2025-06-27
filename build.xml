@@ -251,6 +251,7 @@
                 <fileset dir="${lib}" includes="**/*.jar" erroronmissingdir="false"/>
                 <fileset dir="${beast-source-root}/lib" includes="**/*.jar"/>
                 <pathelement path="${build-beast}" />
+                <pathelement path="${build-beastfx}" />
                 <fileset dir="deps/SA" includes="**/*.jar"/>
                 <fileset dir="deps/BEASTLabs" includes="**/*.jar"/>
             </classpath>
