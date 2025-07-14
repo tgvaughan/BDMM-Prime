@@ -2,9 +2,9 @@ BDMM-Prime
 ==========
 [![Unit/integration tests](https://github.com/tgvaughan/BDMM-Prime/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/tgvaughan/BDMM-Prime/actions/workflows/main.yml)
 
-The BDMM-Prime project provides a [BEAST 2](http://www.beast2.org/) package for
-performing phylodynamic inference under both structured and unstructured
-birth-death models.
+The BDMM-Prime project provides a [BEAST 2](http://www.beast2.org/)
+package for performing phylodynamic inference under both structured
+and unstructured birth-death models.
 
 The BDMM-Prime project is a fork of the original
 [BDMM project](https://github.com/denisekuehnert/bdmm).  The intention is to
@@ -19,20 +19,22 @@ flexibility and ease of use.  It incorporates the following enhancements:
 - a heavily refactored code base intended to make the package easier to use,
   extend and maintain.
   
-As a result of the many changes that were required in making this transition,
-BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
-package will be maintained separately to ensure that BEAST 2 XMLs and packages
-that depend on it remain usable.
+Because of the many changes that were required in order to make
+this transition, BDMM-Prime is completely incompatible with BDMM
+itself.  (The original package will be maintained separately to ensure
+that BEAST 2 XMLs and packages that depend on it remain usable.)
 
-This repository is primarily of interest to people keen on building BDMM-Prime
-from the source or contributing to its development.  If this doesn't include
-you, please instead visit the project web page at:
+This repository is primarily of interest to people keen on building
+BDMM-Prime from the source or contributing to its development.  If
+this doesn't include you, please instead visit the project web page
+at:
 
 https://tgvaughan.github.io/BDMM-Prime
 
-There you'll find all relevant usage information including installation,
-a complete tutorial, as well as reference guides for using BDMM-Prime via
-the BEAUti interface together with detailed instructions on its XML interface.
+There you'll find all of the relevant usage information including
+installation instructions, a complete tutorial, and reference guides
+for using BDMM-Prime via the BEAUti interface. Also included are
+detailed information on its XML interface for advanced users.
 
 
 Building from Source

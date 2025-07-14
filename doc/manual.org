@@ -33,22 +33,22 @@ following enhancements:
 - an improved BEAUti interface that allows a much more diverse range of analyses to be configured,
 - automatic fall-back to analytical solutions for unstructured (single type) analyses,
   meaning BDMM-Prime can in principle be used in place of [[https://github.com/BEAST2-Dev/bdsky][BDSKY]],
-- use of stochastic mapping for efficient sampling ancestral states,
+- use of stochastic mapping for efficient sampling of ancestral types,
 - a particle filtering algorithm allowing joint sampling of population trajectories,
 - a heavily refactored code base intended to make the package easier to use,
   extend and maintain.
 
-As a result of the many changes that were required in making this transition,
-BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
+Because of the many changes that were required in making this transition,
+BDMM-Prime is completely incompatible with BDMM itself.  (The original
 package will be maintained separately to ensure that BEAST 2 XMLs and packages
-that depend on it remain usable.
+that depend on it remain usable.)
 
 ** Acknowledgements and Citations
 :PROPERTIES:
 :CUSTOM_ID: id-2-Introduction-Acknowledgements-and-Citations
 :END:
 
-As this is a fork of [[https://github.com/denisekuehnert/bdmm][BDMM]], BDMM-Prime owes a huge debt to the
+As this is a fork of [[https://github.com/denisekuehnert/bdmm][BDMM]], BDMM-Prime owes its existence to the
 authors and contributors of that project, in particular Denise Kühnert
 and Jérémie Scire.
 
@@ -2140,7 +2140,7 @@ BDMM-Prime is free software.  It is made available under the terms of
 the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]]. Unlike many software
 licenses, this is designed to give you, the user, the freedom to use
 the software as you wish - including making and publishing
-modifications - provided you also extend the same freedom to other
+modifications - provided you also extend the same courtesy to other
 users.
 
 
