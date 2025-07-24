@@ -61,7 +61,7 @@ public abstract class TrajectoryEvent {
             simulateSingleTreeEvent(state, activeLineages, factory, untypedTree);
     }
 
-    public abstract String getEventCode();
+    public abstract String getEventCode(int nTypes);
 
     /**
      * Produces a string which uniquely identifies the event class and type.
@@ -70,7 +70,7 @@ public abstract class TrajectoryEvent {
      *
      * @return fingerprint string.
      */
-    public abstract String getEventFingerprint();
+    public abstract String getEventFingerprint(int nTypes);
 
     public abstract TrajectoryEvent copy();
 }

@@ -65,7 +65,7 @@ public class DeathEvent extends TrajectoryEvent {
     }
 
     @Override
-    public String getEventFingerprint() {
+    public String getEventFingerprint(int nTypes) {
         return "D\t" + type + "\tNA";
     }
 

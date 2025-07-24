@@ -102,7 +102,7 @@ public class SamplingEvent extends TrajectoryEvent {
     }
 
     @Override
-    public String getEventFingerprint() {
+    public String getEventFingerprint(int nTypes) {
         return "S\t" + type + "\tNA\t" + (nRemoveSamp + nNoRemoveSamp);
     }
 

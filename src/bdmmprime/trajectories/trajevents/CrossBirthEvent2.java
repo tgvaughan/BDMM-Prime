@@ -100,12 +100,12 @@ public class CrossBirthEvent2 extends TrajectoryEvent {
     }
 
     @Override
-    public String getEventFingerprint() {
+    public String getEventFingerprint(int nTypes) {
         return "B\t" + srcType + "\t" + destType;
     }
 
     @Override
-    public CrossBirthEvent copy() {
-        return new CrossBirthEvent(time, srcType, destType, multiplicity);
+    public CrossBirthEvent2 copy() {
+        return new CrossBirthEvent2(time, srcType, destType, multiplicity);
     }
 }

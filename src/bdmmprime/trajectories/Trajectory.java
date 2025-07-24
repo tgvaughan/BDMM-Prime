@@ -155,7 +155,7 @@ public class Trajectory {
 
     /**
      * This method constructs a discretized copy of the current trajectory,
-     * in which trajectory events are binned to composite events occuring
+     * in which trajectory events are binned to composite events occurring
      * at regularly spaced intervals.
      *
      * @param timeStep time between composite events
@@ -177,7 +177,7 @@ public class Trajectory {
                 gridTime += timeStep;
             }
 
-            String thisEventFingerprint = thisEvent.getEventFingerprint();
+            String thisEventFingerprint = thisEvent.getEventFingerprint(currentState.length);
             if (eventMap.keySet().contains(thisEventFingerprint)) {
                 if (thisEvent instanceof SamplingEvent thisSamplingEvent) {
                     SamplingEvent discretizedSamplingEvent = (SamplingEvent) eventMap.get(thisEventFingerprint);

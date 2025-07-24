@@ -80,7 +80,7 @@ public class BirthEvent extends TrajectoryEvent {
     }
 
     @Override
-    public String getEventFingerprint() {
+    public String getEventFingerprint(int nTypes) {
         return "B\t" + type + "\t" + type;
     }
 

@@ -89,7 +89,7 @@ public class MigrationEvent extends TrajectoryEvent {
     }
 
     @Override
-    public String getEventFingerprint() {
+    public String getEventFingerprint(int nTypes) {
         return "M\t" + srcType + "\t" + destType;
     }
 

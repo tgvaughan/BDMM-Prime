@@ -267,9 +267,22 @@ public abstract class Parameterization extends CalculationNode {
                     return false;
 
                 for (int typep=0; typep<nTypes; typep++) {
+                    if (typep == type)
+                        continue;
+
                     if (migRates[interval][type][typep] < 0
-                            || crossBirthRates[interval][type][typep] < 0)
+                            || crossBirthRates2[interval][type][typep] < 0)
                         return false;
+
+                    if (crossBirthRates3 != null) {
+                        for (int typepp=0; typepp<=typep; typepp++) {
+                            if (typepp == type)
+                                continue;
+
+                            if (crossBirthRates3[interval][type][typep][typepp] < 0)
+                                return false;
+                        }
+                    }
                 }
             }
         }

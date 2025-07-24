@@ -131,4 +131,15 @@ public class CrossBirthEvent3 extends TrajectoryEvent {
         return "B\t" + parentType + "\t" + (child1Type*nTypes + child2Type)
                 + "\t" + multiplicity;
     }
+
+    @Override
+    public String getEventFingerprint(int nTypes) {
+        return "B\t" + parentType + "\t" + (child1Type*nTypes + child2Type);
+    }
+
+    @Override
+    public CrossBirthEvent3 copy() {
+        return new CrossBirthEvent3(time, parentType,
+                child1Type, child2Type, multiplicity);
+    }
 }
