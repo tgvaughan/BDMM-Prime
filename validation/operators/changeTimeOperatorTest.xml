@@ -1,0 +1,31 @@
+<beast version="2.7"
+       namespace="beast.base.inference:feast">
+  <run spec="MCMC" chainLength="10000000">
+    <state>
+      <stateNode id="x" spec="parameter.RealParameterFromFunction">
+        <function spec="function.Sequence" start="0" stop="4" length="5"/>
+      </stateNode>
+    </state>
+
+    <distribution spec="distribution.Prior" x="@x">
+      <distr spec="distribution.Uniform" lower="-10" upper="10"/>
+    </distribution>
+
+    <operator spec="bdmmprime.util.operators.ChangeTimeOperator"
+              changeTimes="@x"
+              weight="1"/>
+    
+    <!-- <operator spec="bdmmprime.util.operators.SmartScaleOperator" scaleAll="false" -->
+              <!-- parameter="@x" weight="1"/> -->
+    <!-- <operator spec="bdmmprime.util.operators.SmartScaleOperator" scaleAll="true" -->
+              <!-- parameter="@x" weight="1"/> -->
+
+    <logger fileName="$(filebase).log" logEvery="1000">
+      <log idref="x"/>
+    </logger>
+
+    <logger logEvery="100000">
+      <log idref="x"/>
+    </logger>
+  </run>
+</beast>

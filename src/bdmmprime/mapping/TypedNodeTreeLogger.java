@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ import java.io.PrintStream;
  *
  * This is useful for producing tree files which can be fed into TreeAnnotator.
  *
- * @author Tim Vaughan <tgvaughan@gmail.com>
+ * @author ETH Zurich <tgvaughan@gmail.com>
  */
 public class TypedNodeTreeLogger extends CalculationNode implements Loggable {
 

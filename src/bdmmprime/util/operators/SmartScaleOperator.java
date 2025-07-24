@@ -11,6 +11,10 @@ public class SmartScaleOperator extends SmartRealOperator {
     public Input<Double> scaleFactorInput = new Input<>("scaleFactor",
             "Scale factor will be chosen between scaleFactor and 1/scaleFactor.", 0.75);
 
+    public Input<Boolean> scaleAllInput = new Input<>("scaleAll",
+            "If true, all elements will be scaled together.",
+            false);
+
     final public Input<Boolean> optimiseInput = new Input<>("optimise",
             "flag to indicate that the scale factor is automatically changed " +
                     "in order to achieve a good acceptance rate (default true)", true);
@@ -34,6 +38,13 @@ public class SmartScaleOperator extends SmartRealOperator {
 
     @Override
     public double proposal() {
+        if (scaleAllInput.get())
+            return scaleAllProposal();
+        else
+            return scaleOneProposal();
+    }
+
+    private double scaleOneProposal() {
 
         // Select class at random
 
@@ -63,6 +74,34 @@ public class SmartScaleOperator extends SmartRealOperator {
         // Hastings ratio for x -> f*x with f ~ [alpha,1/alpha] is 1/f.
 
         return -Math.log(f);
+    }
+
+    private double scaleAllProposal() {
+
+        // Choose scale factor
+
+        double minf = Math.min(scaleFactor, 1.0/scaleFactor);
+        double f = minf + Randomizer.nextDouble()*(1.0/minf - minf);
+
+        // Scale selected elements:
+
+        for (RealParameter param : parameters) {
+            Integer[] group = groups.get(param);
+
+            for (int i=0; i<param.getDimension(); i++) {
+                if (group[i] >= 0) { // Skip excluded classes
+                    double newVal = f * param.getValue(i);
+                    if (newVal < param.getLower() || newVal > param.getUpper())
+                        return Double.NEGATIVE_INFINITY;
+                    else
+                        param.setValue(i, newVal);
+                }
+            }
+        }
+
+        // Hastings ratio for x -> f*x with f ~ [alpha,1/alpha] is f^(dim(x)-2)
+
+        return (nClasses-2)*Math.log(f);
     }
 
     @Override

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,5 +61,16 @@ public abstract class TrajectoryEvent {
             simulateSingleTreeEvent(state, activeLineages, factory, untypedTree);
     }
 
-    public abstract String getEventCode(int nTypes);
+    public abstract String getEventCode();
+
+    /**
+     * Produces a string which uniquely identifies the event class and type.
+     * In most cases simply the event code minus the multiplicity.
+     * Used to coarse-grain trajectories for logging.
+     *
+     * @return fingerprint string.
+     */
+    public abstract String getEventFingerprint();
+
+    public abstract TrajectoryEvent copy();
 }

@@ -33,30 +33,30 @@ following enhancements:
 - an improved BEAUti interface that allows a much more diverse range of analyses to be configured,
 - automatic fall-back to analytical solutions for unstructured (single type) analyses,
   meaning BDMM-Prime can in principle be used in place of [[https://github.com/BEAST2-Dev/bdsky][BDSKY]],
-- use of stochastic mapping for efficient sampling ancestral states,
+- use of stochastic mapping for efficient sampling of ancestral types,
 - a particle filtering algorithm allowing joint sampling of population trajectories,
 - a heavily refactored code base intended to make the package easier to use,
   extend and maintain.
 
-As a result of the many changes that were required in making this transition,
-BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
+Because of the many changes that were required in making this transition,
+BDMM-Prime is completely incompatible with BDMM itself.  (The original
 package will be maintained separately to ensure that BEAST 2 XMLs and packages
-that depend on it remain usable.
+that depend on it remain usable.)
 
 ** Acknowledgements and Citations
 :PROPERTIES:
 :CUSTOM_ID: id-2-Introduction-Acknowledgements-and-Citations
 :END:
 
-As this is a fork of [[https://github.com/denisekuehnert/bdmm][BDMM]], BDMM-Prime owes a huge debt to the
+As this is a fork of [[https://github.com/denisekuehnert/bdmm][BDMM]], BDMM-Prime owes its existence to the
 authors and contributors of that project, in particular Denise Kühnert
 and Jérémie Scire.
 
 If you use this package as part of your research, please cite these papers:
 
-- Vaughan and Stadler, /Bayesian phylodynamic inference of multi-type population trajectories using genomic data/, [[https://doi.org/10.1101/2024.11.26.625381][doi:10.1101/2024.11.26.625381]] (preprint)
-- Scire et al., /Robust Phylodynamic Analysis of Genetic Sequencing Data from Structured Populations/, Viruses, 14:8, 1648 (2022), doi:10.3390/v14081648
-- Kühnert et al., /Phylodynamics with Migration: A ComputationalFramework to Quantify Population Structure from Genomic Data/, MBE, 33:8, 2102-2116 (2016), doi:10.1093/molbev/msw064.
+- Vaughan and Stadler, /Bayesian phylodynamic inference of multi-type population trajectories using genomic data/, Molecular Biology and Evolution 42:msaf130 (2025), [[https://doi.org/10.1093/molbev/msaf130][doi:10.1093/molbev/msaf130]]. (BDMM-Prime, trajectory inference)
+- Scire et al., /Robust Phylodynamic Analysis of Genetic Sequencing Data from Structured Populations/, Viruses 14:1648 (2022), doi:10.3390/v14081648. (BDMM)
+- Kühnert et al., /Phylodynamics with Migration: A Computational Framework to Quantify Population Structure from Genomic Data/, Molecular Biology and Evolution 33:2102-2116 (2016), doi:10.1093/molbev/msw064. (BDMM)
 
 * Getting Started
 :PROPERTIES:
@@ -328,7 +328,7 @@ To incorporate these decisions, follow these instructions:
 #+begin_quote
 Find the Migration Rate parameter, then:
 1. Double-click on the value and change it from it's default to the smaller
-   rate of 0.1 (any infected individual has a 10% chance of moving between
+   rate of 0.1 (any infected individual has a roughly 10% chance of moving between
    the two locations in any given year).
 2. Uncheck the "Scalar values" checkbox to allow rates to vary between pairs of
    locations.
@@ -523,9 +523,9 @@ will occasionally refer to the example in the tutorial, so it would be
 helpful if you'd worked through that first before proceeding to the
 sections below.
 
-** The BDMM-Prime Tree Prior
+** The BDMM-Prime tree prior
 :PROPERTIES:
-:CUSTOM_ID: id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-The-BDMM-Prime-tree-prior
 :END:
 
 Using BDMM-Prime amounts to selecting the BDMM-Prime tree prior when
@@ -542,7 +542,7 @@ alternative parameterisations.
 In contrast, inputs to the BDMM-Prime tree prior are organised in a
 hierarchical way which seeks to avoid repetition and improve
 flexibility.  At the top level, the BDMM-Prime tree prior takes 
-the following five main elements:
+the following main elements:
 1. The tree,
 2. tip type information,
 3. starting type prior probabilities, and
@@ -552,9 +552,13 @@ The tree itself is automatically defined and provided to the tree prior by BEAUt
 It therefore remains only to define the remaining three, which are detailed in the
 following sections.
 
-** Defining Tip Types
+*Important:* Be sure to define all model linkages between partitions /before/
+configuring the BDMM-Prime tree prior.  Modifying linkages later on can result
+in broken BEAST 2 models.
+
+** Defining tip types
 :PROPERTIES:
-:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Defining-Tip-Types
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Defining-tip-types
 :END:
 
 A "Type Trait Set" is used to associate types with each of the leaf nodes of the
@@ -568,10 +572,10 @@ The relevant input editor is labeled "Type Trait Set" and can be found by scroll
 past the "Parameterization" section.
 
 The input editor functions very similarly to the tip dates input editor.  All tips
-are initially given the same type, =UNSPECIFIED=. (There is nothing
+are initially given the same type, =NOT_SET=. (There is nothing
 special about this value, only that it is shared among all tips, causing the model
 to include only one type.) Individual can be specified using any string, although
-problems may occur if strings contain spaces or other whitespace characters.
+problems may occur if strings contain spaces.
 
 To set the types, one can double-click on a specific value in the type
 column and enter a new value. This approach quickly becomes tedious,
@@ -581,6 +585,38 @@ to assign types by either extracting type values from a portion of the
 taxon/sequence name, or by loading them in from an external file. (The
 required format of this file is described in the built-in help which
 can be accessed by pressing the button labeled =?=.)
+
+*** Leaves with unknown type
+:PROPERTIES:
+:CUSTOM_ID: id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type
+:END:
+
+Sometimes you may not know to which type a tip should be assigned.  In this case
+you can set the type to a "?" which indicates that the type is unknown. In this
+case the phylodynamic likelihood will be evaluated under the assumption that type
+information for this tip is unavailable.
+
+Beware that designating all of your tip types as unknown can easily
+result in unidentifiability with respect to permutation of the mapping
+between types and rates. To avoid this you'll need to impose some
+additional symmetry-breaking constraints, e.g. =birthRate[0]>birthRate[1]=.
+(Imposing these is currently outside the scope of this manual. If
+you'd like to hear more about this please get in touch with me.)
+
+*** Defining additional types
+:PROPERTIES:
+:CUSTOM_ID: id-3-Defining-tip-types-Model-specification-using-BEAUti-Defining-additional-types
+:END:
+
+It is occasionally the case that there are additional types which are
+absent from your sampled data which you nonetheless wish to include in
+your model.  For instance, in an (E)xposed-(I)nfectious
+epidemiological model your samples likely correspond only to
+infectious individuals.  To accommodate this, you can add a
+comma-delimited list of type names to the "Additional types" text field below the
+tip type assignment table:
+[[./figures/additional_types.png]]
+(You can also include the names of sampled types in this list: duplication has no effect.)
 
 ** Start type prior probabilities
 :PROPERTIES:
@@ -609,17 +645,19 @@ By default the prior probabilities are chosen to be uniform.  In many
 cases this is a sensible choice, however it may be the case that you
 are certain that the birth-death process began (or did /not/ begin) in
 some particular state.  For instance, you might know - or be willing
-to assume - that an outbreak was seeded by travel cases other
+to assume - that an outbreak was seeded by travel cases from other
 locations.  In such cases you can modify the probability values to reflect
-these prior assumptions.
+these prior assumptions, although take care that the values still sum to 1.
 
 It is also possible to "estimate" these prior probabilities. Clicking
 the estimate button causes BEAUti to assign a flat Dirichlet
 "hyper-prior" to the probabilities (i.e. a uniform distribution
 subject only to the constraint that the probabilities must be positive
-and sum to 1). We advise against doing this, as doing so is
-completely equivalent to simply setting a uniform prior in the first
-place.
+and sum to 1). We advise against doing this, as doing so is completely
+equivalent to simply setting a uniform prior in the first place.  This
+option is provided to allow for compatibility with previous
+implementations of this model, and beware that the values so estimated
+do not represent the posterior probabilities of the starting state.
 
 ** Parameterizations
 :PROPERTIES:
@@ -747,9 +785,9 @@ diversification is always increasing ($d_{ii}>0$ and $t_{i}<1$).  If
 you want to also allow negative diversification, use the Canonical
 parameterization instead.
 
-** Skyline Parameters
+** Skyline parameters
 :PROPERTIES:
-:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Skyline-Parameters
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Skyline-parameters
 :END:
 
 Besides Parameterizations, an importance difference between BDMM-Prime
@@ -781,7 +819,7 @@ vector-valued and matrix-valued parameters, respectively.
 
 *** Overview of the skyline parameter input editor
 :PROPERTIES:
-:CUSTOM_ID: id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor
+:CUSTOM_ID: id-3-Skyline-parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor
 :END:
 
 In this section we delve into the details of the BDMM-Prime
@@ -801,7 +839,7 @@ of these parts in turn.
 
 **** Epoch configuration
 :PROPERTIES:
-:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-configuration
 :END:
 
 The epoch configuration portion of the input editor is responsible for
@@ -826,11 +864,13 @@ looking into the past. Otherwise, the first change time represents the
 oldest change time looking from the start of the process into the
 future.
 
-By default, the change times are not estimated: they retain their chosen
+By default, the change times/ages are not estimated: they retain their chosen
 values through the whole analysis. If you choose, however, you can check
 the "Estimate change times" checkbox to tell BEAST to update these change
-times during the MCMC.  (Remember to configure a prior for the change times
-if you do this!)
+times/ages during the MCMC.  If you choose this, be sure to place
+appropriate upper and lower bounds using the corresponding prior.  The default
+distribution is uniform over possible change times/ages, equivalent to a
+flat Dirichlet prior on the intervals between the times/ages.
 
 Finally, by checking the "Relative to process length" checkbox, one
 can cause the change times/ages to be interpreted as fractions of the
@@ -844,7 +884,7 @@ times or ages to be distributed evenly between 0 and 1.
 
 **** Value configuration
 :PROPERTIES:
-:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Value-configuration
 :END:
 
 The initial parameter values corresponding to each epoch are configured
@@ -867,7 +907,7 @@ values extend across epoch boundaries.
 
 **** Epoch visualisation
 :PROPERTIES:
-:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation
+:CUSTOM_ID: id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-visualisation
 :END:
 
 The option "Display epoch visualisation" is useful when analysing
@@ -875,7 +915,7 @@ samples distributed through time, as enabling it displays a graphical
 depiction of the sample distribution alongside the specified epochs
 and change times. Sample times are depicted using red and orange
 circles, with the coloration changing between every pair of epochs,
-allowing one to determine at a glance which epoch a given sample is
+allowing you to determine at a glance which epoch a given sample is
 currently assigned to.
 
 This visualisation is particularly helpful when setting up sampling
@@ -922,7 +962,7 @@ Below we describe each of them in turn.
   determines the fraction of all of the tree nodes a subtree must
   contain for its tree prior calculation to be assigned to a different
   thread. The default value of 0.1 should be fine in most cases.
-
+  
 * Sampling Latent Variables
 :PROPERTIES:
 :CUSTOM_ID: id-1-Sampling-Latent-Variables
@@ -2056,12 +2096,12 @@ trajectory.) Each row reports either a population size or an event
 at a particular time, as indicated by the entry in the "variable"
 column.
 
-Population sizes are reported by rows with the "variable" column
-set to "N".  Each such row reports the population size associated
-with the type index given in the "type" column and the size
-in the "value" column. The size corresponds to the time immediately
-at and after the time given in the "t" column. (Respectively, the immedately
-before the age given in the "age" column.)
+Population sizes are reported by rows with the "variable" column set
+to "N".  Each such row reports the population size associated with the
+type index given in the "type" column and the size in the "value"
+column. The size corresponds to the time immediately at and after the
+time given in the "t" column. (Respectively, the age immedately before
+the age given in the "age" column.)
 
 Events are reported by rows with the following characters in the
 "variable" column:
@@ -2100,7 +2140,7 @@ BDMM-Prime is free software.  It is made available under the terms of
 the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]]. Unlike many software
 licenses, this is designed to give you, the user, the freedom to use
 the software as you wish - including making and publishing
-modifications - provided you also extend the same freedom to other
+modifications - provided you also extend the same courtesy to other
 users.
 
 

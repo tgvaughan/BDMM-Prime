@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,11 @@
 
 package bdmmprime.trajectories;
 
+import bdmmprime.trajectories.trajevents.SamplingEvent;
 import bdmmprime.trajectories.trajevents.TrajectoryEvent;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -154,6 +153,52 @@ public class Trajectory {
         }
     }
 
+    /**
+     * This method constructs a discretized copy of the current trajectory,
+     * in which trajectory events are binned to composite events occuring
+     * at regularly spaced intervals.
+     *
+     * @param timeStep time between composite events
+     * @return discretized trajectory
+     */
+    public Trajectory getDiscretized(double timeStep) {
+
+        List<TrajectoryEvent> discretizedEvents = new ArrayList<>();
+
+        Map<String, TrajectoryEvent> eventMap = new HashMap<>();
+
+        double gridTime = 0;
+
+        for (TrajectoryEvent thisEvent : events) {
+
+            if (thisEvent.time - gridTime > timeStep) {
+                discretizedEvents.addAll(eventMap.values());
+                eventMap.clear();
+                gridTime += timeStep;
+            }
+
+            String thisEventFingerprint = thisEvent.getEventFingerprint();
+            if (eventMap.keySet().contains(thisEventFingerprint)) {
+                if (thisEvent instanceof SamplingEvent thisSamplingEvent) {
+                    SamplingEvent discretizedSamplingEvent = (SamplingEvent) eventMap.get(thisEventFingerprint);
+                    discretizedSamplingEvent.nRemoveSamp += thisSamplingEvent.nRemoveSamp;
+                    discretizedSamplingEvent.nNoRemoveSamp += thisSamplingEvent.nNoRemoveSamp;
+                }
+                eventMap.get(thisEventFingerprint).multiplicity += thisEvent.multiplicity;
+            } else {
+                TrajectoryEvent eventCopy = thisEvent.copy();
+                eventCopy.time = gridTime;
+                eventMap.put(thisEventFingerprint, eventCopy);
+            }
+
+        }
+
+        // Flush any remaining events
+        if (!eventMap.isEmpty())
+            discretizedEvents.addAll(eventMap.values());
+
+        return new Trajectory(currentState.clone(), discretizedEvents);
+    }
 
     /**
      * Method used to construct trajectory log files which can be directly
@@ -166,13 +211,17 @@ public class Trajectory {
      * @param isFirst
      */
     public static void addToLog(PrintStream ps, long sample,
-                         List<double[]> states,
-                         List<TrajectoryEvent> events,
-                         int stateIdx, boolean isFirst) {
+                                List<double[]> states,
+                                List<TrajectoryEvent> events,
+                                int stateIdx, double processLength,
+                                boolean isFirst) {
 
         double[] state = states.get(stateIdx);
         double eventTime = stateIdx > 0 ? events.get(stateIdx-1).time : 0.0;
-        double eventAge = events.get(events.size()-1).time - eventTime;
+        double eventAge = processLength - eventTime;
+
+        // Only include population size following last event recorded at a given time.
+        boolean includePopSize = stateIdx==states.size()-1 || events.get(stateIdx).time>eventTime;
 
         for (int s=0; s<state.length; s++) {
             if (s>0 || !isFirst ) {
@@ -180,7 +229,9 @@ public class Trajectory {
             }
 
             ps.print(eventTime + "\t" + eventAge + "\t");
-            ps.print("N\t" + s + "\tNA\t" + state[s]);
+
+            if (includePopSize)
+                ps.print("N\t" + s + "\tNA\t" + state[s]);
         }
 
         ps.print("\n" + sample + "\t" + eventTime + "\t" + eventAge + "\t");
@@ -200,14 +251,15 @@ public class Trajectory {
         out.print("NA\tNA\tNA\tNA\tNA\tNA");
     }
 
-    public static void log (long sample, List<double[]> states,
+    public static void log(long sample, List<double[]> states,
                             List<TrajectoryEvent> events,
+                            double processLength,
                             PrintStream out) {
 
-        addToLog(out, sample, states, events, 0, true);
+        addToLog(out, sample, states, events, 0, processLength, true);
 
         for (int i = 1; i < states.size(); i++)
-            addToLog(out, sample, states, events, i, false);
+            addToLog(out, sample, states, events, i, processLength, false);
 
         out.print("\t");
     }

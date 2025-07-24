@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -77,5 +77,15 @@ public class BirthEvent extends TrajectoryEvent {
     @Override
     public String getEventCode(int nTypes) {
         return "B\t" + type + "\t" + type + "\t" + multiplicity;
+    }
+
+    @Override
+    public String getEventFingerprint() {
+        return "B\t" + type + "\t" + type;
+    }
+
+    @Override
+    public BirthEvent copy() {
+        return new BirthEvent(time, type, multiplicity);
     }
 }

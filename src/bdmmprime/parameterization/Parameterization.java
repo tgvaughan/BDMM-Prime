@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -246,6 +246,34 @@ public abstract class Parameterization extends CalculationNode {
                 }
             }
         }
+    }
+
+    /**
+     * Check to ensure all rates are positive and all probabilities are
+     * inside [0,1].
+     *
+     * @return true if all values are within bounds.
+     */
+    public boolean valuesAreValid() {
+        for (int interval=0; interval < intervalEndTimes.length; interval++) {
+            for (int type=0; type<nTypes; type++ ) {
+                if (birthRates[interval][type] < 0
+                        || deathRates[interval][type] < 0
+                        || samplingRates[interval][type] <0
+                        || removalProbs[interval][type]<0
+                        || removalProbs[interval][type]>1.0
+                        || rhoValues[interval][type]<0
+                        || rhoValues[interval][type]>1.0)
+                    return false;
+
+                for (int typep=0; typep<nTypes; typep++) {
+                    if (migRates[interval][type][typep] < 0
+                            || crossBirthRates[interval][type][typep] < 0)
+                        return false;
+                }
+            }
+        }
+        return true;
     }
 
     public double[][] getBirthRates() {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,12 +28,16 @@ public class NodeFactory {
     String typeLabel;
     TypeSet typeSet;
 
-    public NodeFactory(double origin, int nSamples, String typeLabel, TypeSet typeSet) {
+    boolean appendTypesToLeafLabels;
+
+    public NodeFactory(double origin, int nSamples, String typeLabel, TypeSet typeSet,
+                       boolean appendTypesToLeafLabels) {
         this.origin = origin;
         this.nextIntNr = nSamples;
         this.nextLeafNr = 0;
         this.typeLabel = typeLabel;
         this.typeSet = typeSet;
+        this.appendTypesToLeafLabels = appendTypesToLeafLabels;
     }
 
     private Node newNode(int type, double time, int nextNodeNr) {
@@ -52,7 +56,10 @@ public class NodeFactory {
 
     public Node newLeafNode(int type, double time) {
         Node node = newNode(type, time, nextLeafNr);
-        node.setID(String.valueOf(nextLeafNr));
+        if (appendTypesToLeafLabels)
+            node.setID(nextLeafNr + "|" + typeSet.getTypeName(type));
+        else
+            node.setID(String.valueOf(nextLeafNr));
         nextLeafNr += 1;
         return node;
     }

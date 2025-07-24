@@ -1,0 +1,68 @@
+<beast version="2.0"
+       namespace="beast.base.inference
+                 :beast.base.inference.parameter
+                 :beast.base.evolution.likelihood
+                 :beast.base.evolution.sitemodel
+                 :beast.base.evolution.substitutionmodel
+                 :beast.base.evolution.operator
+                 :bdmmprime.distribution
+                 :bdmmprime.parameterization
+                 :bdmmprime.trajectories.simulation
+                 :bdmmprime.util.operators
+                 :bdmmprime.mapping
+                 :feast.simulation
+                 :feast.fileio
+                 :feast.fileio.logfileiterator">
+
+  <typeSet id="typeSet" spec="TypeSet" value="A,B"/>
+  <startTypePriorProbs id="startTypePriorProbs" spec="RealParameter" value="0.5 0.5"/>
+  <parameterization id="param" spec="EpiParameterization" typeSet="@typeSet">
+    <processLength spec="RealParameter" value="7.0"/> <!-- Duration of simulation -->
+    <Re spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="2.0 1.0"/>
+    </Re>
+    <becomeUninfectiousRate spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="1.0"/>
+    </becomeUninfectiousRate>
+    <samplingProportion spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.2"/>
+    </samplingProportion>
+    <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.5"/>
+    </removalProb>
+    <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.5"/>
+    </migrationRate>
+  </parameterization>
+
+  <run spec="LogFileIterator">
+    <logFileState spec="TraceLogFileState" logFileName="simulator.log">
+      <logFileEntry spec="LogFileRealParameter" fieldName="finalSampleOffset">
+        <fieldParameter id="finalSampleOffset" spec="RealParameter" value="0.0"/>
+      </logFileEntry>
+    </logFileState>
+
+    <logFileState spec="TreeLogFileState" logFileName="simulator.untyped.trees"
+                  readTaxonSet="false">
+      <tree spec="beast.base.evolution.tree.Tree" id="untypedTree"/>
+    </logFileState>
+
+    <logger spec="Logger" fileName="$(filebase).typed.trees" logEvery="1">
+      <log id="tree" spec="TypeMappedTree"
+           untypedTree="@untypedTree"
+           finalSampleOffset="@finalSampleOffset"
+           startTypePriorProbs="@startTypePriorProbs"
+           parameterization="@param"
+           typeLabel="type"
+           mapOnInit="false"
+           remapOnLog="true">
+      </log>
+    </logger>
+
+    <logger fileName="$(filebase).log" logEvery="1">
+      <log idref="finalSampleOffset"/>
+      <log spec="TypedTreeStatsLogger" typedTree="@tree" typeSet="@typeSet" typeLabel="type"/>
+    </logger>
+  </run>
+
+</beast>

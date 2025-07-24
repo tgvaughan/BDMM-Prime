@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
             "Parameter containing change times for skyline function.");
 
     public Input<Boolean> timesAreRelativeInput = new Input<>("timesAreRelative",
-            "True if times are relative to origin. (Default false.)",
+            "True if times are relative to process start. (Default false.)",
             false);
 
     public Input<Boolean> timesAreAgesInput = new Input<>("timesAreAges",
@@ -58,7 +58,8 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
 
     public Input<Boolean> linkIdenticalValuesInput = new Input<>("linkIdenticalValues",
             "BEAUti hint to create XMLs in which identical values are considered " +
-                    "linked. WARNING: The value of this input has no impact outside of BEAUti!",
+                    "linked. WARNING: The value of this input usually has no impact " +
+                    "outside of BEAUti!",
             false);
 
     boolean timesAreAges, timesAreRelative;

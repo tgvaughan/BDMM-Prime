@@ -1,0 +1,61 @@
+<beast version="2.0"
+       namespace="beast.base
+                 :beast.base.inference
+                 :beast.base.inference.parameter
+                 :beast.base.evolution
+                 :beast.base.evolution.sitemodel
+                 :beast.base.evolution.substitutionmodel
+                 :bdmmprime.distribution
+                 :bdmmprime.parameterization
+                 :bdmmprime.trajectories.simulation
+                 :bdmmprime.mapping
+                 :feast.simulation">
+
+  <typeSet id="typeSet" spec="TypeSet" value="A,B"/>
+  <startTypePriorProbs id="startTypePriorProbs" spec="RealParameter" value="0.5 0.5"/>
+  <parameterization id="param" spec="EpiParameterization" typeSet="@typeSet">
+    <processLength spec="RealParameter" value="7.0"/> <!-- Duration of simulation -->
+    <Re spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="2.0 1.0"/>
+    </Re>
+    <becomeUninfectiousRate spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="1.0"/>
+    </becomeUninfectiousRate>
+    <samplingProportion spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.2"/>
+    </samplingProportion>
+    <removalProb spec="SkylineVectorParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.5"/>
+    </removalProb>
+    <migrationRate spec="SkylineMatrixParameter" typeSet="@typeSet">
+      <skylineValues spec="RealParameter" value="0.5"/>
+    </migrationRate>
+  </parameterization>
+
+  <run spec="GPSimulator" nSims="10000">
+
+    <simulationObject spec="SimulatedTree" id="tree" minSamples="2"
+                      startTypePriorProbs="@startTypePriorProbs"
+                      parameterization="@param">
+        <finalSampleOffset id="finalSampleOffset" spec="RealParameter" value="0.0"/>
+    </simulationObject>
+   
+    <logger spec="Logger" logEvery="100">
+      <log idref="finalSampleOffset"/>
+    </logger>
+
+    <logger spec="Logger" fileName="$(filebase).log" logEvery="1">
+      <log idref="finalSampleOffset"/>
+      <log spec="TypedTreeStatsLogger" typedTree="@tree" typeSet="@typeSet" typeLabel="type"/>
+    </logger>
+
+    <logger spec="Logger" mode="tree" fileName="$(filebase).typed.trees" logEvery="1">
+      <log idref="tree"/>
+    </logger>
+
+    <logger spec="Logger" mode="tree" fileName="$(filebase).untyped.trees" logEvery="1">
+      <log spec="TypedTipTreeLogger" typedTree="@tree" obscureTypes="true"/>
+    </logger>
+
+  </run>
+</beast>

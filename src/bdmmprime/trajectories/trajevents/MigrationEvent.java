@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,5 +86,15 @@ public class MigrationEvent extends TrajectoryEvent {
     @Override
     public String getEventCode(int nTypes) {
         return "M\t" + srcType + "\t" + destType + "\t" + multiplicity;
+    }
+
+    @Override
+    public String getEventFingerprint() {
+        return "M\t" + srcType + "\t" + destType;
+    }
+
+    @Override
+    public MigrationEvent copy() {
+        return new MigrationEvent(time, srcType, destType, multiplicity);
     }
 }

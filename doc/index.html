@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2024-12-06 Fri 09:59 -->
+<!-- 2025-07-14 Mon 17:01 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -60,8 +60,13 @@
 </li>
 <li><a href="#id-1-Model-specification-using-BEAUti">3. Model specification using BEAUti</a>
 <ul>
-<li><a href="#id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior">3.1. The BDMM-Prime Tree Prior</a></li>
-<li><a href="#id-2-Model-specification-using-BEAUti-Defining-Tip-Types">3.2. Defining Tip Types</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-The-BDMM-Prime-tree-prior">3.1. The BDMM-Prime tree prior</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Defining-tip-types">3.2. Defining tip types</a>
+<ul>
+<li><a href="#id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type">3.2.1. Leaves with unknown type</a></li>
+<li><a href="#id-3-Defining-tip-types-Model-specification-using-BEAUti-Defining-additional-types">3.2.2. Defining additional types</a></li>
+</ul>
+</li>
 <li><a href="#id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities">3.3. Start type prior probabilities</a></li>
 <li><a href="#id-2-Model-specification-using-BEAUti-Parameterizations">3.4. Parameterizations</a>
 <ul>
@@ -70,13 +75,13 @@
 <li><a href="#id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process">3.4.3. Fossilized birth-death process</a></li>
 </ul>
 </li>
-<li><a href="#id-2-Model-specification-using-BEAUti-Skyline-Parameters">3.5. Skyline Parameters</a>
+<li><a href="#id-2-Model-specification-using-BEAUti-Skyline-parameters">3.5. Skyline parameters</a>
 <ul>
-<li><a href="#id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor">3.5.1. Overview of the skyline parameter input editor</a>
+<li><a href="#id-3-Skyline-parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor">3.5.1. Overview of the skyline parameter input editor</a>
 <ul>
-<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration">3.5.1.1. Epoch configuration</a></li>
-<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration">3.5.1.2. Value configuration</a></li>
-<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation">3.5.1.3. Epoch visualisation</a></li>
+<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-configuration">3.5.1.1. Epoch configuration</a></li>
+<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Value-configuration">3.5.1.2. Value configuration</a></li>
+<li><a href="#id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-visualisation">3.5.1.3. Epoch visualisation</a></li>
 </ul>
 </li>
 </ul>
@@ -129,7 +134,7 @@
 </div>
 </nav>
 
-<figure id="orgcacf729">
+<figure id="org75fd61e">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -137,7 +142,6 @@
 <p>
 Source code: <a href="https://github.com/tgvaughan/BDMM-Prime">https://github.com/tgvaughan/BDMM-Prime</a>
 </p>
-
 <div id="outline-container-id-1-Introduction" class="outline-2">
 <h2 id="id-1-Introduction"><span class="section-number-2">1.</span> Introduction</h2>
 <div class="outline-text-2" id="text-id-1-Introduction">
@@ -147,7 +151,6 @@ under a variety of linear birth-death-sampling models with/without
 types.
 </p>
 </div>
-
 <div id="outline-container-id-2-Introduction-Comparison-with-BDMM" class="outline-3">
 <h3 id="id-2-Introduction-Comparison-with-BDMM"><span class="section-number-3">1.1.</span> Comparison with BDMM</h3>
 <div class="outline-text-3" id="text-id-2-Introduction-Comparison-with-BDMM">
@@ -161,26 +164,25 @@ following enhancements:
 <li>an improved BEAUti interface that allows a much more diverse range of analyses to be configured,</li>
 <li>automatic fall-back to analytical solutions for unstructured (single type) analyses,
 meaning BDMM-Prime can in principle be used in place of <a href="https://github.com/BEAST2-Dev/bdsky">BDSKY</a>,</li>
-<li>use of stochastic mapping for efficient sampling ancestral states,</li>
+<li>use of stochastic mapping for efficient sampling of ancestral types,</li>
 <li>a particle filtering algorithm allowing joint sampling of population trajectories,</li>
 <li>a heavily refactored code base intended to make the package easier to use,
 extend and maintain.</li>
 </ul>
 
 <p>
-As a result of the many changes that were required in making this transition,
-BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
+Because of the many changes that were required in making this transition,
+BDMM-Prime is completely incompatible with BDMM itself.  (The original
 package will be maintained separately to ensure that BEAST 2 XMLs and packages
-that depend on it remain usable.
+that depend on it remain usable.)
 </p>
 </div>
 </div>
-
 <div id="outline-container-id-2-Introduction-Acknowledgements-and-Citations" class="outline-3">
 <h3 id="id-2-Introduction-Acknowledgements-and-Citations"><span class="section-number-3">1.2.</span> Acknowledgements and Citations</h3>
 <div class="outline-text-3" id="text-id-2-Introduction-Acknowledgements-and-Citations">
 <p>
-As this is a fork of <a href="https://github.com/denisekuehnert/bdmm">BDMM</a>, BDMM-Prime owes a huge debt to the
+As this is a fork of <a href="https://github.com/denisekuehnert/bdmm">BDMM</a>, BDMM-Prime owes its existence to the
 authors and contributors of that project, in particular Denise Kühnert
 and Jérémie Scire.
 </p>
@@ -190,20 +192,17 @@ If you use this package as part of your research, please cite these papers:
 </p>
 
 <ul class="org-ul">
-<li>Vaughan and Stadler, <i>Bayesian phylodynamic inference of multi-type population trajectories using genomic data</i>, <a href="https://doi.org/10.1101/2024.11.26.625381">doi:10.1101/2024.11.26.625381</a> (preprint)</li>
-<li>Scire et al., <i>Robust Phylodynamic Analysis of Genetic Sequencing Data from Structured Populations</i>, Viruses, 14:8, 1648 (2022), <a href="https://doi.org/10.3390/v14081648">https://doi.org/10.3390/v14081648</a></li>
-<li>Kühnert et al., <i>Phylodynamics with Migration: A ComputationalFramework to Quantify Population Structure from Genomic Data</i>, MBE, 33:8, 2102-2116 (2016), <a href="https://doi.org/10.1093/molbev/msw064">https://doi.org/10.1093/molbev/msw064</a>.</li>
+<li>Vaughan and Stadler, <i>Bayesian phylodynamic inference of multi-type population trajectories using genomic data</i>, Molecular Biology and Evolution 42:msaf130 (2025), <a href="https://doi.org/10.1093/molbev/msaf130">doi:10.1093/molbev/msaf130</a>. (BDMM-Prime, trajectory inference)</li>
+<li>Scire et al., <i>Robust Phylodynamic Analysis of Genetic Sequencing Data from Structured Populations</i>, Viruses 14:1648 (2022), <a href="https://doi.org/10.3390/v14081648">https://doi.org/10.3390/v14081648</a>. (BDMM)</li>
+<li>Kühnert et al., <i>Phylodynamics with Migration: A Computational Framework to Quantify Population Structure from Genomic Data</i>, Molecular Biology and Evolution 33:2102-2116 (2016), <a href="https://doi.org/10.1093/molbev/msw064">https://doi.org/10.1093/molbev/msw064</a>. (BDMM)</li>
 </ul>
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-1-Getting-Started" class="outline-2">
 <h2 id="id-1-Getting-Started"><span class="section-number-2">2.</span> Getting Started</h2>
 <div class="outline-text-2" id="text-id-1-Getting-Started">
 </div>
-
-
 <div id="outline-container-id-2-Getting-Started-Installation" class="outline-3">
 <h3 id="id-2-Getting-Started-Installation"><span class="section-number-3">2.1.</span> Installation</h3>
 <div class="outline-text-3" id="text-id-2-Getting-Started-Installation">
@@ -234,8 +233,6 @@ restart BEAUti before you can set up any analyses.)
 </p>
 </div>
 </div>
-
-
 <div id="outline-container-id-2-Getting-Started-Setting-up-your-first-analysis" class="outline-3">
 <h3 id="id-2-Getting-Started-Setting-up-your-first-analysis"><span class="section-number-3">2.2.</span> Setting up your first analysis</h3>
 <div class="outline-text-3" id="text-id-2-Getting-Started-Setting-up-your-first-analysis">
@@ -272,7 +269,6 @@ If you've never used this software before, please consider working
 through the <a href="https://taming-the-beast.org/tutorials/Introduction-to-BEAST2/">Introduction to BEAST 2 tutorial</a>.
 </p>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Loading-sequence-data-into-BEAUti" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Loading-sequence-data-into-BEAUti"><span class="section-number-4">2.2.1.</span> Loading sequence data into BEAUti</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Loading-sequence-data-into-BEAUti">
@@ -309,7 +305,6 @@ The BEAUti window should now look something like the following:
 </p>
 </div>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-tip-dates" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-tip-dates"><span class="section-number-4">2.2.2.</span> Setting up tip dates</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-tip-dates">
@@ -331,13 +326,12 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="orge59e1d0">
+<figure id="org68691f4">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
 </div>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model"><span class="section-number-4">2.2.3.</span> Setting the site model</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-site-model">
@@ -354,7 +348,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="org59ace0b">
+<figure id="orgb39efe0">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -367,7 +361,6 @@ Gamma-distributed site-to-site rate heterogeneity should also be used.
 </p>
 </div>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-clock-model" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-clock-model"><span class="section-number-4">2.2.4.</span> Setting the clock model</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-clock-model">
@@ -386,13 +379,12 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="orgaf36b45">
+<figure id="org2538083">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
 </div>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Selecting-the-tree-prior" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Selecting-the-tree-prior"><span class="section-number-4">2.2.5.</span> Selecting the tree prior</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Selecting-the-tree-prior">
@@ -410,13 +402,12 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="org1b5e34a">
+<figure id="org4d70ae6">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
 </div>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-the-sample-types" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-the-sample-types"><span class="section-number-4">2.2.6.</span> Setting up the sample types</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-up-the-sample-types">
@@ -435,7 +426,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="orgdd3f31a">
+<figure id="org946e4df">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -445,13 +436,12 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="org8156a94">
+<figure id="org938393a">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
 </div>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Configuring-the-multi-type-model" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Configuring-the-multi-type-model"><span class="section-number-4">2.2.7.</span> Configuring the multi-type model</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Configuring-the-multi-type-model">
@@ -476,7 +466,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="org827d3bf">
+<figure id="org779b919">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -502,7 +492,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="orgd797a4e">
+<figure id="org426214f">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -525,7 +515,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="orgecc1dfa">
+<figure id="orgd63dd64">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -565,7 +555,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="orgff196f0">
+<figure id="orgcf266ec">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -588,7 +578,7 @@ Find the Migration Rate parameter, then:
 </p>
 <ol class="org-ol">
 <li>Double-click on the value and change it from it's default to the smaller
-rate of 0.1 (any infected individual has a 10% chance of moving between
+rate of 0.1 (any infected individual has a roughly 10% chance of moving between
 the two locations in any given year).</li>
 <li>Uncheck the "Scalar values" checkbox to allow rates to vary between pairs of
 locations.</li>
@@ -598,13 +588,12 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org7c56393">
+<figure id="org316a867">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
 </div>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors"><span class="section-number-4">2.2.8.</span> Setting the remaining parameter priors</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors">
@@ -665,7 +654,6 @@ Set the following parameter priors:
 </blockquote>
 </div>
 </div>
-
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup" class="outline-4">
 <h4 id="id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup"><span class="section-number-4">2.2.9.</span> MCMC and Logging setup</h4>
 <div class="outline-text-4" id="text-id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup">
@@ -681,7 +669,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="org2268902">
+<figure id="org0b6a689">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -715,7 +703,6 @@ but trajectory logging is disabled.
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-2-Getting-Started-Saving-and-Running-the-analysis" class="outline-3">
 <h3 id="id-2-Getting-Started-Saving-and-Running-the-analysis"><span class="section-number-3">2.3.</span> Saving and Running the analysis</h3>
 <div class="outline-text-3" id="text-id-2-Getting-Started-Saving-and-Running-the-analysis">
@@ -734,7 +721,6 @@ to choose somewhere else, perhaps a folder on your desktop.)</li>
 </blockquote>
 </div>
 </div>
-
 <div id="outline-container-id-2-Getting-Started-Processing-the-results" class="outline-3">
 <h3 id="id-2-Getting-Started-Processing-the-results"><span class="section-number-3">2.4.</span> Processing the results</h3>
 <div class="outline-text-3" id="text-id-2-Getting-Started-Processing-the-results">
@@ -752,8 +738,6 @@ BEAST is still running.)  The output files which should have been produced are
 <dt><code>h3n2.h3n2_2deme.typed.node.trees</code></dt><dd>A tree log  file with only types at ancestral nodes marked.</dd>
 </dl>
 </div>
-
-
 <div id="outline-container-id-3-Processing-the-results-Getting-Started-The-parameter-log-file" class="outline-4">
 <h4 id="id-3-Processing-the-results-Getting-Started-The-parameter-log-file"><span class="section-number-4">2.4.1.</span> The parameter log file</h4>
 <div class="outline-text-4" id="text-id-3-Processing-the-results-Getting-Started-The-parameter-log-file">
@@ -797,13 +781,12 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="orgd27f0e2">
+<figure id="orge27a392">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
 </div>
 </div>
-
 <div id="outline-container-id-3-Processing-the-results-Getting-Started-The-tree-log-files" class="outline-4">
 <h4 id="id-3-Processing-the-results-Getting-Started-The-tree-log-files"><span class="section-number-4">2.4.2.</span> The tree log files</h4>
 <div class="outline-text-4" id="text-id-3-Processing-the-results-Getting-Started-The-tree-log-files">
@@ -833,7 +816,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="orgd5d0f0b">
+<figure id="org025e2aa">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -857,7 +840,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="orge930b0e">
+<figure id="orgbc02aeb">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -873,7 +856,6 @@ easy, and it is frequently done, it is a misleading representation.
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-1-Model-specification-using-BEAUti" class="outline-2">
 <h2 id="id-1-Model-specification-using-BEAUti"><span class="section-number-2">3.</span> Model specification using BEAUti</h2>
 <div class="outline-text-2" id="text-id-1-Model-specification-using-BEAUti">
@@ -886,10 +868,9 @@ helpful if you'd worked through that first before proceeding to the
 sections below.
 </p>
 </div>
-
-<div id="outline-container-id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior" class="outline-3">
-<h3 id="id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior"><span class="section-number-3">3.1.</span> The BDMM-Prime Tree Prior</h3>
-<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-The-BDMM-Prime-Tree-Prior">
+<div id="outline-container-id-2-Model-specification-using-BEAUti-The-BDMM-Prime-tree-prior" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-The-BDMM-Prime-tree-prior"><span class="section-number-3">3.1.</span> The BDMM-Prime tree prior</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-The-BDMM-Prime-tree-prior">
 <p>
 Using BDMM-Prime amounts to selecting the BDMM-Prime tree prior when
 choosing priors for a particular analysis. This is a very flexible
@@ -909,7 +890,7 @@ alternative parameterisations.
 In contrast, inputs to the BDMM-Prime tree prior are organised in a
 hierarchical way which seeks to avoid repetition and improve
 flexibility.  At the top level, the BDMM-Prime tree prior takes 
-the following five main elements:
+the following main elements:
 </p>
 <ol class="org-ol">
 <li>The tree,</li>
@@ -923,12 +904,17 @@ The tree itself is automatically defined and provided to the tree prior by BEAUt
 It therefore remains only to define the remaining three, which are detailed in the
 following sections.
 </p>
-</div>
-</div>
 
-<div id="outline-container-id-2-Model-specification-using-BEAUti-Defining-Tip-Types" class="outline-3">
-<h3 id="id-2-Model-specification-using-BEAUti-Defining-Tip-Types"><span class="section-number-3">3.2.</span> Defining Tip Types</h3>
-<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Defining-Tip-Types">
+<p>
+<b>Important:</b> Be sure to define all model linkages between partitions <i>before</i>
+configuring the BDMM-Prime tree prior.  Modifying linkages later on can result
+in broken BEAST 2 models.
+</p>
+</div>
+</div>
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Defining-tip-types" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Defining-tip-types"><span class="section-number-3">3.2.</span> Defining tip types</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Defining-tip-types">
 <p>
 A "Type Trait Set" is used to associate types with each of the leaf nodes of the
 tree (i.e. each of the samples in the sequence alignment).
@@ -945,10 +931,10 @@ past the "Parameterization" section.
 
 <p>
 The input editor functions very similarly to the tip dates input editor.  All tips
-are initially given the same type, <code>UNSPECIFIED</code>. (There is nothing
+are initially given the same type, <code>NOT_SET</code>. (There is nothing
 special about this value, only that it is shared among all tips, causing the model
 to include only one type.) Individual can be specified using any string, although
-problems may occur if strings contain spaces or other whitespace characters.
+problems may occur if strings contain spaces.
 </p>
 
 <p>
@@ -962,8 +948,43 @@ required format of this file is described in the built-in help which
 can be accessed by pressing the button labeled <code>?</code>.)
 </p>
 </div>
-</div>
+<div id="outline-container-id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type" class="outline-4">
+<h4 id="id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type"><span class="section-number-4">3.2.1.</span> Leaves with unknown type</h4>
+<div class="outline-text-4" id="text-id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type">
+<p>
+Sometimes you may not know to which type a tip should be assigned.  In this case
+you can set the type to a "?" which indicates that the type is unknown. In this
+case the phylodynamic likelihood will be evaluated under the assumption that type
+information for this tip is unavailable.
+</p>
 
+<p>
+Beware that designating all of your tip types as unknown can easily
+result in unidentifiability with respect to permutation of the mapping
+between types and rates. To avoid this you'll need to impose some
+additional symmetry-breaking constraints, e.g. <code>birthRate[0]&gt;birthRate[1]</code>.
+(Imposing these is currently outside the scope of this manual. If
+you'd like to hear more about this please get in touch with me.)
+</p>
+</div>
+</div>
+<div id="outline-container-id-3-Defining-tip-types-Model-specification-using-BEAUti-Defining-additional-types" class="outline-4">
+<h4 id="id-3-Defining-tip-types-Model-specification-using-BEAUti-Defining-additional-types"><span class="section-number-4">3.2.2.</span> Defining additional types</h4>
+<div class="outline-text-4" id="text-id-3-Defining-tip-types-Model-specification-using-BEAUti-Defining-additional-types">
+<p>
+It is occasionally the case that there are additional types which are
+absent from your sampled data which you nonetheless wish to include in
+your model.  For instance, in an (E)xposed-(I)nfectious
+epidemiological model your samples likely correspond only to
+infectious individuals.  To accommodate this, you can add a
+comma-delimited list of type names to the "Additional types" text field below the
+tip type assignment table:
+<img src="./figures/additional_types.png" alt="additional_types.png">
+(You can also include the names of sampled types in this list: duplication has no effect.)
+</p>
+</div>
+</div>
+</div>
 <div id="outline-container-id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities" class="outline-3">
 <h3 id="id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities"><span class="section-number-3">3.3.</span> Start type prior probabilities</h3>
 <div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities">
@@ -994,9 +1015,9 @@ By default the prior probabilities are chosen to be uniform.  In many
 cases this is a sensible choice, however it may be the case that you
 are certain that the birth-death process began (or did <i>not</i> begin) in
 some particular state.  For instance, you might know - or be willing
-to assume - that an outbreak was seeded by travel cases other
+to assume - that an outbreak was seeded by travel cases from other
 locations.  In such cases you can modify the probability values to reflect
-these prior assumptions.
+these prior assumptions, although take care that the values still sum to 1.
 </p>
 
 <p>
@@ -1004,13 +1025,14 @@ It is also possible to "estimate" these prior probabilities. Clicking
 the estimate button causes BEAUti to assign a flat Dirichlet
 "hyper-prior" to the probabilities (i.e. a uniform distribution
 subject only to the constraint that the probabilities must be positive
-and sum to 1). We advise against doing this, as doing so is
-completely equivalent to simply setting a uniform prior in the first
-place.
+and sum to 1). We advise against doing this, as doing so is completely
+equivalent to simply setting a uniform prior in the first place.  This
+option is provided to allow for compatibility with previous
+implementations of this model, and beware that the values so estimated
+do not represent the posterior probabilities of the starting state.
 </p>
 </div>
 </div>
-
 <div id="outline-container-id-2-Model-specification-using-BEAUti-Parameterizations" class="outline-3">
 <h3 id="id-2-Model-specification-using-BEAUti-Parameterizations"><span class="section-number-3">3.4.</span> Parameterizations</h3>
 <div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Parameterizations">
@@ -1046,7 +1068,6 @@ The following sections briefly describe the currently-available parameterization
 and their relationships to one another.
 </p>
 </div>
-
 <div id="outline-container-id-3-Parameterizations-Model-specification-using-BEAUti-Canonical" class="outline-4">
 <h4 id="id-3-Parameterizations-Model-specification-using-BEAUti-Canonical"><span class="section-number-4">3.4.1.</span> Canonical</h4>
 <div class="outline-text-4" id="text-id-3-Parameterizations-Model-specification-using-BEAUti-Canonical">
@@ -1093,7 +1114,6 @@ process.
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological" class="outline-4">
 <h4 id="id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological"><span class="section-number-4">3.4.2.</span> Epidemiological</h4>
 <div class="outline-text-4" id="text-id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological">
@@ -1132,7 +1152,6 @@ parameterization.)
 </p>
 </div>
 </div>
-
 <div id="outline-container-id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process" class="outline-4">
 <h4 id="id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process"><span class="section-number-4">3.4.3.</span> Fossilized birth-death process</h4>
 <div class="outline-text-4" id="text-id-3-Parameterizations-Model-specification-using-BEAUti-Fossilized-birth-death-process">
@@ -1180,10 +1199,9 @@ parameterization instead.
 </div>
 </div>
 </div>
-
-<div id="outline-container-id-2-Model-specification-using-BEAUti-Skyline-Parameters" class="outline-3">
-<h3 id="id-2-Model-specification-using-BEAUti-Skyline-Parameters"><span class="section-number-3">3.5.</span> Skyline Parameters</h3>
-<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Skyline-Parameters">
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Skyline-parameters" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Skyline-parameters"><span class="section-number-3">3.5.</span> Skyline parameters</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Skyline-parameters">
 <p>
 Besides Parameterizations, an importance difference between BDMM-Prime
 and earlier packages like BDMM and BDSKY is the use of special-purpose
@@ -1200,7 +1218,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org0d47c3e">
+<figure id="org2b8de6f">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1223,10 +1241,9 @@ skyline parameters.  These differ only in that they are applied to
 vector-valued and matrix-valued parameters, respectively.
 </p>
 </div>
-
-<div id="outline-container-id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor" class="outline-4">
-<h4 id="id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor"><span class="section-number-4">3.5.1.</span> Overview of the skyline parameter input editor</h4>
-<div class="outline-text-4" id="text-id-3-Skyline-Parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor">
+<div id="outline-container-id-3-Skyline-parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor" class="outline-4">
+<h4 id="id-3-Skyline-parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor"><span class="section-number-4">3.5.1.</span> Overview of the skyline parameter input editor</h4>
+<div class="outline-text-4" id="text-id-3-Skyline-parameters-Model-specification-using-BEAUti-Overview-of-the-skyline-parameter-input-editor">
 <p>
 In this section we delve into the details of the BDMM-Prime
 skyline parameter user interface.  Although focus here on vector skyline
@@ -1240,7 +1257,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="org86cfe92">
+<figure id="org66435b4">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1252,10 +1269,9 @@ for helping with the configuration. The following sections detail each
 of these parts in turn.
 </p>
 </div>
-
-<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration" class="outline-5">
-<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration"><span class="section-number-5">3.5.1.1.</span> Epoch configuration</h5>
-<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-configuration">
+<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-configuration" class="outline-5">
+<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-configuration"><span class="section-number-5">3.5.1.1.</span> Epoch configuration</h5>
+<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-configuration">
 <p>
 The epoch configuration portion of the input editor is responsible for
 defining the number of times a skyline parameter will change, and the
@@ -1285,11 +1301,13 @@ future.
 </p>
 
 <p>
-By default, the change times are not estimated: they retain their chosen
+By default, the change times/ages are not estimated: they retain their chosen
 values through the whole analysis. If you choose, however, you can check
 the "Estimate change times" checkbox to tell BEAST to update these change
-times during the MCMC.  (Remember to configure a prior for the change times
-if you do this!)
+times/ages during the MCMC.  If you choose this, be sure to place
+appropriate upper and lower bounds using the corresponding prior.  The default
+distribution is uniform over possible change times/ages, equivalent to a
+flat Dirichlet prior on the intervals between the times/ages.
 </p>
 
 <p>
@@ -1305,10 +1323,9 @@ times or ages to be distributed evenly between 0 and 1.
 </p>
 </div>
 </div>
-
-<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration" class="outline-5">
-<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration"><span class="section-number-5">3.5.1.2.</span> Value configuration</h5>
-<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Value-configuration">
+<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Value-configuration" class="outline-5">
+<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Value-configuration"><span class="section-number-5">3.5.1.2.</span> Value configuration</h5>
+<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Value-configuration">
 <p>
 The initial parameter values corresponding to each epoch are configured
 using an input table.  By default, the "Scalar values" option is checked,
@@ -1334,17 +1351,16 @@ values extend across epoch boundaries.
 </p>
 </div>
 </div>
-
-<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation" class="outline-5">
-<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation"><span class="section-number-5">3.5.1.3.</span> Epoch visualisation</h5>
-<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-Parameters-Model-specification-using-BEAUti-Epoch-visualisation">
+<div id="outline-container-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-visualisation" class="outline-5">
+<h5 id="id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-visualisation"><span class="section-number-5">3.5.1.3.</span> Epoch visualisation</h5>
+<div class="outline-text-5" id="text-id-4-Overview-of-the-skyline-parameter-input-editor-Skyline-parameters-Model-specification-using-BEAUti-Epoch-visualisation">
 <p>
 The option "Display epoch visualisation" is useful when analysing
 samples distributed through time, as enabling it displays a graphical
 depiction of the sample distribution alongside the specified epochs
 and change times. Sample times are depicted using red and orange
 circles, with the coloration changing between every pair of epochs,
-allowing one to determine at a glance which epoch a given sample is
+allowing you to determine at a glance which epoch a given sample is
 currently assigned to.
 </p>
 
@@ -1359,7 +1375,6 @@ oldest sample included in the analysis.)
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-2-Model-specification-using-BEAUti-Miscellaneous-inputs" class="outline-3">
 <h3 id="id-2-Model-specification-using-BEAUti-Miscellaneous-inputs"><span class="section-number-3">3.6.</span> Miscellaneous inputs</h3>
 <div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">
@@ -1370,7 +1385,7 @@ in their default configuration:
 </p>
 
 
-<figure id="org20aa055">
+<figure id="org1ef14ff">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1409,7 +1424,6 @@ thread. The default value of 0.1 should be fine in most cases.</dd>
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-1-Sampling-Latent-Variables" class="outline-2">
 <h2 id="id-1-Sampling-Latent-Variables"><span class="section-number-2">4.</span> Sampling Latent Variables</h2>
 <div class="outline-text-2" id="text-id-1-Sampling-Latent-Variables">
@@ -1430,7 +1444,6 @@ In BEAUti, both of these algorithms are configured in the MCMC
 pane (where the chain length and loggers are configured).
 </p>
 </div>
-
 <div id="outline-container-id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions" class="outline-3">
 <h3 id="id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions"><span class="section-number-3">4.1.</span> Tree edge types and type transitions</h3>
 <div class="outline-text-3" id="text-id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions">
@@ -1444,7 +1457,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="org542f404">
+<figure id="org6147210">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1487,7 +1500,6 @@ then be characterised.
 </p>
 </div>
 </div>
-
 <div id="outline-container-id-2-Sampling-Latent-Variables-Multi-type-trajectories" class="outline-3">
 <h3 id="id-2-Sampling-Latent-Variables-Multi-type-trajectories"><span class="section-number-3">4.2.</span> Multi-type trajectories</h3>
 <div class="outline-text-3" id="text-id-2-Sampling-Latent-Variables-Multi-type-trajectories">
@@ -1512,7 +1524,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="org56726e6">
+<figure id="org28c8307">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1533,7 +1545,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="org4d1f5ea">
+<figure id="org584b64d">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1571,7 +1583,6 @@ selecting step sizes, with smaller values yielding shorter step sizes.
 It's almost always okay to leave these parameters alone.
 </p>
 </div>
-
 <div id="outline-container-id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories" class="outline-4">
 <h4 id="id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories"><span class="section-number-4">4.2.1.</span> Plotting sampled trajectories</h4>
 <div class="outline-text-4" id="text-id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories">
@@ -1672,7 +1683,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="org0c10c63">
+<figure id="orgb2043cb">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1746,7 +1757,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="org664ff81">
+<figure id="orgdd43693">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1771,7 +1782,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="org8dc5654">
+<figure id="orgf81eb04">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -1800,7 +1811,6 @@ results in general, even when applied at smaller scales.
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-1-Appendices" class="outline-2">
 <h2 id="id-1-Appendices"><span class="section-number-2">5.</span> Appendices</h2>
 <div class="outline-text-2" id="text-id-1-Appendices">
@@ -1815,12 +1825,10 @@ the graphical interface.  In this section we detail the important aspects of
 the BEAST 2 XML model description language as it pertains to BDMM-Prime.
 </p>
 </div>
-
 <div id="outline-container-id-3-XML-reference-Appendices-Model-definition" class="outline-4">
 <h4 id="id-3-XML-reference-Appendices-Model-definition"><span class="section-number-4">5.1.1.</span> Model definition</h4>
 <div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Model-definition">
 </div>
-
 <div id="outline-container-id-4-Model-definition-XML-reference-Appendices-The-Birth-Death-Migration-Distribution" class="outline-5">
 <h5 id="id-4-Model-definition-XML-reference-Appendices-The-Birth-Death-Migration-Distribution"><span class="section-number-5">5.1.1.1.</span> The Birth-Death-Migration Distribution</h5>
 <div class="outline-text-5" id="text-id-4-Model-definition-XML-reference-Appendices-The-Birth-Death-Migration-Distribution">
@@ -1901,7 +1909,6 @@ initialization failures.</dd>
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-4-Model-definition-XML-reference-Appendices-Parameterizations" class="outline-5">
 <h5 id="id-4-Model-definition-XML-reference-Appendices-Parameterizations"><span class="section-number-5">5.1.1.2.</span> Parameterizations</h5>
 <div class="outline-text-5" id="text-id-4-Model-definition-XML-reference-Appendices-Parameterizations">
@@ -1923,7 +1930,6 @@ If the latter, the tree object itself should be supplied.</dd>
 <dt><code>typeSet</code> (<code>TypeSet</code>)</dt><dd>A <code>TypeSet</code> defining the types present in the model.</dd>
 </dl>
 </div>
-
 <div id="outline-container-id-5-Parameterizations-Model-definition-XML-reference-Appendices-CanonincalParameterization" class="outline-6">
 <h6 id="id-5-Parameterizations-Model-definition-XML-reference-Appendices-CanonincalParameterization"><span class="section-number-6">5.1.1.2.1.</span> CanonincalParameterization</h6>
 <div class="outline-text-6" id="text-id-5-Parameterizations-Model-definition-XML-reference-Appendices-CanonincalParameterization">
@@ -1952,7 +1958,6 @@ children with types differing from the parent.</dd>
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-5-Parameterizations-Model-definition-XML-reference-Appendices-EpiParameterization" class="outline-6">
 <h6 id="id-5-Parameterizations-Model-definition-XML-reference-Appendices-EpiParameterization"><span class="section-number-6">5.1.1.2.2.</span> EpiParameterization</h6>
 <div class="outline-text-6" id="text-id-5-Parameterizations-Model-definition-XML-reference-Appendices-EpiParameterization">
@@ -1982,7 +1987,6 @@ in a source compartment.</dd>
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-5-Parameterizations-Model-definition-XML-reference-Appendices-FBDParameterization" class="outline-6">
 <h6 id="id-5-Parameterizations-Model-definition-XML-reference-Appendices-FBDParameterization"><span class="section-number-6">5.1.1.2.3.</span> FBDParameterization</h6>
 <div class="outline-text-6" id="text-id-5-Parameterizations-Model-definition-XML-reference-Appendices-FBDParameterization">
@@ -2025,8 +2029,6 @@ best to use the <code>CanonicalParameterization</code> instead.
 </div>
 </div>
 </div>
-
-
 <div id="outline-container-id-4-Model-definition-XML-reference-Appendices-Skyline-parameters" class="outline-5">
 <h5 id="id-4-Model-definition-XML-reference-Appendices-Skyline-parameters"><span class="section-number-5">5.1.1.3.</span> Skyline parameters</h5>
 <div class="outline-text-5" id="text-id-4-Model-definition-XML-reference-Appendices-Skyline-parameters">
@@ -2045,7 +2047,6 @@ The followinc sections describ the complete set of inputs to each of
 these types.
 </p>
 </div>
-
 <div id="outline-container-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineVectorParameter" class="outline-6">
 <h6 id="id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineVectorParameter"><span class="section-number-6">5.1.1.3.1.</span> SkylineVectorParameter</h6>
 <div class="outline-text-6" id="text-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineVectorParameter">
@@ -2201,7 +2202,6 @@ are set to true.</dd>
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineMatrixParameter" class="outline-6">
 <h6 id="id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineMatrixParameter"><span class="section-number-6">5.1.1.3.2.</span> SkylineMatrixParameter</h6>
 <div class="outline-text-6" id="text-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-SkylineMatrixParameter">
@@ -2423,8 +2423,6 @@ are set to true.</dd>
 </dl>
 </div>
 </div>
-
-
 <div id="outline-container-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-TimedParameter" class="outline-6">
 <h6 id="id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-TimedParameter"><span class="section-number-6">5.1.1.3.3.</span> TimedParameter</h6>
 <div class="outline-text-6" id="text-id-5-Skyline-parameters-Model-definition-XML-reference-Appendices-TimedParameter">
@@ -2581,7 +2579,6 @@ are set to true.</dd>
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-4-Model-definition-XML-reference-Appendices-The-TypeSet" class="outline-5">
 <h5 id="id-4-Model-definition-XML-reference-Appendices-The-TypeSet"><span class="section-number-5">5.1.1.4.</span> The TypeSet</h5>
 <div class="outline-text-5" id="text-id-4-Model-definition-XML-reference-Appendices-The-TypeSet">
@@ -2616,7 +2613,6 @@ an analysis.)
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-3-XML-reference-Appendices-Start-type-posterior-logging" class="outline-4">
 <h4 id="id-3-XML-reference-Appendices-Start-type-posterior-logging"><span class="section-number-4">5.1.2.</span> Start type posterior logging</h4>
 <div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Start-type-posterior-logging">
@@ -2643,7 +2639,6 @@ This object takes the following input:
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-3-XML-reference-Appendices-Stochastic-mapping" class="outline-4">
 <h4 id="id-3-XML-reference-Appendices-Stochastic-mapping"><span class="section-number-4">5.1.3.</span> Stochastic mapping</h4>
 <div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Stochastic-mapping">
@@ -2685,7 +2680,6 @@ Because the <code>TypeMappedTree</code> class extends the <code>Tree</code> clas
 many inputs that are not particularly relevant.  These have been omitted.
 </p>
 </div>
-
 <div id="outline-container-id-4-Stochastic-mapping-XML-reference-Appendices-Type-mapped-tree-loggers" class="outline-5">
 <h5 id="id-4-Stochastic-mapping-XML-reference-Appendices-Type-mapped-tree-loggers"><span class="section-number-5">5.1.3.1.</span> Type mapped tree loggers</h5>
 <div class="outline-text-5" id="text-id-4-Stochastic-mapping-XML-reference-Appendices-Type-mapped-tree-loggers">
@@ -2741,7 +2735,6 @@ with meaningful type labels rather than simply type indices.)</dd>
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-3-XML-reference-Appendices-Trajectory-sampling" class="outline-4">
 <h4 id="id-3-XML-reference-Appendices-Trajectory-sampling"><span class="section-number-4">5.1.4.</span> Trajectory sampling</h4>
 <div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Trajectory-sampling">
@@ -2793,12 +2786,10 @@ conservative (smaller steps).  For details, refer to <a href="https://doi.org/10
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-3-XML-reference-Appendices-Special-priors-and-operators" class="outline-4">
 <h4 id="id-3-XML-reference-Appendices-Special-priors-and-operators"><span class="section-number-4">5.1.5.</span> Special priors and operators</h4>
 <div class="outline-text-4" id="text-id-3-XML-reference-Appendices-Special-priors-and-operators">
 </div>
-
 <div id="outline-container-id-4-Special-priors-and-operators-XML-reference-Appendices-Easy-parameter-linking" class="outline-5">
 <h5 id="id-4-Special-priors-and-operators-XML-reference-Appendices-Easy-parameter-linking"><span class="section-number-5">5.1.5.1.</span> Easy parameter linking</h5>
 <div class="outline-text-5" id="text-id-4-Special-priors-and-operators-XML-reference-Appendices-Easy-parameter-linking">
@@ -2891,7 +2882,6 @@ equivalence to arise by chance, although it is extremely unlikely.)
 </p>
 </div>
 </div>
-
 <div id="outline-container-id-4-Special-priors-and-operators-XML-reference-Appendices-Consistent-tip-date-estimation" class="outline-5">
 <h5 id="id-4-Special-priors-and-operators-XML-reference-Appendices-Consistent-tip-date-estimation"><span class="section-number-5">5.1.5.2.</span> Consistent tip date estimation</h5>
 <div class="outline-text-5" id="text-id-4-Special-priors-and-operators-XML-reference-Appendices-Consistent-tip-date-estimation">
@@ -2918,7 +2908,6 @@ We are then free to operate on all tip ages, provided the operators we use
 also correctly update this offset.
 </p>
 </div>
-
 <div id="outline-container-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Operators" class="outline-6">
 <h6 id="id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Operators"><span class="section-number-6">5.1.5.2.1.</span> Operators</h6>
 <div class="outline-text-6" id="text-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Operators">
@@ -2966,7 +2955,6 @@ the interval [scaleFactor, 1/scaleFactor].</dd>
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Prior" class="outline-6">
 <h6 id="id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Prior"><span class="section-number-6">5.1.5.2.2.</span> Prior</h6>
 <div class="outline-text-6" id="text-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Prior">
@@ -3000,7 +2988,6 @@ but should be disabled during the analysis itself.</dd>
 </dl>
 </div>
 </div>
-
 <div id="outline-container-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Initialization" class="outline-6">
 <h6 id="id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Initialization"><span class="section-number-6">5.1.5.2.3.</span> Initialization</h6>
 <div class="outline-text-6" id="text-id-5-Consistent-tip-date-estimation-Special-priors-and-operators-XML-reference-Appendices-Initialization">
@@ -3033,7 +3020,6 @@ upper and lower bounds are given forwards in time.)</dd>
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-2-Appendices-Trajectory-file-format" class="outline-3">
 <h3 id="id-2-Appendices-Trajectory-file-format"><span class="section-number-3">5.2.</span> Trajectory file format</h3>
 <div class="outline-text-3" id="text-id-2-Appendices-Trajectory-file-format">
@@ -3161,12 +3147,12 @@ column.
 </p>
 
 <p>
-Population sizes are reported by rows with the "variable" column
-set to "N".  Each such row reports the population size associated
-with the type index given in the "type" column and the size
-in the "value" column. The size corresponds to the time immediately
-at and after the time given in the "t" column. (Respectively, the immedately
-before the age given in the "age" column.)
+Population sizes are reported by rows with the "variable" column set
+to "N".  Each such row reports the population size associated with the
+type index given in the "type" column and the size in the "value"
+column. The size corresponds to the time immediately at and after the
+time given in the "t" column. (Respectively, the age immedately before
+the age given in the "age" column.)
 </p>
 
 <p>
@@ -3200,7 +3186,6 @@ simulation step.)
 </div>
 </div>
 </div>
-
 <div id="outline-container-id-1-License" class="outline-2">
 <h2 id="id-1-License"><span class="section-number-2">6.</span> License</h2>
 <div class="outline-text-2" id="text-id-1-License">
@@ -3217,7 +3202,7 @@ users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2024-12-06 Fri 09:59</p>
+<p class="date">Created: 2025-07-14 Mon 17:01</p>
 </div>
 </body>
 </html>

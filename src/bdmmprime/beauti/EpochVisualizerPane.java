@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2023 Tim Vaughan
+ * Copyright (C) 2023 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -208,7 +208,7 @@ public class EpochVisualizerPane extends Canvas {
                 rowNum = 0;
             } else {
                 Node node = tree.getNode(nodeNr);
-                String typeName = typeTraitSet.getStringValue(node.getID());
+                String typeName = typeTraitSet.getStringValue(tree.getTaxonId(node));
                 rowNum = param.getNTypes()-1-typeSet.getTypeIndex(typeName);
             }
 

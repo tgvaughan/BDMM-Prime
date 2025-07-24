@@ -2,9 +2,9 @@ BDMM-Prime
 ==========
 [![Unit/integration tests](https://github.com/tgvaughan/BDMM-Prime/actions/workflows/main.yml/badge.svg?branch=master)](https://github.com/tgvaughan/BDMM-Prime/actions/workflows/main.yml)
 
-The BDMM-Prime project provides a [BEAST 2](http://www.beast2.org/) package for
-performing phylodynamic inference under both structured and unstructured
-birth-death models.
+The BDMM-Prime project provides a [BEAST 2](http://www.beast2.org/)
+package for performing phylodynamic inference under both structured
+and unstructured birth-death models.
 
 The BDMM-Prime project is a fork of the original
 [BDMM project](https://github.com/denisekuehnert/bdmm).  The intention is to
@@ -19,20 +19,22 @@ flexibility and ease of use.  It incorporates the following enhancements:
 - a heavily refactored code base intended to make the package easier to use,
   extend and maintain.
   
-As a result of the many changes that were required in making this transition,
-BDMM-Prime is completely incompatible with BDMM itself.  Thus the original
-package will be maintained separately to ensure that BEAST 2 XMLs and packages
-that depend on it remain usable.
+Because of the many changes that were required in order to make
+this transition, BDMM-Prime is completely incompatible with BDMM
+itself.  (The original package will be maintained separately to ensure
+that BEAST 2 XMLs and packages that depend on it remain usable.)
 
-This repository is primarily of interest to people keen on building BDMM-Prime
-from the source or contributing to its development.  If this doesn't include
-you, please instead visit the project web page at:
+This repository is primarily of interest to people keen on building
+BDMM-Prime from the source or contributing to its development.  If
+this doesn't include you, please instead visit the project web page
+at:
 
 https://tgvaughan.github.io/BDMM-Prime
 
-There you'll find all relevant usage information including installation,
-a complete tutorial, as well as reference guides for using BDMM-Prime via
-the BEAUti interface together with detailed instructions on its XML interface.
+There you'll find all of the relevant usage information including
+installation instructions, a complete tutorial, and reference guides
+for using BDMM-Prime via the BEAUti interface. Also included are
+detailed information on its XML interface for advanced users.
 
 
 Building from Source
@@ -70,13 +72,14 @@ and [Jérémie Scire](https://github.com/jscire).
 
 If you use this package as part of your research, please cite these papers:
 
-* Vaughan and Stadler, "Bayesian phylodynamic inference of multi-type population trajectories using genomic data", [doi:10.1101/2024.11.26.625381](https://doi.org/10.1101/2024.11.26.625381) (preprint)
+* Vaughan and Stadler, "Bayesian phylodynamic inference of multi-type population trajectories using genomic data",
+  MBE, 42(6):msaf130 (2025), [doi:10.1093/molbev/msaf130](https://doi.org/10.1093/molbev/msaf130)
 * Scire et al., "Robust Phylodynamic Analysis of Genetic Sequencing
-  Data from Structured Populations", Viruses, 14:8, 1648 (2022),
+  Data from Structured Populations", Viruses, 14(8):1648 (2022),
   [doi:10.3390/v14081648](https://doi.org/10.3390/v14081648).
 * Kühnert, et al., "Phylodynamics with Migration: A
   ComputationalFramework to Quantify Population Structure from Genomic
-  Data", MBE, 33:8, 2102-2116 (2016),
+  Data", MBE, 33(8):2102-2116 (2016),
   [doi:10.1093/molbev/msw064](https://doi.org/10.1093/molbev/msw064).
   
 

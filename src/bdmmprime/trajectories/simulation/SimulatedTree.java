@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2025 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,9 +32,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-
-import static bdmmprime.util.Utils.nextBinomial;
-import static org.apache.commons.math3.stat.StatUtils.sum;
 
 /**
  * Simulates a tree from a multi-type birth-death skyline process.
@@ -73,46 +70,34 @@ public class SimulatedTree extends Tree {
             "If true, an untyped tree will be simulated (i.e. migration events will be removed).",
             false);
 
-    Parameterization param;
-    RealParameter initialTypeProbs;
-    double simulationTime;
-
-    double[] a_birth, a_death, a_sampling;
-    double[][] a_migration, a_crossbirth2;
-    double[][][] a_crossbirth3;
+    public Input<Boolean> appendTypesToTaxonNamesInput = new Input<>(
+            "appendTypesToTaxonNames",
+            "If true, append types to taxon names with the delimiter |. " +
+                    "Default is false.", false);
 
     int nTypes;
     String typeLabel;
 
-    int minSamples;
 
     boolean simulateUntypedTree;
 
     public Trajectory traj;
+    public TrajectorySimulator trajectorySimulator;
 
     @Override
     public void initAndValidate() {
-        param = parameterizationInput.get();
-        initialTypeProbs = startTypePriorProbsInput.get();
-        simulationTime = param.processLengthInput.get().getArrayValue();
-
-        minSamples = minSamplesInput.get();
-
+        Parameterization param = parameterizationInput.get();
         nTypes = param.getNTypes();
+
+        int minSamples = minSamplesInput.get();
         typeLabel = typeLabelInput.get();
-
         simulateUntypedTree = simulateUntypedTreeInput.get();
-
-        a_birth = new double[nTypes];
-        a_death = new double[nTypes];
-        a_sampling = new double[nTypes];
-        a_migration = new double[nTypes][nTypes];
-        a_crossbirth2 = new double[nTypes][nTypes];
-        a_crossbirth3 = new double[nTypes][nTypes][nTypes];
+        trajectorySimulator = new TrajectorySimulator(param,
+                startTypePriorProbsInput.get());
 
         traj = null;
         do {
-            traj = simulateTrajectory();
+            traj = trajectorySimulator.simulateTrajectory();
         } while (traj.getSampleCount() < Math.max(minSamples,1));
 
         RealParameter fso = (RealParameter) finalSampleOffsetInput.get();
@@ -144,158 +129,6 @@ public class SimulatedTree extends Tree {
         super.initAndValidate();
     }
 
-    Trajectory simulateTrajectory() {
-        double t = 0;
-        int interval = 0;
-
-        double[] initialState = new double[nTypes];
-        int startType;
-        double u = Randomizer.nextDouble()*sum(initialTypeProbs.getDoubleValues());
-        for (startType=0; startType<nTypes-1; startType++) {
-            if (u < initialTypeProbs.getValue(startType))
-                break;
-            u -= initialTypeProbs.getValue(startType);
-        }
-        initialState[startType] = 1.0;
-
-        Trajectory traj = new Trajectory(initialState);
-        while (true) {
-
-            double a_tot = 0.0;
-            for (int s=0; s<nTypes; s++) {
-                a_birth[s] = traj.currentState[s] * param.getBirthRates()[interval][s];
-                a_death[s] = traj.currentState[s] * param.getDeathRates()[interval][s];
-                a_sampling[s] = traj.currentState[s] * param.getSamplingRates()[interval][s];
-                a_tot += a_birth[s] + a_death[s] + a_sampling[s];
-
-                for (int sp = 0; sp < nTypes; sp++) {
-                    if (sp == s)
-                        continue;
-
-                    a_migration[s][sp] = traj.currentState[s] * param.getMigRates()[interval][s][sp];
-                    a_crossbirth2[s][sp] = traj.currentState[s] * param.getCrossBirthRates2()[interval][s][sp];
-                    a_tot += a_migration[s][sp] + a_crossbirth2[s][sp];
-
-                    if (param.hasCrossBirthRates3()) {
-                        for (int spp=0; spp<=sp; spp++) {
-                            if (spp == s)
-                                continue;
-
-                            a_crossbirth3[s][sp][spp] = traj.currentState[s]
-                                    * param.getCrossBirthRates3()[interval][s][sp][spp];
-                            a_tot += a_crossbirth3[s][sp][spp];
-                        }
-                    }
-                }
-            }
-
-            double tnew;
-            if (a_tot > 0)
-                tnew = t + Randomizer.nextExponential(a_tot);
-            else
-                tnew = Double.POSITIVE_INFINITY;
-
-            if (param.getIntervalEndTimes()[interval] <= simulationTime
-                    && tnew > param.getIntervalEndTimes()[interval]
-                    && t < param.getIntervalEndTimes()[interval]) {
-                t = param.getIntervalEndTimes()[interval];
-
-                for (int s=0; s<nTypes; s++) {
-                    double rho = param.getRhoValues()[interval][s];
-                    if (rho > 0) {
-                        int nRhoSamp = nextBinomial((int)Math.round(traj.currentState[s]), rho);
-                        int nRemoveSamp = nextBinomial(nRhoSamp, param.getRemovalProbs()[interval][s]);
-                        int nNoRemoveSamp = nRhoSamp - nRemoveSamp;
-
-                        if (nRhoSamp > 0)
-                            traj.addEvent(new SamplingEvent(t, s, nRemoveSamp, nNoRemoveSamp));
-                    }
-                }
-
-                if (t == simulationTime) {
-                    break;
-                } else {
-                    interval += 1;
-                    continue;
-                }
-            }
-
-            if (tnew > simulationTime)
-                break;
-
-            t = tnew;
-
-            u = Randomizer.nextDouble()*a_tot;
-
-            TrajectoryEvent event = null;
-            for (int s=0; s<nTypes; s++) {
-
-                if (u < a_birth[s]) {
-                    event = new BirthEvent(t, s);
-                    break;
-                }
-                u -= a_birth[s];
-
-                if (u < a_death[s]) {
-                    event = new DeathEvent(t, s);
-                    break;
-                }
-                u -= a_death[s];
-
-                if (u < a_sampling[s]) {
-                    if (u < param.getRemovalProbs()[interval][s]*a_sampling[s])
-                        event = new SamplingEvent(t, s, 1, 0);
-                    else
-                        event = new SamplingEvent(t, s, 0, 1);
-                    break;
-                }
-                u -= a_sampling[s];
-
-                for (int sp=0; sp<nTypes; sp++) {
-                    if (sp == s)
-                        continue;
-
-                    if (u < a_migration[s][sp]) {
-                        event = new MigrationEvent(t, s, sp);
-                        break;
-                    }
-                    u -= a_migration[s][sp];
-
-                    if (u < a_crossbirth2[s][sp]) {
-                        event = new CrossBirthEvent2(t, s, sp);
-                        break;
-                    }
-                    u -= a_crossbirth2[s][sp];
-
-                    if (param.hasCrossBirthRates3()) {
-                        for (int spp=0; spp<=sp; spp++) {
-                            if (spp == s)
-                                continue;
-
-                            if (u < a_crossbirth3[s][sp][spp]) {
-                                event = new CrossBirthEvent3(t, s, sp, spp);
-                                break;
-                            }
-                            u -= a_crossbirth3[s][sp][spp];
-                        }
-                        if (event != null)
-                            break;
-                    }
-                }
-
-                if (event != null)
-                    break;
-            }
-
-            if (event == null)
-                throw new IllegalStateException("Event selection loop fell through.");
-
-            traj.addEvent(event);
-        }
-
-        return traj;
-    }
-
     /**
      * Simulate tree by iterating over simulated trajectory events
      * in reverse.
@@ -314,7 +147,8 @@ public class SimulatedTree extends Tree {
             activeLineages.add(new ArrayList<>());
 
         NodeFactory nodeFactory = new NodeFactory(traj.getFinalSampleTime(), traj.getSampleCount(),
-                typeLabel, param.getTypeSet());
+                typeLabel, parameterizationInput.get().getTypeSet(),
+                appendTypesToTaxonNamesInput.get());
 
         for (TrajectoryEvent event : events) {
                 event.simulateTreeEvent(state, activeLineages, nodeFactory, simulateUntypedTree);

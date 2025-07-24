@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Tim Vaughan (tgvaughan@gmail.com)
+ * Copyright (C) 2017-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,11 +27,9 @@ import beast.base.inference.parameter.RealParameter;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.GuessPatternDialog;
 import beastfx.app.inputeditor.InputEditor;
+import beastfx.app.util.Alert;
 import beastfx.app.util.FXUtils;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
@@ -41,14 +39,13 @@ import java.util.stream.Collectors;
 
 /**
  * BEAUti input editor for type traits.
- *
- * @author Tim Vaughan (tgvaughan@gmail.com)
  */
 public class TypeTraitSetInputEditor extends InputEditor.Base {
 
     TableView<TaxonEntry> typeTable;
     TraitSet traitSet;
     TaxonSet taxonSet;
+    TypeSet typeSet;
 
     public static class TaxonEntry {
         String taxon;
@@ -103,6 +100,15 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
 
         traitSet = (TraitSet)input.get();
         taxonSet = traitSet.taxaInput.get();
+
+        for (BEASTInterface obj : traitSet.getOutputs()) {
+            if (obj instanceof TypeSet) {
+                typeSet = (TypeSet) obj;
+                break;
+            }
+        }
+        if (typeSet == null)
+            throw new RuntimeException("TypeTraitSetInputEditor: Could not find typeSet in outputs.");
 
         typeTable = new TableView<>();
         typeTable.setEditable(true);
@@ -171,20 +177,40 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         });
 
         Button clearButton = new Button("Clear");
+        TextField clearValue = new TextField("NOT_SET");
         clearButton.setOnAction(e -> {
             StringBuilder traitStringBuilder = new StringBuilder();
             for (String taxonName : taxonSet.asStringList()) {
                 if (!traitStringBuilder.isEmpty())
                     traitStringBuilder.append(",");
-                traitStringBuilder.append(taxonName).append("=0");
+                traitStringBuilder.append(taxonName).append("=").append(clearValue.getText());
             }
             traitSet.traitsInput.setValue(traitStringBuilder.toString(), traitSet);
+            if (clearValue.getText()==null || clearValue.getText().trim().isEmpty()) {
+                Alert.showMessageDialog(this, "Cannot clear to an empty type value. Use \"?\" to specify unknown types.");
+                clearValue.setText("NOT_SET");
+                return;
+            }
+            if (clearValue.getText().equals("?") && (typeSet.valueInput.get() == null
+                    || typeSet.valueInput.get().isEmpty())) {
+                Alert.showMessageDialog(this, "Specify at least one \"additional type\" before setting all types to unknown.");
+                return;
+            }
+
             try {
                 traitSet.initAndValidate();
             } catch (Exception ex) {
                 System.err.println("Error clearing type trait.");
                 ex.printStackTrace();
             }
+
+            refreshPanel();
+        });
+
+        TextField additionalTypes = new TextField(typeSet.valueInput.get());
+        additionalTypes.setOnAction(e -> {
+            typeSet.valueInput.setValue(additionalTypes.getText(), typeSet);
+            typeSet.initAndValidate();
 
             refreshPanel();
         });
@@ -196,16 +222,26 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
                 BorderStrokeStyle.SOLID, null, null)));
 
         HBox boxHoriz = FXUtils.newHBox();
+        boxHoriz.setSpacing(10);
         boxHoriz.getChildren().add(guessButton);
         boxHoriz.getChildren().add(clearButton);
+        boxHoriz.getChildren().add(new Label("Value when cleared:"));
+        boxHoriz.getChildren().add(clearValue);
         boxVert.getChildren().add(boxHoriz);
         boxVert.getChildren().add(typeTable);
+
+        boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(new Label("Additional types (comma-delimited): "));
+        boxHoriz.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
+                BorderStrokeStyle.SOLID, null, null)));
+        boxHoriz.getChildren().add(additionalTypes);
+        boxVert.getChildren().add(boxHoriz);
 
         boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(new Label("Type index key: "));
 
         StringBuilder typeIndexKeySB = new StringBuilder();
-        TypeSet typeSet = new TypeSet(traitSet.getTaxonValues());
+
         for (int i=0; i<typeSet.getNTypes(); i++) {
             if (i > 0)
                 typeIndexKeySB.append("\n");

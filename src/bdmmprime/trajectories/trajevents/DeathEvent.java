@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,5 +62,15 @@ public class DeathEvent extends TrajectoryEvent {
     @Override
     public String getEventCode(int nTypes) {
         return "D\t" + type + "\tNA\t" + multiplicity;
+    }
+
+    @Override
+    public String getEventFingerprint() {
+        return "D\t" + type + "\tNA";
+    }
+
+    @Override
+    public DeathEvent copy() {
+        return new DeathEvent(time, type, multiplicity);
     }
 }

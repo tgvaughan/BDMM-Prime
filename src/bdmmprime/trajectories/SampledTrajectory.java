@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,9 @@ import bdmmprime.mapping.TypeMappedTree;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.*;
 import bdmmprime.util.Utils;
+import beast.base.core.*;
 import beast.base.inference.CalculationNode;
-import beast.base.core.Function;
-import beast.base.core.Input;
-import beast.base.core.Loggable;
 import beast.base.inference.parameter.RealParameter;
-import beast.base.core.Log;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 
@@ -39,6 +36,10 @@ import java.util.List;
 
 import static org.apache.commons.math.special.Gamma.logGamma;
 
+@Citation(value = """
+        Vaughan and Stadler, \"Bayesian phylodynamic inference of multi-type population trajectories using genomic data\"
+        Molecular Biology and Evolution 42:msaf130 (2025), doi:10.1093/molbev/msaf130."""
+        , DOI = "10.1093/molbev/msaf130", year = 2025, firstAuthorSurname = "Vaughan")
 public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public Input<Tree> mappedTreeInput = new Input<>("typeMappedTree",
@@ -128,7 +129,12 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
 
     public double logTreeProbEstimate;
 
+    private long calculationTime;
+
     public Trajectory sampleTrajectory() {
+        // Record start time of calculation for performance monitoring
+        calculationTime = System.currentTimeMillis();
+
         logTreeProbEstimate = 0.0;
 
         List<ObservedEvent> observedEvents = getObservedEventList(mappedTree);
@@ -202,6 +208,10 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             t = observedEvent.time;
         }
 
+
+        // Store duration of calculation for performance monitoring
+        calculationTime = System.currentTimeMillis() - calculationTime;
+
         // WLOG choose 0th particle as the particle to return:
 
         return particles[0].trajectory;
@@ -236,6 +246,16 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         }
 
         return logTreeProbEstimate - logGamma(mappedTree.getLeafNodeCount() + 1);
+    }
+
+    /**
+     * Return the duration in milliseconds of the previous trajectory sampling
+     * calculation.  This is used for performance monitoring.
+     *
+     * @return duration of previous trajectory sampling calculation
+     */
+    public long getPrevCalculationTime() {
+        return calculationTime;
     }
 
     /**
@@ -360,7 +380,8 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         if (traj==null)
             Trajectory.logEmpty(out);
         else
-            Trajectory.log(sample, traj.getStateList(), traj.events, out);
+            Trajectory.log(sample, traj.getStateList(), traj.events,
+                    param.getTotalProcessLength(), out);
     }
 
     @Override

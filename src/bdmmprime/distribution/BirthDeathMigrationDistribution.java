@@ -12,6 +12,8 @@ import beast.base.inference.State;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
+import org.apache.commons.math3.exception.MathIllegalNumberException;
+import org.apache.commons.math3.exception.MathIllegalStateException;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -187,6 +189,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         Node root = tree.getRoot();
 
+        if (!parameterization.valuesAreValid()) {
+            if (savePartialLikelihoodsToFileInput.get() != null)
+                Log.err("One or more birth-death parameters out of bounds.");
+            logP = Double.NEGATIVE_INFINITY;
+            return logP;
+        }
+
         if (Utils.lessThanWithPrecision(parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()), 0)) {
             if (savePartialLikelihoodsToFileInput.get() != null)
                 Log.err("Tree MRCA older than start of process.");
@@ -217,7 +226,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         updateParallelizationThreshold();
 
-        updateInitialConditionsForP();
+        try {
+            updateInitialConditionsForP();
+        } catch (MathIllegalStateException | MathIllegalNumberException ex) {
+            Log.warning("Warning: BDMM-Prime tree prior integration failure.");
+            logP = Double.NEGATIVE_INFINITY;
+            return logP;
+        }
+
 
         double conditionDensity = 0.0;
         double[] extinctionProb = pInitialConditions[pInitialConditions.length - 1];

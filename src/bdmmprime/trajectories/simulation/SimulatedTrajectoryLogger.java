@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2025 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,23 @@
 package bdmmprime.trajectories.simulation;
 
 import bdmmprime.trajectories.Trajectory;
-import beast.base.core.BEASTObject;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
+import beast.base.inference.CalculationNode;
 
 import java.io.PrintStream;
 
-public class SimulatedTrajectoryLogger extends BEASTObject implements Loggable {
+public class SimulatedTrajectoryLogger extends CalculationNode implements Loggable {
 
     public Input<SimulatedTree> simulatedTreeInput = new Input<>("simulatedTree",
             "Simulated tree whose trajectory you want to log.",
             Input.Validate.REQUIRED);
+
+    public Input<Double> discretizationTimeStepInput = new Input<>(
+            "discretizationTimeStep",
+            "If provided, trajectory event sequence will be coarse-grained " +
+                    "using a time grid with this spacing. Useful for reducing size of " +
+                    "trajectory log files.");
 
     SimulatedTree simulatedTree;
 
@@ -46,10 +52,18 @@ public class SimulatedTrajectoryLogger extends BEASTObject implements Loggable {
     public void log(long sample, PrintStream out) {
         if (simulatedTree.traj == null)
             Trajectory.logEmpty(out);
-        else
-            Trajectory.log(sample, simulatedTree.traj.getStateList(),
-                    simulatedTree.traj.events,
+        else {
+            Trajectory trajTolog;
+            if (discretizationTimeStepInput.get() != null)
+                trajTolog = simulatedTree.traj.getDiscretized(discretizationTimeStepInput.get());
+            else
+                trajTolog = simulatedTree.traj;
+
+            Trajectory.log(sample, trajTolog.getStateList(),
+                    trajTolog.events,
+                    simulatedTree.parameterizationInput.get().getTotalProcessLength(),
                     out);
+        }
     }
 
     @Override

@@ -6,7 +6,7 @@ import beast.base.inference.CalculationNode;
 import java.io.PrintStream;
 
 /**
- * @author Tim Vaughan <tgvaughan@gmail.com>
+ * @author ETH Zurich <tgvaughan@gmail.com>
  */
 @Description("A Function representing a number of elements of another Function.")
 public class Slice extends CalculationNode implements Function, Loggable {

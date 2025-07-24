@@ -11,9 +11,8 @@
     <property name="local-beast-source-root" location="../beast2"/>
     <property name="local-beastfx-source-root" location="../BeastFX"/>
 
-    <!-- BEAST 2 currently uses Java 1.8 -->
-    <property name="sourceVersion" value="17"/>
-    <property name="targetVersion" value="17"/>
+    <!-- BEAST 2 currently uses Java 17 language features -->
+    <property name="releaseVersion" value="17"/>
 
     <!-- Directories necessary for all BEAST 2 packages -->
     <property name="doc" location="doc"/>
@@ -97,8 +96,7 @@
       <javac 
           srcdir="${beast-source-root}/src"
           destdir="${build-beast}"
-          source="${sourceVersion}"
-          target="${targetVersion}"
+          release="${releaseVersion}"
           encoding="UTF-8"
           includeantruntime="false"
           fork="yes">
@@ -110,8 +108,7 @@
       <javac 
           srcdir="${beast-source-root}/test"
           destdir="${build-beast}"
-          source="${sourceVersion}"
-          target="${targetVersion}"
+          release="${releaseVersion}"
           encoding="UTF-8"
           includeantruntime="false"
           fork="yes">
@@ -158,8 +155,7 @@
         <javac 
             srcdir="${beastfx-source-root}/src"
             destdir="${build-beastfx}"
-            source="${sourceVersion}"
-            target="${targetVersion}"
+            release="${releaseVersion}"
             includeantruntime="false"
             fork="yes">
             <classpath>
@@ -192,7 +188,7 @@
 
     <!-- Compile -->
     <target name="compile" depends="build-beast,build-beastfx,install-dependencies">
-      <javac target="${targetVersion}" source="${sourceVersion}"
+      <javac release="${releaseVersion}"
              srcdir="${src}" destdir="${build}"
              includeantruntime="false"
              encoding="UTF-8"
@@ -226,7 +222,7 @@
 
     <!-- Compile unit tests -->
     <target name="compile-test" depends="init-test,compile,copy-resources">
-      <javac target="${targetVersion}" source="${sourceVersion}"
+      <javac release="${releaseVersion}"
              srcdir="${test}" destdir="${build-test}"
              includeantruntime="false"
              encoding="UTF-8"
@@ -255,6 +251,7 @@
                 <fileset dir="${lib}" includes="**/*.jar" erroronmissingdir="false"/>
                 <fileset dir="${beast-source-root}/lib" includes="**/*.jar"/>
                 <pathelement path="${build-beast}" />
+                <pathelement path="${build-beastfx}" />
                 <fileset dir="deps/SA" includes="**/*.jar"/>
                 <fileset dir="deps/BEASTLabs" includes="**/*.jar"/>
             </classpath>

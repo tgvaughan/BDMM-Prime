@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ import java.util.List;
 public class SamplingEvent extends TrajectoryEvent {
 
     int type;
-    int nRemoveSamp, nNoRemoveSamp;
+    public int nRemoveSamp, nNoRemoveSamp;
 
     public SamplingEvent(double time, int type, int nRemoveSamp, int nNoRemoveSamp) {
         this.time = time;
@@ -99,5 +99,15 @@ public class SamplingEvent extends TrajectoryEvent {
     @Override
     public String getEventCode(int nTypes) {
         return "S\t" + type + "\tNA\t" + (nRemoveSamp + nNoRemoveSamp);
+    }
+
+    @Override
+    public String getEventFingerprint() {
+        return "S\t" + type + "\tNA\t" + (nRemoveSamp + nNoRemoveSamp);
+    }
+
+    @Override
+    public SamplingEvent copy() {
+        return new SamplingEvent(time, type, nRemoveSamp, nNoRemoveSamp);
     }
 }

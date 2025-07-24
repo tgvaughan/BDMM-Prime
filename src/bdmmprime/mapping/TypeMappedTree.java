@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 Tim Vaughan
+ * Copyright (C) 2019-2024 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@ package bdmmprime.mapping;
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
+import beast.base.core.Citation;
 import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
@@ -35,7 +36,7 @@ import java.io.PrintStream;
 
 /**
  * <p>An instance of this class is a tree equivalent to untypedTree but with
- * ancestral type changes mapped according the the given multi-type birth-death
+ * ancestral type changes mapped according to the given multi-type birth-death
  * model.</p>
  *
  * <p>Note that there is a degree of duplication between the code in this class
@@ -61,6 +62,10 @@ import java.io.PrintStream;
  * Events which _are_ coincident are handled as part of the ODE boundary
  * condition calculations done at each node.</p>
  */
+@Citation(value = """
+        Vaughan and Stadler, \"Bayesian phylodynamic inference of multi-type population trajectories using genomic data\"
+        Molecular Biology and Evolution 42:msaf130 (2025), doi:10.1093/molbev/msaf130."""
+        , DOI = "10.1093/molbev/msaf130", year = 2025, firstAuthorSurname = "Vaughan")
 public class TypeMappedTree extends Tree {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
@@ -110,6 +115,8 @@ public class TypeMappedTree extends Tree {
     double[] geScaleFactors;
     private FirstOrderIntegrator odeIntegrator;
 
+    private long calculationTime;
+
     /**
      * Parameters for backward-time numerical integration.
      */
@@ -148,6 +155,10 @@ public class TypeMappedTree extends Tree {
      * Called both during initialization and at when logging.
      */
     private void doStochasticMapping() {
+
+        // Record time at start of calculation
+        calculationTime = System.currentTimeMillis();
+
          // Prepare the backward-time integrator!
         odeIntegrator = new DormandPrince54Integrator(
                 param.getTotalProcessLength()*BACKWARD_INTEGRATION_MIN_STEP,
@@ -198,6 +209,9 @@ public class TypeMappedTree extends Tree {
         numberInternalNodesOnSubtree(typedRoot, untypedTree.getLeafNodeCount());
 
         assignFromWithoutID(new Tree(typedRoot));
+
+        // Store wall time taken by calculation for performance metrics
+        calculationTime = System.currentTimeMillis() - calculationTime;
     }
 
     /**
@@ -391,32 +405,53 @@ public class TypeMappedTree extends Tree {
         }
 
         int leafType = getLeafType(leafNode);
+        boolean leafTypeKnown = (leafType>=0);
 
         if (nodeIsRhoSampled(leafNode)) {
 
             int rhoSamplingInterval = getRhoSamplingInterval(leafNode);
 
-            for (int type = 0; type< param.getNTypes(); type++) {
-                double rho = param.getRhoValues()[rhoSamplingInterval][type];
-                y[type] *= 1.0 - rho;
-                y[type + param.getNTypes()] =
-                        type==leafType
-                                ? rho
-                                : 0.0;
+            if (leafTypeKnown) {
+                // Known leaf type
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                    y[type] *= 1.0 - rho;
+                    y[type + param.getNTypes()] =
+                            type == leafType
+                                    ? rho
+                                    : 0.0;
+                }
+            } else {
+                // Unknown tip type
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                    y[type] *= 1.0 - rho;
+                    y[type + param.getNTypes()] = rho;
+                }
             }
 
         } else {
 
             int nodeInterval = param.getNodeIntervalIndex(leafNode, finalSampleOffset.getArrayValue());
 
-            for (int type = 0; type< param.getNTypes(); type++) {
-                double psi = param.getSamplingRates()[nodeInterval][type];
-                double r = param.getRemovalProbs()[nodeInterval][type];
+            if (leafTypeKnown) {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double psi = param.getSamplingRates()[nodeInterval][type];
+                    double r = param.getRemovalProbs()[nodeInterval][type];
 
-                y[type + param.getNTypes()] =
-                        type==leafType
-                                ? psi*(r + (1.0-r)*y[type])
-                                : 0.0;
+                    y[type + param.getNTypes()] =
+                            type == leafType
+                                    ? psi * (r + (1.0 - r) * y[type])
+                                    : 0.0;
+                }
+            } else {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double psi = param.getSamplingRates()[nodeInterval][type];
+                    double r = param.getRemovalProbs()[nodeInterval][type];
+
+                    y[type + param.getNTypes()] =
+                            psi * (r + (1.0 - r) * y[type]);
+                }
             }
         }
 
@@ -433,34 +468,54 @@ public class TypeMappedTree extends Tree {
         double[] y = backwardsIntegrateSubtree(saNode.getNonDirectAncestorChild(), saNodeTime);
 
         int saType = getLeafType(saNode.getDirectAncestorChild());
+        boolean saTypeKnown = (saType>=0);
 
         if (nodeIsRhoSampled(saNode.getDirectAncestorChild())) {
 
             int rhoSamplingInterval = getRhoSamplingInterval(saNode);
 
-            for (int type = 0; type< param.getNTypes(); type++) {
-                double rho = param.getRhoValues()[rhoSamplingInterval][type];
-                double r = param.getRemovalProbs()[rhoSamplingInterval][type];
+            if (saTypeKnown) {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                    double r = param.getRemovalProbs()[rhoSamplingInterval][type];
 
-                y[type] *= 1.0 - rho;
-                y[type+ param.getNTypes()] *=
-                        type==saType
-                                ? rho*(1-r)
-                                : 0.0;
+                    y[type] *= 1.0 - rho;
+                    y[type + param.getNTypes()] *=
+                            type == saType
+                                    ? rho * (1 - r)
+                                    : 0.0;
+                }
+            } else {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double rho = param.getRhoValues()[rhoSamplingInterval][type];
+                    double r = param.getRemovalProbs()[rhoSamplingInterval][type];
+
+                    y[type] *= 1.0 - rho;
+                    y[type + param.getNTypes()] *= rho * (1 - r);
+                }
             }
 
         } else {
 
             int nodeInterval = param.getNodeIntervalIndex(saNode, finalSampleOffset.getArrayValue());
 
-            for (int type = 0; type< param.getNTypes(); type++) {
-                double psi = param.getSamplingRates()[nodeInterval][type];
-                double r = param.getRemovalProbs()[nodeInterval][type];
+            if (saTypeKnown) {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double psi = param.getSamplingRates()[nodeInterval][type];
+                    double r = param.getRemovalProbs()[nodeInterval][type];
 
-                y[type + param.getNTypes()] *=
-                        type==saType
-                                ? psi*(1-r)
-                                : 0.0;
+                    y[type + param.getNTypes()] *=
+                            type == saType
+                                    ? psi * (1 - r)
+                                    : 0.0;
+                }
+            } else {
+                for (int type = 0; type < param.getNTypes(); type++) {
+                    double psi = param.getSamplingRates()[nodeInterval][type];
+                    double r = param.getRemovalProbs()[nodeInterval][type];
+
+                    y[type + param.getNTypes()] *= psi * (1 - r);
+                }
             }
         }
 
@@ -883,6 +938,16 @@ public class TypeMappedTree extends Tree {
 
         doStochasticMapping();
         lastRemapSample = sample;
+    }
+
+    /**
+     * Return the duration in milliseconds of the previous stochastic
+     * mapping calculation.  Used for performance monitoring.
+     *
+     * @return duration of previous stochastic mapping calculation
+     */
+    public long getPrevCalculationTime() {
+        return calculationTime;
     }
 
     @Override
