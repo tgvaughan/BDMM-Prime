@@ -14,6 +14,7 @@ import beast.base.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
 import org.apache.commons.math3.exception.MathIllegalNumberException;
 import org.apache.commons.math3.exception.MathIllegalStateException;
+import org.apache.commons.math3.ode.ContinuousOutputModel;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -99,6 +100,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "If provided, the name of a file to which a tree annotated with partial likelihoods " +
                     "will be written.  This is useful for debugging the cause of chain initialization failure.");
 
+    public Input<Boolean> storeIntegrationResultsInput = new Input<>("storeIntegrationResults",
+            "If true, store results of ge(t) integration for use " +
+                    "by other models.", false);
+
     private int[] nodeStates;
 
     private final boolean debug = false;
@@ -122,6 +127,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private TreeInterface tree;
 
     private int originalLeafCount;
+
+    protected boolean storeIntegrationResults;
+    protected ContinuousOutputModel[] integrationResults;
 
     @Override
     public void initAndValidate() {
@@ -179,6 +187,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         originalLeafCount = tree.getLeafNodeCount();
+
+        storeIntegrationResults = storeIntegrationResultsInput.get();
+        if (storeIntegrationResults)
+            integrationResults = new ContinuousOutputModel[tree.getNodeCount()];
     }
 
     @Override
@@ -742,6 +754,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // contains the factor by which the numbers were multiplied.
         ScaledNumbers pgScaled = state.getScaledState();
 
+        if (storeIntegrationResults)
+            system.setContinuousOutputModel(new ContinuousOutputModel());
+
         double thisTime = parameterization.getNodeTime(baseNode, finalSampleOffset.getArrayValue());
         int thisInterval = parameterization.getIntervalIndex(thisTime);
         int endInterval = parameterization.getIntervalIndex(tTop);
@@ -781,6 +796,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
+
+        if (storeIntegrationResults)
+            integrationResults[baseNode.getNr()] = system.getContinuousOutputModel();
     }
 
 

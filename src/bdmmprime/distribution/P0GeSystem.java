@@ -3,6 +3,7 @@ package bdmmprime.distribution;
 
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
+import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
@@ -14,12 +15,24 @@ import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
 public class P0GeSystem extends P0System {
 
+    boolean storeIntegrationResults;
+    ContinuousOutputModel continuousOutputModel;
+
 	public P0GeSystem(Parameterization parameterization,
                       double absoluteTolerance,
                       double relativeTolerance) {
 
 	    super(parameterization, absoluteTolerance, relativeTolerance);
 	}
+
+    public void setContinuousOutputModel(ContinuousOutputModel com) {
+        storeIntegrationResults = true;
+        continuousOutputModel = com;
+    }
+
+    public ContinuousOutputModel getContinuousOutputModel() {
+        return continuousOutputModel;
+    }
 
 	@Override
 	public int getDimension() {
@@ -71,6 +84,8 @@ public class P0GeSystem extends P0System {
 		}
 	}
 
+
+
     /**
      * Perform the integration of PG with initial conds in pgScaled between to and from
      * Use an adaptive-step-size integrator
@@ -120,6 +135,8 @@ public class P0GeSystem extends P0System {
             FirstOrderIntegrator integrator = new DormandPrince54Integrator(
                     integrationMinStep, integrationMaxStep,
                     absoluteToleranceVector, relativeToleranceVector);
+            if (storeIntegrationResults)
+                integrator.addStepHandler(continuousOutputModel);
             integrator.integrate(this, tStart, pgScaled.getEquation(), tEnd, integrationResults); // perform the integration step
 
             double[] pConditions = new double[n];
