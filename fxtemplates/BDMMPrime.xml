@@ -64,6 +64,7 @@
                         bdmmprime.distribution.BirthDeathMigrationDistribution.conditionOnRoot,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.treeIntervals,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.savePartialLikelihoodsToFile,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.storeIntegrationResults,
                         bdmmprime.parameterization.CanonicalParameterization.typeSet,
                         bdmmprime.parameterization.SkylineVectorParameter.processLength,
                         bdmmprime.parameterization.SkylineMatrixParameter.processLength,
