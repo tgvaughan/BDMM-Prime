@@ -100,8 +100,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "If provided, the name of a file to which a tree annotated with partial likelihoods " +
                     "will be written.  This is useful for debugging the cause of chain initialization failure.");
 
-    public Input<Boolean> storeIntegrationResultsInput = new Input<>("storeIntegrationResults",
-            "If true, store results of ge(t) integration for use " +
+    public Input<Boolean> saveIntegrationResultsInput = new Input<>("storeIntegrationResults",
+            "If true, save results of ge(t) integration for use " +
                     "by other models.", false);
 
     private int[] nodeStates;
@@ -128,8 +128,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     private int originalLeafCount;
 
-    protected boolean storeIntegrationResults;
-    protected ContinuousOutputModel[] integrationResults;
+    protected boolean saveIntegrationResults;
+    protected ContinuousOutputModel[] integrationResults, storedIntegrationResults;
 
     @Override
     public void initAndValidate() {
@@ -188,9 +188,26 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         originalLeafCount = tree.getLeafNodeCount();
 
-        storeIntegrationResults = storeIntegrationResultsInput.get();
-        if (storeIntegrationResults)
+        saveIntegrationResults = saveIntegrationResultsInput.get();
+        if (saveIntegrationResults) {
             integrationResults = new ContinuousOutputModel[tree.getNodeCount()];
+            storedIntegrationResults = new ContinuousOutputModel[tree.getNodeCount()];
+        }
+    }
+
+    /**
+     * Retrieve most recently computed integration results as an array
+     * of ContinuousOutputModel objects, where the index refers to the
+     * node number at the base of the edge for which a given COM object
+     * corresponds.
+     *
+     * @return Array of ContinousOutputModel instances
+     */
+    public ContinuousOutputModel[] getIntegrationResults() {
+        if (saveIntegrationResults)
+            throw new IllegalArgumentException("Integration results requested " +
+                    "but storeIntegrationResults input is false.");
+        return integrationResults;
     }
 
     @Override
@@ -754,7 +771,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // contains the factor by which the numbers were multiplied.
         ScaledNumbers pgScaled = state.getScaledState();
 
-        if (storeIntegrationResults)
+        if (saveIntegrationResults)
             system.setContinuousOutputModel(new ContinuousOutputModel());
 
         double thisTime = parameterization.getNodeTime(baseNode, finalSampleOffset.getArrayValue());
@@ -797,7 +814,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // 'unscale' values in integrationResults so as to retrieve accurate values after the integration.
         state.setFromScaledState(pgScaled.getEquation(), pgScaled.getScalingFactor());
 
-        if (storeIntegrationResults)
+        if (saveIntegrationResults)
             integrationResults[baseNode.getNr()] = system.getContinuousOutputModel();
     }
 
@@ -1133,6 +1150,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         System.arraycopy(startTypePosteriorProbs, 0,
                 storedStartTypePosteriorProbs, 0,
                 parameterization.getNTypes());
+
+        if (saveIntegrationResults) {
+            System.arraycopy(integrationResults, 0,
+                    storedIntegrationResults, 0,
+                    integrationResults.length);
+        }
     }
 
     @Override
@@ -1142,6 +1165,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         double[] tmp = startTypePosteriorProbs;
         startTypePosteriorProbs = storedStartTypePosteriorProbs;
         storedStartTypePosteriorProbs = tmp;
+
+        if (saveIntegrationResults) {
+            ContinuousOutputModel[] tmpIR = integrationResults;
+            integrationResults = storedIntegrationResults;
+            storedIntegrationResults = tmpIR;
+        }
     }
 
     /*
