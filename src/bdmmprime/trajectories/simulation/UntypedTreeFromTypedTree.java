@@ -21,6 +21,8 @@ import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 
+import java.io.PrintStream;
+
 public class UntypedTreeFromTypedTree extends Tree {
 
     public Input<Tree> typedTreeInput = new Input<>("typedTree",
@@ -73,6 +75,16 @@ public class UntypedTreeFromTypedTree extends Tree {
         }
 
         return newCladeRoot;
+    }
+
+    @Override
+    public void log(long sample, PrintStream out) {
+        Tree tree = (Tree) getCurrent();
+        out.print("tree STATE_" + sample + " = ");
+        final int[] dummy = new int[1];
+        final String newick = tree.getRoot().toSortedNewick(new int[1], true);
+        out.print(newick);
+        out.print(";");
     }
 }
 

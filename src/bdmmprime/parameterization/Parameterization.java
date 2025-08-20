@@ -49,7 +49,7 @@ public abstract class Parameterization extends CalculationNode {
             "Time between start of process and the end.",
             Input.Validate.REQUIRED);
 
-    private boolean dirty;
+    protected boolean dirty;
 
     private SortedSet<Double> intervalEndTimesSet = new TreeSet<>(Utils::precisionLimitedComparator);
 
@@ -64,14 +64,14 @@ public abstract class Parameterization extends CalculationNode {
     private double[][][] storedMigRates, storedCrossBirthRates2;
     private double[][][][] storedCrossBirthRates3;
 
-    final static double[] EMPTY_TIME_ARRAY = new double[0];
-    double[] ZERO_VALUE_ARRAY;
-    double[][] ZERO_VALUE_ARRAY2;
-    double[][][] ZERO_VALUE_ARRAY3;
+    protected final static double[] EMPTY_TIME_ARRAY = new double[0];
+    protected double[] ZERO_VALUE_ARRAY;
+    protected double[][] ZERO_VALUE_ARRAY2;
+    protected double[][][] ZERO_VALUE_ARRAY3;
 
-    TypeSet typeSet;
+    protected TypeSet typeSet;
 
-    int nTypes;
+    protected int nTypes;
 
     @Override
     public void initAndValidate() {
@@ -117,34 +117,11 @@ public abstract class Parameterization extends CalculationNode {
         return processLengthInput.get().getArrayValue();
     }
 
-    private void update() {
+    protected void update() {
         if (!dirty)
             return;
 
         updateModelEventTimes();
-
-        if (birthRates == null) {
-            validateParameterTypeCounts();
-
-            birthRates = new double[intervalEndTimes.length][nTypes];
-            migRates = new double[intervalEndTimes.length][nTypes][nTypes];
-            crossBirthRates2 = new double[intervalEndTimes.length][nTypes][nTypes];
-            crossBirthRates3 = new double[intervalEndTimes.length][nTypes][nTypes][nTypes];
-            deathRates = new double[intervalEndTimes.length][nTypes];
-            samplingRates = new double[intervalEndTimes.length][nTypes];
-            removalProbs = new double[intervalEndTimes.length][nTypes];
-            rhoValues = new double[intervalEndTimes.length][nTypes];
-
-            storedBirthRates = new double[intervalEndTimes.length][nTypes];
-            storedMigRates = new double[intervalEndTimes.length][nTypes][nTypes];
-            storedCrossBirthRates2 = new double[intervalEndTimes.length][nTypes][nTypes];
-            storedCrossBirthRates3 = new double[intervalEndTimes.length][nTypes][nTypes][nTypes];
-            storedDeathRates = new double[intervalEndTimes.length][nTypes];
-            storedSamplingRates = new double[intervalEndTimes.length][nTypes];
-            storedRemovalProbs = new double[intervalEndTimes.length][nTypes];
-            storedRhoValues = new double[intervalEndTimes.length][nTypes];
-        }
-
         updateValues();
 
         dirty = false;
@@ -161,7 +138,6 @@ public abstract class Parameterization extends CalculationNode {
     private void updateModelEventTimes() {
 
         intervalEndTimesSet.clear();
-
 
         addTimes(getBirthRateChangeTimes());
         addTimes(getDeathRateChangeTimes());
@@ -220,6 +196,28 @@ public abstract class Parameterization extends CalculationNode {
 
     void updateValues() {
 
+        if (birthRates == null) {
+            validateParameterTypeCounts();
+
+            birthRates = new double[intervalEndTimes.length][nTypes];
+            migRates = new double[intervalEndTimes.length][nTypes][nTypes];
+            crossBirthRates2 = new double[intervalEndTimes.length][nTypes][nTypes];
+            crossBirthRates3 = new double[intervalEndTimes.length][nTypes][nTypes][nTypes];
+            deathRates = new double[intervalEndTimes.length][nTypes];
+            samplingRates = new double[intervalEndTimes.length][nTypes];
+            removalProbs = new double[intervalEndTimes.length][nTypes];
+            rhoValues = new double[intervalEndTimes.length][nTypes];
+
+            storedBirthRates = new double[intervalEndTimes.length][nTypes];
+            storedMigRates = new double[intervalEndTimes.length][nTypes][nTypes];
+            storedCrossBirthRates2 = new double[intervalEndTimes.length][nTypes][nTypes];
+            storedCrossBirthRates3 = new double[intervalEndTimes.length][nTypes][nTypes][nTypes];
+            storedDeathRates = new double[intervalEndTimes.length][nTypes];
+            storedSamplingRates = new double[intervalEndTimes.length][nTypes];
+            storedRemovalProbs = new double[intervalEndTimes.length][nTypes];
+            storedRhoValues = new double[intervalEndTimes.length][nTypes];
+        }
+
         for (int interval = 0; interval < intervalEndTimes.length; interval++) {
 
             double t = intervalEndTimes[interval];
@@ -229,13 +227,15 @@ public abstract class Parameterization extends CalculationNode {
             System.arraycopy(getRemovalProbValues(t), 0, removalProbs[interval], 0, nTypes);
             System.arraycopy(getRhoValues(t), 0, rhoValues[interval], 0, nTypes);
 
-            double[][] migRateMatrix = getMigRateValues(t);
-            double[][] crossBirthRate2Matrix = getCrossBirthRate2Values(t);
-            double[][][] crossBirthRate3Matrix = getCrossBirthRate3Values(t);
 
             if (nTypes>1) {
-                for (int i = 0; i < nTypes; i++) {
+                double[][] migRateMatrix = getMigRateValues(t);
+                for (int i=0; i<nTypes; i++)
                     System.arraycopy(migRateMatrix[i], 0, migRates[interval][i], 0, nTypes);
+
+                double[][] crossBirthRate2Matrix = getCrossBirthRate2Values(t);
+                double[][][] crossBirthRate3Matrix = getCrossBirthRate3Values(t);
+                for (int i = 0; i < nTypes; i++) {
                     System.arraycopy(crossBirthRate2Matrix[i], 0, crossBirthRates2[interval][i], 0, nTypes);
 
                     if (crossBirthRate3Matrix != null) {
