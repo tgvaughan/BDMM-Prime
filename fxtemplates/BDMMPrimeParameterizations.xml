@@ -454,7 +454,7 @@
                         </diversificationRateAmongDemes>
                         <turnover id="turnoverSPFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
-                            <skylineValues id="turnoverFBD.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="1.0" lower="0" upper="1"/>
+                            <skylineValues id="turnoverFBD.t:$(n)" spec='beast.base.inference.parameter.RealParameter' value="0.8" lower="0" upper="1"/>
                         </turnover>
                         <migrationRate id="migrationRateSPFBD.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="originBDMMPrime.t:$(n)"/>
