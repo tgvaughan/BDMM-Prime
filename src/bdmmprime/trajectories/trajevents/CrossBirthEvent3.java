@@ -99,7 +99,7 @@ public class CrossBirthEvent3 extends TrajectoryEvent {
             } else {
                 Node parent = nodeFactory.newIntNode(parentType, time);
                 parent.addChild(child1);
-                activeLineages.get(parentType).add(child1);
+                activeLineages.get(parentType).add(parent);
             }
 
         } else if (u < p1or2) {
@@ -111,7 +111,7 @@ public class CrossBirthEvent3 extends TrajectoryEvent {
             } else {
                 Node parent = nodeFactory.newIntNode(parentType, time);
                 parent.addChild(child2);
-                activeLineages.get(parentType).add(child2);
+                activeLineages.get(parentType).add(parent);
             }
         }
     }

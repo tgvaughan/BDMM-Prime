@@ -41,7 +41,7 @@ public class NodeFactory {
     }
 
     private Node newNode(int type, double time, int nextNodeNr) {
-        Node node = new Node(String.valueOf(nextLeafNr));
+        Node node = new Node(String.valueOf(nextNodeNr));
         node.setNr(nextNodeNr);
 
         node.setHeight(origin-time);
