@@ -66,6 +66,9 @@ public class SimulatedTree extends Tree {
     public Input<String> treeFileNameInput = new Input<>("treeFileName",
             "Name of file to write simulated tree to.");
 
+    public Input<String> traitFileNameInput = new Input<>("traitFileName",
+            "Name of TSV file to save tip<->type/date mappings to.");
+
     public Input<Boolean> simulateUntypedTreeInput = new Input<>("simulateUntypedTree",
             "If true, an untyped tree will be simulated (i.e. migration events will be removed).",
             false);
@@ -126,6 +129,9 @@ public class SimulatedTree extends Tree {
             }
         }
 
+        if (traitFileNameInput.get() != null)
+            saveTipTimesAndTypes(traitFileNameInput.get());
+
         super.initAndValidate();
     }
 
@@ -174,6 +180,32 @@ public class SimulatedTree extends Tree {
             throw new IllegalStateException("Tree simulation failed.");
 
         return new Tree(root);
+    }
+
+    /**
+     * Save tip times and types to a TSV file.
+     *
+     * @param fileName name of file to create
+     */
+    public void saveTipTimesAndTypes(String fileName) {
+
+        try (PrintStream ps = new PrintStream(fileName)) {
+
+            ps.println("taxon\theight\ttype");
+
+            for (Node tip : getExternalNodes()) {
+                int typeIdx = (int)tip.getMetaData(typeLabel);
+
+                ps.format("%s\t%s\t%s\t\n",
+                        tip.getID(),
+                        tip.getHeight(),
+                        parameterizationInput.get().getTypeSet().getTypeName(typeIdx));
+            }
+
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
     }
 
     @Override
