@@ -1,7 +1,9 @@
 package bdmmprime.beauti;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
+import bdmmprime.parameterization.Parameterization;
 import bdmmprime.parameterization.SkylineParameter;
+import bdmmprime.util.InitializedTraitSet;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.evolution.tree.TraitSet;
@@ -133,7 +135,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz.getChildren().add(visualizerCheckBox);
         mainInputBox.getChildren().add(boxHoriz);
 
-        epochVisualizer = new EpochVisualizerPane(getTree(), getTypeTraitSet(), skylineParameter);
+        epochVisualizer = getTypeTraitSet().getNewVisualizer(getTree(), skylineParameter);
         epochVisualizer.widthProperty().bind(mainInputBox.widthProperty().subtract(10));
         epochVisualizer.setVisible(skylineParameter.epochVisualizerDisplayed);
         epochVisualizer.setManaged(skylineParameter.epochVisualizerDisplayed);
@@ -329,11 +331,15 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         return (Tree) doc.pluginmap.get("Tree.t:" + getPartitionID());
     }
 
-    protected TraitSet getTypeTraitSet() {
-        BirthDeathMigrationDistribution bdmmPrimeDistrib =
-                (BirthDeathMigrationDistribution) doc.pluginmap.get("BDMMPrime.t:" + getPartitionID());
+    protected InitializedTraitSet getTypeTraitSet() {
+        TraitSet traitSet = skylineParameter.getOutputs().stream()
+                .filter(bi -> bi instanceof Parameterization)
+                .findFirst().get().getOutputs().stream()
+                .filter(bi -> bi instanceof BirthDeathMigrationDistribution)
+                .map(bi -> (BirthDeathMigrationDistribution)bi)
+                .findFirst().get().typeTraitSetInput.get();
 
-        return bdmmPrimeDistrib.typeTraitSetInput.get();
+        return (InitializedTraitSet) traitSet;
     }
 
     /**

@@ -27,7 +27,7 @@ import java.util.*;
 /**
  * Ordered set of type names.
  *
- * @author ETH Zurich <tgvaughan@gmail.com>
+ * @author ETH Zurich
  */
 public class TypeSet extends BEASTObject {
 
@@ -98,7 +98,7 @@ public class TypeSet extends BEASTObject {
             String typeName = typeTraitSet.getStringValue(taxon);
 
             if (!typeName.toLowerCase().equals(unknownTypeIdentifier))
-                typeNameSet.add(typeTraitSet.getStringValue(taxon));
+                typeNameSet.add(typeName);
         }
     }
 

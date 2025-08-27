@@ -1,7 +1,10 @@
 package bdmmprime.util;
 
+import bdmmprime.beauti.EpochVisualizerPane;
+import bdmmprime.parameterization.SkylineParameter;
 import beast.base.core.Input;
 import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.Tree;
 
 import java.util.stream.Collectors;
 
@@ -33,5 +36,17 @@ public class InitializedTraitSet extends TraitSet {
         }
 
         super.initAndValidate();
+    }
+
+    /**
+     * Create new EpochVisualizerPane object.  Allows packages derived
+     * from BDMM-Prime to specify different visualizers.
+     *
+     * @param tree Tree whose tips to visualize
+     * @param param Skyline parameter whose epochs to visualize
+     * @return epoch vizualizer pane to be included in the input editor.
+     */
+    public EpochVisualizerPane getNewVisualizer(Tree tree, SkylineParameter param) {
+        return new EpochVisualizerPane(tree, this, param);
     }
 }
