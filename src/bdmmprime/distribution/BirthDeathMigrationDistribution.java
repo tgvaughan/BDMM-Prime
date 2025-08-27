@@ -142,7 +142,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             throw new RuntimeException("Error: For models with >1 type, either typeTraitSet or typeLabel must be specified.");
 
         if (startTypePriorProbsInput.get().getDimension() != parameterization.getNTypes())
-            throw new RuntimeException("Error: dimension of equilibrium frequencies " +
+            throw new RuntimeException("Error: dimension of start type prior probabilities " +
                     "parameter must match number of types.");
 
         double probSum = 0;
