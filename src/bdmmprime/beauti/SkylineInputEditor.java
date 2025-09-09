@@ -1,6 +1,7 @@
 package bdmmprime.beauti;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
+import bdmmprime.parameterization.Parameterization;
 import bdmmprime.parameterization.SkylineParameter;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
@@ -330,10 +331,19 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
     }
 
     protected TraitSet getTypeTraitSet() {
-        BirthDeathMigrationDistribution bdmmPrimeDistrib =
-                (BirthDeathMigrationDistribution) doc.pluginmap.get("BDMMPrime.t:" + getPartitionID());
 
-        return bdmmPrimeDistrib.typeTraitSetInput.get();
+        for (BEASTInterface out : skylineParameter.getOutputs()) {
+            if (out instanceof Parameterization param) {
+                for (BEASTInterface out2 : param.getOutputs()) {
+                    if (out2 instanceof  BirthDeathMigrationDistribution bdmmPrimeDistrib) {
+                        return bdmmPrimeDistrib.typeTraitSetInput.get();
+                    }
+                }
+            }
+        }
+
+        throw new IllegalStateException("SkylineParameter not connected " +
+                "to a BirthDeathMigrationModel.");
     }
 
     /**

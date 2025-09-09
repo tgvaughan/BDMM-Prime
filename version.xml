@@ -27,6 +27,7 @@
     <provider classname="bdmmprime.util.operators.JointSkylineScaleOperator"/>
     <provider classname="bdmmprime.util.InitializedTraitSet"/>
     <provider classname="bdmmprime.util.Slice"/>
+    <provider classname="bdmmprime.util.ProcessLength"/>
     <provider classname="bdmmprime.util.NodeAgeLogger"/>
     <provider classname="bdmmprime.util.OptionalLogger"/>
     <provider classname="bdmmprime.util.StartTypePriorProbsLogger"/>

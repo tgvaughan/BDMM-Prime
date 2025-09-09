@@ -61,10 +61,10 @@
                         bdmmprime.distribution.BirthDeathMigrationDistribution.storeNodeTypes,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.tree,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.finalSampleOffset,
-                        bdmmprime.distribution.BirthDeathMigrationDistribution.conditionOnRoot,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.treeIntervals,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.savePartialLikelihoodsToFile,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.storeIntegrationResults,
+                        bdmmprime.parameterization.CanonicalParameterization.processLength,
                         bdmmprime.parameterization.CanonicalParameterization.typeSet,
                         bdmmprime.parameterization.SkylineVectorParameter.processLength,
                         bdmmprime.parameterization.SkylineMatrixParameter.processLength,
@@ -83,39 +83,39 @@
 
             <![CDATA[
                 <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distribution.BirthDeathMigrationDistribution"
-                              tree="@Tree.t:$(n)" conditionOnSurvival="false" parallelize="true">
+                              tree="@Tree.t:$(n)" conditionOnSurvival="true" parallelize="true">
 
                     <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"
                                       spec="bdmmprime.parameterization.CanonicalParameterization">
-                        <processLength idref="originBDMMPrime.t:$(n)"/>
+                        <processLength idref="processLengthBDMMPrime.t:$(n)"/>
                         <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
                         <birthRate id="birthRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
-                            <processLength idref="originBDMMPrime.t:$(n)"/>
+                            <processLength idref="processLengthBDMMPrime.t:$(n)"/>
                             <skylineValues id="birthRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
                         </birthRate>
                         <birthRateAmongDemes id="birthRateAmongDemesSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
-                            <processLength idref="originBDMMPrime.t:$(n)"/>
+                            <processLength idref="processLengthBDMMPrime.t:$(n)"/>
                             <skylineValues id="birthRateAmongDemesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
                         </birthRateAmongDemes>
                         <deathRate id="deathRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
-                            <processLength idref="originBDMMPrime.t:$(n)"/>
+                            <processLength idref="processLengthBDMMPrime.t:$(n)"/>
                             <skylineValues id="deathRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
                         </deathRate>
                         <migrationRate id="migrationRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
-                            <processLength idref="originBDMMPrime.t:$(n)"/>
+                            <processLength idref="processLengthBDMMPrime.t:$(n)"/>
                             <skylineValues id="migrationRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
                         </migrationRate>
                         <samplingRate id="samplingRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
-                            <processLength idref="originBDMMPrime.t:$(n)"/>
+                            <processLength idref="processLengthBDMMPrime.t:$(n)"/>
                             <skylineValues id="samplingRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.1" lower="0.0"/>
                         </samplingRate>
                         <removalProb id="removalProbSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
-                            <processLength idref="originBDMMPrime.t:$(n)"/>
+                            <processLength idref="processLengthBDMMPrime.t:$(n)"/>
                             <skylineValues id="removalProbCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
                         </removalProb>
 
                         <rhoSampling id="rhoSamplingProbSPCanonical.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
-                            <processLength idref="originBDMMPrime.t:$(n)"/>
+                            <processLength idref="processLengthBDMMPrime.t:$(n)"/>
                         </rhoSampling>
                     </parameterization>
 
@@ -131,8 +131,11 @@
                 <startTypePriorProbsLogger id="startTypePriorProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypePriorProbsLogger" typeSet="@typeSetBDMMPrime.t:$(n)" startTypePriorProbs="@startTypePriorProbs.t:$(n)"/>
                 <startTypePosteriorProbsLogger id="startTypePosteriorProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypePosteriorProbsLogger" bdmmTreePrior="@BDMMPrime.t:$(n)"/>
 
-                <origin spec="beast.base.inference.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
-                <prior id="originBDMMPrimePrior.t:$(n)" x="@originBDMMPrime.t:$(n)">
+                <processLength spec="bdmmprime.util.ProcessLength" id="processLengthBDMMPrime.t:$(n)">
+                    <origin spec="beast.base.inference.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
+                </processLength>
+
+                <prior id="processLengthBDMMPrimePrior.t:$(n)" x="@processLengthBDMMPrime.t:$(n)">
                    <distr spec="beast.base.inference.distribution.OneOnX"/>
                 </prior>
 
@@ -204,22 +207,29 @@
 
             <plate fragment="BDMMPrimeSATreeOperators" var="m" range="BDMMPrime"/>
 
+            <connect srcID="processLengthBDMMPrimePrior.t:$(n)" targetID="prior" inputName="distribution"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))"/>
+            <connect srcID="processLengthBDMMPrime.t:$(n)" targetID="tracelog" inputName="log"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))"/>
+
             <connect srcID="originBDMMPrime.t:$(n)" targetID="state" inputName="stateNode"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true"/>
-            <connect srcID="originBDMMPrimePrior.t:$(n)" targetID="prior" inputName="distribution"
-                     if="inposterior(BDMMPrime.t:$(n))
-                     and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true"/>
+                     and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
             <connect srcID="originBDMMPrimeScaler.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true"/>
-            <connect srcID="originBDMMPrime.t:$(n)" targetID="tracelog" inputName="log"
+                     and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
+            <connect srcID="originBDMMPrime.t:$(n)" targetID="processLengthBDMMPrime.t:$(n)" inputName="origin"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and originBDMMPrime.t:$(n)/estimate=true"/>
+                     and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
+            <connect srcID="Tree.t:$(n)" targetID="processLengthBDMMPrime.t:$(n)" inputName="tree"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and BDMMPrime.t:$(n)/conditionOnRoot=true"/>
 
             <connect srcID='JointBDMMPrimeSkylineScaleOperator.t:$(n)' targetID='mcmc' inputName='operator'
                      if='inposterior(BDMMPrime.t:$(n))
