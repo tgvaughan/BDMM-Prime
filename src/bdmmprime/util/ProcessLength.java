@@ -20,16 +20,19 @@ package bdmmprime.util;
 import beast.base.core.Description;
 import beast.base.core.Function;
 import beast.base.core.Input;
+import beast.base.core.Loggable;
 import beast.base.evolution.tree.Tree;
+import beast.base.inference.CalculationNode;
 import beast.base.inference.parameter.RealParameter;
-import feast.function.LoggableFunction;
+
+import java.io.PrintStream;
 
 @Description("This class abstracts the birth-death process length, which can" +
         " be provided by either a parameter representing the \"origin\" of the" +
         " process, or by a tree in which case the process length is assumed to" +
         " be determined by the tree root height and a final sample offset." +
         " Used primarily by the BDMM-Prime BEAUti template.")
-public class ProcessLength extends LoggableFunction {
+public class ProcessLength extends CalculationNode implements Loggable, Function {
 
     public Input<Tree> treeInput = new Input<>("tree",
             "Tree whose age might define the process length.");
@@ -58,4 +61,23 @@ public class ProcessLength extends LoggableFunction {
         else
             return originInput.get().getArrayValue();
     }
+
+    @Override
+    public void init(PrintStream out) {
+        if (getDimension()==1) {
+            out.print(getID() + "\t");
+        } else {
+            for (int i = 0; i < getDimension(); i++)
+                out.print(getID() + "[" + i + "]\t");
+        }
+    }
+
+    @Override
+    public void log(long sample, PrintStream out) {
+        for (int i=0; i<getDimension(); i++)
+            out.print(getArrayValue(i) + "\t");
+    }
+
+    @Override
+    public void close(PrintStream out) { }
 }
