@@ -20,10 +20,9 @@ package bdmmprime.beauti;
 import bdmmprime.parameterization.SkylineParameter;
 import bdmmprime.parameterization.TypeSet;
 import bdmmprime.util.ProcessLength;
-import beast.base.evolution.tree.Node;
-import beast.base.evolution.tree.TraitSet;
-import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.*;
 import beast.base.evolution.tree.coalescent.RandomTree;
+import beast.base.inference.StateNodeInitialiser;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -161,7 +160,9 @@ public class EpochVisualizerPane extends Canvas {
 
         // Mark Origin
 
-        String processStartLabel = "Process start";
+        String processStartLabel = ((ProcessLength)(param.processLengthInput.get())).treeInput.get() != null
+                ? "Root" : "Origin";
+
         double originPosition = getHorizontalPixel(gc, 0.0, processLength);
         gc.strokeLine(originPosition, axisBaseY, originPosition, fontHeight*HEADER_HEIGHT);
         gc.fillText(processStartLabel,
@@ -264,18 +265,29 @@ public class EpochVisualizerPane extends Canvas {
         return theText.getBoundsInLocal().getWidth();
     }
 
+    /**
+     * Ensure any initialisers are applied to the tree before using its root
+     * age to determine process length.
+     */
     private void reinitTree() {
-        if (param.processLengthInput.get() instanceof ProcessLength procLengthObj) {
-            if (procLengthObj.treeInput.get() != null) {
-                Tree tree = procLengthObj.treeInput.get();
-                Optional<RandomTree> maybeRandomTree = tree.getOutputs().stream()
-                        .filter(bo -> bo instanceof RandomTree)
-                        .map(bo -> (RandomTree)bo)
-                        .findFirst();
+        ProcessLength procLengthObj = (ProcessLength) param.processLengthInput.get();
+        if (procLengthObj.treeInput.get() != null) {
+            Tree tree = procLengthObj.treeInput.get();
+            Optional<StateNodeInitialiser> maybeInitialiser =
+                    tree.getOutputs().stream()
+                            .filter(bo -> bo instanceof StateNodeInitialiser)
+                            .map(bo -> (StateNodeInitialiser)bo)
+                            .findFirst();
 
-                if (maybeRandomTree.isPresent()) {
-                    maybeRandomTree.get().initStateNodes();
+            if (maybeInitialiser.isPresent()) {
+                StateNodeInitialiser initialiser = maybeInitialiser.get();
+
+                if (initialiser instanceof RandomTree ||
+                        initialiser instanceof ClusterTree ||
+                        initialiser instanceof TreeParser) {
+                    initialiser.initStateNodes();
                 }
+
             }
         }
     }
