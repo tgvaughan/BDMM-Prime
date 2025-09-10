@@ -19,9 +19,11 @@ package bdmmprime.beauti;
 
 import bdmmprime.parameterization.SkylineParameter;
 import bdmmprime.parameterization.TypeSet;
+import bdmmprime.util.ProcessLength;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
+import beast.base.evolution.tree.coalescent.RandomTree;
 import javafx.scene.canvas.Canvas;
 import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.paint.Color;
@@ -31,6 +33,7 @@ import javafx.scene.text.Text;
 import java.math.BigDecimal;
 import java.math.MathContext;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class EpochVisualizerPane extends Canvas {
 
@@ -62,13 +65,15 @@ public class EpochVisualizerPane extends Canvas {
 
         gc.clearRect(0,0,getWidth(),getHeight());
 
+        reinitTree(); // Ensure tree matches any constraints
+
         boolean useAges = param.timesAreAgesInput.get();
-        double origin = param.processLengthInput.get().getArrayValue();
+        double processLength = param.processLengthInput.get().getArrayValue();
         TypeSet typeSet = param.typeSetInput.get();
 
-        if (origin <= 0.0) {
+        if (processLength <= 0.0) {
             gc.setStroke(Color.BLACK);
-            gc.strokeText("Can't visualize: invalid origin value.", 0, getHeight()/2);
+            gc.strokeText("Can't visualize: invalid process length value.", 0, getHeight()/2);
             return;
         }
 
@@ -114,8 +119,8 @@ public class EpochVisualizerPane extends Canvas {
         double boundaryLabelY = fontHeight;
 
         gc.setStroke(Color.BLACK);
-        gc.strokeLine(getHorizontalPixel(gc, 0.0), axisBaseY,
-                getHorizontalPixel(gc, origin), axisBaseY);
+        gc.strokeLine(getHorizontalPixel(gc, 0.0, processLength), axisBaseY,
+                getHorizontalPixel(gc, processLength, processLength), axisBaseY);
 
         String axisLabel = useAges
                 ? "Age before most recent sample"
@@ -127,17 +132,17 @@ public class EpochVisualizerPane extends Canvas {
                 getHeight()-0.5*fontHeight);
 
 
-        double delta = Math.pow(10, Math.ceil(Math.log10(origin/10)));
+        double delta = Math.pow(10, Math.ceil(Math.log10(processLength/10)));
 
         gc.setStroke(Color.BLACK);
         gc.setFill(Color.BLACK);
-        for (double t=0; t<=origin; t += delta) {
-            gc.strokeLine(getHorizontalPixel(gc, t), axisBaseY,
-                    getHorizontalPixel(gc, t),
+        for (double t=0; t<=processLength; t += delta) {
+            gc.strokeLine(getHorizontalPixel(gc, t, processLength), axisBaseY,
+                    getHorizontalPixel(gc, t, processLength),
                     axisBaseY+fontHeight/4);
 
             double val = useAges
-                    ? origin - t
+                    ? processLength - t
                     : t;
 
             String tickLabel;
@@ -150,17 +155,17 @@ public class EpochVisualizerPane extends Canvas {
                         .stripTrailingZeros().toEngineeringString();
 
             gc.fillText(tickLabel,
-                    getHorizontalPixel(gc, t) - fontHeight/2,
+                    getHorizontalPixel(gc, t, processLength) - fontHeight/2,
                     axisBaseY+fontHeight/4+fontHeight);
         }
 
         // Mark Origin
 
-        String originLabel = "Origin";
-        double originPosition = getHorizontalPixel(gc, 0.0);
+        String processStartLabel = "Process start";
+        double originPosition = getHorizontalPixel(gc, 0.0, processLength);
         gc.strokeLine(originPosition, axisBaseY, originPosition, fontHeight*HEADER_HEIGHT);
-        gc.fillText(originLabel,
-                originPosition-getStringWidth(gc, originLabel)/2,
+        gc.fillText(processStartLabel,
+                originPosition-getStringWidth(gc, processStartLabel)/2,
                 boundaryLabelY);
 
         // Mark Epochs
@@ -175,7 +180,7 @@ public class EpochVisualizerPane extends Canvas {
                     ? param.getChangeTimes()[param.getChangeCount()-epoch-1]
                     : param.getChangeTimes()[epoch];
 
-            double boundaryPosition = getHorizontalPixel(gc, changeTime);
+            double boundaryPosition = getHorizontalPixel(gc, changeTime, processLength);
             gc.strokeLine(boundaryPosition, axisBaseY, boundaryPosition,
                     fontHeight*HEADER_HEIGHT);
 
@@ -192,9 +197,9 @@ public class EpochVisualizerPane extends Canvas {
             if (tree.getDateTrait().getStringValue(tree.getNode(0).getID()) == null)
                 tree.getDateTrait().initAndValidate();
             for (int nodeNr = 0; nodeNr < nLeaves; nodeNr++)
-                leafTimes[nodeNr] = origin - tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
+                leafTimes[nodeNr] = processLength - tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
         } else {
-            Arrays.fill(leafTimes, origin);
+            Arrays.fill(leafTimes, processLength);
         }
 
         // Draw samples
@@ -215,7 +220,7 @@ public class EpochVisualizerPane extends Canvas {
             gc.setFill(sampleCols[getEpoch(leafTimes[nodeNr]) % sampleCols.length]);
 
             double circleRad = fontHeight/4;
-            gc.fillOval(getHorizontalPixel(gc, leafTimes[nodeNr]) - circleRad,
+            gc.fillOval(getHorizontalPixel(gc, leafTimes[nodeNr], processLength) - circleRad,
                     axisBaseY - fontHeight*HEIGHT_PER_TYPE/2 - fontHeight*HEIGHT_PER_TYPE*rowNum - circleRad,
                     circleRad*2, circleRad*2);
         }
@@ -239,15 +244,14 @@ public class EpochVisualizerPane extends Canvas {
         repaintCanvas();
     }
 
-    double getHorizontalPixel(GraphicsContext gc, double time) {
+    double getHorizontalPixel(GraphicsContext gc, double time, double processLength) {
         boolean useAges = param.timesAreAgesInput.get();
 
         double charHeight = gc.getFont().getSize();
         double axisXStart = charHeight*2;
         double axisXEnd = getWidth() - charHeight*2;
 
-        int scaledTime = (int)Math.round((axisXEnd-axisXStart)
-                *time/param.processLengthInput.get().getArrayValue());
+        int scaledTime = (int)Math.round((axisXEnd-axisXStart)*time/processLength);
 
         return useAges
                 ? axisXEnd - scaledTime
@@ -258,5 +262,21 @@ public class EpochVisualizerPane extends Canvas {
         Text theText = new Text(string);
         theText.setFont(gc.getFont());
         return theText.getBoundsInLocal().getWidth();
+    }
+
+    private void reinitTree() {
+        if (param.processLengthInput.get() instanceof ProcessLength procLengthObj) {
+            if (procLengthObj.treeInput.get() != null) {
+                Tree tree = procLengthObj.treeInput.get();
+                Optional<RandomTree> maybeRandomTree = tree.getOutputs().stream()
+                        .filter(bo -> bo instanceof RandomTree)
+                        .map(bo -> (RandomTree)bo)
+                        .findFirst();
+
+                if (maybeRandomTree.isPresent()) {
+                    maybeRandomTree.get().initStateNodes();
+                }
+            }
+        }
     }
 }

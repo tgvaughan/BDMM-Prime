@@ -135,7 +135,7 @@
                     <origin spec="beast.base.inference.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
                 </processLength>
 
-                <prior id="processLengthBDMMPrimePrior.t:$(n)" x="@processLengthBDMMPrime.t:$(n)">
+                <prior id="originBDMMPrimePrior.t:$(n)" x="@originBDMMPrime.t:$(n)">
                    <distr spec="beast.base.inference.distribution.OneOnX"/>
                 </prior>
 
@@ -207,13 +207,6 @@
 
             <plate fragment="BDMMPrimeSATreeOperators" var="m" range="BDMMPrime"/>
 
-            <connect srcID="processLengthBDMMPrimePrior.t:$(n)" targetID="prior" inputName="distribution"
-                     if="inposterior(BDMMPrime.t:$(n))
-                     and inposterior(Tree.t:$(n))"/>
-            <connect srcID="processLengthBDMMPrime.t:$(n)" targetID="tracelog" inputName="log"
-                     if="inposterior(BDMMPrime.t:$(n))
-                     and inposterior(Tree.t:$(n))"/>
-
             <connect srcID="originBDMMPrime.t:$(n)" targetID="state" inputName="stateNode"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
@@ -222,6 +215,15 @@
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
                      and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
+            <connect srcID="originBDMMPrimePrior.t:$(n)" targetID="prior" inputName="distribution"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
+            <connect srcID="originBDMMPrime.t:$(n)" targetID="tracelog" inputName="log"
+                     if="inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
+
             <connect srcID="originBDMMPrime.t:$(n)" targetID="processLengthBDMMPrime.t:$(n)" inputName="origin"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))

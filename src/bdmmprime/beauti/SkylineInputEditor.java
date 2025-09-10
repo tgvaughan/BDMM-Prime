@@ -267,6 +267,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         });
 
         visualizerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue)
+                epochVisualizer.repaintCanvas();
             skylineParameter.epochVisualizerDisplayed = newValue;
             epochVisualizer.setVisible(newValue);
             epochVisualizer.setManaged(newValue);
