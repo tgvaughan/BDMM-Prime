@@ -14,6 +14,7 @@ import beast.base.util.HeapSort;
 import org.apache.commons.math.special.Gamma;
 import org.apache.commons.math3.exception.MathIllegalNumberException;
 import org.apache.commons.math3.exception.MathIllegalStateException;
+import org.apache.commons.math3.exception.MaxCountExceededException;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 
 import java.io.FileNotFoundException;
@@ -306,12 +307,19 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             Node child1 = root.getChild(0);
             Node child2 = root.getChild(1);
 
-            P0GeState child1state = calculateSubtreeLikelihood(child1, 0,
-                    parameterization.getNodeTime(child1, finalSampleOffset.getArrayValue()),
-                    system, 0);
-            P0GeState child2state = calculateSubtreeLikelihood(child2, 0,
-                    parameterization.getNodeTime(child2, finalSampleOffset.getArrayValue()),
-                    system, 0);
+            P0GeState child1state, child2state;
+            try {
+                child1state = calculateSubtreeLikelihood(child1, 0,
+                        parameterization.getNodeTime(child1, finalSampleOffset.getArrayValue()),
+                        system, 0);
+                child2state = calculateSubtreeLikelihood(child2, 0,
+                        parameterization.getNodeTime(child2, finalSampleOffset.getArrayValue()),
+                        system, 0);
+            } catch (MathIllegalStateException ex) {
+                Log.warning("Warning: BDMM-Prime tree prior integration failure.");
+                logP = Double.NEGATIVE_INFINITY;
+                return logP;
+            }
 
             int intervalIndex = parameterization.getIntervalIndex(0);
             for (int type1=0; type1<parameterization.getNTypes(); type1++) {
@@ -336,9 +344,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             // Condition on origin time:
 
-            finalP0Ge = calculateSubtreeLikelihood(root, 0,
-                    parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()),
-                    system, 0);
+            try {
+                finalP0Ge = calculateSubtreeLikelihood(root, 0,
+                        parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()),
+                        system, 0);
+            } catch (MathIllegalStateException ex) {
+                Log.warning("Warning: BDMM-Prime tree prior integration failure.");
+                logP = Double.NEGATIVE_INFINITY;
+                return logP;
+            }
         }
 
         if (debug) System.out.print("Final state: " + finalP0Ge);
@@ -571,9 +585,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                                 system, depth + 1);
                         childState2 = secondChildTraversal.get();
                     } catch (InterruptedException | ExecutionException e) {
+                        if (e.getCause() instanceof MathIllegalStateException causeEx)
+                            throw causeEx; // Signal the Distribution to return -infinity
+
                         Log.err("Error encountered performing parallel tree prior calculation.");
                         e.printStackTrace();
-
                         System.exit(1);
                     }
 
