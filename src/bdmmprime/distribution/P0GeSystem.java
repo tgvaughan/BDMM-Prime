@@ -135,9 +135,22 @@ public class P0GeSystem extends P0System {
             FirstOrderIntegrator integrator = new DormandPrince54Integrator(
                     integrationMinStep, integrationMaxStep,
                     absoluteToleranceVector, relativeToleranceVector);
-            if (storeIntegrationResults)
-                integrator.addStepHandler(continuousOutputModel);
+
+            ContinuousOutputModel com = null;
+            if (storeIntegrationResults) {
+                com = new ContinuousOutputModel();
+                integrator.addStepHandler(com);
+            }
+
             integrator.integrate(this, tStart, pgScaled.getEquation(), tEnd, integrationResults); // perform the integration step
+
+            if (storeIntegrationResults) {
+                if (continuousOutputModel == null) {
+                    continuousOutputModel = com;
+                } else {
+                    continuousOutputModel.append(com);
+                }
+            }
 
             double[] pConditions = new double[n];
             SmallNumber[] geConditions = new SmallNumber[n];
