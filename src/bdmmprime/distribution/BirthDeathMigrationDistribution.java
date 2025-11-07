@@ -205,7 +205,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * @return Array of ContinousOutputModel instances
      */
     public ContinuousOutputModel[] getIntegrationResults() {
-        if (saveIntegrationResults)
+        if (!saveIntegrationResults)
             throw new IllegalArgumentException("Integration results requested " +
                     "but storeIntegrationResults input is false.");
         return integrationResults;
