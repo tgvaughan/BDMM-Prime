@@ -298,7 +298,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
                 ? 0
                 : timedParameter.timesInput.get().getDimension();
 
-        System.out.println("Number of epochs: " + nEpochs);
+//        System.out.println("Number of epochs: " + nEpochs);
 
         if (nEpochs > 0) {
             RealParameter valuesParam = getValuesParam();

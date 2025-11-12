@@ -51,7 +51,7 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
                 : skylineParameter.changeTimesInput.get().getDimension() + 1;
         RealParameter valuesParam = (RealParameter) skylineParameter.skylineValuesInput.get();
 
-        System.out.println("Number of epochs: " + nEpochs);
+//        System.out.println("Number of epochs: " + nEpochs);
 
         if (skylineParameter.isScalarInput.get())
             valuesParam.setDimension(nEpochs);
