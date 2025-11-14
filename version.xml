@@ -57,5 +57,6 @@
     <provider classname="bdmmprime.beauti.SkylineVectorInputEditor"/>
     <provider classname="bdmmprime.beauti.SkylineMatrixInputEditor"/>
     <provider classname="bdmmprime.beauti.TypeTraitSetInputEditor"/>
+    <provider classname="bdmmprime.beauti.ProcessLengthInputEditor"/>
   </service>
 </package>

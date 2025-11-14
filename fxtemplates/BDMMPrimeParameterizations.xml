@@ -312,8 +312,7 @@
 
         <!-- Canonical parameterization -->
         <subtemplate id="CanonicalParameterization" class="bdmmprime.parameterization.CanonicalParameterization"
-                     suppressInputs="bdmmprime.parameterization.CanonicalParameterization.typeSet,
-                                     bdmmprime.parameterization.CanonicalParameterization.processLength"
+                     suppressInputs="bdmmprime.parameterization.CanonicalParameterization.typeSet"
                      mainid="CanonicalBDMMPrimeParameterization.t:$(n)">
 
         <![CDATA[
@@ -375,8 +374,7 @@
 
         <!-- Epi parameterization -->
         <subtemplate id="EpiParameterization" class="bdmmprime.parameterization.EpiParameterization"
-                     suppressInputs="bdmmprime.parameterization.EpiParameterization.typeSet,
-                                     bdmmprime.parameterization.EpiParameterization.processLength"
+                     suppressInputs="bdmmprime.parameterization.EpiParameterization.typeSet"
                      mainid="EpiBDMMPrimeParameterization.t:$(n)">
 
             <![CDATA[
@@ -438,8 +436,7 @@
 
         <!-- FBD parameterization -->
         <subtemplate id="FossilizedBirthDeathParameterization" class="bdmmprime.parameterization.FBDParameterization"
-                     suppressInputs="bdmmprime.parameterization.FBDParameterization.typeSet,
-                                     bdmmprime.parameterization.FBDParameterization.processLength"
+                     suppressInputs="bdmmprime.parameterization.FBDParameterization.typeSet"
                      mainid="FBDBDMMPrimeParameterization.t:$(n)">
 
             <![CDATA[

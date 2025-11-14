@@ -53,6 +53,10 @@ public class ProcessLength extends CalculationNode implements Loggable, Function
         return 1;
     }
 
+    public boolean isRoot() {
+        return treeInput.get() != null;
+    }
+
     @Override
     public double getArrayValue(int dim) {
         if (treeInput.get() != null)
