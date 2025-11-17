@@ -20,6 +20,7 @@ package bdmmprime.trajectories.simulation;
 import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.*;
+import beast.base.core.Description;
 import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
@@ -34,11 +35,16 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Simulates a tree from a multi-type birth-death skyline process.
+ * Simulates a tree from a multi-type birth-death skyline process. Conditioning
+ * on survival or root age not supported.
  *
- * Note that the time of origin is also sampled, as this is a random
+ * Note that the finalSampleOffset, as this is a random
  * variable that depends on the time of the most recent sample in the tree.
  */
+@Description("Simulates a tree from a multi-type birth-death skyline process. " +
+        "Conditioning on surival or root ages is not supported.\n\n" +
+        "Explanation: This is an undocumented class which is intended only for " +
+        "validation of BDMM-Prime itself.  Please do not use it for other purposes.")
 public class SimulatedTree extends Tree {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
