@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-07-14 Mon 17:01 -->
+<!-- 2025-11-19 Wed 10:15 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -86,7 +86,8 @@
 </li>
 </ul>
 </li>
-<li><a href="#id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">3.6. Miscellaneous inputs</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Process-Conditioning">3.6. Process Conditioning</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">3.7. Miscellaneous inputs</a></li>
 </ul>
 </li>
 <li><a href="#id-1-Sampling-Latent-Variables">4. Sampling Latent Variables</a>
@@ -134,7 +135,7 @@
 </div>
 </nav>
 
-<figure id="org75fd61e">
+<figure id="org50d1f9b">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -326,7 +327,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="org68691f4">
+<figure id="orge6f92e7">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -348,7 +349,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="orgb39efe0">
+<figure id="orgc4a8354">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -379,7 +380,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="org2538083">
+<figure id="orgce78013">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -402,7 +403,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="org4d70ae6">
+<figure id="org9c4df77">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -426,7 +427,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="org946e4df">
+<figure id="orga0e46f3">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -436,7 +437,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="org938393a">
+<figure id="org38d9a33">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -466,7 +467,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="org779b919">
+<figure id="org5cbf0c6">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -492,7 +493,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="org426214f">
+<figure id="orgb1e530e">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -515,7 +516,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="orgd63dd64">
+<figure id="orgee539ff">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -555,7 +556,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="orgcf266ec">
+<figure id="org96dcf3c">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -588,7 +589,7 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org316a867">
+<figure id="org6284de1">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
@@ -669,7 +670,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="org0b6a689">
+<figure id="org8eba14c">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -781,7 +782,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="orge27a392">
+<figure id="orgd4f93df">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -816,7 +817,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="org025e2aa">
+<figure id="org628e54e">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -840,7 +841,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="orgbc02aeb">
+<figure id="org4dacc7a">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -1103,15 +1104,6 @@ an individual of another type.</dd>
 <dt>Birth Among Demes ($\lambda_{ij}$)</dt><dd>This is the rate at which an individual with some type <i>produces</i>
 an individual of another type.</dd>
 </dl>
-
-<p>
-Finally, the following parameter expresses the total duration of the birth-death-sampling
-process. 
-</p>
-<dl class="org-dl">
-<dt>ProcessLength</dt><dd>the time between the start of the process and the most recent sample.
-(Here equivalent to the "origin" of the process.)</dd>
-</dl>
 </div>
 </div>
 <div id="outline-container-id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological" class="outline-4">
@@ -1218,7 +1210,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org2b8de6f">
+<figure id="org8a43c2e">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1257,7 +1249,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="org66435b4">
+<figure id="orgf274ec8">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1375,8 +1367,64 @@ oldest sample included in the analysis.)
 </div>
 </div>
 </div>
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Process-Conditioning" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Process-Conditioning"><span class="section-number-3">3.6.</span> Process Conditioning</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Process-Conditioning">
+<p>
+The process conditioning block allow you to adjust how the birth-death
+tree generation process is conditioned. By default it appears as follows:
+</p>
+
+
+<figure id="org37a1cb6">
+<img src="./figures/conditioning.png" alt="conditioning.png">
+
+</figure>
+
+<p>
+The following options can be set:
+</p>
+
+<dl class="org-dl">
+<dt>Condition on Root</dt><dd>Enabling this option causes the process length
+to be fixed to the age of the root of the tree relative to the end
+of the process, and to appropriately condition the tree prior on this root.
+In the case of models which allow for sampled ancestors, this option
+additionally imposes a condition that no sampled ancestors appear on
+the "stem edge" of the tree. (I.e. the root node must be a divergence.)</dd>
+
+<dt>Condition on Origin</dt><dd>Enabling this option causes the process length
+to be fixed to the age of the "origin" of the birth-death process,
+which is in general older than the age of the root. The value of the
+adjacent checkbox determines whether this parameter should be itself
+estimated.  This option is enabled by default, as it is the most common
+choice.</dd>
+
+<dt>Initial age of Origin</dt><dd>When "Condition on Origin" is selected, this
+can be used to set the (initial) value of the origin age parameter.</dd>
+
+<dt>Condition on Survival</dt><dd>When "Condition on Origin" is selected,
+enabling this option causes the tree prior to include a term which
+conditions the tree probability on having at least one sampled
+individual in the dataset.</dd>
+</dl>
+
+<p>
+To place a parametric prior on the process length&#x2014;regardless of
+whether it corresponds to the tree root age or the origin age&#x2014;use
+the parametric prior selection option labeled
+"processLengthBDMMPrime" toward the bottom of the page.
+</p>
+
+<p>
+<b>Warning:</b> If you select "Condition on Root", take care to avoid
+defining a separate MRCA prior for the root since one is already
+defined for "processLengthBDMMPrime".
+</p>
+</div>
+</div>
 <div id="outline-container-id-2-Model-specification-using-BEAUti-Miscellaneous-inputs" class="outline-3">
-<h3 id="id-2-Model-specification-using-BEAUti-Miscellaneous-inputs"><span class="section-number-3">3.6.</span> Miscellaneous inputs</h3>
+<h3 id="id-2-Model-specification-using-BEAUti-Miscellaneous-inputs"><span class="section-number-3">3.7.</span> Miscellaneous inputs</h3>
 <div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">
 <p>
 Besides the main settings for the model described above, there are several
@@ -1385,7 +1433,7 @@ in their default configuration:
 </p>
 
 
-<figure id="org1ef14ff">
+<figure id="org13179f5">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1395,18 +1443,6 @@ Below we describe each of them in turn.
 </p>
 
 <dl class="org-dl">
-<dt>Condition on Survival</dt><dd>This is a modelling option which, when
-enabled, causes the tree prior to include a term which conditions
-the tree probability on having at least one sampled individual in
-the dataset.</dd>
-
-<dt>Use Analytical Single Type Solution</dt><dd>When there is only a single
-type in the dataset, this option tells BDMM-Prime to
-use analytical (BDSKY) expressions for computing the tree probability
-rather than to rely on numerical integration. For multi-type analyses
-this option has no effect.  (Unless you are testing the numerical
-integration code, there is really no reason to ever disable this option.)</dd>
-
 <dt>Rel Tolerance and Abs Tolerance</dt><dd>These parameters determine the tolerance
 thresholds given to the numerical integration algorithm used to compute
 the tree probability when multiple types are in play.  You should usually
@@ -1457,7 +1493,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="org6147210">
+<figure id="orgf511d53">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1524,7 +1560,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="org28c8307">
+<figure id="orga94dbaa">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1545,7 +1581,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="org584b64d">
+<figure id="orgca58a84">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1683,7 +1719,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="orgb2043cb">
+<figure id="org004c511">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1757,7 +1793,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="orgdd43693">
+<figure id="orga4bbfe5">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1782,7 +1818,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="orgf81eb04">
+<figure id="org2707693">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -3190,19 +3226,19 @@ simulation step.)
 <h2 id="id-1-License"><span class="section-number-2">6.</span> License</h2>
 <div class="outline-text-2" id="text-id-1-License">
 <p>
-BDMM-Prime is free software.  It is made available under the terms of
-the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public Licence version 3</a>. Unlike many software
-licenses, this is designed to give you, the user, the freedom to use
-the software as you wish - including making and publishing
-modifications - provided you also extend the same freedom to other
-users.
+BDMM-Prime is free software.  It is made available to you under the
+terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public Licence version 3</a> or, at your option,
+any later version. Unlike many software licenses, this is designed to
+give you, the user, the freedom to use the software as you wish -
+including making and publishing modifications - provided you also
+extend the same courtesy to other users.
 </p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2025-07-14 Mon 17:01</p>
+<p class="date">Created: 2025-11-19 Wed 10:15</p>
 </div>
 </body>
 </html>

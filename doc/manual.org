@@ -716,11 +716,6 @@ rate for every ordered pair of distinct types.
   This is the rate at which an individual with some type /produces/
   an individual of another type.
 
-Finally, the following parameter expresses the total duration of the birth-death-sampling
-process. 
-- ProcessLength :: the time between the start of the process and the most recent sample.
-  (Here equivalent to the "origin" of the process.)
-
 *** Epidemiological
 :PROPERTIES:
 :CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological
@@ -924,6 +919,49 @@ time of the oldest sample.  (For instance, in the tutorial we configured
 the sampling rate of H3N2 such that it was set to zero prior to the
 oldest sample included in the analysis.)
 
+** Process Conditioning
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Process-Conditioning
+:END:
+
+The process conditioning block allow you to adjust how the birth-death
+tree generation process is conditioned. By default it appears as follows:
+
+[[./figures/conditioning.png]]
+
+The following options can be set:
+
+- Condition on Root ::  Enabling this option causes the process length
+  to be fixed to the age of the root of the tree relative to the end
+  of the process, and to appropriately condition the tree prior on this root.
+  In the case of models which allow for sampled ancestors, this option
+  additionally imposes a condition that no sampled ancestors appear on
+  the "stem edge" of the tree. (I.e. the root node must be a divergence.)
+
+- Condition on Origin ::  Enabling this option causes the process length
+  to be fixed to the age of the "origin" of the birth-death process,
+  which is in general older than the age of the root. The value of the
+  adjacent checkbox determines whether this parameter should be itself
+  estimated.  This option is enabled by default, as it is the most common
+  choice.
+
+- Initial age of Origin :: When "Condition on Origin" is selected, this
+   can be used to set the (initial) value of the origin age parameter.
+
+- Condition on Survival :: When "Condition on Origin" is selected,
+  enabling this option causes the tree prior to include a term which
+  conditions the tree probability on having at least one sampled
+  individual in the dataset.
+
+To place a parametric prior on the process length---regardless of
+whether it corresponds to the tree root age or the origin age---use
+the parametric prior selection option labeled
+"processLengthBDMMPrime" toward the bottom of the page.
+
+*Warning:* If you select "Condition on Root", take care to avoid
+defining a separate MRCA prior for the root since one is already
+defined for "processLengthBDMMPrime".
+
 ** Miscellaneous inputs
 :PROPERTIES:
 :CUSTOM_ID: id-2-Model-specification-using-BEAUti-Miscellaneous-inputs
@@ -936,18 +974,6 @@ in their default configuration:
 [[./figures/miscParams.png]]
 
 Below we describe each of them in turn.
-
-- Condition on Survival :: This is a modelling option which, when
-  enabled, causes the tree prior to include a term which conditions
-  the tree probability on having at least one sampled individual in
-  the dataset.
-
-- Use Analytical Single Type Solution :: When there is only a single
-  type in the dataset, this option tells BDMM-Prime to
-  use analytical (BDSKY) expressions for computing the tree probability
-  rather than to rely on numerical integration. For multi-type analyses
-  this option has no effect.  (Unless you are testing the numerical
-  integration code, there is really no reason to ever disable this option.)
 
 - Rel Tolerance and Abs Tolerance :: These parameters determine the tolerance
   thresholds given to the numerical integration algorithm used to compute
@@ -2136,12 +2162,12 @@ simulation step.)
 :CUSTOM_ID: id-1-License
 :END:
 
-BDMM-Prime is free software.  It is made available under the terms of
-the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]]. Unlike many software
-licenses, this is designed to give you, the user, the freedom to use
-the software as you wish - including making and publishing
-modifications - provided you also extend the same courtesy to other
-users.
+BDMM-Prime is free software.  It is made available to you under the
+terms of the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]] or, at your option,
+any later version. Unlike many software licenses, this is designed to
+give you, the user, the freedom to use the software as you wish -
+including making and publishing modifications - provided you also
+extend the same courtesy to other users.
 
 
 # Evaluate the following block to update section IDs #
