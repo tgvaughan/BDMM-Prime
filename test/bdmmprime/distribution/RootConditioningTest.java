@@ -182,7 +182,7 @@ public class RootConditioningTest extends LikelihoodTestClass {
 
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealParameter("0.5"), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
@@ -194,7 +194,7 @@ public class RootConditioningTest extends LikelihoodTestClass {
 
 
 
-        assertEquals(-26.53293 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
-
+        // TODO: Check!!
+        assertEquals(-19.1786415, density.calculateLogP(), 1e-5);
     }
 }

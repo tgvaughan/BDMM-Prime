@@ -66,6 +66,7 @@
                         bdmmprime.distribution.BirthDeathMigrationDistribution.storeIntegrationResults,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.conditionOnSurvival,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.conditionOnRoot,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.useAnalyticalSingleTypeSolution,
                         bdmmprime.parameterization.CanonicalParameterization.typeSet,
                         bdmmprime.parameterization.SkylineVectorParameter.processLength,
                         bdmmprime.parameterization.SkylineMatrixParameter.processLength,
@@ -208,23 +209,26 @@
 
             <connect srcID="processLengthBDMMPrimePrior.t:$(n)" targetID="prior" inputName="distribution"
                      if="inposterior(BDMMPrime.t:$(n))
-                     and inposterior(Tree.t:$(n))"/>
+                     and inposterior(Tree.t:$(n))
+                     and processLengthBDMMPrime.t:$(n)/estimate=true"/>
 
             <plate fragment="BDMMPrimeSATreeOperators" var="m" range="BDMMPrime"/>
 
             <connect srcID="originBDMMPrime.t:$(n)" targetID="state" inputName="stateNode"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
+                     and BDMMPrime.t:$(n)/conditionOnRoot=false
+                     and originBDMMPrime.t:$(n)/estimate=true"/>
             <connect srcID="originBDMMPrimeScaler.t:$(n)" targetID="mcmc" inputName="operator"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
-
+                     and BDMMPrime.t:$(n)/conditionOnRoot=false
+                     and originBDMMPrime.t:$(n)/estimate=true"/>
             <connect srcID="originBDMMPrime.t:$(n)" targetID="tracelog" inputName="log"
                      if="inposterior(BDMMPrime.t:$(n))
                      and inposterior(Tree.t:$(n))
-                     and BDMMPrime.t:$(n)/conditionOnRoot=false"/>
+                     and BDMMPrime.t:$(n)/conditionOnRoot=false
+                     and originBDMMPrime.t:$(n)/estimate=true"/>
 
             <connect srcID="originBDMMPrime.t:$(n)" targetID="processLengthBDMMPrime.t:$(n)" inputName="origin"
                      if="inposterior(BDMMPrime.t:$(n))

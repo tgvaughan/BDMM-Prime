@@ -31,7 +31,7 @@ import java.io.PrintStream;
         " be provided by either a parameter representing the \"origin\" of the" +
         " process, or by a tree in which case the process length is assumed to" +
         " be determined by the tree root height and a final sample offset." +
-        " Used primarily by the BDMM-Prime BEAUti template.")
+        " Used by the BDMM-Prime BEAUti template.")
 public class ProcessLength extends CalculationNode implements Loggable, Function {
 
     public Input<Tree> treeInput = new Input<>("tree",
@@ -44,6 +44,10 @@ public class ProcessLength extends CalculationNode implements Loggable, Function
     public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
             "Final sample offset.  Only used in combination with the tree.",
             new RealParameter("0"));
+
+    public Input<Boolean> isEstimatedInput = new Input<>("estimate",
+            "Indicates to BEAUti whether a prior on this parameter is " +
+                    "needed.", true);
 
     @Override
     public void initAndValidate() { }

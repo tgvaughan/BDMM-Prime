@@ -22,13 +22,11 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.ProcessLength;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
-import beast.base.evolution.tree.TraitSet;
 import beast.base.inference.parameter.RealParameter;
-import beastfx.app.inputeditor.BEASTObjectInputEditor;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
-import beastfx.app.inputeditor.InputEditorFactory;
 import beastfx.app.util.FXUtils;
+import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -64,42 +62,92 @@ public class ProcessLengthInputEditor extends InputEditor.Base {
                     "Specify details of the length and conditioning of the birth-death process.");
         }
 
+        ToggleGroup toggleGroup = new ToggleGroup();
 
-        if (processLength.originInput.get() != null
+        HBox boxHoriz = FXUtils.newHBox();
+        RadioButton rootButton = new RadioButton("Condition on Root");
+        rootButton.setTooltip(new Tooltip(
+                "Condition analysis (and place priors) on the age of the tree root."));
+        rootButton.setToggleGroup(toggleGroup);
+        boxHoriz.getChildren().add(rootButton); // For alignment with other elements
+        mainInputBox.getChildren().add(boxHoriz);
+
+        boxHoriz = FXUtils.newHBox();
+        RadioButton originButton = new RadioButton("Condition on Origin");
+        originButton.setTooltip(new Tooltip(
+                "Condition analysis (and place priors) on the age " +
+                        "of the birth-death process origin."));
+        originButton.setToggleGroup(toggleGroup);
+        boxHoriz.getChildren().add(originButton);
+        CheckBox originEstimate = new CheckBox("Estimate");
+        boxHoriz.getChildren().add(originEstimate);
+        mainInputBox.getChildren().add(boxHoriz);
+
+        boxHoriz = FXUtils.newHBox();
+        Label originLabel = new Label("Initial age of Origin:");
+        boxHoriz.getChildren().add(originLabel);
+        TextField originTextField = new TextField();
+        boxHoriz.getChildren().add(originTextField);
+        mainInputBox.getChildren().add(boxHoriz);
+
+        boxHoriz = FXUtils.newHBox();
+        CheckBox survivalConditionedCheckBox = new CheckBox("Condition on Survival");
+        survivalConditionedCheckBox.setTooltip(new Tooltip(
+                "Condition analysis on having sampled at least one individual."));
+        survivalConditionedCheckBox.setSelected(bdmm.conditionOnSurvivalInput.get());
+        boxHoriz.getChildren().add(survivalConditionedCheckBox); // For alignment with other elements
+        mainInputBox.getChildren().add(boxHoriz);
+
+        if (bdmm.conditionOnRootInput.get()) {
+
+            rootButton.setSelected(true);
+            bdmm.conditionOnSurvivalInput.setValue(true, bdmm);
+
+            survivalConditionedCheckBox.setDisable(true);
+            originLabel.setDisable(true);
+            originTextField.setDisable(true);
+            originEstimate.setSelected(false);
+            originEstimate.setDisable(true);
+            processLength.isEstimatedInput.setValue(true, processLength);
+
+        } else if (processLength.originInput.get() != null
                 && processLength.originInput.get() instanceof RealParameter originParam) {
-            HBox boxHoriz = FXUtils.newHBox();
-            Label label = new Label("Process length:");
-            boxHoriz.getChildren().add(label);
-            TextField originTextField = new TextField(originParam.getValue().toString());
+
+            originButton.setSelected(true);
+            originTextField.setText(originParam.getValue().toString());
+            originEstimate.setSelected(originParam.isEstimated());
+            processLength.isEstimatedInput.setValue(originParam.isEstimated(), processLength);
+
             originTextField.setOnAction(e -> {
                 originParam.valuesInput.setValue(originTextField.getText(), originParam);
                 originParam.initAndValidate();
                 refreshPanel();
                 sync();
             });
-            boxHoriz.getChildren().add(originTextField);
-            mainInputBox.getChildren().add(boxHoriz);
+
+            originEstimate.setOnAction(e -> {
+                originParam.isEstimatedInput.setValue(originEstimate.isSelected(), originParam);
+                processLength.isEstimatedInput.setValue(originEstimate.isSelected(), originParam);
+                refreshPanel();
+                sync();
+            });
         }
 
-
-        CheckBox survivalConditionedCheckBox = new CheckBox("Condition on Survival");
-        if (bdmm.conditionOnRootInput.get()) {
-            bdmm.conditionOnSurvivalInput.setValue(true, bdmm);
-            survivalConditionedCheckBox.setDisable(true);
-        }
-        mainInputBox.getChildren().add(survivalConditionedCheckBox);
-        survivalConditionedCheckBox.setSelected(bdmm.conditionOnSurvivalInput.get());
-        survivalConditionedCheckBox.setOnAction(e -> {
-            bdmm.conditionOnSurvivalInput.setValue(survivalConditionedCheckBox.isSelected(), bdmm);
-        });
-
-        CheckBox rootConditionedCheckBox = new CheckBox("Condition on Root");
-        rootConditionedCheckBox.setSelected(bdmm.conditionOnRootInput.get());
-        mainInputBox.getChildren().add(rootConditionedCheckBox);
-        rootConditionedCheckBox.setOnAction(e -> {
-            bdmm.conditionOnRootInput.setValue(rootConditionedCheckBox.isSelected(), bdmm);
+        originButton.setOnAction(e -> {
+            bdmm.conditionOnRootInput.setValue(false, bdmm);
             refreshPanel();
             sync();
+        });
+
+        rootButton.setOnAction(e -> {
+            bdmm.conditionOnRootInput.setValue(true, bdmm);
+            bdmm.conditionOnSurvivalInput.setValue(true, bdmm);
+            refreshPanel();
+            sync();
+        });
+
+        survivalConditionedCheckBox.setOnAction(e -> {
+            bdmm.conditionOnSurvivalInput.setValue(survivalConditionedCheckBox.isSelected(), bdmm);
         });
 
         Separator sep = new Separator(Orientation.HORIZONTAL);
