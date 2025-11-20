@@ -23,6 +23,8 @@ import beast.base.core.Log;
 import beast.base.evolution.tree.TraitSet;
 
 import java.util.*;
+import java.util.function.BinaryOperator;
+import java.util.stream.Collectors;
 
 /**
  * Ordered set of type names.
@@ -31,11 +33,21 @@ import java.util.*;
  */
 public class TypeSet extends BEASTObject {
 
-    public Input<String> valueInput = new Input<>("value", "Comma-delmited list of types.");
-    public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet", "Type trait set defining list of types.");
+    public Input<String> valueInput = new Input<>("value",
+            "Comma-delmited list of types.");
+
+    public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
+            "Type trait set defining list of types.");
 
     public Input<String> unknownTypeIndicatorInput = new Input<>("unknownTypeIdentifier",
             "String used to identify unknown types. (Default is '?'.)", "?");
+
+    public Input<Boolean> allowAmbiguitiesInput = new Input<>("allowAmbiguities",
+            "Allow specification of ambiguous types. (Default false.)", false);
+
+    public Input<String> ambiguousTypeDelimiterInput = new Input<>("ambiguousTypeDelimiter",
+            "Regular expression used to separate possible type names sequences. " +
+                    "(Default is '\\|'.)", "\\|");
 
     protected SortedSet<String> typeNameSet;
     protected String unknownTypeIdentifier;
@@ -97,8 +109,15 @@ public class TypeSet extends BEASTObject {
         for (String taxon : typeTraitSet.taxaInput.get().getTaxaNames()) {
             String typeName = typeTraitSet.getStringValue(taxon);
 
-            if (!typeName.toLowerCase().equals(unknownTypeIdentifier))
-                typeNameSet.add(typeTraitSet.getStringValue(taxon));
+            if (typeName.equals(unknownTypeIdentifier))
+                continue;
+
+            String[] typeNameSplit = typeName.split(ambiguousTypeDelimiterInput.get());
+            if (allowAmbiguitiesInput.get() && typeNameSplit.length>1) {
+                Arrays.stream(typeNameSplit).forEach(s -> typeNameSet.add(s.trim()));
+            } else {
+                typeNameSet.add(typeName);
+            }
         }
     }
 
@@ -111,15 +130,33 @@ public class TypeSet extends BEASTObject {
 
     /**
      * Returns the numerical index corresponding to the given type name.
+     * <p>
      * In the instance that the type name matches the unknown type identifier,
-     * returns -1.
+     * or type ambiguities are enabled and the input string includes the
+     * ambiguous type list delimitation character, the return value will
+     * be -bits, where bits is a strictly positive integer specifying which
+     * of the possible types are to be included in the ambiguity set.
      *
      * @param typeName name of type
-     * @return numerical index representing type.
+     * @return numerical index representing type, or a negative value specifying
+     * an ambiguity set.
      */
     public int getTypeIndex(String typeName) {
-        if (typeName.toLowerCase().equals(unknownTypeIdentifier))
-            return -1;
+        int minTypeIndex = -((1 << getNTypes()) - 1);
+
+        if (typeName.equals(unknownTypeIdentifier))
+            return minTypeIndex; // Any possible type
+
+        if (allowAmbiguitiesInput.get()) {
+            String[] typeNameSplit = typeName.split(ambiguousTypeDelimiterInput.get());
+            if (typeNameSplit.length>1) {
+                int bits = Arrays.stream(typeNameSplit)
+                        .map(s -> getTypeIndex(s.trim()))
+                        .reduce(0, (acc, typeIdx) -> acc + (1 << typeIdx));
+
+                return -bits;
+            }
+        }
 
         if (typeNameSet.contains(typeName))
             return (new ArrayList<>(typeNameSet).indexOf(typeName));

@@ -428,6 +428,9 @@ public class TypeMappedTree extends Tree {
             } else {
                 // Unknown tip type
                 for (int type = 0; type < param.getNTypes(); type++) {
+                    if (((1 << type) & -leafType) == 0)
+                        continue;
+
                     double rho = param.getRhoValues()[rhoSamplingInterval][type];
                     y[type] *= 1.0 - rho;
                     y[type + param.getNTypes()] = rho;
@@ -450,6 +453,9 @@ public class TypeMappedTree extends Tree {
                 }
             } else {
                 for (int type = 0; type < param.getNTypes(); type++) {
+                    if (((1 << type) & -leafType) == 0)
+                        continue;
+
                     double psi = param.getSamplingRates()[nodeInterval][type];
                     double r = param.getRemovalProbs()[nodeInterval][type];
 
@@ -491,6 +497,9 @@ public class TypeMappedTree extends Tree {
                 }
             } else {
                 for (int type = 0; type < param.getNTypes(); type++) {
+                    if (((1 << type) & -saType) == 0)
+                        continue;
+
                     double rho = param.getRhoValues()[rhoSamplingInterval][type];
                     double r = param.getRemovalProbs()[rhoSamplingInterval][type];
 
@@ -515,6 +524,9 @@ public class TypeMappedTree extends Tree {
                 }
             } else {
                 for (int type = 0; type < param.getNTypes(); type++) {
+                    if (((1 << type) & -saType) == 0)
+                        continue;
+
                     double psi = param.getSamplingRates()[nodeInterval][type];
                     double r = param.getRemovalProbs()[nodeInterval][type];
 

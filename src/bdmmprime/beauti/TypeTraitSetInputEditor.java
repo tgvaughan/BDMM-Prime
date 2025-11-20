@@ -215,6 +215,19 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             refreshPanel();
         });
 
+        CheckBox allowAmbiguitiesCheckbox = new CheckBox("Allow partially ambiguous tip types (possible type names separated by '|')");
+        allowAmbiguitiesCheckbox.setTooltip(new Tooltip(
+                "If enabled, tips can be assigned a specific set of " +
+                        "possible types, each separated by '|'."));
+        allowAmbiguitiesCheckbox.setSelected(typeSet.allowAmbiguitiesInput.get());
+        allowAmbiguitiesCheckbox.setOnAction(e -> {
+            typeSet.allowAmbiguitiesInput.setValue(
+                    allowAmbiguitiesCheckbox.isSelected(), typeSet);
+            typeSet.initAndValidate();
+            refreshPanel();
+            sync();
+        });
+
         addInputLabel();
 
         VBox boxVert = FXUtils.newVBox();
@@ -228,13 +241,24 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         boxHoriz.getChildren().add(new Label("Value when cleared:"));
         boxHoriz.getChildren().add(clearValue);
         boxVert.getChildren().add(boxHoriz);
+
+        boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(new Label("Use '?' to indicate tips with unknown type."));
+        boxVert.getChildren().add(boxHoriz);
+
+        boxHoriz = FXUtils.newHBox();
+        boxHoriz.getChildren().add(allowAmbiguitiesCheckbox);
+        boxVert.getChildren().add(boxHoriz);
+
         boxVert.getChildren().add(typeTable);
 
         boxHoriz = FXUtils.newHBox();
+
         boxHoriz.getChildren().add(new Label("Additional types (comma-delimited): "));
+        boxHoriz.getChildren().add(additionalTypes);
+
         boxHoriz.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
                 BorderStrokeStyle.SOLID, null, null)));
-        boxHoriz.getChildren().add(additionalTypes);
         boxVert.getChildren().add(boxHoriz);
 
         boxHoriz = FXUtils.newHBox();
