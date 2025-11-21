@@ -769,9 +769,9 @@ Besides the migration rate, species type changes are parameterized by:
   is a generalisation of diversification rate, but allowing for one of the daughter
   species to carry a new type.
 
-(The rho sampling, removal probability, migration and process
-length parameters are identical to those described for the canonical
-parameterization.  The removalProbability is fixed to zero in the FBD.)
+(The rho sampling, migration and process length parameters are
+identical to those described for the canonical parameterization.  The
+removalProbability is fixed to zero in the FBD parameterization.)
 
 *Note*: Unlike the Canonical and Epidemiological parameterizations,
 the FBD parameterization on its own does not permit exploration of the
