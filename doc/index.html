@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-11-21 Fri 17:10 -->
+<!-- 2025-11-21 Fri 17:13 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -135,7 +135,7 @@
 </div>
 </nav>
 
-<figure id="orgc0230d2">
+<figure id="org8feb427">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -327,7 +327,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="orgfe5d5c8">
+<figure id="orgb90753f">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -349,7 +349,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="orga51f981">
+<figure id="orgbf366d5">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -380,7 +380,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="orge42c7ae">
+<figure id="orgb8222a1">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -403,7 +403,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="org81b4383">
+<figure id="orgfe66edf">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -427,7 +427,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="org4128126">
+<figure id="orgbe78558">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -437,7 +437,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="org24901ef">
+<figure id="org678615a">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -467,7 +467,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="orgaf0c227">
+<figure id="org8748a32">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -493,7 +493,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="orgc104c00">
+<figure id="orgd9f4e07">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -516,7 +516,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="org9d08408">
+<figure id="orgf0537f8">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -556,7 +556,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="org00ef6b4">
+<figure id="orgeb8b6bf">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -589,7 +589,7 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org94505fb">
+<figure id="orgf24dfbd">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
@@ -670,7 +670,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="orga664e19">
+<figure id="org8856266">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -782,7 +782,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="org964b3cc">
+<figure id="orgcf60a79">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -817,7 +817,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="org6da1503">
+<figure id="orgaf9caa1">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -841,7 +841,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="orgc86a80e">
+<figure id="org3325aae">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -953,14 +953,31 @@ can be accessed by pressing the button labeled <code>?</code>.)
 <h4 id="id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type"><span class="section-number-4">3.2.1.</span> Leaves with unknown type</h4>
 <div class="outline-text-4" id="text-id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type">
 <p>
-Sometimes you may not know to which type a tip should be assigned.  In this case
-you can set the type to a "?" which indicates that the type is unknown. In this
-case the phylodynamic likelihood will be evaluated under the assumption that type
-information for this tip is unavailable.
+Sometimes you may not know to which type a tip should be assigned. You
+can ask BDMM-Prime to infer the type of these tips.
 </p>
 
 <p>
-Beware that designating all of your tip types as unknown can easily
+To do this, ensure the "Allow tip type ambiguities" option above the tip type table
+is selected, as indicated by the red arrow in the following image:
+</p>
+
+
+<figure id="org9cb3dfa">
+<img src="./figures/unknown_types.png" alt="unknown_types.png">
+
+</figure>
+
+<p>
+If the tip type is completely unknown, you can set the type to a "?"
+which indicates that the type is unknown. On the other hand, if you only wish to
+allow the tip to take a on values from a subset of the possible types, enter the
+names of the possible types separated with a '|' character.  Example use of this
+notation is shown in the cells indicated by the blue arrows in the image.
+</p>
+
+<p>
+Beware that designating all of your tip types as unknown will
 result in unidentifiability with respect to permutation of the mapping
 between types and rates. To avoid this you'll need to impose some
 additional symmetry-breaking constraints, e.g. <code>birthRate[0]&gt;birthRate[1]</code>.
@@ -1210,7 +1227,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org0b22920">
+<figure id="org1122f18">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1249,7 +1266,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="orgdf29887">
+<figure id="orga0d9fd7">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1376,7 +1393,7 @@ tree generation process is conditioned. By default it appears as follows:
 </p>
 
 
-<figure id="orge0b65fe">
+<figure id="org9cdcbfa">
 <img src="./figures/conditioning.png" alt="conditioning.png">
 
 </figure>
@@ -1433,7 +1450,7 @@ in their default configuration:
 </p>
 
 
-<figure id="org112cd38">
+<figure id="org1af9336">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1493,7 +1510,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="org3e2e78b">
+<figure id="org8a41b33">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1560,7 +1577,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="orgb270007">
+<figure id="org4ed3f8c">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1581,7 +1598,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="org6732ae9">
+<figure id="orgfd492ea">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1719,7 +1736,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="org6bee1f5">
+<figure id="org3db0b61">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1793,7 +1810,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="org7191cbe">
+<figure id="org91c8c70">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1818,7 +1835,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="org2a74092">
+<figure id="org3e73233">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -2632,11 +2649,27 @@ This object defines a set of types for a multi-type birth-death model.
 <dt><code>value</code> (<code>String</code>)</dt><dd>If provided, specifies a comma-delimited list of types.
 For instance, the string ="New Zealand, Australia, Samoa" specifies 3 types
 with those names.</dd>
+
 <dt><code>typeTraitSet</code> (<code>TraitSet</code>)</dt><dd>If provided, specifies a trait set whose unique values
 will be used to assemble the possible types.</dd>
-<dt><code>unknownTypeIdentifier (=String</code>, default "?")</dt><dd>If provided, taxa
-whose type trait value matches this string will be regarded as
-having an "unknown" type.</dd>
+
+<dt><code>allowAmbiguousTypes</code> (<code>Boolean</code>)</dt><dd>If enabled, the types assigned
+to certain taxa may be treated as "ambiguous", i.e. incompletely
+known.  How such ambiguities are specified is determined by the
+following pair of inputs.</dd>
+
+<dt><code>unknownTypeIdentifier (=String</code>, default "?")</dt><dd>When
+<code>allowAmbiguousTypes</code> is true, taxa whose type trait value matches
+this string will be regarded as having a completely "unknown" type. That is,
+the true type of the taxon may be any one of those available in the model, with
+prior probabilities determined by the multi-type birth-death process.</dd>
+
+<dt><code>ambiguousTypeDelimiter</code> (<code>String</code>, default "\|")</dt><dd>This string represents a
+regular expression. When <code>allowAmbiguousTypes</code> is true, this regular expression
+will be used to split taxon type trait values into substrings, which are then
+interpreted as the possible types that taxon can take.  For example, the default
+regexp would cause the type trait value "USA|NewZealand" to indicate that the
+corresponding taxon could belong to either of these two demes.</dd>
 </dl>
 
 <p>
@@ -3237,7 +3270,7 @@ extend the same courtesy to other users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2025-11-21 Fri 17:10</p>
+<p class="date">Created: 2025-11-21 Fri 17:13</p>
 </div>
 </body>
 </html>
