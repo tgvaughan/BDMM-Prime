@@ -771,7 +771,7 @@ Besides the migration rate, species type changes are parameterized by:
 
 (The rho sampling, removal probability, migration and process
 length parameters are identical to those described for the canonical
-parameterization.)
+parameterization.  The removalProbability is fixed to zero in the FBD.)
 
 *Note*: Unlike the Canonical and Epidemiological parameterizations,
 the FBD parameterization on its own does not permit exploration of the
@@ -1455,8 +1455,6 @@ parameterization.
   The turnover (ratio of extinction rate to birth rate) skyline.
 - =samplingProportion= (=SkylineVectgorParameter=, required) ::
   The sampling proportion skyline.
-- =removalProb= (=SkylineVectorParameter=, required) ::
-  A skyline parameter representing the probability of removal on sampling.
 - =rhoSampling= (=TimedParameter=) ::
   Specifies the times and probabilities of contemporaneous sampling events.
 - =migrationRate= (=SkylineMatrixParameter=) ::
