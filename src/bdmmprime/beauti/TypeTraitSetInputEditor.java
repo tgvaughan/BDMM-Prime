@@ -215,13 +215,13 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             refreshPanel();
         });
 
-        CheckBox allowAmbiguitiesCheckbox = new CheckBox("Allow partially ambiguous tip types (possible type names separated by '|')");
+        CheckBox allowAmbiguitiesCheckbox = new CheckBox("Allow tip type ambiguities (use '?' for unknown types or '|' to separate possibilities)");
         allowAmbiguitiesCheckbox.setTooltip(new Tooltip(
-                "If enabled, tips can be assigned a specific set of " +
-                        "possible types, each separated by '|'."));
-        allowAmbiguitiesCheckbox.setSelected(typeSet.allowAmbiguitiesInput.get());
+                "If enabled, tip types can be marked as unknown or " +
+                        "belonging to a specific set of possible types."));
+        allowAmbiguitiesCheckbox.setSelected(typeSet.allowAmbiguousTypesInput.get());
         allowAmbiguitiesCheckbox.setOnAction(e -> {
-            typeSet.allowAmbiguitiesInput.setValue(
+            typeSet.allowAmbiguousTypesInput.setValue(
                     allowAmbiguitiesCheckbox.isSelected(), typeSet);
             typeSet.initAndValidate();
             refreshPanel();
@@ -240,10 +240,6 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
         boxHoriz.getChildren().add(clearButton);
         boxHoriz.getChildren().add(new Label("Value when cleared:"));
         boxHoriz.getChildren().add(clearValue);
-        boxVert.getChildren().add(boxHoriz);
-
-        boxHoriz = FXUtils.newHBox();
-        boxHoriz.getChildren().add(new Label("Use '?' to indicate tips with unknown type."));
         boxVert.getChildren().add(boxHoriz);
 
         boxHoriz = FXUtils.newHBox();

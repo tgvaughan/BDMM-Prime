@@ -463,11 +463,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             int nodeType = getNodeType(node, false);
 
-            if (nodeType < 0) { //unknown state
+            if (parameterization.getTypeSet().isAmbiguousTypeIndex(nodeType)) { //unknown state
 
                 //TODO test if SA model case is properly implemented (not tested!)
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
-                    if (((1 << type) & -nodeType) == 0)
+                    if (parameterization.getTypeSet().ambiguityExcludesType(nodeType, type))
                         continue;
 
                     if (isRhoTip[node.getNr()]) {
@@ -528,9 +528,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 int saNodeType = getNodeType(node.getChild(childIndex ^ 1), false);
 
                 //TODO test if properly implemented (not tested!)
-                if (saNodeType < 0) { // unknown state
+                if (parameterization.getTypeSet().isAmbiguousTypeIndex(saNodeType)) { // unknown state
                     for (int type = 0; type < parameterization.getNTypes(); type++) {
-                        if (((1<<type) & -saNodeType) == 0)
+                        if (parameterization.getTypeSet().ambiguityExcludesType(saNodeType, type))
                             continue;
 
                         if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
