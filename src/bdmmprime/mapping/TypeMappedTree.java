@@ -409,7 +409,7 @@ public class TypeMappedTree extends Tree {
         }
 
         int leafType = getLeafType(leafNode);
-        boolean leafTypeKnown = (leafType>=0);
+        boolean leafTypeKnown = !param.getTypeSet().isAmbiguousTypeIndex(leafType);
 
         if (nodeIsRhoSampled(leafNode)) {
 
@@ -428,6 +428,9 @@ public class TypeMappedTree extends Tree {
             } else {
                 // Unknown tip type
                 for (int type = 0; type < param.getNTypes(); type++) {
+                    if (param.getTypeSet().ambiguityExcludesType(leafType, type))
+                        continue;
+
                     double rho = param.getRhoValues()[rhoSamplingInterval][type];
                     y[type] *= 1.0 - rho;
                     y[type + param.getNTypes()] = rho;
@@ -450,6 +453,9 @@ public class TypeMappedTree extends Tree {
                 }
             } else {
                 for (int type = 0; type < param.getNTypes(); type++) {
+                    if (((1 << type) & -leafType) == 0)
+                        continue;
+
                     double psi = param.getSamplingRates()[nodeInterval][type];
                     double r = param.getRemovalProbs()[nodeInterval][type];
 
@@ -472,7 +478,7 @@ public class TypeMappedTree extends Tree {
         double[] y = backwardsIntegrateSubtree(saNode.getNonDirectAncestorChild(), saNodeTime);
 
         int saType = getLeafType(saNode.getDirectAncestorChild());
-        boolean saTypeKnown = (saType>=0);
+        boolean saTypeKnown = !param.getTypeSet().isAmbiguousTypeIndex(saType);
 
         if (nodeIsRhoSampled(saNode.getDirectAncestorChild())) {
 
@@ -491,6 +497,9 @@ public class TypeMappedTree extends Tree {
                 }
             } else {
                 for (int type = 0; type < param.getNTypes(); type++) {
+                    if (param.getTypeSet().ambiguityExcludesType(saType, type))
+                        continue;
+
                     double rho = param.getRhoValues()[rhoSamplingInterval][type];
                     double r = param.getRemovalProbs()[rhoSamplingInterval][type];
 
@@ -515,6 +524,9 @@ public class TypeMappedTree extends Tree {
                 }
             } else {
                 for (int type = 0; type < param.getNTypes(); type++) {
+                    if (((1 << type) & -saType) == 0)
+                        continue;
+
                     double psi = param.getSamplingRates()[nodeInterval][type];
                     double r = param.getRemovalProbs()[nodeInterval][type];
 

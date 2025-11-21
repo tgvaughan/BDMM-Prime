@@ -92,10 +92,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     "calculations on the children. (default: 1/10). ",
             1.0 / 10);
 
-    public Input<Boolean> storeNodeTypesInput = new Input<>("storeNodeTypes",
-            "store tip node types? this assumes that tip types cannot " +
-                    "change (default false)", false);
-
     public Input<String> savePartialLikelihoodsToFileInput = new Input<>("savePartialLikelihoodsToFile",
             "If provided, the name of a file to which a tree annotated with partial likelihoods " +
                     "will be written.  This is useful for debugging the cause of chain initialization failure.");
@@ -167,13 +163,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (isParallelizedCalculation) executorBootUp();
 
-        if (storeNodeTypesInput.get()) {
+        nodeStates = new int[nLeaves];
 
-            nodeStates = new int[nLeaves];
-
-            for (Node node : tree.getExternalNodes()) {
-                nodeStates[node.getNr()] = getNodeType(node, true);
-            }
+        for (Node node : tree.getExternalNodes()) {
+            nodeStates[node.getNr()] = getNodeType(node, true);
         }
 
         startTypePosteriorProbs = new double[parameterization.getNTypes()];
@@ -402,10 +395,18 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         return logP;
     }
 
+    /**
+     * Returns the type index corresponding to a given node.  In the case
+     * of ambiguities, a negative integer is returned which represents the
+     * possible types as a bit sequence.
+     *
+     * @param node node to request type of
+     * @param init whterh
+     * @return
+     */
     private int getNodeType(Node node, Boolean init) {
 
-
-        if (storeNodeTypesInput.get() && !init)
+        if (!init)
             return nodeStates[node.getNr()];
 
         int nodeType;
@@ -429,8 +430,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             nodeType = 0;
         }
 
-        if (storeNodeTypesInput.get())
-            nodeStates[node.getNr()] = nodeType;
+        nodeStates[node.getNr()] = nodeType;
 
         return nodeType;
     }
@@ -463,10 +463,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             int nodeType = getNodeType(node, false);
 
-            if (nodeType == -1) { //unknown state
+            if (parameterization.getTypeSet().isAmbiguousTypeIndex(nodeType)) { //unknown state
 
                 //TODO test if SA model case is properly implemented (not tested!)
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
+                    if (parameterization.getTypeSet().ambiguityExcludesType(nodeType, type))
+                        continue;
 
                     if (isRhoTip[node.getNr()]) {
                         state.ge[type] = new SmallNumber(
@@ -526,8 +528,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 int saNodeType = getNodeType(node.getChild(childIndex ^ 1), false);
 
                 //TODO test if properly implemented (not tested!)
-                if (saNodeType == -1) { // unknown state
+                if (parameterization.getTypeSet().isAmbiguousTypeIndex(saNodeType)) { // unknown state
                     for (int type = 0; type < parameterization.getNTypes(); type++) {
+                        if (parameterization.getTypeSet().ambiguityExcludesType(saNodeType, type))
+                            continue;
+
                         if (!isRhoTip[node.getChild(childIndex ^ 1).getNr()]) {
 
                             state.p0[type] = g.p0[type];
