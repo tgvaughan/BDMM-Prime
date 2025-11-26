@@ -86,8 +86,8 @@ If you use this package as part of your research, please cite these papers:
 License
 -------
 
-BDMM-Prime is free software.  It is distributed under the terms of version 3
-of the GNU General Public License.  A copy of this license should
-be found in the file COPYING located in the root directory of this repository.
-If this file is absent for some reason, it can also be retrieved from
-https://www.gnu.org/licenses.
+BDMM-Prime is free software. It may be modified and distributed under the terms
+of the GNU General Public License version 3 or, at your option, any later
+version. A copy of this license should be found in the file COPYING located in
+the root directory of this repository. If this file is absent for some reason,
+it can also be retrieved from https://www.gnu.org/licenses.

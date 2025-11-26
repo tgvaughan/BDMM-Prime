@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2019-2025 ETH Zurich
+ * Copyright (C) 2013-2018 Denise Kühnert
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package bdmmprime.distribution;
 
 import bdmmprime.parameterization.Parameterization;
@@ -92,10 +110,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     "calculations on the children. (default: 1/10). ",
             1.0 / 10);
 
-    public Input<Boolean> storeNodeTypesInput = new Input<>("storeNodeTypes",
-            "store tip node types? this assumes that tip types cannot " +
-                    "change (default false)", false);
-
     public Input<String> savePartialLikelihoodsToFileInput = new Input<>("savePartialLikelihoodsToFile",
             "If provided, the name of a file to which a tree annotated with partial likelihoods " +
                     "will be written.  This is useful for debugging the cause of chain initialization failure.");
@@ -138,8 +152,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         finalSampleOffset = finalSampleOffsetInput.get();
 
-        if (parameterization.getNTypes() != 1 && (typeTraitSetInput.get() == null && typeLabelInput.get() == null))
-            throw new RuntimeException("Error: For models with >1 type, either typeTraitSet or typeLabel must be specified.");
+        if (conditionOnRootInput.get() && (parameterization.getNodeTime(tree.getRoot(),
+                        finalSampleOffset.getArrayValue()) != 0.0))
+            throw new RuntimeException("Error: Tree root age must match total " +
+                    "process length when conditionOnRoot is true.");
+
+        if (parameterization.getNTypes() != 1
+                && (typeTraitSetInput.get() == null && typeLabelInput.get() == null))
+            throw new RuntimeException("Error: For models with >1 type, either " +
+                    "typeTraitSet or typeLabel must be specified.");
 
         if (startTypePriorProbsInput.get().getDimension() != parameterization.getNTypes())
             throw new RuntimeException("Error: dimension of start type prior probabilities " +
@@ -160,13 +181,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (isParallelizedCalculation) executorBootUp();
 
-        if (storeNodeTypesInput.get()) {
+        nodeStates = new int[nLeaves];
 
-            nodeStates = new int[nLeaves];
-
-            for (Node node : tree.getExternalNodes()) {
-                nodeStates[node.getNr()] = getNodeType(node, true);
-            }
+        for (Node node : tree.getExternalNodes()) {
+            nodeStates[node.getNr()] = getNodeType(node, true);
         }
 
         startTypePosteriorProbs = new double[parameterization.getNTypes()];
@@ -177,7 +195,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         isRhoTip = new boolean[tree.getLeafNodeCount()];
         for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++) {
             isRhoTip[nodeNr] = false;
-            double nodeTime = parameterization.getNodeTime(tree.getNode(nodeNr), finalSampleOffset.getArrayValue());
+            double nodeTime = parameterization.getNodeTime(tree.getNode(nodeNr),
+                    finalSampleOffset.getArrayValue());
             for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
                 if (Utils.equalWithPrecision(rhoSampTime, nodeTime)) {
                     isRhoTip[nodeNr] = true;
@@ -204,7 +223,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * @return Array of ContinousOutputModel instances
      */
     public ContinuousOutputModel[] getIntegrationResults() {
-        if (saveIntegrationResults)
+        if (!saveIntegrationResults)
             throw new IllegalArgumentException("Integration results requested " +
                     "but storeIntegrationResults input is false.");
         return integrationResults;
@@ -225,7 +244,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             return logP;
         }
 
-        if (Utils.lessThanWithPrecision(parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()), 0)) {
+        if (Utils.lessThanWithPrecision(parameterization.getNodeTime(tree.getRoot(),
+                finalSampleOffset.getArrayValue()), 0)) {
             if (savePartialLikelihoodsToFileInput.get() != null)
                 Log.err("Tree MRCA older than start of process.");
             logP = Double.NEGATIVE_INFINITY;
@@ -306,12 +326,19 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             Node child1 = root.getChild(0);
             Node child2 = root.getChild(1);
 
-            P0GeState child1state = calculateSubtreeLikelihood(child1, 0,
-                    parameterization.getNodeTime(child1, finalSampleOffset.getArrayValue()),
-                    system, 0);
-            P0GeState child2state = calculateSubtreeLikelihood(child2, 0,
-                    parameterization.getNodeTime(child2, finalSampleOffset.getArrayValue()),
-                    system, 0);
+            P0GeState child1state, child2state;
+            try {
+                child1state = calculateSubtreeLikelihood(child1, 0,
+                        parameterization.getNodeTime(child1, finalSampleOffset.getArrayValue()),
+                        system, 0);
+                child2state = calculateSubtreeLikelihood(child2, 0,
+                        parameterization.getNodeTime(child2, finalSampleOffset.getArrayValue()),
+                        system, 0);
+            } catch (MathIllegalStateException ex) {
+                Log.warning("Warning: BDMM-Prime tree prior integration failure.");
+                logP = Double.NEGATIVE_INFINITY;
+                return logP;
+            }
 
             int intervalIndex = parameterization.getIntervalIndex(0);
             for (int type1=0; type1<parameterization.getNTypes(); type1++) {
@@ -336,9 +363,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             // Condition on origin time:
 
-            finalP0Ge = calculateSubtreeLikelihood(root, 0,
-                    parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()),
-                    system, 0);
+            try {
+                finalP0Ge = calculateSubtreeLikelihood(root, 0,
+                        parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()),
+                        system, 0);
+            } catch (MathIllegalStateException ex) {
+                Log.warning("Warning: BDMM-Prime tree prior integration failure.");
+                logP = Double.NEGATIVE_INFINITY;
+                return logP;
+            }
         }
 
         if (debug) System.out.print("Final state: " + finalP0Ge);
@@ -381,15 +414,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     }
 
     /**
-     * Retrieve type associated with given (leaf) node.
+     * Returns the type index corresponding to a given node.  In the case
+     * of ambiguities, a negative integer is returned which represents the
+     * possible types as a bit sequence.
      *
-     * @param node Node object
-     * @param init true if we're initializing
-     * @return associated type
+     * @param node node to request type of
+     * @param init whterh
+     * @return
      */
     private int getNodeType(Node node, Boolean init) {
 
-        if (storeNodeTypesInput.get() && !init)
+        if (!init)
             return nodeStates[node.getNr()];
 
         int nodeType;
@@ -413,8 +448,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             nodeType = 0;
         }
 
-        if (storeNodeTypesInput.get())
-            nodeStates[node.getNr()] = nodeType;
+        nodeStates[node.getNr()] = nodeType;
 
         return nodeType;
     }
@@ -451,10 +485,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             int nodeType = getNodeType(node, false);
 
-            if (nodeType == -1) { //unknown state
+            if (parameterization.getTypeSet().isAmbiguousTypeIndex(nodeType)) { //unknown state
 
                 //TODO test if SA model case is properly implemented (not tested!)
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
+                    if (parameterization.getTypeSet().ambiguityExcludesType(nodeType, type))
+                        continue;
 
                     if (isRhoTip[node.getNr()]) {
                         state.ge[type] = new SmallNumber(
@@ -515,8 +551,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 int saNodeType = getNodeType(sampleNode, false);
 
                 //TODO test if properly implemented (not tested!)
-                if (saNodeType == -1) { // unknown state
+                if (parameterization.getTypeSet().isAmbiguousTypeIndex(saNodeType)) { // unknown state
                     for (int type = 0; type < parameterization.getNTypes(); type++) {
+                        if (parameterization.getTypeSet().ambiguityExcludesType(saNodeType, type))
+                            continue;
+
                         if (!isRhoTip[sampleNode.getNr()]) {
 
                             state.p0[type] = g.p0[type];
@@ -524,7 +563,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                                     * (1 - system.r[intervalIdx][type]));
 
                         } else {
-                            // TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
                             state.p0[type] = g.p0[type] * (1 - system.rho[intervalIdx][type]);
                             state.ge[type] = g.ge[type].scalarMultiplyBy(system.rho[intervalIdx][type]
                                     * (1 - system.r[intervalIdx][type]));
@@ -543,7 +581,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                                         * (1 - system.r[intervalIdx][saNodeType]));
 
                     } else {
-                        // TODO COME BACK AND CHANGE (can be dealt with with getAllPInitialConds)
                         for (int type = 0; type < parameterization.getNTypes(); type++) {
                             state.p0[type] = g.p0[type] * (1 - system.rho[intervalIdx][type]);
                         }
@@ -588,9 +625,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                                 system, depth + 1);
                         childState2 = secondChildTraversal.get();
                     } catch (InterruptedException | ExecutionException e) {
+                        if (e.getCause() instanceof MathIllegalStateException causeEx)
+                            throw causeEx; // Signal the Distribution to return -infinity
+
                         Log.err("Error encountered performing parallel tree prior calculation.");
                         e.printStackTrace();
-
                         System.exit(1);
                     }
 
@@ -681,7 +720,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         for (int i = 0; i < leafCount; i++) { // get all leaf times
             leafTimes[i] = parameterization.getNodeTime(tree.getNode(i), finalSampleOffset.getArrayValue());
-//            leafTimes[i] = parameterization.getTotalProcessLength() - tree.getNode(i).getHeight();
             indicesSortedByLeafTime[i] = i;
         }
 
@@ -1034,7 +1072,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             if (p_i == 1)
                 return Double.NEGATIVE_INFINITY; // Following BDSKY's behaviour
 
-//            logP -= Math.log(1.0 - p_i);
             if (conditionOnRootInput.get())
                 logP -= 2.0 * Math.log(1.0 - p_i);
             else
@@ -1042,7 +1079,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         // Account for possible label permutations
-        logP += -Gamma.logGamma(tree.getLeafNodeCount() + 1);
+        logP -= Gamma.logGamma(tree.getLeafNodeCount() + 1);
 
         return logP;
     }
