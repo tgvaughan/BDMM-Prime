@@ -204,8 +204,8 @@ public class TrajectorySamplerTest {
 
     @Test
     public void untypedSimpleSATLLikelihoodTest() {
-//        Randomizer.setSeed(53);
-        Randomizer.setSeed(42);
+        Randomizer.setSeed(53);
+//        Randomizer.setSeed(42);
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
