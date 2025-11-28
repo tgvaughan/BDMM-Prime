@@ -1238,7 +1238,7 @@ These values can be nicely plotted using =geom_ribbon()= to display the CPD boun
 and a =geom_line()= to display the medians.
 #+begin_src R
   ggplot(gridded_traj,
-         aes(age, N, col=factor(type), fill=factor(type), y=med, ymin=low, ymax=high)) +
+         aes(x=age, y=med, ymin=low, ymax=high, col=factor(type), fill=factor(type))) +
       geom_ribbon(alpha=0.5) +
     geom_line() +
     ylab("Population size")
@@ -1257,7 +1257,7 @@ are the number of years prior to this date.)
          mutate(Location=recode(factor(type),
                            "0"="Hong Kong",
                            "1"="New Zealand")),
-         aes(date, N, col=Location, fill=Location, y=med, ymin=low, ymax=high)) +
+         aes(x=Date, y=med, ymin=low, ymax=high, col=Location, fill=Location)) +
       geom_ribbon(alpha=0.5) +
       geom_line() + ylab("Population size") +
       scale_x_date(date_breaks="1 year", date_labels="%Y")
