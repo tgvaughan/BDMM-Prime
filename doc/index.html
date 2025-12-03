@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2025-07-14 Mon 17:01 -->
+<!-- 2025-11-28 Fri 16:21 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -86,7 +86,8 @@
 </li>
 </ul>
 </li>
-<li><a href="#id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">3.6. Miscellaneous inputs</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Process-Conditioning">3.6. Process Conditioning</a></li>
+<li><a href="#id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">3.7. Miscellaneous inputs</a></li>
 </ul>
 </li>
 <li><a href="#id-1-Sampling-Latent-Variables">4. Sampling Latent Variables</a>
@@ -134,7 +135,7 @@
 </div>
 </nav>
 
-<figure id="org75fd61e">
+<figure id="orgb31827b">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -326,7 +327,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="org68691f4">
+<figure id="org0ed5439">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -348,7 +349,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="orgb39efe0">
+<figure id="org25ed6a4">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -379,7 +380,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="org2538083">
+<figure id="org5626ecb">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -402,7 +403,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="org4d70ae6">
+<figure id="orgee6898c">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -426,7 +427,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="org946e4df">
+<figure id="org4a3037d">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -436,7 +437,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="org938393a">
+<figure id="org06c2aa3">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -466,7 +467,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="org779b919">
+<figure id="org56a3461">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -492,7 +493,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="org426214f">
+<figure id="orgb76b001">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -515,7 +516,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="orgd63dd64">
+<figure id="orge9589fe">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -555,7 +556,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="orgcf266ec">
+<figure id="orgbebe0ab">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -588,7 +589,7 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org316a867">
+<figure id="orge3f0e52">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
@@ -669,7 +670,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="org0b6a689">
+<figure id="org4ecf504">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -781,7 +782,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="orge27a392">
+<figure id="org105f9e7">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -816,7 +817,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="org025e2aa">
+<figure id="orge6daaad">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -840,7 +841,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="orgbc02aeb">
+<figure id="org7d6f34e">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -952,14 +953,31 @@ can be accessed by pressing the button labeled <code>?</code>.)
 <h4 id="id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type"><span class="section-number-4">3.2.1.</span> Leaves with unknown type</h4>
 <div class="outline-text-4" id="text-id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type">
 <p>
-Sometimes you may not know to which type a tip should be assigned.  In this case
-you can set the type to a "?" which indicates that the type is unknown. In this
-case the phylodynamic likelihood will be evaluated under the assumption that type
-information for this tip is unavailable.
+Sometimes you may not know to which type a tip should be assigned. You
+can ask BDMM-Prime to infer the type of these tips.
 </p>
 
 <p>
-Beware that designating all of your tip types as unknown can easily
+To do this, ensure the "Allow tip type ambiguities" option above the tip type table
+is selected, as indicated by the red arrow in the following image:
+</p>
+
+
+<figure id="orga34d342">
+<img src="./figures/unknown_types.png" alt="unknown_types.png">
+
+</figure>
+
+<p>
+If the tip type is completely unknown, you can set the type to a "?"
+which indicates that the type is unknown. On the other hand, if you only wish to
+allow the tip to take a on values from a subset of the possible types, enter the
+names of the possible types separated with a '|' character.  Example use of this
+notation is shown in the cells indicated by the blue arrows in the image.
+</p>
+
+<p>
+Beware that designating all of your tip types as unknown will
 result in unidentifiability with respect to permutation of the mapping
 between types and rates. To avoid this you'll need to impose some
 additional symmetry-breaking constraints, e.g. <code>birthRate[0]&gt;birthRate[1]</code>.
@@ -1103,15 +1121,6 @@ an individual of another type.</dd>
 <dt>Birth Among Demes ($\lambda_{ij}$)</dt><dd>This is the rate at which an individual with some type <i>produces</i>
 an individual of another type.</dd>
 </dl>
-
-<p>
-Finally, the following parameter expresses the total duration of the birth-death-sampling
-process. 
-</p>
-<dl class="org-dl">
-<dt>ProcessLength</dt><dd>the time between the start of the process and the most recent sample.
-(Here equivalent to the "origin" of the process.)</dd>
-</dl>
 </div>
 </div>
 <div id="outline-container-id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological" class="outline-4">
@@ -1183,9 +1192,9 @@ species to carry a new type.</dd>
 </dl>
 
 <p>
-(The rho sampling, removal probability, migration and process
-length parameters are identical to those described for the canonical
-parameterization.)
+(The rho sampling, migration and process length parameters are
+identical to those described for the canonical parameterization.  The
+removalProbability is fixed to zero in the FBD parameterization.)
 </p>
 
 <p>
@@ -1218,7 +1227,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org2b8de6f">
+<figure id="orgbbfb577">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1257,7 +1266,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="org66435b4">
+<figure id="org1669dac">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1375,8 +1384,64 @@ oldest sample included in the analysis.)
 </div>
 </div>
 </div>
+<div id="outline-container-id-2-Model-specification-using-BEAUti-Process-Conditioning" class="outline-3">
+<h3 id="id-2-Model-specification-using-BEAUti-Process-Conditioning"><span class="section-number-3">3.6.</span> Process Conditioning</h3>
+<div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Process-Conditioning">
+<p>
+The process conditioning block allow you to adjust how the birth-death
+tree generation process is conditioned. By default it appears as follows:
+</p>
+
+
+<figure id="orgadc77c5">
+<img src="./figures/conditioning.png" alt="conditioning.png">
+
+</figure>
+
+<p>
+The following options can be set:
+</p>
+
+<dl class="org-dl">
+<dt>Condition on Root</dt><dd>Enabling this option causes the process length
+to be fixed to the age of the root of the tree relative to the end
+of the process, and to appropriately condition the tree prior on this root.
+In the case of models which allow for sampled ancestors, this option
+additionally imposes a condition that no sampled ancestors appear on
+the "stem edge" of the tree. (I.e. the root node must be a divergence.)</dd>
+
+<dt>Condition on Origin</dt><dd>Enabling this option causes the process length
+to be fixed to the age of the "origin" of the birth-death process,
+which is in general older than the age of the root. The value of the
+adjacent checkbox determines whether this parameter should be itself
+estimated.  This option is enabled by default, as it is the most common
+choice.</dd>
+
+<dt>Initial age of Origin</dt><dd>When "Condition on Origin" is selected, this
+can be used to set the (initial) value of the origin age parameter.</dd>
+
+<dt>Condition on Survival</dt><dd>When "Condition on Origin" is selected,
+enabling this option causes the tree prior to include a term which
+conditions the tree probability on having at least one sampled
+individual in the dataset.</dd>
+</dl>
+
+<p>
+To place a parametric prior on the process length&#x2014;regardless of
+whether it corresponds to the tree root age or the origin age&#x2014;use
+the parametric prior selection option labeled
+"processLengthBDMMPrime" toward the bottom of the page.
+</p>
+
+<p>
+<b>Warning:</b> If you select "Condition on Root", take care to avoid
+defining a separate MRCA prior for the root since one is already
+defined for "processLengthBDMMPrime".
+</p>
+</div>
+</div>
 <div id="outline-container-id-2-Model-specification-using-BEAUti-Miscellaneous-inputs" class="outline-3">
-<h3 id="id-2-Model-specification-using-BEAUti-Miscellaneous-inputs"><span class="section-number-3">3.6.</span> Miscellaneous inputs</h3>
+<h3 id="id-2-Model-specification-using-BEAUti-Miscellaneous-inputs"><span class="section-number-3">3.7.</span> Miscellaneous inputs</h3>
 <div class="outline-text-3" id="text-id-2-Model-specification-using-BEAUti-Miscellaneous-inputs">
 <p>
 Besides the main settings for the model described above, there are several
@@ -1385,7 +1450,7 @@ in their default configuration:
 </p>
 
 
-<figure id="org1ef14ff">
+<figure id="org0286400">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1395,18 +1460,6 @@ Below we describe each of them in turn.
 </p>
 
 <dl class="org-dl">
-<dt>Condition on Survival</dt><dd>This is a modelling option which, when
-enabled, causes the tree prior to include a term which conditions
-the tree probability on having at least one sampled individual in
-the dataset.</dd>
-
-<dt>Use Analytical Single Type Solution</dt><dd>When there is only a single
-type in the dataset, this option tells BDMM-Prime to
-use analytical (BDSKY) expressions for computing the tree probability
-rather than to rely on numerical integration. For multi-type analyses
-this option has no effect.  (Unless you are testing the numerical
-integration code, there is really no reason to ever disable this option.)</dd>
-
 <dt>Rel Tolerance and Abs Tolerance</dt><dd>These parameters determine the tolerance
 thresholds given to the numerical integration algorithm used to compute
 the tree probability when multiple types are in play.  You should usually
@@ -1457,7 +1510,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="org6147210">
+<figure id="orgce03458">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1524,7 +1577,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="org28c8307">
+<figure id="orgb8d3e3a">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1545,7 +1598,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="org584b64d">
+<figure id="org8ebd4df">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1683,7 +1736,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="orgb2043cb">
+<figure id="orga00a6a6">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1746,7 +1799,7 @@ and a <code>geom_line()</code> to display the medians.
 </p>
 <div class="org-src-container">
 <pre class="src src-R">ggplot(gridded_traj,
-       aes(age, N, col=factor(type), fill=factor(type), y=med, ymin=low, ymax=high)) +
+       aes(x=age, y=med, ymin=low, ymax=high, col=factor(type), fill=factor(type))) +
     geom_ribbon(alpha=0.5) +
   geom_line() +
   ylab(<span class="org-string">"Population size"</span>)
@@ -1757,7 +1810,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="orgdd43693">
+<figure id="org89d8e18">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1774,7 +1827,7 @@ are the number of years prior to this date.)
        mutate(Location=recode(factor(type),
                          <span class="org-string">"0"</span>=<span class="org-string">"Hong Kong"</span>,
                          <span class="org-string">"1"</span>=<span class="org-string">"New Zealand"</span>)),
-       aes(date, N, col=Location, fill=Location, y=med, ymin=low, ymax=high)) +
+       aes(x=Date, y=med, ymin=low, ymax=high, col=Location, fill=Location)) +
     geom_ribbon(alpha=0.5) +
     geom_line() + ylab(<span class="org-string">"Population size"</span>) +
     scale_x_date(date_breaks=<span class="org-string">"1 year"</span>, date_labels=<span class="org-string">"%Y"</span>)
@@ -1782,7 +1835,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="orgf81eb04">
+<figure id="org8a30fe9">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -2007,7 +2060,6 @@ parameterization.
 <dt><code>diversificationRate</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The diversification rate (difference of speciation and extinction rates) skyline.</dd>
 <dt><code>turnover</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The turnover (ratio of extinction rate to birth rate) skyline.</dd>
 <dt><code>samplingProportion</code> (<code>SkylineVectgorParameter</code>, required)</dt><dd>The sampling proportion skyline.</dd>
-<dt><code>removalProb</code> (<code>SkylineVectorParameter</code>, required)</dt><dd>A skyline parameter representing the probability of removal on sampling.</dd>
 <dt><code>rhoSampling</code> (<code>TimedParameter</code>)</dt><dd>Specifies the times and probabilities of contemporaneous sampling events.</dd>
 <dt><code>migrationRate</code> (<code>SkylineMatrixParameter</code>)</dt><dd>The migration rate matrix skyline.</dd>
 <dt><code>diversificationRateAmongDemes</code> (<code>SkylineMatrixParameter</code>)</dt><dd>A matrix skyline representing the difference between the speciation rate
@@ -2597,11 +2649,27 @@ This object defines a set of types for a multi-type birth-death model.
 <dt><code>value</code> (<code>String</code>)</dt><dd>If provided, specifies a comma-delimited list of types.
 For instance, the string ="New Zealand, Australia, Samoa" specifies 3 types
 with those names.</dd>
+
 <dt><code>typeTraitSet</code> (<code>TraitSet</code>)</dt><dd>If provided, specifies a trait set whose unique values
 will be used to assemble the possible types.</dd>
-<dt><code>unknownTypeIdentifier (=String</code>, default "?")</dt><dd>If provided, taxa
-whose type trait value matches this string will be regarded as
-having an "unknown" type.</dd>
+
+<dt><code>allowAmbiguousTypes</code> (<code>Boolean</code>)</dt><dd>If enabled, the types assigned
+to certain taxa may be treated as "ambiguous", i.e. incompletely
+known.  How such ambiguities are specified is determined by the
+following pair of inputs.</dd>
+
+<dt><code>unknownTypeIdentifier (=String</code>, default "?")</dt><dd>When
+<code>allowAmbiguousTypes</code> is true, taxa whose type trait value matches
+this string will be regarded as having a completely "unknown" type. That is,
+the true type of the taxon may be any one of those available in the model, with
+prior probabilities determined by the multi-type birth-death process.</dd>
+
+<dt><code>ambiguousTypeDelimiter</code> (<code>String</code>, default "\|")</dt><dd>This string represents a
+regular expression. When <code>allowAmbiguousTypes</code> is true, this regular expression
+will be used to split taxon type trait values into substrings, which are then
+interpreted as the possible types that taxon can take.  For example, the default
+regexp would cause the type trait value "USA|NewZealand" to indicate that the
+corresponding taxon could belong to either of these two demes.</dd>
 </dl>
 
 <p>
@@ -3069,30 +3137,40 @@ sampling in the H3N2 example used in the tutorial:
 <td class="org-right">10000</td>
 <td class="org-right">0</td>
 <td class="org-right">8.67</td>
-<td class="org-left">N</td>
-<td class="org-right">0</td>
-<td class="org-left">NA</td>
-<td class="org-right">1</td>
-</tr>
-
-<tr>
-<td class="org-right">10000</td>
-<td class="org-right">0</td>
-<td class="org-right">8.67</td>
-<td class="org-left">N</td>
-<td class="org-right">1</td>
-<td class="org-left">NA</td>
-<td class="org-right">0</td>
-</tr>
-
-<tr>
-<td class="org-right">10000</td>
-<td class="org-right">0</td>
-<td class="org-right">8.67</td>
 <td class="org-left">O</td>
 <td class="org-right">NA</td>
 <td class="org-left">NA</td>
 <td class="org-right">NA</td>
+</tr>
+
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0</td>
+<td class="org-right">8.67</td>
+<td class="org-left">N</td>
+<td class="org-right">0</td>
+<td class="org-left">NA</td>
+<td class="org-right">1</td>
+</tr>
+
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0</td>
+<td class="org-right">8.67</td>
+<td class="org-left">N</td>
+<td class="org-right">1</td>
+<td class="org-left">NA</td>
+<td class="org-right">0</td>
+</tr>
+
+<tr>
+<td class="org-right">10000</td>
+<td class="org-right">0.0865</td>
+<td class="org-right">8.58</td>
+<td class="org-left">B</td>
+<td class="org-right">0</td>
+<td class="org-left">0</td>
+<td class="org-right">1</td>
 </tr>
 
 <tr>
@@ -3113,16 +3191,6 @@ sampling in the H3N2 example used in the tutorial:
 <td class="org-right">1</td>
 <td class="org-left">NA</td>
 <td class="org-right">0</td>
-</tr>
-
-<tr>
-<td class="org-right">10000</td>
-<td class="org-right">0.0865</td>
-<td class="org-right">8.58</td>
-<td class="org-left">B</td>
-<td class="org-right">0</td>
-<td class="org-left">0</td>
-<td class="org-right">1</td>
 </tr>
 
 <tr>
@@ -3190,19 +3258,19 @@ simulation step.)
 <h2 id="id-1-License"><span class="section-number-2">6.</span> License</h2>
 <div class="outline-text-2" id="text-id-1-License">
 <p>
-BDMM-Prime is free software.  It is made available under the terms of
-the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public Licence version 3</a>. Unlike many software
-licenses, this is designed to give you, the user, the freedom to use
-the software as you wish - including making and publishing
-modifications - provided you also extend the same freedom to other
-users.
+BDMM-Prime is free software.  It is made available to you under the
+terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.html">GNU General Public Licence version 3</a> or, at your option,
+any later version. Unlike many software licenses, this is designed to
+give you, the user, the freedom to use the software as you wish -
+including making and publishing modifications - provided you also
+extend the same courtesy to other users.
 </p>
 </div>
 </div>
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2025-07-14 Mon 17:01</p>
+<p class="date">Created: 2025-11-28 Fri 16:21</p>
 </div>
 </body>
 </html>

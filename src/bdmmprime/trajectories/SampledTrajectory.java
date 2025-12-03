@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 ETH Zurich
+ * Copyright (C) 2019-2025 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -193,11 +193,30 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
                 for (int p = 0; p < nParticles; p++)
                     particleWeights[p] = particleWeights[p] / sumOfScaledWeights;
 
-                // Resample particle ensemble
+                // Resample particle ensemble using residual resampling
 
-                ReplacementSampler sampler = new ReplacementSampler(particleWeights);
+                double sumOfResiduals = 0.0;
+                int pPrime = 0;
+                for (int p=0; p<nParticles; p++) {
+                    double rescaledWeight = particleWeights[p]*nParticles;
+                    int copies = (int)rescaledWeight; // Number of copies to deterministically produce
+                    for (int i=0; i<copies; i++) {
+                        particlesPrime[pPrime++].assignTrajAndZeroWeight(particles[p]);
+                    }
+                    particleWeights[p] = rescaledWeight - copies; // Store fractional residuals
+                    sumOfResiduals += particleWeights[p];
+                }
+
+                // Normalize residuals:
                 for (int p = 0; p < nParticles; p++)
-                    particlesPrime[p].assignTrajAndZeroWeight(particles[sampler.next()]);
+                    particleWeights[p] = particleWeights[p] / sumOfResiduals;
+
+                // Sample remaining copies according to residual weight distribution
+                ReplacementSampler sampler = new ReplacementSampler(particleWeights);
+                while (pPrime<nParticles) {
+                    particlesPrime[pPrime++].assignTrajAndZeroWeight(particles[sampler.next()]);
+                }
+
 
                 Particle[] tmp = particles;
                 particles = particlesPrime;

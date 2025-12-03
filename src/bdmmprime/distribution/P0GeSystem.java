@@ -1,3 +1,21 @@
+/*
+ * Copyright (C) 2019-2025 ETH Zurich
+ * Copyright (C) 2013-2018 Denise Kühnert
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package bdmmprime.distribution;
 
 
@@ -153,9 +171,22 @@ public class P0GeSystem extends P0System {
             FirstOrderIntegrator integrator = new DormandPrince54Integrator(
                     integrationMinStep, integrationMaxStep,
                     absoluteToleranceVector, relativeToleranceVector);
-            if (storeIntegrationResults)
-                integrator.addStepHandler(continuousOutputModel);
+
+            ContinuousOutputModel com = null;
+            if (storeIntegrationResults) {
+                com = new ContinuousOutputModel();
+                integrator.addStepHandler(com);
+            }
+
             integrator.integrate(this, tStart, pgScaled.getEquation(), tEnd, integrationResults); // perform the integration step
+
+            if (storeIntegrationResults) {
+                if (continuousOutputModel == null) {
+                    continuousOutputModel = com;
+                } else {
+                    continuousOutputModel.append(com);
+                }
+            }
 
             double[] pConditions = new double[n];
             SmallNumber[] geConditions = new SmallNumber[n];

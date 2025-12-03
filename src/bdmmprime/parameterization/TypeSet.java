@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019-2024 ETH Zurich
+ * Copyright (C) 2019-2025 ETH Zurich
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,14 +31,26 @@ import java.util.*;
  */
 public class TypeSet extends BEASTObject {
 
-    public Input<String> valueInput = new Input<>("value", "Comma-delmited list of types.");
-    public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet", "Type trait set defining list of types.");
+    public Input<String> valueInput = new Input<>("value",
+            "Comma-delmited list of types.");
+
+    public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
+            "Type trait set defining list of types.");
+
+    public Input<Boolean> allowAmbiguousTypesInput = new Input<>("allowAmbiguousTypes",
+            "Allow specification of ambiguous types. (Default true.)", true);
 
     public Input<String> unknownTypeIndicatorInput = new Input<>("unknownTypeIdentifier",
-            "String used to identify unknown types. (Default is '?'.)", "?");
+            "String used to identify completely unknown types. (Default is '?'.)", "?");
+
+    public Input<String> ambiguousTypeDelimiterInput = new Input<>("ambiguousTypeDelimiter",
+            "Regular expression used to delimit sequences of possible type names. " +
+                    "(Default is '\\|'.)", "\\|");
 
     protected SortedSet<String> typeNameSet;
-    protected String unknownTypeIdentifier;
+
+    protected boolean allowAmbiguousTypes;
+    protected String unknownTypeIdentifier, ambiguousTypeDelimiter;
 
     public TypeSet() {}
 
@@ -71,7 +83,10 @@ public class TypeSet extends BEASTObject {
     @Override
     public void initAndValidate() {
         typeNameSet = new TreeSet<>();
-        unknownTypeIdentifier = unknownTypeIndicatorInput.get().toLowerCase();
+
+        allowAmbiguousTypes = allowAmbiguousTypesInput.get();
+        unknownTypeIdentifier = unknownTypeIndicatorInput.get();
+        ambiguousTypeDelimiter = ambiguousTypeDelimiterInput.get();
 
         if (valueInput.get() != null) {
             for (String typeName : valueInput.get().split(","))
@@ -97,8 +112,18 @@ public class TypeSet extends BEASTObject {
         for (String taxon : typeTraitSet.taxaInput.get().getTaxaNames()) {
             String typeName = typeTraitSet.getStringValue(taxon);
 
-            if (!typeName.toLowerCase().equals(unknownTypeIdentifier))
-                typeNameSet.add(typeName);
+            if (allowAmbiguousTypes) {
+                if (typeName.equals(unknownTypeIdentifier))
+                    continue;
+
+                String[] typeNameSplit = typeName.split(ambiguousTypeDelimiterInput.get());
+                if (typeNameSplit.length>1) {
+                    Arrays.stream(typeNameSplit).forEach(s -> typeNameSet.add(s.trim()));
+                    continue;
+                }
+            }
+
+            typeNameSet.add(typeName);
         }
     }
 
@@ -111,20 +136,64 @@ public class TypeSet extends BEASTObject {
 
     /**
      * Returns the numerical index corresponding to the given type name.
+     * <p>
      * In the instance that the type name matches the unknown type identifier,
-     * returns -1.
+     * or type ambiguities are enabled and the input string includes the
+     * ambiguous type list delimitation character, the return value will
+     * be -bits, where bits is a strictly positive integer specifying which
+     * of the possible types are to be included in the ambiguity set.
      *
      * @param typeName name of type
-     * @return numerical index representing type.
+     * @return numerical index representing type, or a negative value specifying
+     * an ambiguity set.
      */
     public int getTypeIndex(String typeName) {
-        if (typeName.toLowerCase().equals(unknownTypeIdentifier))
-            return -1;
+
+        if (allowAmbiguousTypes) {
+            if (typeName.equals(unknownTypeIdentifier))
+                return -((1 << getNTypes()) - 1); // Any possible type
+
+            String[] typeNameSplit = typeName.split(ambiguousTypeDelimiter);
+            if (typeNameSplit.length>1) {
+                // Calculate integer whose binary representation indicates
+                // presence/absence of types in ambiguous set
+                int bits = Arrays.stream(typeNameSplit)
+                        .map(s -> getTypeIndex(s.trim()))
+                        .reduce(0, (acc, typeIdx) -> acc + (1 << typeIdx));
+
+                return -bits;
+            }
+        }
 
         if (typeNameSet.contains(typeName))
             return (new ArrayList<>(typeNameSet).indexOf(typeName));
         else
             throw new IllegalArgumentException("TypeSet does not contain type with name " + typeName);
+    }
+
+    /**
+     * Check whether given typeIdx represents an ambiguous type.
+     *
+     * @param typeIdx type index to test
+     * @return true if typeIdx represents an ambiguous type set
+     */
+    public boolean isAmbiguousTypeIndex(int typeIdx) {
+        return typeIdx<0;
+    }
+
+    /**
+     * Test to see whether the ambiguous type set represented by ambigIdx
+     * excludes the type with the given type index.
+     *
+     * @param ambigIdx ambiguous type "index"
+     * @param typeIdx type index to check for presence of
+     * @return true if abigIdx excludes type represented by typeIdx
+     */
+    public boolean ambiguityExcludesType(int ambigIdx, int typeIdx) {
+        if (ambigIdx<0)
+            return ((-ambigIdx) & (1 << typeIdx)) == 0;
+        else
+            return ambigIdx != typeIdx;
     }
 
     /**

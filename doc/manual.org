@@ -591,12 +591,21 @@ can be accessed by pressing the button labeled =?=.)
 :CUSTOM_ID: id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type
 :END:
 
-Sometimes you may not know to which type a tip should be assigned.  In this case
-you can set the type to a "?" which indicates that the type is unknown. In this
-case the phylodynamic likelihood will be evaluated under the assumption that type
-information for this tip is unavailable.
+Sometimes you may not know to which type a tip should be assigned. You
+can ask BDMM-Prime to infer the type of these tips.
 
-Beware that designating all of your tip types as unknown can easily
+To do this, ensure the "Allow tip type ambiguities" option above the tip type table
+is selected, as indicated by the red arrow in the following image:
+
+[[./figures/unknown_types.png]]
+
+If the tip type is completely unknown, you can set the type to a "?"
+which indicates that the type is unknown. On the other hand, if you only wish to
+allow the tip to take a on values from a subset of the possible types, enter the
+names of the possible types separated with a '|' character.  Example use of this
+notation is shown in the cells indicated by the blue arrows in the image.
+
+Beware that designating all of your tip types as unknown will
 result in unidentifiability with respect to permutation of the mapping
 between types and rates. To avoid this you'll need to impose some
 additional symmetry-breaking constraints, e.g. =birthRate[0]>birthRate[1]=.
@@ -716,11 +725,6 @@ rate for every ordered pair of distinct types.
   This is the rate at which an individual with some type /produces/
   an individual of another type.
 
-Finally, the following parameter expresses the total duration of the birth-death-sampling
-process. 
-- ProcessLength :: the time between the start of the process and the most recent sample.
-  (Here equivalent to the "origin" of the process.)
-
 *** Epidemiological
 :PROPERTIES:
 :CUSTOM_ID: id-3-Parameterizations-Model-specification-using-BEAUti-Epidemiological
@@ -774,9 +778,9 @@ Besides the migration rate, species type changes are parameterized by:
   is a generalisation of diversification rate, but allowing for one of the daughter
   species to carry a new type.
 
-(The rho sampling, removal probability, migration and process
-length parameters are identical to those described for the canonical
-parameterization.)
+(The rho sampling, migration and process length parameters are
+identical to those described for the canonical parameterization.  The
+removalProbability is fixed to zero in the FBD parameterization.)
 
 *Note*: Unlike the Canonical and Epidemiological parameterizations,
 the FBD parameterization on its own does not permit exploration of the
@@ -924,6 +928,49 @@ time of the oldest sample.  (For instance, in the tutorial we configured
 the sampling rate of H3N2 such that it was set to zero prior to the
 oldest sample included in the analysis.)
 
+** Process Conditioning
+:PROPERTIES:
+:CUSTOM_ID: id-2-Model-specification-using-BEAUti-Process-Conditioning
+:END:
+
+The process conditioning block allow you to adjust how the birth-death
+tree generation process is conditioned. By default it appears as follows:
+
+[[./figures/conditioning.png]]
+
+The following options can be set:
+
+- Condition on Root ::  Enabling this option causes the process length
+  to be fixed to the age of the root of the tree relative to the end
+  of the process, and to appropriately condition the tree prior on this root.
+  In the case of models which allow for sampled ancestors, this option
+  additionally imposes a condition that no sampled ancestors appear on
+  the "stem edge" of the tree. (I.e. the root node must be a divergence.)
+
+- Condition on Origin ::  Enabling this option causes the process length
+  to be fixed to the age of the "origin" of the birth-death process,
+  which is in general older than the age of the root. The value of the
+  adjacent checkbox determines whether this parameter should be itself
+  estimated.  This option is enabled by default, as it is the most common
+  choice.
+
+- Initial age of Origin :: When "Condition on Origin" is selected, this
+   can be used to set the (initial) value of the origin age parameter.
+
+- Condition on Survival :: When "Condition on Origin" is selected,
+  enabling this option causes the tree prior to include a term which
+  conditions the tree probability on having at least one sampled
+  individual in the dataset.
+
+To place a parametric prior on the process length---regardless of
+whether it corresponds to the tree root age or the origin age---use
+the parametric prior selection option labeled
+"processLengthBDMMPrime" toward the bottom of the page.
+
+*Warning:* If you select "Condition on Root", take care to avoid
+defining a separate MRCA prior for the root since one is already
+defined for "processLengthBDMMPrime".
+
 ** Miscellaneous inputs
 :PROPERTIES:
 :CUSTOM_ID: id-2-Model-specification-using-BEAUti-Miscellaneous-inputs
@@ -936,18 +983,6 @@ in their default configuration:
 [[./figures/miscParams.png]]
 
 Below we describe each of them in turn.
-
-- Condition on Survival :: This is a modelling option which, when
-  enabled, causes the tree prior to include a term which conditions
-  the tree probability on having at least one sampled individual in
-  the dataset.
-
-- Use Analytical Single Type Solution :: When there is only a single
-  type in the dataset, this option tells BDMM-Prime to
-  use analytical (BDSKY) expressions for computing the tree probability
-  rather than to rely on numerical integration. For multi-type analyses
-  this option has no effect.  (Unless you are testing the numerical
-  integration code, there is really no reason to ever disable this option.)
 
 - Rel Tolerance and Abs Tolerance :: These parameters determine the tolerance
   thresholds given to the numerical integration algorithm used to compute
@@ -1203,7 +1238,7 @@ These values can be nicely plotted using =geom_ribbon()= to display the CPD boun
 and a =geom_line()= to display the medians.
 #+begin_src R
   ggplot(gridded_traj,
-         aes(age, N, col=factor(type), fill=factor(type), y=med, ymin=low, ymax=high)) +
+         aes(x=age, y=med, ymin=low, ymax=high, col=factor(type), fill=factor(type))) +
       geom_ribbon(alpha=0.5) +
     geom_line() +
     ylab("Population size")
@@ -1222,7 +1257,7 @@ are the number of years prior to this date.)
          mutate(Location=recode(factor(type),
                            "0"="Hong Kong",
                            "1"="New Zealand")),
-         aes(date, N, col=Location, fill=Location, y=med, ymin=low, ymax=high)) +
+         aes(x=Date, y=med, ymin=low, ymax=high, col=Location, fill=Location)) +
       geom_ribbon(alpha=0.5) +
       geom_line() + ylab("Population size") +
       scale_x_date(date_breaks="1 year", date_labels="%Y")
@@ -1429,8 +1464,6 @@ parameterization.
   The turnover (ratio of extinction rate to birth rate) skyline.
 - =samplingProportion= (=SkylineVectgorParameter=, required) ::
   The sampling proportion skyline.
-- =removalProb= (=SkylineVectorParameter=, required) ::
-  A skyline parameter representing the probability of removal on sampling.
 - =rhoSampling= (=TimedParameter=) ::
   Specifies the times and probabilities of contemporaneous sampling events.
 - =migrationRate= (=SkylineMatrixParameter=) ::
@@ -1685,11 +1718,27 @@ This object defines a set of types for a multi-type birth-death model.
 - =value= (=String=) :: If provided, specifies a comma-delimited list of types.
   For instance, the string ="New Zealand, Australia, Samoa" specifies 3 types
   with those names.
+
 - =typeTraitSet= (=TraitSet=) :: If provided, specifies a trait set whose unique values
   will be used to assemble the possible types.
-- =unknownTypeIdentifier (=String=, default "?") :: If provided, taxa
-  whose type trait value matches this string will be regarded as
-  having an "unknown" type.
+
+- =allowAmbiguousTypes= (=Boolean=) :: If enabled, the types assigned
+  to certain taxa may be treated as "ambiguous", i.e. incompletely
+  known.  How such ambiguities are specified is determined by the
+  following pair of inputs.
+  
+- =unknownTypeIdentifier (=String=, default "?") :: When
+  =allowAmbiguousTypes= is true, taxa whose type trait value matches
+  this string will be regarded as having a completely "unknown" type. That is,
+  the true type of the taxon may be any one of those available in the model, with
+  prior probabilities determined by the multi-type birth-death process.
+  
+- =ambiguousTypeDelimiter= (=String=, default "\|") :: This string represents a
+  regular expression. When =allowAmbiguousTypes= is true, this regular expression
+  will be used to split taxon type trait values into substrings, which are then
+  interpreted as the possible types that taxon can take.  For example, the default
+  regexp would cause the type trait value "USA|NewZealand" to indicate that the
+  corresponding taxon could belong to either of these two demes.
 
 It is possible to specify values for both the =value= and =typeTraitSet= inputs. In this case,
 all types present in =value= will be included in the type set regardless of whether or not
@@ -2081,12 +2130,12 @@ sampling in the H3N2 example used in the tutorial:
 |--------+--------+------+----------+------+-------+-------|
 | Sample |      t |  age | variable | type | type2 | value |
 |--------+--------+------+----------+------+-------+-------|
+|  10000 |      0 | 8.67 | O        |   NA | NA    |    NA |
 |  10000 |      0 | 8.67 | N        |    0 | NA    |     1 |
 |  10000 |      0 | 8.67 | N        |    1 | NA    |     0 |
-|  10000 |      0 | 8.67 | O        |   NA | NA    |    NA |
+|  10000 | 0.0865 | 8.58 | B        |    0 | 0     |     1 |
 |  10000 | 0.0865 | 8.58 | N        |    0 | NA    |     2 |
 |  10000 | 0.0865 | 8.58 | N        |    1 | NA    |     0 |
-|  10000 | 0.0865 | 8.58 | B        |    0 | 0     |     1 |
 |    ... |    ... |  ... | ...      |  ... | ...   |   ... |
 
 The sample column on the left indicates the MCMC iteration the
@@ -2136,12 +2185,12 @@ simulation step.)
 :CUSTOM_ID: id-1-License
 :END:
 
-BDMM-Prime is free software.  It is made available under the terms of
-the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]]. Unlike many software
-licenses, this is designed to give you, the user, the freedom to use
-the software as you wish - including making and publishing
-modifications - provided you also extend the same courtesy to other
-users.
+BDMM-Prime is free software.  It is made available to you under the
+terms of the [[https://www.gnu.org/licenses/gpl-3.0.html][GNU General Public Licence version 3]] or, at your option,
+any later version. Unlike many software licenses, this is designed to
+give you, the user, the freedom to use the software as you wish -
+including making and publishing modifications - provided you also
+extend the same courtesy to other users.
 
 
 # Evaluate the following block to update section IDs #

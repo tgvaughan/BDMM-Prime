@@ -1,4 +1,4 @@
-<package name="BDMM-Prime" version="2.4.0">
+<package name="BDMM-Prime" version="2.6.1">
   <depends on="BEAST.base" atleast="2.7.0" atmost="2.7.9"/>
   <depends on="BEAST.app" atleast="2.7.0" atmost="2.7.9"/>
   <depends on="SA" atleast="2.1.0"/>
@@ -27,6 +27,7 @@
     <provider classname="bdmmprime.util.operators.JointSkylineScaleOperator"/>
     <provider classname="bdmmprime.util.InitializedTraitSet"/>
     <provider classname="bdmmprime.util.Slice"/>
+    <provider classname="bdmmprime.util.ProcessLength"/>
     <provider classname="bdmmprime.util.NodeAgeLogger"/>
     <provider classname="bdmmprime.util.OptionalLogger"/>
     <provider classname="bdmmprime.util.StartTypePriorProbsLogger"/>
@@ -56,5 +57,6 @@
     <provider classname="bdmmprime.beauti.SkylineVectorInputEditor"/>
     <provider classname="bdmmprime.beauti.SkylineMatrixInputEditor"/>
     <provider classname="bdmmprime.beauti.TypeTraitSetInputEditor"/>
+    <provider classname="bdmmprime.beauti.ProcessLengthInputEditor"/>
   </service>
 </package>

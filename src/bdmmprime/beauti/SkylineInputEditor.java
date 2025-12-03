@@ -1,9 +1,25 @@
+/*
+ * Copyright (C) 2019-2025 ETH Zurich
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 package bdmmprime.beauti;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.parameterization.SkylineParameter;
-import bdmmprime.util.InitializedTraitSet;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.evolution.tree.TraitSet;
@@ -135,7 +151,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz.getChildren().add(visualizerCheckBox);
         mainInputBox.getChildren().add(boxHoriz);
 
-        epochVisualizer = getTypeTraitSet().getNewVisualizer(getTree(), skylineParameter);
+        epochVisualizer = new EpochVisualizerPane(getTree(), getTypeTraitSet(), skylineParameter);
         epochVisualizer.widthProperty().bind(mainInputBox.widthProperty().subtract(10));
         epochVisualizer.setVisible(skylineParameter.epochVisualizerDisplayed);
         epochVisualizer.setManaged(skylineParameter.epochVisualizerDisplayed);
@@ -268,6 +284,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         });
 
         visualizerCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            if (newValue)
+                epochVisualizer.repaintCanvas();
             skylineParameter.epochVisualizerDisplayed = newValue;
             epochVisualizer.setVisible(newValue);
             epochVisualizer.setManaged(newValue);
@@ -331,15 +349,20 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         return (Tree) doc.pluginmap.get("Tree.t:" + getPartitionID());
     }
 
-    protected InitializedTraitSet getTypeTraitSet() {
-        TraitSet traitSet = skylineParameter.getOutputs().stream()
-                .filter(bi -> bi instanceof Parameterization)
-                .findFirst().get().getOutputs().stream()
-                .filter(bi -> bi instanceof BirthDeathMigrationDistribution)
-                .map(bi -> (BirthDeathMigrationDistribution)bi)
-                .findFirst().get().typeTraitSetInput.get();
+    protected TraitSet getTypeTraitSet() {
 
-        return (InitializedTraitSet) traitSet;
+        for (BEASTInterface out : skylineParameter.getOutputs()) {
+            if (out instanceof Parameterization param) {
+                for (BEASTInterface out2 : param.getOutputs()) {
+                    if (out2 instanceof  BirthDeathMigrationDistribution bdmmPrimeDistrib) {
+                        return bdmmPrimeDistrib.typeTraitSetInput.get();
+                    }
+                }
+            }
+        }
+
+        throw new IllegalStateException("SkylineParameter not connected " +
+                "to a BirthDeathMigrationModel.");
     }
 
     /**
