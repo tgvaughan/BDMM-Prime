@@ -90,6 +90,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         changeTimesBox.getChildren().add(changeTimesEntryRow);
         HBox changeTimesBoxRow = FXUtils.newHBox();
         CheckBox timesAreAgesCheckBox = new CheckBox("Times specified as ages");
+        timesAreAgesCheckBox.setTooltip(new Tooltip("If selected, change times are treated as ages relative to the final sample."));
         changeTimesBoxRow.getChildren().add(timesAreAgesCheckBox);
         CheckBox estimateTimesCheckBox = new CheckBox("Estimate change times");
         changeTimesBoxRow.getChildren().add(estimateTimesCheckBox);
@@ -99,6 +100,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         CheckBox timesAreRelativeCheckBox = new CheckBox("Relative to process length");
         changeTimesBoxRow.getChildren().add(timesAreRelativeCheckBox);
         Button distributeChangeTimesButton = new Button("Distribute evenly");
+        distributeChangeTimesButton.setTooltip(new Tooltip("Distribute change times evenly over the full process length."));
         changeTimesBoxRow.getChildren().add(distributeChangeTimesButton);
         changeTimesBox.getChildren().add(changeTimesBoxRow);
 
@@ -138,6 +140,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         boxHoriz.getChildren().add(scalarRatesCheckBox);
         CheckBox linkValuesCheckBox = new CheckBox("Link identical values");
         linkValuesCheckBox.setSelected(skylineParameter.linkIdenticalValuesInput.get());
+        linkValuesCheckBox.setTooltip(new Tooltip("Cause BEAST to treat initially identical values as a single parameter."));
         boxHoriz.getChildren().add(linkValuesCheckBox);
 
         mainInputBox.getChildren().add(boxHoriz);
@@ -245,17 +248,15 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
             RealParameter changeTimesParam = (RealParameter) skylineParameter.changeTimesInput.get();
             int nTimes = changeTimesParam.getDimension();
+            double processLength = skylineParameter.processLengthInput.get().getArrayValue();
 
             if (skylineParameter.timesAreRelativeInput.get()) {
                 for (int i = 0; i < nTimes; i++) {
                     changeTimesParam.setValue(i, ((double) (i + 1)) / (nTimes + 1));
                 }
             } else {
-                if (nTimes > 1) {
-                    for (int i = 0; i < nTimes - 1; i++) {
-                        changeTimesParam.setValue(i,
-                                (changeTimesParam.getArrayValue(nTimes - 1) * (i + 1)) / (nTimes + 1));
-                    }
+                for (int i = 0; i < nTimes; i++) {
+                    changeTimesParam.setValue(i, processLength*(i+1) / (nTimes + 1));
                 }
             }
 
