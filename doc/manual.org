@@ -343,7 +343,7 @@ Find the Migration Rate parameter, then:
 :CUSTOM_ID: id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors
 :END:
 
-With the multi-type model is configured, what remains is to define priors for
+With the multi-type model itself configured, what remains is to define priors for
 each of the parameters we're estimating.  As in any ther BEAST analysis, this
 includes parameters each of the various site, clock and phylodynamic models we've
 configured.
