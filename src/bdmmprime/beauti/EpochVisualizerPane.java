@@ -34,6 +34,9 @@ import java.math.MathContext;
 import java.util.Arrays;
 import java.util.Optional;
 
+/**
+ * Implements the "epoch visualiser" part of the skyline parameter input editor.
+ */
 public class EpochVisualizerPane extends Canvas {
 
     Tree tree;
@@ -65,6 +68,7 @@ public class EpochVisualizerPane extends Canvas {
         gc.clearRect(0,0,getWidth(),getHeight());
 
         reinitTree(); // Ensure tree matches any constraints
+        param.initAndValidate(); // Respond to any process length updates
 
         boolean useAges = param.timesAreAgesInput.get();
         double processLength = param.processLengthInput.get().getArrayValue();
@@ -135,14 +139,13 @@ public class EpochVisualizerPane extends Canvas {
 
         gc.setStroke(Color.BLACK);
         gc.setFill(Color.BLACK);
-        for (double t=0; t<=processLength; t += delta) {
-            gc.strokeLine(getHorizontalPixel(gc, t, processLength), axisBaseY,
-                    getHorizontalPixel(gc, t, processLength),
+
+        for (double timeOrAge=0; timeOrAge<=processLength; timeOrAge += delta) {
+            gc.strokeLine(getHorizontalPixel(gc, timeOrAge, processLength), axisBaseY,
+                    getHorizontalPixel(gc, timeOrAge, processLength),
                     axisBaseY+fontHeight/4);
 
-            double val = useAges
-                    ? processLength - t
-                    : t;
+            double val = timeOrAge;
 
             String tickLabel;
             if (Math.ceil(val) == val)
@@ -154,16 +157,18 @@ public class EpochVisualizerPane extends Canvas {
                         .stripTrailingZeros().toEngineeringString();
 
             gc.fillText(tickLabel,
-                    getHorizontalPixel(gc, t, processLength) - fontHeight/2,
+                    getHorizontalPixel(gc, timeOrAge, processLength) - fontHeight/2,
                     axisBaseY+fontHeight/4+fontHeight);
         }
 
-        // Mark Origin
+        // Mark Root or Origin
 
         String processStartLabel = ((ProcessLength)(param.processLengthInput.get())).treeInput.get() != null
                 ? "Root" : "Origin";
 
-        double originPosition = getHorizontalPixel(gc, 0.0, processLength);
+        double originPosition = useAges
+                ? getHorizontalPixel(gc, processLength, processLength)
+                : getHorizontalPixel(gc, 0, processLength);
         gc.strokeLine(originPosition, axisBaseY, originPosition, fontHeight*HEADER_HEIGHT);
         gc.fillText(processStartLabel,
                 originPosition-getStringWidth(gc, processStartLabel)/2,
@@ -177,11 +182,11 @@ public class EpochVisualizerPane extends Canvas {
         for (int epoch=0; epoch<param.getChangeCount(); epoch++) {
             String boundaryLabel = (epoch+1) + " -> " + (epoch+2);
 
-            double changeTime = useAges
-                    ? param.getChangeTimes()[param.getChangeCount()-epoch-1]
+            double changeTimeOrAge = useAges
+                    ? processLength - param.getChangeTimes()[param.getChangeCount()-epoch-1]
                     : param.getChangeTimes()[epoch];
 
-            double boundaryPosition = getHorizontalPixel(gc, changeTime, processLength);
+            double boundaryPosition = getHorizontalPixel(gc, changeTimeOrAge, processLength);
             gc.strokeLine(boundaryPosition, axisBaseY, boundaryPosition,
                     fontHeight*HEADER_HEIGHT);
 
@@ -190,17 +195,20 @@ public class EpochVisualizerPane extends Canvas {
                     fontHeight*HEADER_HEIGHT);
         }
 
-        // Compute sample ages
+        // Compute sample times or ages
 
         int nLeaves = tree.getLeafNodeCount();
-        double[] leafTimes = new double[nLeaves];
+        double[] leafTimesOrAges = new double[nLeaves];
         if (tree.hasDateTrait()) {
             if (tree.getDateTrait().getStringValue(tree.getNode(0).getID()) == null)
                 tree.getDateTrait().initAndValidate();
-            for (int nodeNr = 0; nodeNr < nLeaves; nodeNr++)
-                leafTimes[nodeNr] = processLength - tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
+            for (int nodeNr = 0; nodeNr < nLeaves; nodeNr++) {
+                leafTimesOrAges[nodeNr] = tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
+                if (!useAges)
+                    leafTimesOrAges[nodeNr] = processLength - leafTimesOrAges[nodeNr];
+            }
         } else {
-            Arrays.fill(leafTimes, processLength);
+            Arrays.fill(leafTimesOrAges, useAges ? 0.0 : processLength);
         }
 
         // Draw samples
@@ -218,16 +226,24 @@ public class EpochVisualizerPane extends Canvas {
                 rowNum = param.getNTypes()-1-typeSet.getTypeIndex(typeName);
             }
 
-            gc.setFill(sampleCols[getEpoch(leafTimes[nodeNr]) % sampleCols.length]);
+            gc.setFill(sampleCols[getEpoch(leafTimesOrAges[nodeNr],useAges,processLength) % sampleCols.length]);
 
             double circleRad = fontHeight/4;
-            gc.fillOval(getHorizontalPixel(gc, leafTimes[nodeNr], processLength) - circleRad,
+            gc.fillOval(getHorizontalPixel(gc, leafTimesOrAges[nodeNr], processLength) - circleRad,
                     axisBaseY - fontHeight*HEIGHT_PER_TYPE/2 - fontHeight*HEIGHT_PER_TYPE*rowNum - circleRad,
                     circleRad*2, circleRad*2);
         }
     }
 
-    int getEpoch(double time) {
+    double getTime(double timeOrAge, boolean useAges, double processLength) {
+        return useAges
+                ? processLength - timeOrAge
+                : timeOrAge;
+    }
+
+    int getEpoch(double timeOrAge, boolean useAges, double processLength) {
+        double time = getTime(timeOrAge, useAges, processLength);
+
         int epoch=0;
 
         while (epoch < param.getChangeCount() && time > param.getChangeTimes()[epoch])
@@ -239,24 +255,19 @@ public class EpochVisualizerPane extends Canvas {
         return epoch;
     }
 
-
-    public void setScalar(boolean scalar) {
-        isScalar = scalar;
-        repaintCanvas();
-    }
-
-    double getHorizontalPixel(GraphicsContext gc, double time, double processLength) {
-        boolean useAges = param.timesAreAgesInput.get();
+    double getHorizontalPixel(GraphicsContext gc, double timeOrAge, double processLength) {
+//        boolean useAges = param.timesAreAgesInput.get();
 
         double charHeight = gc.getFont().getSize();
         double axisXStart = charHeight*2;
         double axisXEnd = getWidth() - charHeight*2;
 
-        int scaledTime = (int)Math.round((axisXEnd-axisXStart)*time/processLength);
+        int scaledTime = (int)Math.round((axisXEnd-axisXStart)*timeOrAge/processLength);
 
-        return useAges
-                ? axisXEnd - scaledTime
-                : axisXStart + scaledTime;
+        return axisXStart + scaledTime;
+//        return useAges
+//                ? axisXEnd - scaledTime
+//                : axisXStart + scaledTime;
     }
 
     private double getStringWidth(GraphicsContext gc, String string) {
@@ -290,5 +301,15 @@ public class EpochVisualizerPane extends Canvas {
 
             }
         }
+    }
+
+    /**
+     * Called by input editor when skyline is set as scalar.
+     *
+     * @param scalar Whether skyline is scalar-valued.
+     */
+    public void setScalar(boolean scalar) {
+        isScalar = scalar;
+        repaintCanvas();
     }
 }
