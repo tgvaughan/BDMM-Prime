@@ -197,15 +197,16 @@ public class EpochVisualizerPane extends Canvas {
 
         // Compute sample times or ages
 
-        int nLeaves = tree.getLeafNodeCount();
-        double[] leafTimesOrAges = new double[nLeaves];
+        int nTaxa = tree.getTaxonset().getTaxonCount();
+        double[] leafTimesOrAges = new double[nTaxa];
         if (tree.hasDateTrait()) {
             if (tree.getDateTrait().getStringValue(tree.getNode(0).getID()) == null)
                 tree.getDateTrait().initAndValidate();
-            for (int nodeNr = 0; nodeNr < nLeaves; nodeNr++) {
-                leafTimesOrAges[nodeNr] = tree.getDateTrait().getValue(tree.getNode(nodeNr).getID());
+            for (int taxonNr = 0; taxonNr < nTaxa; taxonNr++) {
+                String taxonID = tree.getTaxonset().getTaxonId(taxonNr);
+                leafTimesOrAges[taxonNr] = tree.getDateTrait().getValue(taxonID);
                 if (!useAges)
-                    leafTimesOrAges[nodeNr] = processLength - leafTimesOrAges[nodeNr];
+                    leafTimesOrAges[taxonNr] = processLength - leafTimesOrAges[taxonNr];
             }
         } else {
             Arrays.fill(leafTimesOrAges, useAges ? 0.0 : processLength);
@@ -215,21 +216,22 @@ public class EpochVisualizerPane extends Canvas {
 
         Color[] sampleCols = new Color[] {Color.RED, Color.ORANGE};
 
-        for (int nodeNr=0; nodeNr<nLeaves; nodeNr++) {
+        for (int taxonNr=0; taxonNr<nTaxa; taxonNr++) {
 
             int rowNum;
             if (isScalar) {
                 rowNum = 0;
             } else {
-                Node node = tree.getNode(nodeNr);
-                String typeName = typeTraitSet.getStringValue(tree.getTaxonId(node));
+                String taxonID = tree.getTaxonset().getTaxonId(taxonNr);
+                String typeName = typeTraitSet.getStringValue(taxonID);
+
                 rowNum = param.getNTypes()-1-typeSet.getTypeIndex(typeName);
             }
 
-            gc.setFill(sampleCols[getEpoch(leafTimesOrAges[nodeNr],useAges,processLength) % sampleCols.length]);
+            gc.setFill(sampleCols[getEpoch(leafTimesOrAges[taxonNr],useAges,processLength) % sampleCols.length]);
 
             double circleRad = fontHeight/4;
-            gc.fillOval(getHorizontalPixel(gc, leafTimesOrAges[nodeNr], processLength) - circleRad,
+            gc.fillOval(getHorizontalPixel(gc, leafTimesOrAges[taxonNr], processLength) - circleRad,
                     axisBaseY - fontHeight*HEIGHT_PER_TYPE/2 - fontHeight*HEIGHT_PER_TYPE*rowNum - circleRad,
                     circleRad*2, circleRad*2);
         }
