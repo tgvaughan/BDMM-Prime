@@ -211,7 +211,8 @@ public abstract class Parameterization extends CalculationNode {
             storedBirthRates = new double[intervalEndTimes.length][nTypes];
             storedMigRates = new double[intervalEndTimes.length][nTypes][nTypes];
             storedCrossBirthRates2 = new double[intervalEndTimes.length][nTypes][nTypes];
-            storedCrossBirthRates3 = new double[intervalEndTimes.length][nTypes][nTypes][nTypes];
+            if (hasCrossBirthRates3())
+                storedCrossBirthRates3 = new double[intervalEndTimes.length][nTypes][nTypes][nTypes];
             storedDeathRates = new double[intervalEndTimes.length][nTypes];
             storedSamplingRates = new double[intervalEndTimes.length][nTypes];
             storedRemovalProbs = new double[intervalEndTimes.length][nTypes];
@@ -238,9 +239,11 @@ public abstract class Parameterization extends CalculationNode {
                 for (int i = 0; i < nTypes; i++) {
                     System.arraycopy(crossBirthRate2Matrix[i], 0, crossBirthRates2[interval][i], 0, nTypes);
 
-                    if (crossBirthRate3Matrix != null) {
-                        for (int j = 0; j < nTypes; j++) {
-                            System.arraycopy(crossBirthRate3Matrix[i][j], 0, crossBirthRates3[interval][i][j], 0, nTypes);
+                    if (hasCrossBirthRates3()) {
+                        if (crossBirthRate3Matrix != null) {
+                            for (int j = 0; j < nTypes; j++) {
+                                System.arraycopy(crossBirthRate3Matrix[i][j], 0, crossBirthRates3[interval][i][j], 0, nTypes);
+                            }
                         }
                     }
                 }
@@ -274,8 +277,8 @@ public abstract class Parameterization extends CalculationNode {
                             || crossBirthRates2[interval][type][typep] < 0)
                         return false;
 
-                    if (crossBirthRates3 != null) {
-                        for (int typepp=0; typepp<=typep; typepp++) {
+                    if (hasCrossBirthRates3()) {
+                        for (int typepp = 0; typepp <= typep; typepp++) {
                             if (typepp == type)
                                 continue;
 
@@ -337,10 +340,15 @@ public abstract class Parameterization extends CalculationNode {
         return crossBirthRates3;
     }
 
+    /**
+     * Returns true if this parameterization defines nonzero lambda_ijk birth
+     * events.  (When implementing a new parameterization that does produce
+     * such rates, remember to override this definition!)
+     *
+     * @return true for parameterizations which support lambda_ijk>0
+     */
     public boolean hasCrossBirthRates3() {
-        update();
-
-        return crossBirthRates3 != null;
+        return false;
     }
 
     /**
@@ -425,9 +433,11 @@ public abstract class Parameterization extends CalculationNode {
                     System.arraycopy(crossBirthRates2[interval][fromType], 0,
                             storedCrossBirthRates2[interval][fromType], 0, nTypes);
 
-                    for (int toType1 = 0; toType1 < nTypes; toType1++) {
-                        System.arraycopy(crossBirthRates3[interval][fromType][toType1], 0,
-                                storedCrossBirthRates3[interval][fromType][toType1], 0, nTypes);
+                    if (hasCrossBirthRates3()) {
+                        for (int toType1 = 0; toType1 < nTypes; toType1++) {
+                            System.arraycopy(crossBirthRates3[interval][fromType][toType1], 0,
+                                    storedCrossBirthRates3[interval][fromType][toType1], 0, nTypes);
+                        }
                     }
                 }
             }
@@ -442,6 +452,7 @@ public abstract class Parameterization extends CalculationNode {
         double[] scalarTmp;
         double[][] vectorTmp;
         double[][][] matrixTmp;
+        double[][][][] matrix3Tmp;
 
         scalarTmp = intervalEndTimes;
         intervalEndTimes = storedIntervalEndTimes;
@@ -475,6 +486,12 @@ public abstract class Parameterization extends CalculationNode {
             matrixTmp = crossBirthRates2;
             crossBirthRates2 = storedCrossBirthRates2;
             storedCrossBirthRates2 = matrixTmp;
+
+            if (hasCrossBirthRates3()) {
+                matrix3Tmp = crossBirthRates3;
+                crossBirthRates3 = storedCrossBirthRates3;
+                storedCrossBirthRates3 = matrix3Tmp;
+            }
         }
 
         super.restore();
