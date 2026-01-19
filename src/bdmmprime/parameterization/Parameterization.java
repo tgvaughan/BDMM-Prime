@@ -239,6 +239,8 @@ public abstract class Parameterization extends CalculationNode {
      * @return true if all values are within bounds.
      */
     public boolean valuesAreValid() {
+        update();
+
         for (int interval=0; interval < intervalEndTimes.length; interval++) {
             for (int type=0; type<nTypes; type++ ) {
                 if (birthRates[interval][type] < 0
