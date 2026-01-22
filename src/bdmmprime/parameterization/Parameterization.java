@@ -62,13 +62,13 @@ public abstract class Parameterization extends CalculationNode {
             storedRemovalProbs, storedRhoValues;
     private double[][][] storedMigRates, storedCrossBirthRates;
 
-    final static double[] EMPTY_TIME_ARRAY = new double[0];
-    double[] ZERO_VALUE_ARRAY;
-    double[][] ZERO_VALUE_MATRIX;
+    final static protected double[] EMPTY_TIME_ARRAY = new double[0];
+    protected double[] ZERO_VALUE_ARRAY;
+    protected double[][] ZERO_VALUE_MATRIX;
 
-    TypeSet typeSet;
+    protected TypeSet typeSet;
 
-    int nTypes;
+    protected int nTypes;
 
     @Override
     public void initAndValidate() {
