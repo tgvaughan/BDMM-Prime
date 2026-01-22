@@ -1826,6 +1826,32 @@ The main inputs for the =TypedNodeTreeLogger= are:
   Typed tree whose node types to log.
 
 #+begin_src xml
+  <log spec="bdmmprime.mapping.SkylineNodeTreeLogger">
+    <!-- Inputs -->
+  </log>
+#+end_src
+
+This logger extends the node-typed tree output by =TypedNodeTreeLogger= by
+annotating each node with values from one or more skyline vector parameters
+evaluated at the node time and type.  The node times are computed using the
+provided =parameterization= (with optional =finalSampleOffset=), and the values
+are rounded to the requested decimal =precision=.
+
+The main inputs for the =SkylineNodeTreeLogger= are:
+- =typedTree= (=Tree=, required) ::
+  Typed tree whose node types to log.
+- =parameterization= (=Parameterization=, required) ::
+  Parameterization used to convert node heights to times at which skyline
+  parameters are evaluated.
+- =skylineParameter= (=SkylineVectorParameter=, required, multiple allowed) ::
+  One or more skyline vector parameters whose values are annotated at each node.
+- =finalSampleOffset= (=Function=, default 0.0) ::
+  Optional offset between the final sample and the end of the birth-death
+  process used when converting node heights to absolute times.
+- =precision= (=Integer=, default 6) ::
+  Number of decimal places used when logging skyline parameter values.
+
+#+begin_src xml
   <log spec="bdmmprime.mapping.TypeTreeStatsLogger">
     <!-- Inputs -->
   </log>

@@ -73,6 +73,9 @@ public class SkylineNodeTreeLogger extends TypedNodeTreeLogger {
 
     @Override
     public String getStrippedNewick(Node node) {
+        // Iterate over all nodes including the root
+        // and annotate each node with skyline parameter values
+        // evaluated at the node time and type
         for (Node n : node.getAllChildNodesAndSelf()) {
             double nodeTime = parameterization.getNodeTime(n, finalSampleOffset);
 
