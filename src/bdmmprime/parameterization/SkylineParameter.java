@@ -109,6 +109,11 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
         int nChangeTimes = changeTimesInput.get() == null ? 0 : changeTimesInput.get().getDimension();
         nIntervals = nChangeTimes + 1;
 
+        for (int i=1; i<nChangeTimes; i++) {
+            if (changeTimesInput.get().getArrayValue(i) < changeTimesInput.get().getArrayValue(i-1))
+                throw new IllegalArgumentException("Change times/ages must be monotonically increasing.");
+        }
+
         times = new double[nIntervals-1];
 
         storedTimes = new double[nIntervals-1];
