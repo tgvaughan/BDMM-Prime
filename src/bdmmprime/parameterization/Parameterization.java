@@ -49,18 +49,18 @@ public abstract class Parameterization extends CalculationNode {
             "Time between start of process and the end.",
             Input.Validate.REQUIRED);
 
-    private boolean dirty;
+    protected boolean dirty;
 
-    private SortedSet<Double> intervalEndTimesSet = new TreeSet<>(Utils::precisionLimitedComparator);
+    protected SortedSet<Double> intervalEndTimesSet = new TreeSet<>(Utils::precisionLimitedComparator);
 
-    private double[] intervalEndTimes, storedIntervalEndTimes;
+    protected double[] intervalEndTimes, storedIntervalEndTimes;
 
-    private double[][] birthRates, deathRates, samplingRates, removalProbs, rhoValues;
-    private double[][][] migRates, crossBirthRates;
+    protected double[][] birthRates, deathRates, samplingRates, removalProbs, rhoValues;
+    protected double[][][] migRates, crossBirthRates;
 
-    private double[][] storedBirthRates, storedDeathRates, storedSamplingRates,
+    protected double[][] storedBirthRates, storedDeathRates, storedSamplingRates,
             storedRemovalProbs, storedRhoValues;
-    private double[][][] storedMigRates, storedCrossBirthRates;
+    protected double[][][] storedMigRates, storedCrossBirthRates;
 
     final static protected double[] EMPTY_TIME_ARRAY = new double[0];
     protected double[] ZERO_VALUE_ARRAY;

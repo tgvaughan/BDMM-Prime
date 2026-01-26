@@ -62,14 +62,14 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
                     "outside of BEAUti!",
             false);
 
-    boolean timesAreAges, timesAreRelative;
+    protected boolean timesAreAges, timesAreRelative;
 
-    double[] times, storedTimes;
+    protected double[] times, storedTimes;
 
 
-    int nIntervals, nTypes;
+    protected int nIntervals, nTypes;
 
-    boolean isDirty;
+    protected boolean isDirty;
 
     public SkylineParameter() { }
 
