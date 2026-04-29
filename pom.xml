@@ -28,9 +28,9 @@
     </developers>
 
     <scm>
-        <connection>scm:git:git://github.com/tgvaughan/remaster.git</connection>
-        <developerConnection>scm:git:ssh://github.com:tgvaughan/remaster.git</developerConnection>
-        <url>https://github.com/tgvaughan/remaster</url>
+        <connection>scm:git:git://github.com/tgvaughan/bdmm-prime.git</connection>
+        <developerConnection>scm:git:ssh://github.com:tgvaughan/bdmm-prime.git</developerConnection>
+        <url>https://github.com/tgvaughan/BDMM-Prime</url>
     </scm>
 
     <properties>
@@ -40,7 +40,7 @@
         <beast.module>beast.base</beast.module>
         <beast.main>beast.base.minimal.BeastMain</beast.main>
         <beast.args/>
-        <beast.pkg.name>remaster</beast.pkg.name>
+        <beast.pkg.name>bdmm-prime</beast.pkg.name>
         <beast.pkg.version>3.0.0</beast.pkg.version>
     </properties>
 
