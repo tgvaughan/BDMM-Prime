@@ -7,6 +7,7 @@ open module bdmmprime {
     requires com.google.common;
     requires commons.math3;
     requires javafx.controls;
+    requires colt;
 
     exports bdmmprime.distribution;
     exports bdmmprime.mapping;
