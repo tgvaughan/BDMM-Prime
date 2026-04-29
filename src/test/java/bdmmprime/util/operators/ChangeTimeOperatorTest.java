@@ -24,12 +24,13 @@ import beast.base.inference.distribution.Prior;
 import beast.base.inference.distribution.Uniform;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.util.Randomizer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChangeTimeOperatorTest extends OperatorTestParent {
 
@@ -72,7 +73,7 @@ public class ChangeTimeOperatorTest extends OperatorTestParent {
         // uniform distribution on [-10,10], i.e. beta-distributed:
         Double[] means = testLogger.getMeans(changeTimes);
         for (int idx=0; idx<5; idx++) {
-            Assert.assertEquals(((idx+1)/6.0)*20 - 10, means[idx], 0.05);
+            assertEquals(((idx+1)/6.0)*20 - 10, means[idx], 0.05);
         }
     }
 }

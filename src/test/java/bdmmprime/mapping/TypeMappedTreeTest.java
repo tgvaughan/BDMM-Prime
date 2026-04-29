@@ -24,10 +24,10 @@ import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.tree.Tree;
 import beast.base.util.Randomizer;
 import beast.base.evolution.tree.TreeParser;
-import org.apache.commons.math.special.Gamma;
-import org.junit.Test;
+import org.apache.commons.math3.special.Gamma;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TypeMappedTreeTest {
 

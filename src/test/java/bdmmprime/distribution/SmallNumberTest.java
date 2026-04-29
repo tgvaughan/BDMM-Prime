@@ -17,8 +17,9 @@
 
 package bdmmprime.distribution;
 
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SmallNumberTest {
 
@@ -30,7 +31,7 @@ public class SmallNumberTest {
         double testedA = 2.2914985084252684E90;
         SmallNumber snA = new SmallNumber(testedA);
 
-        Assert.assertEquals(Math.log(testedA), snA.log(), TOLERANCE);
+        assertEquals(Math.log(testedA), snA.log(), TOLERANCE);
     }
 
     @Test
@@ -41,7 +42,7 @@ public class SmallNumberTest {
         SmallNumber f = new SmallNumber(Math.exp(-50));
         SmallNumber c = new SmallNumber(0);
 
-        Assert.assertEquals(Math.log(aOld), a.log(), TOLERANCE);
+        assertEquals(Math.log(aOld), a.log(), TOLERANCE);
 
         SmallNumber b = new SmallNumber(1.0)
                 .multiplyBy(a)
@@ -54,7 +55,7 @@ public class SmallNumberTest {
                 .multiplyBy(a);
 
         double trueLogB = -1379.8530719994023;
-        Assert.assertEquals(trueLogB, b.log(), TOLERANCE);
+        assertEquals(trueLogB, b.log(), TOLERANCE);
 
 
         //		SmallNumber sampling = new SmallNumber();

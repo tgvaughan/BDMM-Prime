@@ -21,11 +21,9 @@ import bdmmprime.parameterization.*;
 import beast.base.evolution.tree.TreeParser;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.tree.Tree;
-import org.apache.commons.math.special.Gamma;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static junit.framework.Assert.assertEquals;
-
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
  * Created by Jeremie Scire (jscire) on 26.06.17.

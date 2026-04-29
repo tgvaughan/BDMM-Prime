@@ -19,9 +19,11 @@ package bdmmprime.util.priors;
 
 import beast.base.inference.Distribution;
 import beast.base.inference.parameter.RealParameter;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 public class MultivariateLogNormalTest {
 
@@ -37,16 +39,17 @@ public class MultivariateLogNormalTest {
         assertEquals(-2.8181831410741953, dist.calculateLogP(), 1e-10);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void testNonSymmetric() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            Distribution dist = new MultivariateLogNormal();
+            dist.initByName("x", new RealParameter("1"),
+                    "x", new RealParameter("2"),
+                    "M", new RealParameter("0 0"),
+                    "S", new RealParameter("1 1.1 1.2 1"));
 
-        Distribution dist = new MultivariateLogNormal();
-        dist.initByName("x", new RealParameter("1"),
-                "x", new RealParameter("2"),
-                "M", new RealParameter("0 0"),
-                "S", new RealParameter("1 1.1 1.2 1"));
-
-        System.out.println(dist.calculateLogP());
+            System.out.println(dist.calculateLogP());
+        });
     }
 
     @Test

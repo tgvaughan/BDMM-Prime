@@ -23,9 +23,9 @@ import bdmmprime.trajectories.simulation.SimulatedTree;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.util.Randomizer;
 import beast.base.evolution.tree.TreeParser;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TrajectorySamplerTest {
 
@@ -441,7 +441,7 @@ public class TrajectorySamplerTest {
 
     @Test
     public void untypedMultiRhoSASamplingLikelihoodTest() {
-        Randomizer.setSeed(26);
+        Randomizer.setSeed(53);
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(

@@ -22,11 +22,12 @@ import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
-import junit.framework.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class TipDatePriorTest {
 
@@ -94,15 +95,15 @@ public class TipDatePriorTest {
                 "laterBound", laterBounds,
                 "reportBoundsViolations", true);
 
-        Assert.assertEquals(0.0, prior.calculateLogP(), 1e-10);
+        assertEquals(0.0, prior.calculateLogP(), 1e-10);
 
         fsoParam.setValue(fso+0.99/365.25);
         prior.initAndValidate();
-        Assert.assertEquals(0.0, prior.calculateLogP(), 1e-10);
+        assertEquals(0.0, prior.calculateLogP(), 1e-10);
 
         fsoParam.setValue(fso-0.99/365.25);
         prior.initAndValidate();
-        Assert.assertEquals(Double.NEGATIVE_INFINITY, prior.calculateLogP(), 1e-10);
+        assertEquals(Double.NEGATIVE_INFINITY, prior.calculateLogP(), 1e-10);
 
     }
 }

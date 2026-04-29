@@ -27,12 +27,14 @@ import beast.base.inference.distribution.Prior;
 import beast.base.inference.distribution.Uniform;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.util.Randomizer;
-import org.junit.Assert;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.IOException;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 public class JointSkylineScaleOperatorTest extends OperatorTestParent {
 
@@ -125,31 +127,31 @@ public class JointSkylineScaleOperatorTest extends OperatorTestParent {
         mcmc.run();
 
         for (int idx=0; idx<5; idx++) {
-            Assert.assertEquals(5.0, testLogger.getMeans(sv1vals)[idx], 0.1);
-            Assert.assertEquals(25.0/3.0, testLogger.getVariances(sv1vals)[idx], 0.2);
+            assertEquals(5.0, testLogger.getMeans(sv1vals)[idx], 0.1);
+            assertEquals(25.0/3.0, testLogger.getVariances(sv1vals)[idx], 0.2);
         }
         for (int idx=0; idx<5; idx++) {
-            Assert.assertEquals(5.0, testLogger.getMeans(sv2vals)[idx], 0.1);
-            Assert.assertEquals(25.0/3.0, testLogger.getVariances(sv2vals)[idx], 0.2);
+            assertEquals(5.0, testLogger.getMeans(sv2vals)[idx], 0.1);
+            assertEquals(25.0/3.0, testLogger.getVariances(sv2vals)[idx], 0.2);
         }
         for (int idx=0; idx<6; idx++) {
-            Assert.assertEquals(5.0, testLogger.getMeans(smvals)[idx], 0.1);
-            Assert.assertEquals(25.0/3.0, testLogger.getVariances(smvals)[idx], 0.2);
+            assertEquals(5.0, testLogger.getMeans(smvals)[idx], 0.1);
+            assertEquals(25.0/3.0, testLogger.getVariances(smvals)[idx], 0.2);
         }
 
-        Assert.assertEquals(sv1vals.getArrayValue(0),sv1vals.getArrayValue(1), 1e-10);
-        Assert.assertNotEquals(sv1vals.getArrayValue(0),sv1vals.getArrayValue(2), 1e-10);
-        Assert.assertEquals(sv1vals.getArrayValue(3),sv1vals.getArrayValue(4), 1e-10);
+        assertEquals(sv1vals.getArrayValue(0),sv1vals.getArrayValue(1), 1e-10);
+        assertNotEquals(sv1vals.getArrayValue(0),sv1vals.getArrayValue(2), 1e-10);
+        assertEquals(sv1vals.getArrayValue(3),sv1vals.getArrayValue(4), 1e-10);
 
-        Assert.assertNotEquals(sv2vals.getArrayValue(0),sv2vals.getArrayValue(1), 1e-10);
-        Assert.assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(2), 1e-10);
-        Assert.assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(3), 1e-10);
-        Assert.assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(4), 1e-10);
+        assertNotEquals(sv2vals.getArrayValue(0),sv2vals.getArrayValue(1), 1e-10);
+        assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(2), 1e-10);
+        assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(3), 1e-10);
+        assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(4), 1e-10);
 
-        Assert.assertNotEquals(smvals.getArrayValue(0),smvals.getArrayValue(1), 1e-10);
-        Assert.assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(2), 1e-10);
-        Assert.assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(3), 1e-10);
-        Assert.assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(4), 1e-10);
-        Assert.assertNotEquals(smvals.getArrayValue(1),smvals.getArrayValue(5), 1e-10);
+        assertNotEquals(smvals.getArrayValue(0),smvals.getArrayValue(1), 1e-10);
+        assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(2), 1e-10);
+        assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(3), 1e-10);
+        assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(4), 1e-10);
+        assertNotEquals(smvals.getArrayValue(1),smvals.getArrayValue(5), 1e-10);
     }
 }

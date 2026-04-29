@@ -18,7 +18,7 @@
 package bdmmprime.distribution;
 
 import beast.base.evolution.tree.Tree;
-import org.apache.commons.math.special.Gamma;
+import org.apache.commons.math3.special.Gamma;
 
 public abstract class LikelihoodTestClass {
 
