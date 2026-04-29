@@ -70,10 +70,28 @@
             <version>4.13.2</version>
         </dependency>
 
+        <!-- Source: https://mvnrepository.com/artifact/colt/colt -->
+        <dependency>
+            <groupId>colt</groupId>
+            <artifactId>colt</artifactId>
+            <version>1.2.0</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- BEAST 3 core -->
         <dependency>
             <groupId>io.github.compevol</groupId>
             <artifactId>beast-base</artifactId>
+            <version>${beast.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.compevol</groupId>
+            <artifactId>beast-pkgmgmt</artifactId>
+            <version>${beast.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.compevol</groupId>
+            <artifactId>beast-fx</artifactId>
             <version>${beast.version}</version>
         </dependency>
 

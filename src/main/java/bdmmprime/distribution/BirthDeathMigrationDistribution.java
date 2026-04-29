@@ -29,10 +29,10 @@ import beast.base.evolution.tree.TreeInterface;
 import beast.base.inference.State;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.util.HeapSort;
-import org.apache.commons.math.special.Gamma;
 import org.apache.commons.math3.exception.MathIllegalNumberException;
 import org.apache.commons.math3.exception.MathIllegalStateException;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.apache.commons.math3.special.Gamma;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;

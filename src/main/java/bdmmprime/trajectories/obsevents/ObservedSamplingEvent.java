@@ -22,7 +22,7 @@ import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.SamplingEvent;
 import bdmmprime.util.Utils;
 import beast.base.util.Randomizer;
-import org.apache.commons.math.special.Gamma;
+import org.apache.commons.math3.special.Gamma;
 
 import static bdmmprime.util.Utils.logChoose;
 import static bdmmprime.util.Utils.nextBinomial;
