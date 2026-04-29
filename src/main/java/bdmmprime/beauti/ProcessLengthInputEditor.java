@@ -38,6 +38,8 @@ public class ProcessLengthInputEditor extends InputEditor.Base {
         super(doc);
     }
 
+    public ProcessLengthInputEditor() { super(); }
+
     @Override
     public Class<?> type() {
         return ProcessLength.class;

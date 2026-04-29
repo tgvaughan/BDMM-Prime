@@ -38,6 +38,8 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
         super(doc);
     }
 
+    public SkylineVectorInputEditor() { super(); }
+
     @Override
     public Class<?> type() {
         return SkylineVectorParameter.class;

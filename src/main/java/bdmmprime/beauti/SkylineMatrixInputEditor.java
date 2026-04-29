@@ -43,6 +43,8 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         super(doc);
     }
 
+    public SkylineMatrixInputEditor() { super(); }
+
     @Override
     public Class<?> type() {
         return SkylineMatrixParameter.class;

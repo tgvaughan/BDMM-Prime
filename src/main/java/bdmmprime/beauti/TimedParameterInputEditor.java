@@ -46,6 +46,8 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         super(doc);
     }
 
+    public TimedParameterInputEditor() { super(); }
+
     @Override
     public Class<?> type() {
         return TimedParameter.class;

@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
  */
 public class TypeTraitSetInputEditor extends InputEditor.Base {
 
+    public TypeTraitSetInputEditor() { super(); }
+
     TableView<TaxonEntry> typeTable;
     TraitSet traitSet;
     TaxonSet taxonSet;

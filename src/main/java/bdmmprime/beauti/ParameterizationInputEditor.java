@@ -29,6 +29,8 @@ public class ParameterizationInputEditor extends BEASTObjectInputEditor {
         super(doc);
     }
 
+    public ParameterizationInputEditor() { super(); }
+
     @Override
     public Class<?> type() {
         return Parameterization.class;

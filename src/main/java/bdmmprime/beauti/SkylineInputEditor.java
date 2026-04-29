@@ -51,6 +51,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         super(doc);
     }
 
+    public SkylineInputEditor() { super(); }
+
     @Override
     public void init(Input<?> input, BEASTInterface beastObject, int itemNr,
                      ExpandOption isExpandOption, boolean addButtons) {
