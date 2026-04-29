@@ -11,10 +11,8 @@
 /META-INF
 /bin
 
-# Ant build script
-/build
-/build-lib
-/dist
+# Maven output
+/target
 
 # Temporary tests and BEAST log files
 /src/tempTests/
