@@ -19,7 +19,10 @@ package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
 import beast.base.core.Description;
-import beast.base.core.Function;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.Real;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.RealVector;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -34,20 +37,20 @@ public class SkylineMatrixParameter extends SkylineParameter {
 
     public SkylineMatrixParameter() { }
 
-    public SkylineMatrixParameter(Function changeTimesParam,
-                                  Function skylineValuesParam) {
+    public SkylineMatrixParameter(RealVector<? extends Real> changeTimesParam,
+                                  RealVector<? extends Real> skylineValuesParam) {
         super(changeTimesParam, skylineValuesParam);
     }
 
-    public SkylineMatrixParameter(Function changeTimesParam,
-                                  Function skylineValuesParam,
+    public SkylineMatrixParameter(RealVector<? extends Real> changeTimesParam,
+                                  RealVector<? extends Real> skylineValuesParam,
                                   int nTypes) {
         super(changeTimesParam, skylineValuesParam, nTypes, null);
     }
 
-    public SkylineMatrixParameter(Function changeTimesParam,
-                                  Function skylineValuesParam,
-                                  int nTypes, Function origin) {
+    public SkylineMatrixParameter(RealVector<? extends Real> changeTimesParam,
+                                  RealVector<? extends Real> skylineValuesParam,
+                                  int nTypes, RealScalar<? extends NonNegativeReal> origin) {
         super(changeTimesParam, skylineValuesParam, nTypes, origin);
     }
 
@@ -56,7 +59,7 @@ public class SkylineMatrixParameter extends SkylineParameter {
         super.initAndValidate();
 
         int totalElementCount = skylineValuesInput.get() != null
-                ? skylineValuesInput.get().getDimension()
+                ? skylineValuesInput.get().size()
                 : 0;
 
         if (totalElementCount % nIntervals != 0)
@@ -98,9 +101,9 @@ public class SkylineMatrixParameter extends SkylineParameter {
                     }
 
                     if (inputIsScalar)
-                        values[interval][i][j] = skylineValuesInput.get().getArrayValue(interval);
+                        values[interval][i][j] = skylineValuesInput.get().get(interval);
                     else
-                        values[interval][i][j] = skylineValuesInput.get().getArrayValue(idx);
+                        values[interval][i][j] = skylineValuesInput.get().get(idx);
 
                     idx += 1;
                 }

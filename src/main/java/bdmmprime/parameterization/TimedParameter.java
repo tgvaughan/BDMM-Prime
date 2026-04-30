@@ -18,11 +18,13 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
 import beast.base.inference.CalculationNode;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.Real;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.RealVector;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -32,7 +34,7 @@ import java.util.Arrays;
  */
 public class TimedParameter extends CalculationNode implements Loggable {
 
-    public Input<Function> timesInput = new Input<>(
+    public Input<RealVector<? extends Real>> timesInput = new Input<>(
             "times",
             "Times associated with probabilities.");
 
@@ -46,7 +48,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
             "True if times are relative to the origin. (Default false.)",
             false);
 
-    public Input<Function> processLengthInput = new Input<>("processLength",
+    public Input<RealScalar<? extends NonNegativeReal>> processLengthInput = new Input<>("processLength",
             "Time between start of process and the end.");
 
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
@@ -54,7 +56,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
                     "single value is to be shared amongst several types.");
 
 
-    public Input<Function> valuesInput = new Input<>(
+    public Input<RealVector<? extends Real>> valuesInput = new Input<>(
             "values",
             "Probability values associated with each time.");
 
@@ -69,20 +71,20 @@ public class TimedParameter extends CalculationNode implements Loggable {
 
     public TimedParameter() { }
 
-    public TimedParameter(RealParameter timesParam, RealParameter valuesParam) {
+    public TimedParameter(RealVector<? extends Real> timesParam, RealVector<? extends Real> valuesParam) {
         timesInput.setValue(timesParam, this);
         valuesInput.setValue(valuesParam, this);
         initAndValidate();
     }
 
-    public TimedParameter(RealParameter timesParam, RealParameter valuesParam, int nTypes) {
+    public TimedParameter(RealVector<? extends Real> timesParam, RealVector<? extends Real> valuesParam, int nTypes) {
         timesInput.setValue(timesParam, this);
         valuesInput.setValue(valuesParam, this);
         typeSetInput.setValue(new TypeSet(nTypes), this);
         initAndValidate();
     }
 
-    public TimedParameter(RealParameter timesParam, RealParameter valuesParam, Function processLength) {
+    public TimedParameter(RealVector<? extends Real> timesParam, RealVector<? extends Real> valuesParam, RealScalar<? extends NonNegativeReal> processLength) {
         timesInput.setValue(timesParam, this);
         valuesInput.setValue(valuesParam, this);
         processLengthInput.setValue(processLength, this);
@@ -100,7 +102,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
                     "when times are given as ages and/or when times are relative.");
 
         if (timesInput.get() != null)
-            nTimes = timesInput.get().getDimension();
+            nTimes = timesInput.get().size();
         else
             nTimes = 0;
 
@@ -112,7 +114,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
         storedTimes = new double[nTimes];
 
         int valsPerInterval = nTimes>0
-                ? valuesInput.get().getDimension() / nTimes
+                ? valuesInput.get().size() / nTimes
                 : 1;
 
         inputIsScalar = valsPerInterval == 1;
@@ -181,10 +183,10 @@ public class TimedParameter extends CalculationNode implements Loggable {
 
     private void updateTimes() {
         for (int i=0; i<nTimes; i++)
-            times[i] = timesInput.get().getArrayValue(i);
+            times[i] = timesInput.get().get(i);
 
         if (timesAreRelative) {
-            double startAge = processLengthInput.get().getArrayValue();
+            double startAge = processLengthInput.get().get();
 
             for (int i=0; i<nTimes; i++)
                 times[i] *= startAge;
@@ -193,7 +195,7 @@ public class TimedParameter extends CalculationNode implements Loggable {
         if (timesAreAges) {
             Utils.reverseDoubleArray(times);
 
-            double startAge = processLengthInput.get().getArrayValue();
+            double startAge = processLengthInput.get().get();
 
             for (int i=0; i<times.length; i++) {
                 times[i] = startAge-times[i];
@@ -205,9 +207,9 @@ public class TimedParameter extends CalculationNode implements Loggable {
         for (int timeIdx=0; timeIdx<nTimes; timeIdx++) {
             for (int typeIdx=0; typeIdx<nTypes; typeIdx++) {
                 if (inputIsScalar)
-                    values[timeIdx][typeIdx] = valuesInput.get().getArrayValue(timeIdx);
+                    values[timeIdx][typeIdx] = valuesInput.get().get(timeIdx);
                 else
-                    values[timeIdx][typeIdx] = valuesInput.get().getArrayValue(timeIdx*nTypes + typeIdx);
+                    values[timeIdx][typeIdx] = valuesInput.get().get(timeIdx*nTypes + typeIdx);
             }
         }
 

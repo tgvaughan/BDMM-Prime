@@ -18,6 +18,11 @@
 package bdmmprime.parameterization;
 
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.Real;
+import beast.base.spec.domain.UnitInterval;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -29,7 +34,7 @@ public class ParameterizationTest {
     @Test
     public void basicTest() {
 
-		RealParameter originParam = new RealParameter("2.0");
+		RealScalarParam<NonNegativeReal> originParam = new RealScalarParam<>(2.0, NonNegativeReal.INSTANCE);
 
 		Parameterization parameterization = new CanonicalParameterization();
 		parameterization.initByName(
@@ -37,25 +42,25 @@ public class ParameterizationTest {
                 "processLength", originParam,
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("4.0"), 2),
+                        new RealVectorParam<>(new double[] {4.0}, NonNegativeReal.INSTANCE), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("3.0"), 2),
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE), 2),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.0"), 2),
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE), 2),
                 "migrationRate", new SkylineMatrixParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.1 0.2"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, Real.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.1, 0.2}, NonNegativeReal.INSTANCE), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5"), 2),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE), 2),
                 "rhoSampling", new TimedParameter(
-                        originParam,
-                        new RealParameter("0.0 0.0")));
+                        new RealVectorParam<>(new double[] {originParam.get()}, Real.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.0, 0.0}, UnitInterval.INSTANCE)));
 
 		assertEquals(2, parameterization.getTotalIntervalCount());
 

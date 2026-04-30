@@ -18,7 +18,10 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.Real;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.RealVector;
 
 import java.io.PrintStream;
 import java.util.Arrays;
@@ -32,20 +35,20 @@ public class SkylineVectorParameter extends SkylineParameter {
 
     public SkylineVectorParameter() { }
 
-    public SkylineVectorParameter(RealParameter changeTimesParam,
-                                  RealParameter skylineValuesParam) {
+    public SkylineVectorParameter(RealVector<? extends Real> changeTimesParam,
+                                  RealVector<? extends Real> skylineValuesParam) {
         super(changeTimesParam, skylineValuesParam);
     }
 
-    public SkylineVectorParameter(RealParameter changeTimesParam,
-                                  RealParameter skylineValuesParam,
+    public SkylineVectorParameter(RealVector<? extends Real> changeTimesParam,
+                                  RealVector<? extends Real> skylineValuesParam,
                                   int nTypes) {
         super(changeTimesParam, skylineValuesParam, nTypes, null);
     }
 
-    public SkylineVectorParameter(RealParameter changeTimesParam,
-                                  RealParameter skylineValuesParam,
-                                  int nTypes, RealParameter origin) {
+    public SkylineVectorParameter(RealVector<? extends Real> changeTimesParam,
+                                  RealVector<? extends Real> skylineValuesParam,
+                                  int nTypes, RealScalar<? extends NonNegativeReal> origin) {
         super(changeTimesParam, skylineValuesParam, nTypes, origin);
     }
 
@@ -53,11 +56,11 @@ public class SkylineVectorParameter extends SkylineParameter {
     public void initAndValidate() {
         super.initAndValidate();
 
-        if (skylineValuesInput.get().getDimension() % nIntervals != 0)
+        if (skylineValuesInput.get().size() % nIntervals != 0)
             throw new IllegalArgumentException("Value parameter dimension must " +
                     "be a multiple of the number of intervals.");
 
-        int valsPerInterval = skylineValuesInput.get().getDimension()/nIntervals;
+        int valsPerInterval = skylineValuesInput.get().size()/nIntervals;
         inputIsScalar = valsPerInterval==1;
 
         if (typeSetInput.get() != null) {
@@ -82,9 +85,9 @@ public class SkylineVectorParameter extends SkylineParameter {
         for (int interval=0; interval<nIntervals; interval++) {
             for (int i=0; i<nTypes; i++) {
                 if (inputIsScalar)
-                    values[interval][i] = skylineValuesInput.get().getArrayValue(interval);
+                    values[interval][i] = skylineValuesInput.get().get(interval);
                 else
-                    values[interval][i] = skylineValuesInput.get().getArrayValue(interval * nTypes + i);
+                    values[interval][i] = skylineValuesInput.get().get(interval * nTypes + i);
             }
         }
 

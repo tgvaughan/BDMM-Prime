@@ -18,17 +18,20 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
 import beast.base.inference.CalculationNode;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.Real;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.RealVector;
 
 import java.io.PrintStream;
 import java.util.*;
 
 public abstract class SkylineParameter extends CalculationNode implements Loggable {
 
-    public Input<Function> changeTimesInput = new Input<>("changeTimes",
+    public Input<RealVector<? extends Real>> changeTimesInput = new Input<>("changeTimes",
             "Parameter containing change times for skyline function.");
 
     public Input<Boolean> timesAreRelativeInput = new Input<>("timesAreRelative",
@@ -40,11 +43,11 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
                     "of times after birth-death process start.",
             false);
 
-    public Input<Function> skylineValuesInput = new Input<>("skylineValues",
+    public Input<RealVector<? extends Real>> skylineValuesInput = new Input<>("skylineValues",
             "Parameter specifying parameter values through time.",
             Input.Validate.REQUIRED);
 
-    public Input<Function> processLengthInput = new Input<>("processLength",
+    public Input<RealScalar<? extends NonNegativeReal>> processLengthInput = new Input<>("processLength",
             "Time between start of process and the end.");
 
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
@@ -73,17 +76,17 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
 
     public SkylineParameter() { }
 
-    public SkylineParameter(Function changeTimesParam,
-                            Function skylineValuesParam) {
+    public SkylineParameter(RealVector<? extends Real> changeTimesParam,
+                            RealVector<? extends Real> skylineValuesParam) {
         changeTimesInput.setValue(changeTimesParam, this);
         skylineValuesInput.setValue(skylineValuesParam, this);
         initAndValidate();
     }
 
-    public SkylineParameter(Function changeTimesParam,
-                            Function skylineValuesParam,
+    public SkylineParameter(RealVector<? extends Real> changeTimesParam,
+                            RealVector<? extends Real> skylineValuesParam,
                             int nTypes,
-                            Function processLength) {
+                            RealScalar<? extends NonNegativeReal> processLength) {
 
         changeTimesInput.setValue(changeTimesParam, this);
         skylineValuesInput.setValue(skylineValuesParam, this);
@@ -106,11 +109,11 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
             throw new IllegalArgumentException("Process length parameter or tree must be supplied " +
                     "when times are given as ages and/or when times are relative.");
 
-        int nChangeTimes = changeTimesInput.get() == null ? 0 : changeTimesInput.get().getDimension();
+        int nChangeTimes = changeTimesInput.get() == null ? 0 : changeTimesInput.get().size();
         nIntervals = nChangeTimes + 1;
 
         for (int i=1; i<nChangeTimes; i++) {
-            if (changeTimesInput.get().getArrayValue(i) < changeTimesInput.get().getArrayValue(i-1))
+            if (changeTimesInput.get().get(i) < changeTimesInput.get().get(i-1))
                 throw new IllegalArgumentException("Change times/ages must be monotonically increasing.");
         }
 
@@ -159,11 +162,11 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
 	        return;
 
         for (int i=0; i<nIntervals-1; i++)
-            times[i] = changeTimesInput.get().getArrayValue(i);
+            times[i] = changeTimesInput.get().get(i);
 
         if (timesAreRelative) {
 
-            double startAge = processLengthInput.get().getArrayValue();
+            double startAge = processLengthInput.get().get();
 
             for (int i=0; i<times.length; i++)
                 times[i] *= startAge;
@@ -172,7 +175,7 @@ public abstract class SkylineParameter extends CalculationNode implements Loggab
         if (timesAreAges) {
             Utils.reverseDoubleArray(times);
 
-            double startAge = processLengthInput.get().getArrayValue();
+            double startAge = processLengthInput.get().get();
 
             for (int i=0; i<times.length; i++)
                 times[i] = startAge-times[i];

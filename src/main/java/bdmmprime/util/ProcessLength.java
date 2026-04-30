@@ -24,6 +24,12 @@ import beast.base.core.Loggable;
 import beast.base.evolution.tree.Tree;
 import beast.base.inference.CalculationNode;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.RealVector;
 
 import java.io.PrintStream;
 
@@ -32,29 +38,39 @@ import java.io.PrintStream;
         " process, or by a tree in which case the process length is assumed to" +
         " be determined by the tree root height and a final sample offset." +
         " Used by the BDMM-Prime BEAUti template.")
-public class ProcessLength extends CalculationNode implements Loggable, Function {
+public class ProcessLength extends CalculationNode implements Loggable, RealScalar<NonNegativeReal> {
 
     public Input<Tree> treeInput = new Input<>("tree",
             "Tree whose age might define the process length.");
 
-    public Input<Function> originInput = new Input<>("origin",
+    public Input<RealScalar<? extends NonNegativeReal>> originInput = new Input<>("origin",
             "Parameter whose value might define the process length.",
             Input.Validate.XOR, treeInput);
 
-    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+    public Input<RealScalar<? extends NonNegativeReal>> finalSampleOffsetInput = new Input<>("finalSampleOffset",
             "Final sample offset.  Only used in combination with the tree.",
-            new RealParameter("0"));
+            new RealScalarParam<>(0, NonNegativeReal.INSTANCE));
 
     public Input<Boolean> isEstimatedInput = new Input<>("estimate",
             "Indicates to BEAUti whether a prior on this parameter is " +
                     "needed.", true);
 
+    public ProcessLength() {}
+
+    public ProcessLength(Tree tree) {
+        this.treeInput.setValue(tree, this);
+    }
+
+    public ProcessLength(RealScalar<? extends NonNegativeReal> origin) {
+        this.originInput.setValue(origin, this);
+    }
+
     @Override
     public void initAndValidate() { }
 
     @Override
-    public int getDimension() {
-        return 1;
+    public NonNegativeReal getDomain() {
+        return NonNegativeReal.INSTANCE;
     }
 
     public boolean isRoot() {
@@ -62,28 +78,22 @@ public class ProcessLength extends CalculationNode implements Loggable, Function
     }
 
     @Override
-    public double getArrayValue(int dim) {
+    public double get() {
         if (treeInput.get() != null)
             return treeInput.get().getRoot().getHeight() +
-                    finalSampleOffsetInput.get().getArrayValue();
+                    finalSampleOffsetInput.get().get();
         else
-            return originInput.get().getArrayValue();
+            return originInput.get().get();
     }
 
     @Override
     public void init(PrintStream out) {
-        if (getDimension()==1) {
-            out.print(getID() + "\t");
-        } else {
-            for (int i = 0; i < getDimension(); i++)
-                out.print(getID() + "[" + i + "]\t");
-        }
+        out.print(getID() + "\t");
     }
 
     @Override
     public void log(long sample, PrintStream out) {
-        for (int i=0; i<getDimension(); i++)
-            out.print(getArrayValue(i) + "\t");
+        out.print(get() + "\t");
     }
 
     @Override

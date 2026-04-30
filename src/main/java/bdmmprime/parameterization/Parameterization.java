@@ -18,10 +18,11 @@
 package bdmmprime.parameterization;
 
 import bdmmprime.util.Utils;
-import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
 import beast.base.inference.CalculationNode;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.type.RealScalar;
 
 import java.util.*;
 
@@ -45,7 +46,7 @@ public abstract class Parameterization extends CalculationNode {
             "Type set containing types in model.",
             new TypeSet(1));
 
-    public Input<Function> processLengthInput = new Input<>("processLength",
+    public Input<RealScalar<? extends NonNegativeReal>> processLengthInput = new Input<>("processLength",
             "Time between start of process and the end.",
             Input.Validate.REQUIRED);
 
@@ -108,7 +109,7 @@ public abstract class Parameterization extends CalculationNode {
     }
 
     public double getTotalProcessLength() {
-        return processLengthInput.get().getArrayValue();
+        return processLengthInput.get().get();
     }
 
     private void update() {
@@ -206,7 +207,7 @@ public abstract class Parameterization extends CalculationNode {
             index = -index - 1;
 
         // return at most the index of the last interval (m-1)
-        return Math.max(0, Math.min(index, intervalEndTimes.length-1));
+        return Math.clamp(index, 0, intervalEndTimes.length - 1);
     }
 
     void updateValues() {
