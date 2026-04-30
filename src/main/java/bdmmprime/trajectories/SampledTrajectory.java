@@ -24,9 +24,12 @@ import bdmmprime.trajectories.obsevents.*;
 import bdmmprime.util.Utils;
 import beast.base.core.*;
 import beast.base.inference.CalculationNode;
-import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.Simplex;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -48,11 +51,11 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
             "Multi-type birth-death parameterization.", Input.Validate.REQUIRED);
 
-    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+    public Input<RealScalar<? extends NonNegativeReal>> finalSampleOffsetInput = new Input<>("finalSampleOffset",
             "If provided, the difference in time between the final sample and the end of the BD process.",
-            new RealParameter("0.0"));
+            new RealScalarParam<>(0.0, NonNegativeReal.INSTANCE));
 
-    public Input<Function> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
+    public Input<Simplex> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
             "The prior probabilities for the starting type. Only needed for testing tree prob estimates.");
 
     public Input<Integer> nParticlesInput = new Input<>("nParticles",
@@ -86,7 +89,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
     Tree mappedTree;
     String typeLabel;
     Parameterization param;
-    Function finalSampleOffset;
+    RealScalar<? extends NonNegativeReal> finalSampleOffset;
 
     int nTypes, nParticles;
     double resampThresh;
@@ -261,7 +264,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             // distribution having the observed state.  However, because _all_ of the
             // particles have this initial value, it doesn't affect the weight distribution.
             // It affects the tree prob estimate though, which is important for testing.
-            logTreeProbEstimate += Math.log(startTypePriorProbsInput.get().getArrayValue(rootType));
+            logTreeProbEstimate += Math.log(startTypePriorProbsInput.get().get(rootType));
         }
 
         return logTreeProbEstimate - logGamma(mappedTree.getLeafNodeCount() + 1);
@@ -294,7 +297,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
         List<ObservedEvent> eventList = new ArrayList<>();
         ObservedSamplingEvent[] thisSamplingEvent = new ObservedSamplingEvent[param.getNTypes()];
         for (Node node : sampleNodes) {
-            double t = param.getNodeTime(node, finalSampleOffset.getArrayValue());
+            double t = param.getNodeTime(node, finalSampleOffset.get());
             int type = getNodeType(node, typeLabel);
 
             if (thisSamplingEvent[type] == null || !Utils.equalWithPrecision(t,thisSamplingEvent[type].time)) {
@@ -316,13 +319,13 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             if (node.getChildCount() == 1) {
                 // Observed type change
 
-                eventList.add(new TypeChangeEvent(param.getNodeTime(node, finalSampleOffset.getArrayValue()),
+                eventList.add(new TypeChangeEvent(param.getNodeTime(node, finalSampleOffset.get()),
                         getNodeType(node, typeLabel),
                         getNodeType(node.getChild(0), typeLabel),1));
             } else {
                 // Coalescence
 
-                eventList.add(new CoalescenceEvent(param.getNodeTime(node, finalSampleOffset.getArrayValue()),
+                eventList.add(new CoalescenceEvent(param.getNodeTime(node, finalSampleOffset.get()),
                         getNodeType(node, typeLabel),
                         getNodeType(node.getChild(0), typeLabel),
                         getNodeType(node.getChild(1), typeLabel), 1));
