@@ -20,7 +20,7 @@ package bdmmprime.trajectories.simulation;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.*;
-import beast.base.core.Function;
+import beast.base.spec.type.Simplex;
 import beast.base.util.Randomizer;
 
 import static bdmmprime.util.Utils.nextBinomial;
@@ -28,7 +28,7 @@ import static org.apache.commons.math3.stat.StatUtils.sum;
 
 public class TrajectorySimulator {
 
-    Function initialTypeProbs;
+    Simplex initialTypeProbs;
 
     int nTypes;
 
@@ -37,7 +37,7 @@ public class TrajectorySimulator {
 
     Parameterization param;
 
-    public TrajectorySimulator(Parameterization parameterization, Function initialTypeProbs) {
+    public TrajectorySimulator(Parameterization parameterization, Simplex initialTypeProbs) {
 
         param = parameterization;
 
@@ -61,11 +61,11 @@ public class TrajectorySimulator {
 
         double[] initialState = new double[nTypes];
         int startType;
-        double u = Randomizer.nextDouble()*sum(initialTypeProbs.getDoubleValues());
+        double u = Randomizer.nextDouble();
         for (startType=0; startType<nTypes-1; startType++) {
-            if (u < initialTypeProbs.getArrayValue(startType))
+            if (u < initialTypeProbs.get(startType))
                 break;
-            u -= initialTypeProbs.getArrayValue(startType);
+            u -= initialTypeProbs.get(startType);
         }
         initialState[startType] = 1.0;
 

@@ -22,7 +22,7 @@ import bdmmprime.trajectories.Trajectory;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
 import beast.base.inference.CalculationNode;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.type.Simplex;
 
 import java.io.PrintStream;
 
@@ -32,7 +32,7 @@ public class UnconditionedTrajectoryLogger extends CalculationNode implements Lo
             "BDMM parameterization",
             Input.Validate.REQUIRED);
 
-    public Input<RealParameter> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
+    public Input<Simplex> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
             "The type probabilities for the first individual.",
             Input.Validate.REQUIRED);
 

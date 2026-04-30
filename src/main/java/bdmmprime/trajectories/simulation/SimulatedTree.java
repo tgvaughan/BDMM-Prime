@@ -26,6 +26,13 @@ import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.Real;
+import beast.base.spec.domain.UnitInterval;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.inference.parameter.SimplexParam;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.Simplex;
 import beast.base.util.Randomizer;
 
 import java.io.FileNotFoundException;
@@ -51,11 +58,11 @@ public class SimulatedTree extends Tree {
             "BDMM parameterization",
             Input.Validate.REQUIRED);
 
-    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+    public Input<RealScalar<? extends NonNegativeReal>> finalSampleOffsetInput = new Input<>("finalSampleOffset",
             "The difference in time between the final sample and the end of the BD process. " +
                     "Will be set by the simulator.", Input.Validate.REQUIRED);
 
-    public Input<RealParameter> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
+    public Input<Simplex> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
             "The type probabilities for the first individual.",
             Input.Validate.REQUIRED);
 
@@ -107,7 +114,7 @@ public class SimulatedTree extends Tree {
         } while (traj.getSampleCount() < Math.max(minSamples,1));
 
         RealParameter fso = (RealParameter) finalSampleOffsetInput.get();
-        fso.setValue(param.processLengthInput.get().getArrayValue() - traj.getFinalSampleTime());
+        fso.setValue(param.processLengthInput.get().get() - traj.getFinalSampleTime());
 
         if (trajFileNameInput.get() != null) {
             try (PrintStream out = new PrintStream(trajFileNameInput.get())) {
@@ -206,27 +213,27 @@ public class SimulatedTree extends Tree {
                 "typeSet", new TypeSet(2),
                 "origin", "3.0",
                 "birthRate", new SkylineVectorParameter(
-                        new RealParameter("4.0"),
-                        new RealParameter("2.0 0.0"), 2),
+                        new RealVectorParam<>(new double[] {4.0}, Real.INSTANCE),
+                        new RealVectorParam<>(new double[] {2.0, 0.0}, NonNegativeReal.INSTANCE), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.1"), 2),
+                        new RealVectorParam<>(new double[] {0.1}, NonNegativeReal.INSTANCE), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.1"), 2),
+                        new RealVectorParam<>(new double[] {0.1}, UnitInterval.INSTANCE), 2),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.5"), 2),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE), 2),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("2.0 3.0 4.0"),
-                        new RealParameter("0.5 0.5 0.5"), 2));
+                        new RealVectorParam<>(new double[] {2.0, 3.0, 4.0}, Real.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.5, 0.5, 0.5}, UnitInterval.INSTANCE), 2));
 
         SimulatedTree sim = new SimulatedTree();
         sim.initByName("parameterization", param,
-                "frequencies", new RealParameter("0.5 0.5"),
+                "frequencies", new SimplexParam(new double[] {0.5, 0.5}),
                 "simulationTime", "5.0");
 
         System.out.println(sim.getRoot().toSortedNewick(new int[1], true));

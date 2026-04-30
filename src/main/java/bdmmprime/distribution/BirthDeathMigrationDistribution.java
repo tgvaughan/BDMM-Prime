@@ -28,6 +28,11 @@ import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeInterface;
 import beast.base.inference.State;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.inference.parameter.SimplexParam;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.Simplex;
 import beast.base.util.HeapSort;
 import org.apache.commons.math3.exception.MathIllegalNumberException;
 import org.apache.commons.math3.exception.MathIllegalStateException;
@@ -60,13 +65,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             "BDMM parameterization",
             Input.Validate.REQUIRED);
 
-    public Input<Function> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+    public Input<RealScalar<? extends NonNegativeReal>> finalSampleOffsetInput = new Input<>("finalSampleOffset",
             "If provided, the difference in time between the final sample and the end of the BD process.",
-            new RealParameter("0.0"));
+            new RealScalarParam<>(0.0, NonNegativeReal.INSTANCE));
 
-    public Input<Function> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
+    public Input<Simplex> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
             "The prior probabilities for the type of the first individual",
-            new RealParameter("1.0"));
+            new SimplexParam(new double[] {1.0}));
 
     public Input<TraitSet> typeTraitSetInput = new Input<>("typeTraitSet",
             "Trait set specifying sample trait values.");
@@ -127,7 +132,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private boolean[] isRhoTip;
 
     private Parameterization parameterization;
-    private Function finalSampleOffset;
+    private RealScalar<? extends NonNegativeReal> finalSampleOffset;
 
     private double[][] pInitialConditions;
 
@@ -153,7 +158,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         finalSampleOffset = finalSampleOffsetInput.get();
 
         if (conditionOnRootInput.get() && (parameterization.getNodeTime(tree.getRoot(),
-                        finalSampleOffset.getArrayValue()) != 0.0))
+                        finalSampleOffset.get()) != 0.0))
             throw new RuntimeException("Error: Tree root age must match total " +
                     "process length when conditionOnRoot is true.");
 
@@ -162,15 +167,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             throw new RuntimeException("Error: For models with >1 type, either " +
                     "typeTraitSet or typeLabel must be specified.");
 
-        if (startTypePriorProbsInput.get().getDimension() != parameterization.getNTypes())
+        if (startTypePriorProbsInput.get().size() != parameterization.getNTypes())
             throw new RuntimeException("Error: dimension of equilibrium frequencies " +
                     "parameter must match number of types.");
-
-        double probSum = 0;
-        for (double f : startTypePriorProbsInput.get().getDoubleValues()) probSum += f;
-        if (Math.abs(1.0 - probSum) > 1e-10)
-            throw new RuntimeException("Error: start type prior probabilities must add " +
-                    "up to 1 but currently add to " + probSum + ".");
 
         int nLeaves = tree.getLeafNodeCount();
 
@@ -196,7 +195,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         for (int nodeNr = 0; nodeNr < tree.getLeafNodeCount(); nodeNr++) {
             isRhoTip[nodeNr] = false;
             double nodeTime = parameterization.getNodeTime(tree.getNode(nodeNr),
-                    finalSampleOffset.getArrayValue());
+                    finalSampleOffset.get());
             for (double rhoSampTime : parameterization.getRhoSamplingTimes()) {
                 if (Utils.equalWithPrecision(rhoSampTime, nodeTime)) {
                     isRhoTip[nodeNr] = true;
@@ -245,7 +244,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
 
         if (Utils.lessThanWithPrecision(parameterization.getNodeTime(tree.getRoot(),
-                finalSampleOffset.getArrayValue()), 0)) {
+                finalSampleOffset.get()), 0)) {
             if (savePartialLikelihoodsToFileInput.get() != null)
                 Log.err("Tree MRCA older than start of process.");
             logP = Double.NEGATIVE_INFINITY;
@@ -298,7 +297,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     if (rate == 0.0)
                         continue;
 
-                   conditionDensity += rate* startTypePriorProbsInput.get().getArrayValue(type1)
+                   conditionDensity += rate* startTypePriorProbsInput.get().get(type1)
                            * (1-extinctionProb[type1])
                            * (1-extinctionProb[type2]);
                 }
@@ -306,7 +305,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         } else if (conditionOnSurvivalInput.get()) {
 
             for (int type = 0; type < parameterization.getNTypes(); type++)
-                conditionDensity += startTypePriorProbsInput.get().getArrayValue(type)
+                conditionDensity += startTypePriorProbsInput.get().get(type)
                         * (1-extinctionProb[type]);
 
         } else {
@@ -329,10 +328,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             P0GeState child1state, child2state;
             try {
                 child1state = calculateSubtreeLikelihood(child1, 0,
-                        parameterization.getNodeTime(child1, finalSampleOffset.getArrayValue()),
+                        parameterization.getNodeTime(child1, finalSampleOffset.get()),
                         system, 0);
                 child2state = calculateSubtreeLikelihood(child2, 0,
-                        parameterization.getNodeTime(child2, finalSampleOffset.getArrayValue()),
+                        parameterization.getNodeTime(child2, finalSampleOffset.get()),
                         system, 0);
             } catch (MathIllegalStateException ex) {
                 Log.warning("Warning: BDMM-Prime tree prior integration failure.");
@@ -365,7 +364,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             try {
                 finalP0Ge = calculateSubtreeLikelihood(root, 0,
-                        parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue()),
+                        parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.get()),
                         system, 0);
             } catch (MathIllegalStateException ex) {
                 Log.warning("Warning: BDMM-Prime tree prior integration failure.");
@@ -381,7 +380,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             SmallNumber jointProb = finalP0Ge
                     .ge[startType]
-                    .scalarMultiplyBy(startTypePriorProbsInput.get().getArrayValue(startType));
+                    .scalarMultiplyBy(startTypePriorProbsInput.get().get(startType));
 
             if (jointProb.getMantissa() > 0) {
                 startTypePosteriorProbs[startType] = jointProb.log();
@@ -538,7 +537,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
                 P0GeState g = calculateSubtreeLikelihood(
                         node.getChild(childIndex), tBottom,
-                        parameterization.getNodeTime(node.getChild(childIndex), finalSampleOffset.getArrayValue()),
+                        parameterization.getNodeTime(node.getChild(childIndex), finalSampleOffset.get()),
                         system, depth + 1);
 
                 // get state of direct ancestor,
@@ -607,12 +606,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                         // start a new thread to take care of the second subtree
                         Future<P0GeState> secondChildTraversal = pool.submit(
                                 new TraversalService(node.getChild(indexSecondChild), tBottom,
-                                        parameterization.getNodeTime(node.getChild(indexSecondChild), finalSampleOffset.getArrayValue()),
+                                        parameterization.getNodeTime(node.getChild(indexSecondChild), finalSampleOffset.get()),
                                         depth + 1));
 
                         childState1 = calculateSubtreeLikelihood(
                                 node.getChild(indexFirstChild), tBottom,
-                                parameterization.getNodeTime(node.getChild(indexFirstChild), finalSampleOffset.getArrayValue()),
+                                parameterization.getNodeTime(node.getChild(indexFirstChild), finalSampleOffset.get()),
                                 system, depth + 1);
                         childState2 = secondChildTraversal.get();
                     } catch (InterruptedException | ExecutionException e) {
@@ -627,10 +626,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                 } else {
                     childState1 = calculateSubtreeLikelihood(node.getChild(
                             indexFirstChild), tBottom,
-                            parameterization.getNodeTime(node.getChild(indexFirstChild), finalSampleOffset.getArrayValue()),
+                            parameterization.getNodeTime(node.getChild(indexFirstChild), finalSampleOffset.get()),
                             system, depth + 1);
                     childState2 = calculateSubtreeLikelihood(node.getChild(indexSecondChild), tBottom,
-                            parameterization.getNodeTime(node.getChild(indexSecondChild), finalSampleOffset.getArrayValue()),
+                            parameterization.getNodeTime(node.getChild(indexSecondChild), finalSampleOffset.get()),
                             system, depth + 1);
                 }
 
@@ -699,7 +698,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         int[] indicesSortedByLeafTime = new int[leafCount];
 
         for (int i = 0; i < leafCount; i++) { // get all leaf times
-            leafTimes[i] = parameterization.getNodeTime(tree.getNode(i), finalSampleOffset.getArrayValue());
+            leafTimes[i] = parameterization.getNodeTime(tree.getNode(i), finalSampleOffset.get());
             indicesSortedByLeafTime[i] = i;
         }
 
@@ -820,7 +819,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         if (saveIntegrationResults)
             system.setContinuousOutputModel(new ContinuousOutputModel());
 
-        double thisTime = parameterization.getNodeTime(baseNode, finalSampleOffset.getArrayValue());
+        double thisTime = parameterization.getNodeTime(baseNode, finalSampleOffset.get());
         int thisInterval = parameterization.getIntervalIndex(thisTime);
         int endInterval = parameterization.getIntervalIndex(tTop);
         double oneMinusRho;
@@ -1024,7 +1023,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (conditionOnRootInput.get()) {
 
-            double t_root = parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.getArrayValue());
+            double t_root = parameterization.getNodeTime(tree.getRoot(), finalSampleOffset.get());
             logP = getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(0), t_root, A, B, Bplus1)
                     + getSingleTypeSubtreeLogLikelihood(tree.getRoot().getChild(1), t_root, A, B, Bplus1)
                     + Math.log(2);
@@ -1068,7 +1067,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                                                      double[] A, double[] B,
                                                      double[] Bplus1) {
 
-        double t_node = parameterization.getNodeTime(subtreeRoot, finalSampleOffset.getArrayValue());
+        double t_node = parameterization.getNodeTime(subtreeRoot, finalSampleOffset.get());
         int i = parameterization.getIntervalIndex(t_node);
         double t_i = parameterization.getIntervalEndTimes()[i];
 
