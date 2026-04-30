@@ -95,6 +95,14 @@
             <version>${beast.version}</version>
         </dependency>
 
+        <!-- Package dependencies (currently SA only) -->
+
+        <dependency>
+            <groupId>io.github.compevol</groupId>
+            <artifactId>sampled-ancestors</artifactId>
+            <version>2.3.0-beta1</version>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
