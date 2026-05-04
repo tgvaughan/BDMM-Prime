@@ -1,9 +1,6 @@
 package bdmmflow.utils;
 
-import com.flag4j.Matrix;
-import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.linear.*;
-import org.jblas.DoubleMatrix;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -80,52 +77,12 @@ public class Utils {
         return matrix;
     }
 
-    public static RealMatrix toMatrix(DoubleMatrix source) {
-        RealMatrix destination = new BlockRealMatrix(source.rows, source.columns);
-        for (int i = 0; i < source.rows; i++) {
-            for (int j = 0; j < source.columns; j++) {
-                destination.setEntry(i, j, source.get(i, j));
-            }
-        }
-        return destination;
-    }
-
     public static RealMatrix toMatrix(org.hipparchus.linear.RealMatrix source) {
         return new BlockRealMatrix(source.getData());
     }
 
     public static org.hipparchus.linear.RealMatrix toHipparchusMatrix(RealMatrix source) {
         return new org.hipparchus.linear.BlockRealMatrix(source.getData());
-    }
-
-    public static DoubleMatrix toMatrix(RealMatrix source) {
-        DoubleMatrix destination = new DoubleMatrix(source.getRowDimension(), source.getColumnDimension());
-        for (int i = 0; i < source.getRowDimension(); i++) {
-            for (int j = 0; j < source.getColumnDimension(); j++) {
-                destination.put(i, j, source.getEntry(i, j));
-            }
-        }
-        return destination;
-    }
-
-    public static Matrix toFlag4JMatrix(RealMatrix source) {
-        Matrix destination = new Matrix(source.getRowDimension(), source.getColumnDimension());
-        for (int i = 0; i < source.getRowDimension(); i++) {
-            for (int j = 0; j < source.getColumnDimension(); j++) {
-                destination.set(source.getEntry(i, j), i, j);
-            }
-        }
-        return destination;
-    }
-
-    public static RealMatrix toMatrix(Matrix source) {
-        RealMatrix destination = new BlockRealMatrix(source.numRows(), source.numCols());
-        for (int i = 0; i < source.numRows(); i++) {
-            for (int j = 0; j < source.numCols(); j++) {
-                destination.setEntry(i, j, source.get(i, j));
-            }
-        }
-        return destination;
     }
 
     /**
