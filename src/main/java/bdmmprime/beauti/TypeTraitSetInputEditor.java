@@ -23,7 +23,7 @@ import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.TraitSet;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.inference.parameter.SimplexParam;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.GuessPatternDialog;
 import beastfx.app.inputeditor.InputEditor;
@@ -294,9 +294,9 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             typeSet.initAndValidate();
             int nTypes = typeSet.getNTypes();
 
-            RealParameter startTypeProbs = (RealParameter) bdmmDistr.startTypePriorProbsInput.get();
+            SimplexParam startTypeProbs = (SimplexParam) bdmmDistr.startTypePriorProbsInput.get();
 
-            if (startTypeProbs.getDimension() == nTypes)
+            if (startTypeProbs.size() == nTypes)
                 continue;
 
             StringBuilder startTypeProbsBuilder = new StringBuilder();

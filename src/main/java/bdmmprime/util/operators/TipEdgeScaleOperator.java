@@ -3,10 +3,10 @@ package bdmmprime.util.operators;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.evolution.operator.TreeOperator;
-import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
+import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.util.Randomizer;
 
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class TipEdgeScaleOperator extends TreeOperator {
     public Input<TaxonSet> taxonSetInput = new Input<>("taxonSet",
             "Taxon set containing taxa specifying leaves on which to operate");
 
-    public Input<RealParameter> finalSampleOffsetInput = new Input<>("finalSampleOffset",
+    public Input<RealScalarParam<?>> finalSampleOffsetInput = new Input<>("finalSampleOffset",
             "Final sample offset parameter from BD model.",
             Input.Validate.REQUIRED);
 
@@ -30,7 +30,7 @@ public class TipEdgeScaleOperator extends TreeOperator {
     Tree tree;
     List<String> taxaNames;
 
-    RealParameter finalSampleOffset;
+    RealScalarParam<?> finalSampleOffset;
     double scaleFactor;
 
     @Override
@@ -91,7 +91,7 @@ public class TipEdgeScaleOperator extends TreeOperator {
         if (lowestHeight == 0.0)
             return false;
 
-        double newFSO = finalSampleOffset.getValue() + lowestHeight;
+        double newFSO = finalSampleOffset.get() + lowestHeight;
 
         if (newFSO < Math.max(0.0, finalSampleOffset.getLower())
             || newFSO > finalSampleOffset.getUpper())
@@ -100,7 +100,7 @@ public class TipEdgeScaleOperator extends TreeOperator {
         for (Node node : tree.getNodesAsArray())
             node.setHeight(node.getHeight() - lowestHeight);
 
-        finalSampleOffset.setValue(newFSO);
+        finalSampleOffset.set(newFSO);
 
         return false;
     }

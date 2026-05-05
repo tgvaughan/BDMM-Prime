@@ -1,100 +1,65 @@
 package bdmmprime.util.priors;
 
 import beast.base.core.Input;
-import beast.base.core.Loggable;
-import beast.base.inference.CalculationNode;
 import beast.base.spec.domain.NonNegativeReal;
 import beast.base.spec.domain.PositiveReal;
 import beast.base.spec.domain.Real;
+import beast.base.spec.inference.distribution.IID;
+import beast.base.spec.inference.distribution.ScalarDistribution;
 import beast.base.spec.type.RealVector;
+import beast.base.spec.type.Scalar;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class SmartZeroExcludingRealVector extends CalculationNode implements RealVector<PositiveReal>, Loggable {
-
-    public Input<RealVector<? extends NonNegativeReal>> argInput = new Input<>("arg",
-            "RealVector from which to exclude zeros.",
-            Input.Validate.REQUIRED);
+public class SmartZeroExcludingRealIID extends IID<RealVector<NonNegativeReal>, Scalar<Real, Double>, Double> {
 
     public Input<RealVector<? extends Real>> classesToExcludeInput = new Input<>("classesToExclude",
             "Elements with these value will be excluded from the vector.");
 
-
-    RealVector<? extends Real> arg;
-
     List<Integer> indices;
 
-    PositiveReal domain;
+    public SmartZeroExcludingRealIID() { super(); }
+
+    public SmartZeroExcludingRealIID(RealVector<? extends NonNegativeReal> param, ScalarDistribution<?, Double> dist) {
+        initByName("param", param, "dist", dist);
+    }
 
     @Override
     public void initAndValidate() {
 
-        arg = argInput.get();
-
         // Making the classesToExclude values already "seen" causes them not
         // to be added to the index list:
         Set<Double> seenValues = new HashSet<>();
-        if (classesToExcludeInput.get() != null) {
+        if (classesToExcludeInput.get() != null)
             seenValues.addAll(classesToExcludeInput.get().getElements());
-        }
 
         // Set up index map
         indices = new ArrayList<>();
-        for (int toIdx=0; toIdx<arg.size(); toIdx++) {
-            double argVal = arg.get(toIdx);
+        for (int toIdx=0; toIdx<param.size(); toIdx++) {
+            double argVal = param.get(toIdx);
             if (argVal != 0.0 && !seenValues.contains(argVal)) {
                 indices.add(toIdx);
                 seenValues.add(argVal);
             }
         }
-
-        // Set up domain
-        if (arg.getDomain() instanceof PositiveReal castedArgDomain)
-            domain = castedArgDomain;
-        else
-            domain = PositiveReal.INSTANCE;
     }
 
     @Override
-    public int size() {
-        return indices.size();
+    protected double calcLogP(Double... value) {
+        refresh(); // this make sure distribution parameters are updated if they are sampled during MCMC
+
+        if (value == null)
+            throw new IllegalArgumentException("IID requires param, but it is null ! ");
+        if (value.length != dimension())
+            throw new IllegalArgumentException("Values dimension != parameter dimension !");
+        double logP = 0.0;
+        for (int idx : indices) {
+            logP += dist.density(value[idx]);
+        }
+        return logP;
     }
 
-    @Override
-    public double get(int i) {
-        return arg.get(indices.get(i));
-    }
-
-    @Override
-    public List<Double> getElements() {
-        List<Double> vals = new ArrayList<>();
-        for (int i=0; i<size(); i++)
-            vals.add(get(i));
-        return vals;
-    }
-
-    @Override
-    public PositiveReal getDomain() {
-        return domain;
-    }
-
-
-    @Override
-    public void init(PrintStream out) {
-
-    }
-
-    @Override
-    public void log(long sample, PrintStream out) {
-
-    }
-
-    @Override
-    public void close(PrintStream out) {
-
-    }
 }

@@ -20,7 +20,9 @@ package bdmmprime.beauti;
 import bdmmprime.parameterization.TimedParameter;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.type.RealVector;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
@@ -139,11 +141,11 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             timesAreAgesCheckBox.setSelected(timedParameter.timesAreAgesInput.get());
 
             estimateTimesCheckBox.setSelected(
-                    ((RealParameter) timedParameter.timesInput.get())
+                    ((RealVectorParam<?>) timedParameter.timesInput.get())
                             .isEstimatedInput.get());
 
             estimateValuesCheckBox.setSelected(
-                    ((RealParameter) timedParameter.valuesInput.get())
+                    ((RealVectorParam<?>) timedParameter.valuesInput.get())
                             .isEstimatedInput.get());
         } else {
             timesAndValuesBox.setVisible(false);
@@ -158,7 +160,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             System.out.println(oldValue + " -> " + newValue);
 
             if (newValue > 0) {
-                RealParameter times = getTimesParam();
+                RealVectorParam<?> times = getTimesParam();
                 times.setDimension(newValue);
                 sanitiseRealParameter(times);
                 timedParameter.timesInput.setValue(times, timedParameter);
@@ -202,7 +204,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         });
 
         estimateTimesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            RealParameter changeTimes = (RealParameter) timedParameter.timesInput.get();
+            RealVectorParam<?> changeTimes = (RealVectorParam<?>) timedParameter.timesInput.get();
             changeTimes.isEstimatedInput.setValue(newValue, changeTimes);
             sync();
         });
@@ -220,7 +222,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         });
 
         estimateValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            RealParameter valuesParam = getValuesParam();
+            RealVectorParam<?> valuesParam = getValuesParam();
             valuesParam.isEstimatedInput.setValue(newValue, valuesParam);
             hardSync();
         });
@@ -234,12 +236,12 @@ public class TimedParameterInputEditor extends InputEditor.Base {
      * @param changeTimesEntryRow HBox containing time inputs
      */
     void updateTimesUI(HBox changeTimesEntryRow) {
-        RealParameter parameter = getTimesParam();
+        RealVectorParam<?> parameter = getTimesParam();
         changeTimesEntryRow.getChildren().clear();
         changeTimesEntryRow.getChildren().add(new Label("Times:"));
-        for (int i=0; i<parameter.getDimension(); i++) {
+        for (int i=0; i<parameter.size(); i++) {
             changeTimesEntryRow.getChildren().add(new Label("Time " + (i+1) + ": "));
-            TextField textField = new TextField(parameter.getValue(i).toString());
+            TextField textField = new TextField(String.valueOf(parameter.get(i)));
 
             textField.setPrefWidth(50);
             textField.setPadding(new Insets(0));
@@ -247,7 +249,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
 
             int index = i;
             textField.textProperty().addListener((observable, oldValue, newValue) -> {
-                parameter.setValue(index, Double.valueOf(newValue));
+                parameter.set(index, Double.parseDouble(newValue));
                 sanitiseRealParameter(parameter);
                 timedParameter.initAndValidate();
                 System.out.println(timedParameter);
@@ -264,7 +266,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         int nTimes = timedParameter.getTimeCount();
         int nTypes = timedParameter.getNTypes();
 
-        RealParameter valuesParameter = getValuesParam();
+        RealVectorParam<?> valuesParameter = getValuesParam();
         TableColumn<TimedParamValuesTableEntry, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(p -> new ObservableValueBase<>() {
             @Override
@@ -284,8 +286,8 @@ public class TimedParameterInputEditor extends InputEditor.Base {
                 public Double getValue() {
                     int type = p.getValue().type;
                     return type<0
-                            ? valuesParameter.getValue(epochIdx)
-                            : valuesParameter.getValue(epochIdx*nTypes + type);
+                            ? valuesParameter.get(epochIdx)
+                            : valuesParameter.get(epochIdx*nTypes + type);
                 }
             });
             col.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
@@ -293,9 +295,9 @@ public class TimedParameterInputEditor extends InputEditor.Base {
                 int type = e.getTableView()
                         .getItems().get(e.getTablePosition().getRow()).type;
                 if (type < 0) {
-                    valuesParameter.setValue(epochIdx, e.getNewValue());
+                    valuesParameter.set(epochIdx, e.getNewValue());
                 } else {
-                    valuesParameter.setValue(epochIdx*nTypes + type, e.getNewValue());
+                    valuesParameter.set(epochIdx*nTypes + type, e.getNewValue());
                 }
                 sanitiseRealParameter(valuesParameter);
                 System.out.println(timedParameter);
@@ -303,7 +305,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             valuesTable.getColumns().add(col);
         }
 
-        if (valuesParameter.getDimension() / nTimes > 1) {
+        if (valuesParameter.size() / nTimes > 1) {
             for (int type=0; type<nTypes; type++)
                 valuesTable.getItems().add(new TimedParamValuesTableEntry(type));
         } else {
@@ -320,7 +322,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
 //        System.out.println("Number of epochs: " + nEpochs);
 
         if (nEpochs > 0) {
-            RealParameter valuesParam = getValuesParam();
+            RealVectorParam<?> valuesParam = getValuesParam();
 
             if (scalar)
                 valuesParam.setDimension(nEpochs);
@@ -335,17 +337,16 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         timedParameter.initAndValidate();
     }
 
-    void sanitiseRealParameter(RealParameter parameter) {
+    void sanitiseRealParameter(RealVectorParam<?> parameter) {
         parameter.valuesInput.setValue(
-                Arrays.stream(parameter.getDoubleValues())
-                        .mapToObj(String::valueOf)
-                        .collect(Collectors.joining(" ")),
+                parameter.getElements().stream().map(String::valueOf)
+                                .collect(Collectors.joining(" ")),
                 parameter);
         parameter.initAndValidate();
     }
 
-    RealParameter getTimesParam() {
-        RealParameter timesParam = (RealParameter)timedParameter.timesInput.get();
+    RealVectorParam<?> getTimesParam() {
+        RealVectorParam<?> timesParam = (RealVectorParam<?>)timedParameter.timesInput.get();
         if (timesParam == null) {
 
             int idx = timedParameter.getID().indexOf("SP");
@@ -353,17 +354,17 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             String suffix = timedParameter.getID().substring(idx+2);
             String paramID = prefix + "Times" + suffix;
 
-            timesParam = (RealParameter) doc.pluginmap.get(paramID);
+            timesParam = (RealVectorParam<?>) doc.pluginmap.get(paramID);
             if (timesParam == null) {
-                timesParam = new RealParameter("0.0");
+                timesParam = new RealVectorParam<>(new double[] {0.0}, Real.INSTANCE);
                 timesParam.setID(paramID);
             }
         }
         return timesParam;
     }
 
-    RealParameter getValuesParam() {
-        RealParameter valuesParam = (RealParameter)timedParameter.valuesInput.get();
+    RealVectorParam<?> getValuesParam() {
+        RealVectorParam<?> valuesParam = (RealVectorParam<?>)timedParameter.valuesInput.get();
         if (valuesParam == null) {
 
             int idx = timedParameter.getID().indexOf("SP");
@@ -371,9 +372,9 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             String suffix = timedParameter.getID().substring(idx+2);
             String paramID = prefix + suffix;
 
-            valuesParam = (RealParameter) doc.pluginmap.get(paramID);
+            valuesParam = (RealVectorParam<?>) doc.pluginmap.get(paramID);
             if (valuesParam == null) {
-                valuesParam = new RealParameter("0.0");
+                valuesParam = new RealVectorParam<>(new double[] {0.0}, Real.INSTANCE);
                 valuesParam.isEstimatedInput.setValue(true, valuesParam);
                 valuesParam.setID(paramID);
             }

@@ -20,7 +20,7 @@ package bdmmprime.util.operators;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.inference.Operator;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.util.Randomizer;
 
 @Description("Proposal operator for RealParameters representing sequences of " +
@@ -30,7 +30,7 @@ import beast.base.util.Randomizer;
         "uniform distribution.")
 public class ChangeTimeOperator extends Operator {
 
-    public Input<RealParameter> changeTimesInput = new Input<>( "changeTimes",
+    public Input<RealVectorParam<?>> changeTimesInput = new Input<>( "changeTimes",
             "RealParameter whose elements represent a (strictly) monotonically " +
                     "increasing sequence of change times.",
             Input.Validate.REQUIRED);
@@ -44,15 +44,15 @@ public class ChangeTimeOperator extends Operator {
             "is chosen from between scaleFactor and 1/scaleFactor.",
             0.75);
 
-    RealParameter changeTimes;
+    RealVectorParam<?> changeTimes;
 
     @Override
     public void initAndValidate() {
 
         changeTimes = changeTimesInput.get();
 
-        for (int idx=1; idx<changeTimes.getDimension(); idx++) {
-            if (changeTimes.getValue(idx)<=changeTimes.getValue(idx-1))
+        for (int idx=1; idx<changeTimes.size(); idx++) {
+            if (changeTimes.get(idx)<=changeTimes.get(idx-1))
                 throw new IllegalArgumentException("ChangeTimeOperator can only be " +
                         "applied to RealParameters containing a strictly " +
                         "monotonically increasing sequence of values.");
@@ -61,7 +61,7 @@ public class ChangeTimeOperator extends Operator {
 
     @Override
     public double proposal() {
-        int idx = Randomizer.nextInt(changeTimes.getDimension());
+        int idx = Randomizer.nextInt(changeTimes.size());
         if (idx==0)
             return originProposal();
         else
@@ -73,25 +73,25 @@ public class ChangeTimeOperator extends Operator {
         double minf = Math.min(scaleFactorInput.get(), 1.0/scaleFactorInput.get());
         double f = minf + Randomizer.nextDouble()*(1/minf - minf);
 
-        double shift = (f-1)*(changeTimes.getValue(idx)-changeTimes.getValue(idx-1));
+        double shift = (f-1)*(changeTimes.get(idx)-changeTimes.get(idx-1));
 
-        if (changeTimes.getValue(changeTimes.getDimension()-1)>changeTimes.getUpper())
+        if (changeTimes.get(changeTimes.size()-1)>changeTimes.getUpper())
             return Double.NEGATIVE_INFINITY;
 
-        for (int idxPrime=idx; idxPrime<changeTimes.getDimension(); idxPrime++)
-            changeTimes.setValue(idxPrime, changeTimes.getValue(idxPrime)+shift);
+        for (int idxPrime=idx; idxPrime<changeTimes.size(); idxPrime++)
+            changeTimes.set(idxPrime, changeTimes.get(idxPrime)+shift);
 
         return -Math.log(f);
     }
 
     private double originProposal() {
         double delta = (Randomizer.nextDouble()-0.5)*windowSizeInput.get();
-        if (changeTimes.getValue(0) + delta < changeTimes.getLower() ||
-                changeTimes.getValue(changeTimes.getDimension()-1) + delta > changeTimes.getUpper())
+        if (changeTimes.get(0) + delta < changeTimes.getLower() ||
+                changeTimes.get(changeTimes.size()-1) + delta > changeTimes.getUpper())
             return Double.NEGATIVE_INFINITY;
 
-        for (int idx=0; idx<changeTimes.getDimension(); idx++)
-            changeTimes.setValue(idx, changeTimes.getValue(idx)+delta);
+        for (int idx=0; idx<changeTimes.size(); idx++)
+            changeTimes.set(idx, changeTimes.get(idx)+delta);
 
         return 0;
     }

@@ -21,14 +21,13 @@ import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.*;
 import beast.base.core.Description;
-import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.Tree;
-import beast.base.inference.parameter.RealParameter;
 import beast.base.spec.domain.NonNegativeReal;
 import beast.base.spec.domain.Real;
 import beast.base.spec.domain.UnitInterval;
+import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.spec.inference.parameter.SimplexParam;
 import beast.base.spec.type.RealScalar;
@@ -113,8 +112,8 @@ public class SimulatedTree extends Tree {
             traj = trajectorySimulator.simulateTrajectory();
         } while (traj.getSampleCount() < Math.max(minSamples,1));
 
-        RealParameter fso = (RealParameter) finalSampleOffsetInput.get();
-        fso.setValue(param.processLengthInput.get().get() - traj.getFinalSampleTime());
+        RealScalarParam<?> fso = (RealScalarParam<?>) finalSampleOffsetInput.get();
+        fso.set(param.processLengthInput.get().get() - traj.getFinalSampleTime());
 
         if (trajFileNameInput.get() != null) {
             try (PrintStream out = new PrintStream(trajFileNameInput.get())) {
@@ -178,7 +177,7 @@ public class SimulatedTree extends Tree {
         Node root = null;
         for (int s=0; s<nTypes; s++) {
             if (!activeLineages.get(s).isEmpty()) {
-                root = activeLineages.get(s).get(0);
+                root = activeLineages.get(s).getFirst();
                 break;
             }
         }

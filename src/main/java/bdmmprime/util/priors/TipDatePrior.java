@@ -1,6 +1,5 @@
 package bdmmprime.util.priors;
 
-import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.core.Log;
 import beast.base.evolution.tree.Tree;
@@ -8,6 +7,7 @@ import beast.base.inference.Distribution;
 import beast.base.inference.State;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TraitSet;
+import beast.base.spec.type.RealScalar;
 
 import java.util.List;
 import java.util.Random;
@@ -18,7 +18,7 @@ public class TipDatePrior extends Distribution {
             "Tree whose tips we wish to place a prior on.",
             Input.Validate.REQUIRED);
 
-    public Input<Function> finalSampleOffsetInput = new Input<>(
+    public Input<RealScalar<?>> finalSampleOffsetInput = new Input<>(
             "finalSampleOffset",
             "Final sample offset",
             Input.Validate.REQUIRED);
@@ -27,7 +27,7 @@ public class TipDatePrior extends Distribution {
     public Input<TraitSet> laterBoundInput = new Input<>("laterBound",
             "Initial tip dates", Input.Validate.REQUIRED);
 
-    public Input<Function> endOfSamplingTimeInput = new Input<>("endOfSamplingTime",
+    public Input<RealScalar<?>> endOfSamplingTimeInput = new Input<>("endOfSamplingTime",
             "Time of the point when sampling ends.  (Necessary only " +
                     "when upper and lower bounds are given forward in time.)");
 
@@ -41,7 +41,7 @@ public class TipDatePrior extends Distribution {
     TraitSet earlierBound, laterBound;
     boolean boundsAreAges;
 
-    Function fso, endOfSamplingTime;
+    RealScalar<?> fso, endOfSamplingTime;
 
     boolean reportBoundsViolations;
 
@@ -86,7 +86,7 @@ public class TipDatePrior extends Distribution {
                     boundTrait.getDate(0);
         else
             return boundTrait.getValue(tree.getTaxonId(node)) +
-                    (endOfSamplingTime.getArrayValue() - boundTrait.getDate(0));
+                    (endOfSamplingTime.get() - boundTrait.getDate(0));
     }
 
     @Override
@@ -95,7 +95,7 @@ public class TipDatePrior extends Distribution {
 
         for (int nr=0; nr<tree.getLeafNodeCount(); nr++) {
             Node node = tree.getNode(nr);
-            double nodeAge = node.getHeight() + fso.getArrayValue();
+            double nodeAge = node.getHeight() + fso.get();
             double earlyAge = getBoundAge(earlierBound, node);
             double lateAge = getBoundAge(laterBound, node);
 

@@ -22,11 +22,10 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.ProcessLength;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
-import javafx.geometry.Insets;
 import javafx.geometry.Orientation;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -113,10 +112,10 @@ public class ProcessLengthInputEditor extends InputEditor.Base {
             processLength.isEstimatedInput.setValue(true, processLength);
 
         } else if (processLength.originInput.get() != null
-                && processLength.originInput.get() instanceof RealParameter originParam) {
+                && processLength.originInput.get() instanceof RealVectorParam<?> originParam) {
 
             originButton.setSelected(true);
-            originTextField.setText(originParam.getValue().toString());
+            originTextField.setText(originParam.get().toString());
             originEstimate.setSelected(originParam.isEstimated());
             processLength.isEstimatedInput.setValue(originParam.isEstimated(), processLength);
 

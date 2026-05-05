@@ -24,7 +24,6 @@ import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
-import beast.base.inference.parameter.RealParameter;
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.parameter.RealVectorParam;
 import beastfx.app.inputeditor.BeautiDoc;
@@ -36,7 +35,6 @@ import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.util.Duration;
 
-import java.util.Arrays;
 import java.util.stream.Collectors;
 
 public abstract class SkylineInputEditor extends InputEditor.Base {
@@ -214,7 +212,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
                 timesAreAgesCheckBox.setSelected(skylineParameter.timesAreAgesInput.get());
 
                 estimateTimesCheckBox.setSelected(
-                        ((RealParameter) skylineParameter.changeTimesInput.get())
+                        ((RealVectorParam<?>) skylineParameter.changeTimesInput.get())
                                 .isEstimatedInput.get());
 
                 changeTimesBox.setManaged(true);
@@ -238,7 +236,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         });
 
         estimateTimesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            RealParameter changeTimes = (RealParameter) skylineParameter.changeTimesInput.get();
+            RealVectorParam<?> changeTimes = (RealVectorParam<?>) skylineParameter.changeTimesInput.get();
             changeTimes.isEstimatedInput.setValue(newValue, changeTimes);
             sync();
         });

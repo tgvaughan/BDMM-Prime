@@ -5,6 +5,9 @@ import beast.base.core.Input;
 import beast.base.inference.Distribution;
 import beast.base.inference.State;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.type.RealVector;
 import cern.colt.matrix.DoubleMatrix1D;
 import cern.colt.matrix.DoubleMatrix2D;
 import cern.colt.matrix.impl.DenseDoubleMatrix2D;
@@ -18,20 +21,20 @@ import java.util.Random;
 
 public class MultivariateLogNormal extends Distribution {
 
-    public Input<List<Function>> xsInput = new Input<>("x",
-            "Function to which distribution is applied",
+    public Input<List<RealVector<?>>> xsInput = new Input<>("x",
+            "RealVector to which distribution is applied",
             new ArrayList<>());
 
-    public Input<Function> MInput = new Input<>("M",
+    public Input<RealVector<?>> MInput = new Input<>("M",
             "M parameter of the multivariate lognormal distribution.",
             Input.Validate.REQUIRED);
 
-    public Input<Function> SInput = new Input<>("S",
+    public Input<RealVector<?>> SInput = new Input<>("S",
             "S parameter of the multivariate lognormal distribution.",
             Input.Validate.REQUIRED);
 
-    List<Function> xs;
-    Function M, S;
+    List<RealVector<?>> xs;
+    RealVector<?> M, S;
     int n, m;
 
     DoubleMatrix2D y, mu, sigma;
@@ -51,18 +54,18 @@ public class MultivariateLogNormal extends Distribution {
         if (n==0)
             throw new IllegalArgumentException("Need at least one x input.");
 
-        m = xs.get(0).getDimension();
+        m = xs.getFirst().size();
 
         for (int i=1; i<n; i++) {
-            if (xs.get(i).getDimension() != m)
+            if (xs.get(i).size() != m)
                 throw new IllegalArgumentException("Each x must have the same dimension.");
         }
 
-        if (M.getDimension() != n)
+        if (M.size() != n)
             throw new IllegalArgumentException("M must have n elements, " +
                     "where n is the number of x inputs.");
 
-        if (S.getDimension() != n*n)
+        if (S.size() != n*n)
             throw new IllegalArgumentException("S must have n*n elements, " +
                     "where n is the number of x inputs.");
 
@@ -76,9 +79,9 @@ public class MultivariateLogNormal extends Distribution {
         logP = 0.0;
 
         for (int j=0; j<n; j++) {
-            mu.set(j, 0, M.getArrayValue(j));
+            mu.set(j, 0, M.get(j));
             for (int k=0; k<n; k++) {
-                sigma.setQuick(j,k, S.getArrayValue(j*n + k));
+                sigma.setQuick(j,k, S.get(j*n + k));
             }
         }
 
@@ -97,7 +100,7 @@ public class MultivariateLogNormal extends Distribution {
 
         for (int i=0; i<m; i++) {
             for (int j=0; j<n; j++)
-                y.set(j, 0, Math.log(xs.get(j).getArrayValue(i)) - M.getArrayValue(j));
+                y.set(j, 0, Math.log(xs.get(j).get(i)) - M.get(j));
 
             logP += -al.mult(al.mult(al.transpose(y), sigmaInv), y).getQuick(0,0)
                     - 0.5*n*Math.log(Math.PI)
@@ -131,14 +134,14 @@ public class MultivariateLogNormal extends Distribution {
      */
     public static void main(String[] args) {
 
-        RealParameter x1Param = new RealParameter("1.0");
-        RealParameter x2Param = new RealParameter("1.0");
+        RealVectorParam<Real> x1Param = new RealVectorParam<>(new double[] {1.0}, Real.INSTANCE);
+        RealVectorParam<Real> x2Param = new RealVectorParam<>(new double[] {1.0}, Real.INSTANCE);
 
         MultivariateLogNormal mvl = new MultivariateLogNormal();
         mvl.initByName(
                 "x", x1Param, "x", x2Param,
-                "M", new RealParameter("0.1 0.2"),
-                "S", new RealParameter("1 0.1 0.1 1")
+                "M", new RealVectorParam<>(new double[]{0.1, 0.2}, Real.INSTANCE),
+                "S", new RealVectorParam<>(new double[]{1, 0.1, 0.1, 1}, Real.INSTANCE)
         );
 
         System.out.println(mvl.calculateLogP());

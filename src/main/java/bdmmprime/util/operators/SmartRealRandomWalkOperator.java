@@ -3,7 +3,8 @@ package bdmmprime.util.operators;
 import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.core.Input.Validate;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.util.Randomizer;
 
 import java.text.DecimalFormat;
@@ -53,19 +54,19 @@ public class SmartRealRandomWalkOperator extends SmartRealOperator {
             delta = Randomizer.nextDouble() * 2 * windowSize - windowSize;
         }
 
-        for (RealParameter param : parameters) {
+        for (RealVectorParam<? extends Real> param : parameters) {
             Integer[] group = groups.get(param);
 
-            for (int i=0; i<param.getDimension(); i++) {
+            for (int i=0; i<param.size(); i++) {
                 if (group[i] != classIdx)
                     continue;
 
-                double newVal = param.getValue(i) + delta;
+                double newVal = param.get(i) + delta;
 
                 if (newVal > param.getUpper() || newVal < param.getLower())
                     return Double.NEGATIVE_INFINITY;
 
-                param.setValue(i, newVal);
+                param.set(i, newVal);
             }
         }
 

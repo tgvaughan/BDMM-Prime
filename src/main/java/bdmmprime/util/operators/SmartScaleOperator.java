@@ -2,7 +2,8 @@ package bdmmprime.util.operators;
 
 import beast.base.core.Description;
 import beast.base.core.Input;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.util.Randomizer;
 
 @Description("Scale operator which scales identical values together.")
@@ -57,16 +58,16 @@ public class SmartScaleOperator extends SmartRealOperator {
 
         // Scale selected elements:
 
-        for (RealParameter param : parameters) {
+        for (RealVectorParam<? extends Real> param : parameters) {
             Integer[] group = groups.get(param);
 
-            for (int i=0; i<param.getDimension(); i++) {
+            for (int i=0; i<param.size(); i++) {
                 if (group[i] == classIdx) {
-                    double newVal = f * param.getValue(i);
+                    double newVal = f * param.get(i);
                     if (newVal < param.getLower() || newVal > param.getUpper())
                         return Double.NEGATIVE_INFINITY;
                     else
-                        param.setValue(i, newVal);
+                        param.set(i, newVal);
                 }
             }
         }
@@ -85,16 +86,16 @@ public class SmartScaleOperator extends SmartRealOperator {
 
         // Scale selected elements:
 
-        for (RealParameter param : parameters) {
+        for (RealVectorParam<? extends Real> param : parameters) {
             Integer[] group = groups.get(param);
 
-            for (int i=0; i<param.getDimension(); i++) {
+            for (int i=0; i<param.size(); i++) {
                 if (group[i] >= 0) { // Skip excluded classes
-                    double newVal = f * param.getValue(i);
+                    double newVal = f * param.get(i);
                     if (newVal < param.getLower() || newVal > param.getUpper())
                         return Double.NEGATIVE_INFINITY;
                     else
-                        param.setValue(i, newVal);
+                        param.set(i, newVal);
                 }
             }
         }
@@ -120,6 +121,6 @@ public class SmartScaleOperator extends SmartRealOperator {
 
     @Override
     public void setCoercableParameterValue(double value) {
-        scaleFactor = Math.max(Math.min(value, scaleFactorUpperLimit), scaleFactorLowerLimit);
+        scaleFactor = Math.clamp(value, scaleFactorLowerLimit, scaleFactorUpperLimit);
     }
 }

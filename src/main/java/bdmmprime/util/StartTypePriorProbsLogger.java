@@ -21,7 +21,7 @@ import bdmmprime.parameterization.TypeSet;
 import beast.base.core.BEASTObject;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.inference.parameter.SimplexParam;
 
 import java.io.PrintStream;
 
@@ -30,12 +30,12 @@ public class StartTypePriorProbsLogger extends BEASTObject implements Loggable {
     public Input<TypeSet> typeSetInput = new Input<>("typeSet",
             "Type set used for analysis.", Input.Validate.REQUIRED);
 
-    public Input<RealParameter> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
+    public Input<SimplexParam> startTypePriorProbsInput = new Input<>("startTypePriorProbs",
             "Probabilities of different start types.",
             Input.Validate.REQUIRED);
 
     TypeSet typeSet;
-    RealParameter startTypeProbs;
+    SimplexParam startTypeProbs;
     String prefix;
 
     @Override

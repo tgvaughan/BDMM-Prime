@@ -18,14 +18,15 @@
 package bdmmprime.util.operators;
 
 import beast.base.core.BEASTObject;
-import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.inference.StateNode;
 import beast.base.inference.StateNodeInitialiser;
-import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.type.RealScalar;
 
 import java.util.List;
 
@@ -39,7 +40,7 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
             "Tree whose tips we wish to place a prior on.",
             Input.Validate.REQUIRED);
 
-    public Input<RealParameter> finalSampleOffsetInput = new Input<>(
+    public Input<RealScalarParam<?>> finalSampleOffsetInput = new Input<>(
             "finalSampleOffset",
             "Final sample offset",
             Input.Validate.REQUIRED);
@@ -47,7 +48,7 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
     public Input<TraitSet> tipDatesTraitInput = new Input<>("tipDatesTrait",
             "Initial tip dates", Input.Validate.REQUIRED);
 
-    public Input<Function> endOfSamplingTimeInput = new Input<>("endOfSamplingTime",
+    public Input<RealScalar<?>> endOfSamplingTimeInput = new Input<>("endOfSamplingTime",
             "Time of the point when sampling ends.  (Necessary only " +
                     "when tip times are given forward in time.)");
 
@@ -55,14 +56,14 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
             "If true, original divergence times of input tree are preserved.",
             false);
 
-    public Input<Function> internalNodeSpacingInput = new Input<>("internalNodeSpacing",
+    public Input<RealScalar<?>> internalNodeSpacingInput = new Input<>("internalNodeSpacing",
             "Default spacing used when adjusting internal node times.",
-            new RealParameter("1.0"));
+            new RealScalarParam<>(1.0, Real.INSTANCE));
 
     Tree tree;
-    RealParameter fso;
+    RealScalarParam<?> fso;
     TraitSet dateTrait;
-    Function endOfSamplingTime;
+    RealScalar<?> endOfSamplingTime;
 
     boolean traitValuesAreAges, adjustInternalNodes;
 
@@ -96,9 +97,9 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
                 nodeAge = dateTrait.getValue(tree.getTaxonId(node)) + dateTrait.getDate(0);
             else
                 nodeAge = dateTrait.getValue(tree.getTaxonId(node)) +
-                        (endOfSamplingTime.getArrayValue() - dateTrait.getDate(0));
+                        (endOfSamplingTime.get() - dateTrait.getDate(0));
 
-            node.setHeight(nodeAge - fso.getValue());
+            node.setHeight(nodeAge - fso.get());
             if (!adjustInternalNodes && node.getParent().getHeight() < node.getHeight())
                 throw new IllegalStateException("TipDateInitialiser set child (" +
                         tree.getTaxonId(node) + ") older than parent.");
@@ -106,7 +107,7 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
                 Node nodePrime = node;
                 while (nodePrime.getParent() != null && nodePrime.getParent().getHeight()<nodePrime.getHeight()) {
                     nodePrime.getParent().setHeight(nodePrime.getHeight()
-                            + internalNodeSpacingInput.get().getArrayValue());
+                            + internalNodeSpacingInput.get().get());
                     nodePrime = nodePrime.getParent();
                 }
             }
@@ -128,7 +129,7 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
         if (lowestHeight == 0.0)
             return; // FSO has not changed
 
-        double newFSO = fso.getValue() + lowestHeight;
+        double newFSO = fso.get() + lowestHeight;
 
         if (newFSO < Math.max(0.0, fso.getLower())
                 || newFSO > fso.getUpper())
@@ -138,7 +139,7 @@ public class TipDateInitialiser extends BEASTObject implements StateNodeInitiali
         for (Node node : tree.getNodesAsArray())
             node.setHeight(node.getHeight() - lowestHeight);
 
-        fso.setValue(newFSO);
+        fso.set(newFSO);
     }
 
     @Override

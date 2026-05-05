@@ -21,10 +21,12 @@ import beast.base.core.Description;
 import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.evolution.tree.Node;
-import beast.base.inference.parameter.RealParameter;
 
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.parameterization.SkylineVectorParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.type.RealScalar;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -46,11 +48,11 @@ public class SkylineNodeTreeLogger extends TypedNodeTreeLogger {
             "One or more skyline vector parameters whose values are annotated at each node of the tree.",
             new ArrayList<>(), Input.Validate.REQUIRED);
 
-    public Input<Function> finalSampleOffsetInput = new Input<>(
+    public Input<RealScalar<?>> finalSampleOffsetInput = new Input<>(
             "finalSampleOffset",
             "Optional time offset between the final sample and the end of the birth–death process, "
                     + "used when converting node heights to absolute times. Default is 0.",
-            new RealParameter("0.0"), Input.Validate.OPTIONAL);
+            new RealScalarParam<>(0.0, Real.INSTANCE));
 
     public Input<Integer> precisionInput = new Input<>(
             "precision",
@@ -59,7 +61,7 @@ public class SkylineNodeTreeLogger extends TypedNodeTreeLogger {
 
     private List<SkylineVectorParameter> skylineParameters;
     private Parameterization parameterization;
-    private double finalSampleOffset;
+    private RealScalar<?> finalSampleOffset;
     private int precision;
 
     @Override
@@ -67,7 +69,7 @@ public class SkylineNodeTreeLogger extends TypedNodeTreeLogger {
         super.initAndValidate();
         skylineParameters = skylineParametersInput.get();
         parameterization = parameterizationInput.get();
-        finalSampleOffset = finalSampleOffsetInput.get().getArrayValue();
+        finalSampleOffset = finalSampleOffsetInput.get();
         precision = precisionInput.get() ;
     }
 
@@ -77,7 +79,7 @@ public class SkylineNodeTreeLogger extends TypedNodeTreeLogger {
         // and annotate each node with skyline parameter values
         // evaluated at the node time and type
         for (Node n : node.getAllChildNodesAndSelf()) {
-            double nodeTime = parameterization.getNodeTime(n, finalSampleOffset);
+            double nodeTime = parameterization.getNodeTime(n, finalSampleOffset.get());
 
             Object nodeType = n.getMetaData("type");
             int typeIndex = nodeType != null ? (Integer) nodeType : 0;

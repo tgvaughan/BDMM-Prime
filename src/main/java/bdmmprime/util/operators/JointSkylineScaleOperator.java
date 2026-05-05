@@ -20,12 +20,13 @@ package bdmmprime.util.operators;
 import bdmmprime.parameterization.SkylineParameter;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Description;
-import beast.base.core.Function;
 import beast.base.core.Input;
 import beast.base.inference.MCMC;
 import beast.base.inference.Operator;
 import beast.base.inference.StateNode;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.type.RealVector;
 import beast.base.util.Randomizer;
 import beastfx.app.inputeditor.BeautiDoc;
 
@@ -62,25 +63,25 @@ public class JointSkylineScaleOperator extends Operator {
         nClasses = 0;
 
         for (SkylineParameter param : skylineParameters) {
-            Function values = param.skylineValuesInput.get();
+            RealVector<? extends Real> values = param.skylineValuesInput.get();
 
-            if (!(values instanceof RealParameter)) {
+            if (!(values instanceof RealVectorParam<? extends Real>)) {
                 throw new IllegalArgumentException("JointSkylineOperator may " +
                         "only be applied to SkylineParameters with " +
-                        "true RealParameter values. In particular, values with " +
+                        "true RealVectorParam values. In particular, values with " +
                         "Non-RealParameter Functions are not compatible.");
             }
 
             if (param.linkIdenticalValuesInput.get()) {
                 seenValuesSet.clear();
-                for (int i = 0; i < values.getDimension(); i++) {
-                    if (values.getArrayValue(i) != 0.0)
-                        seenValuesSet.add(values.getArrayValue(i));
+                for (int i = 0; i < values.size(); i++) {
+                    if (values.get(i) != 0.0)
+                        seenValuesSet.add(values.get(i));
                 }
                 nClasses += seenValuesSet.size();
             } else {
-                for (int i=0; i<values.getDimension(); i++) {
-                    if (values.getArrayValue(i) != 0.0)
+                for (int i=0; i<values.size(); i++) {
+                    if (values.get(i) != 0.0)
                         nClasses += 1;
                 }
             }
@@ -94,13 +95,13 @@ public class JointSkylineScaleOperator extends Operator {
         double f = Randomizer.nextDouble()*(1.0/minf - minf) + minf;
 
         for (SkylineParameter param : skylineParameters) {
-            RealParameter values = (RealParameter) param.skylineValuesInput.get();
+            RealVectorParam<? extends Real> values = (RealVectorParam<? extends Real>) param.skylineValuesInput.get();
 
-            for (int i=0; i<values.getDimension(); i++) {
-                double newVal = values.getValue(i)*f;
+            for (int i=0; i<values.size(); i++) {
+                double newVal = values.get(i)*f;
                 if (newVal > values.getUpper() || newVal < values.getLower())
                     return Double.NEGATIVE_INFINITY;
-                values.setValue(i, newVal);
+                values.set(i, newVal);
             }
         }
         return (nClasses - 2)*Math.log(f);
@@ -110,7 +111,7 @@ public class JointSkylineScaleOperator extends Operator {
     public List<StateNode> listStateNodes() {
         final List<StateNode> stateNodes = new ArrayList<>();
         for (SkylineParameter parameter : skylineParameters)
-            stateNodes.add((RealParameter) parameter.skylineValuesInput.get());
+            stateNodes.add((RealVectorParam<? extends Real>) parameter.skylineValuesInput.get());
 
         return stateNodes;
     }
