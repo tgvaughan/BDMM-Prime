@@ -2,7 +2,6 @@ package bdmmprime.util.priors;
 
 import beast.base.core.Input;
 import beast.base.spec.domain.NonNegativeReal;
-import beast.base.spec.domain.PositiveReal;
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.distribution.IID;
 import beast.base.spec.inference.distribution.ScalarDistribution;
@@ -24,11 +23,12 @@ public class SmartZeroExcludingRealIID extends IID<RealVector<NonNegativeReal>, 
     public SmartZeroExcludingRealIID() { super(); }
 
     public SmartZeroExcludingRealIID(RealVector<? extends NonNegativeReal> param, ScalarDistribution<?, Double> dist) {
-        initByName("param", param, "dist", dist);
+        initByName("param", param, "distr", dist);
     }
 
     @Override
     public void initAndValidate() {
+        super.initAndValidate();
 
         // Making the classesToExclude values already "seen" causes them not
         // to be added to the index list:

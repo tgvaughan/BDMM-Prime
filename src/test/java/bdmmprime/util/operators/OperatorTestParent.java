@@ -26,7 +26,7 @@ import java.util.*;
 
 public abstract class OperatorTestParent {
 
-    public class TestLogger extends Logger {
+    public static class TestLogger extends Logger {
 
 
         Map<RealVector<? extends Real>,Double[]> means, variances;

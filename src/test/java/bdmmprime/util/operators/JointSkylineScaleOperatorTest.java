@@ -28,10 +28,6 @@ import beast.base.spec.inference.operator.ScaleOperator;
 import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.util.Randomizer;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -39,7 +35,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 public class JointSkylineScaleOperatorTest extends OperatorTestParent {
 
     @Test
-    public void test() throws IOException, ParserConfigurationException, SAXException {
+    public void test() throws Exception {
         Randomizer.setSeed(42);
 
         RealVectorParam<NonNegativeReal> sv1vals = new RealVectorParamFromString<>("1 1 2 3 3", NonNegativeReal.INSTANCE);
@@ -62,8 +58,7 @@ public class JointSkylineScaleOperatorTest extends OperatorTestParent {
         sm.linkIdenticalValuesInput.setValue(true, sm);
 
         Uniform unif = new Uniform();
-        unif.initByName("lower", 0.0,
-                "upper", 10.0);
+        unif.initByName("lower", "0.0", "upper", "10.0");
 
         SmartZeroExcludingRealIID sv1valsPrior = new SmartZeroExcludingRealIID(sv1vals, unif);
         SmartZeroExcludingRealIID sv2valsPrior = new SmartZeroExcludingRealIID(sv2vals, unif);

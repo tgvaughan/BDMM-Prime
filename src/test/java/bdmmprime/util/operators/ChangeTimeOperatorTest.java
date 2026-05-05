@@ -21,31 +21,26 @@ import bdmmprime.testclasses.RealVectorParamFromString;
 import beast.base.inference.MCMC;
 import beast.base.inference.Operator;
 import beast.base.inference.State;
-import beast.base.inference.distribution.Prior;
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.distribution.IID;
 import beast.base.spec.inference.distribution.Uniform;
 import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.util.Randomizer;
 import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class ChangeTimeOperatorTest extends OperatorTestParent {
 
     @Test
-    public void test() throws IOException, ParserConfigurationException, SAXException {
+    public void test() throws Exception {
         Randomizer.setSeed(26);
 
         RealVectorParam<Real> changeTimes= new RealVectorParamFromString<>("0.1 0.2 0.3 0.4 0.5", Real.INSTANCE);
 
         Uniform unif = new Uniform();
-        unif.initByName("lower", -10.0,
-                "upper", 10.0);
+        unif.initByName("lower", "-10.0",
+                "upper", "10.0");
         IID<?,?,?> prior = new IID<>(changeTimes, unif);
 
         Operator op = new ChangeTimeOperator();
