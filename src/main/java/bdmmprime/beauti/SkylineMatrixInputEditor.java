@@ -21,6 +21,8 @@ import bdmmprime.parameterization.SkylineMatrixParameter;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import javafx.beans.binding.Bindings;
@@ -78,8 +80,9 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         int nTypes = skylineParameter.typeSetInput.get().getNTypes();
         int nEpochs = skylineParameter.changeTimesInput.get() == null
                 ? 1
-                : skylineParameter.changeTimesInput.get().getDimension() + 1;
-        RealParameter valuesParam = (RealParameter) skylineParameter.skylineValuesInput.get();
+                : skylineParameter.changeTimesInput.get().size() + 1;
+        RealVectorParam<? extends Real> valuesParam =
+                (RealVectorParam<? extends Real>) skylineParameter.skylineValuesInput.get();
 
 //        System.out.println("Number of epochs: " + nEpochs);
 
@@ -89,7 +92,7 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
             valuesParam.setDimension(nTypes*(nTypes-1)*nEpochs);
 
         if (skylineParameter.changeTimesInput.get() != null)
-            ((RealParameter)skylineParameter.changeTimesInput.get()).initAndValidate();
+            ((RealVectorParam<? extends Real>)skylineParameter.changeTimesInput.get()).initAndValidate();
         sanitiseRealParameter(valuesParam);
         skylineParameter.initAndValidate();
     }
@@ -102,7 +105,8 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
         int nChanges = skylineMatrix.getChangeCount();
         int nTypes = skylineMatrix.getNTypes();
 
-        RealParameter valuesParameter = (RealParameter) skylineMatrix.skylineValuesInput.get();
+        RealVectorParam<? extends Real> valuesParameter =
+                (RealVectorParam<? extends Real>) skylineMatrix.skylineValuesInput.get();
 
         TableColumn<ValuesTableEntry, String> typeCol = new TableColumn<>("From Type");
         typeCol.setCellValueFactory(p -> new ObservableValueBase<>() {
@@ -141,12 +145,12 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
                     public Double getValue() {
                         int from = ((MatrixValuesEntry) p.getValue()).fromType;
                         if (from < 0)
-                            return valuesParameter.getValue(epochIdx);
+                            return valuesParameter.get(epochIdx);
 
                         if (from == toType)
                             return Double.NaN;
 
-                        return valuesParameter.getValue(
+                        return valuesParameter.get(
                                 epochIdx*nTypes*(nTypes-1)
                                 + (nTypes-1)*from
                                 + (toType<from ? toType : toType-1));
@@ -181,9 +185,9 @@ public class SkylineMatrixInputEditor extends SkylineInputEditor {
                     int from = ((MatrixValuesEntry) e.getTableView()
                             .getItems().get(e.getTablePosition().getRow())).fromType;
                     if (from < 0) {
-                        valuesParameter.setValue(epochIdx, e.getNewValue());
+                        valuesParameter.set(epochIdx, e.getNewValue());
                     } else {
-                        valuesParameter.setValue(epochIdx*nTypes*(nTypes-1)
+                        valuesParameter.set(epochIdx*nTypes*(nTypes-1)
                                 + (nTypes-1)*from
                                 + (toType<from ? toType : toType-1), e.getNewValue());
                     }

@@ -71,7 +71,7 @@ public class EpochVisualizerPane extends Canvas {
         param.initAndValidate(); // Respond to any process length updates
 
         boolean useAges = param.timesAreAgesInput.get();
-        double processLength = param.processLengthInput.get().getArrayValue();
+        double processLength = param.processLengthInput.get().get();
         TypeSet typeSet = param.typeSetInput.get();
 
         if (processLength <= 0.0) {

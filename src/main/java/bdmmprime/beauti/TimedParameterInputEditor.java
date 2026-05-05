@@ -315,7 +315,7 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         int nTypes = timedParameter.typeSetInput.get().getNTypes();
         int nEpochs = timedParameter.timesInput.get() == null
                 ? 0
-                : timedParameter.timesInput.get().getDimension();
+                : timedParameter.timesInput.get().size();
 
 //        System.out.println("Number of epochs: " + nEpochs);
 

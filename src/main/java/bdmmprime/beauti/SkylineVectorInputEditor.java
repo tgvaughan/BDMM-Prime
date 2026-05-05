@@ -22,6 +22,8 @@ import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
 import beast.base.inference.parameter.RealParameter;
 import beast.base.math.matrixalgebra.Vector;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import javafx.beans.binding.Bindings;
@@ -67,8 +69,9 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
         int nTypes = skylineParameter.typeSetInput.get().getNTypes();
         int nEpochs = skylineParameter.changeTimesInput.get() == null
                 ? 1
-                : skylineParameter.changeTimesInput.get().getDimension() + 1;
-        RealParameter valuesParam = (RealParameter) skylineParameter.skylineValuesInput.get();
+                : skylineParameter.changeTimesInput.get().size() + 1;
+        RealVectorParam<? extends Real> valuesParam =
+                (RealVectorParam<? extends Real>) skylineParameter.skylineValuesInput.get();
 
 //        System.out.println("Number of epochs: " + nEpochs);
 
@@ -78,7 +81,7 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
             valuesParam.setDimension(nTypes*nEpochs);
 
         if (skylineParameter.changeTimesInput.get() != null)
-            ((RealParameter)skylineParameter.changeTimesInput.get()).initAndValidate();
+            ((RealVectorParam<? extends Real>)skylineParameter.changeTimesInput.get()).initAndValidate();
         sanitiseRealParameter(valuesParam);
         skylineParameter.initAndValidate();
     }
@@ -91,7 +94,8 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
         int nChanges = skylineVector.getChangeCount();
         int nTypes = skylineVector.getNTypes();
 
-        RealParameter valuesParameter = (RealParameter) skylineVector.skylineValuesInput.get();
+        RealVectorParam<? extends Real> valuesParameter =
+                (RealVectorParam<? extends Real>) skylineVector.skylineValuesInput.get();
         TableColumn<ValuesTableEntry, String> typeCol = new TableColumn<>("Type");
         typeCol.setCellValueFactory(p -> new ObservableValueBase<>() {
             @Override
@@ -111,8 +115,8 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
                 public Double getValue() {
                     int type = ((VectorValuesEntry)p.getValue()).type;
                     return type<0
-                            ? valuesParameter.getValue(epochIdx)
-                            : valuesParameter.getValue(epochIdx*nTypes + type);
+                            ? valuesParameter.get(epochIdx)
+                            : valuesParameter.get(epochIdx*nTypes + type);
                 }
             });
             col.setCellFactory(TextFieldTableCell.forTableColumn(new DoubleStringConverter()));
@@ -120,16 +124,16 @@ public class SkylineVectorInputEditor extends SkylineInputEditor {
                 int type = ((VectorValuesEntry) e.getTableView()
                         .getItems().get(e.getTablePosition().getRow())).type;
                 if (type < 0) {
-                    valuesParameter.setValue(epochIdx, e.getNewValue());
+                    valuesParameter.set(epochIdx, e.getNewValue());
                 } else {
-                    valuesParameter.setValue(epochIdx*nTypes + type, e.getNewValue());
+                    valuesParameter.set(epochIdx*nTypes + type, e.getNewValue());
                 }
                 sanitiseRealParameter(valuesParameter);
             });
             valuesTable.getColumns().add(col);
         }
 
-        if (valuesParameter.getDimension() / (nChanges+1) > 1) {
+        if (valuesParameter.size() / (nChanges+1) > 1) {
             for (int type=0; type<nTypes; type++)
                 valuesTable.getItems().add(new VectorValuesEntry(type));
         } else {

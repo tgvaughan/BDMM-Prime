@@ -25,6 +25,8 @@ import beast.base.core.Input;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
@@ -109,13 +111,13 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         mainInputBox.getChildren().add(changeTimesBox);
 
         if (nChanges > 0) {
-            updateChangeTimesUI((RealParameter) skylineParameter.changeTimesInput.get(),
+            updateChangeTimesUI((RealVectorParam<? extends Real>) skylineParameter.changeTimesInput.get(),
                     changeTimesEntryRow);
             timesAreAgesCheckBox.setSelected(skylineParameter.timesAreAgesInput.get());
             timesAreRelativeCheckBox.setSelected(skylineParameter.timesAreRelativeInput.get());
 
             estimateTimesCheckBox.setSelected(
-                    ((RealParameter) skylineParameter.changeTimesInput.get())
+                    ((RealVectorParam<? extends Real>) skylineParameter.changeTimesInput.get())
                             .isEstimatedInput.get());
         } else {
             changeTimesBox.setVisible(false);
@@ -124,7 +126,8 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         // Add elements specific to values
 
-        RealParameter valuesParameter = (RealParameter) skylineParameter.skylineValuesInput.get();
+        RealVectorParam<? extends Real> valuesParameter =
+                (RealVectorParam<? extends Real>) skylineParameter.skylineValuesInput.get();
 
         boxHoriz = FXUtils.newHBox();
         boxHoriz.getChildren().add(new Label("Values:"));
@@ -163,7 +166,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         mainInputBox.getChildren().add(epochVisualizer);
 
         int nTypes = skylineParameter.getNTypes();
-        if (valuesParameter.getDimension() == (nChanges + 1)) {
+        if (valuesParameter.size() == (nChanges + 1)) {
             if (nTypes > 1) {
                 scalarRatesCheckBox.setSelected(true);
                 scalarRatesCheckBox.disableProperty().set(false);
@@ -186,13 +189,14 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
             System.out.println(oldValue + " -> " + newValue);
 
             if (newValue > 0) {
-                RealParameter param = (RealParameter) skylineParameter.changeTimesInput.get();
+                RealVectorParam<? extends Real> param =
+                        (RealVectorParam<? extends Real>) skylineParameter.changeTimesInput.get();
                 if (param == null) {
                     if (!doc.pluginmap.containsKey(getChangeTimesParameterID())) {
-                        param = new RealParameter("0.0");
+                        param = new RealVectorParam<>(new double[] {0.0}, Real.INSTANCE);
                         param.setID(getChangeTimesParameterID());
                     } else {
-                        param = (RealParameter) doc.pluginmap.get(getChangeTimesParameterID());
+                        param = (RealVectorParam<? extends Real>) doc.pluginmap.get(getChangeTimesParameterID());
                     }
                     skylineParameter.changeTimesInput.setValue(param, skylineParameter);
                 }
@@ -205,7 +209,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
             ensureValuesConsistency();
 
             if (newValue > 0) {
-                updateChangeTimesUI((RealParameter) skylineParameter.changeTimesInput.get(),
+                updateChangeTimesUI((RealVectorParam<? extends Real>) skylineParameter.changeTimesInput.get(),
                         changeTimesEntryRow);
                 timesAreAgesCheckBox.setSelected(skylineParameter.timesAreAgesInput.get());
 
@@ -248,17 +252,18 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
         distributeChangeTimesButton.setOnAction(e -> {
 
-            RealParameter changeTimesParam = (RealParameter) skylineParameter.changeTimesInput.get();
-            int nTimes = changeTimesParam.getDimension();
-            double processLength = skylineParameter.processLengthInput.get().getArrayValue();
+            RealVectorParam<? extends Real> changeTimesParam =
+                    (RealVectorParam<? extends Real>) skylineParameter.changeTimesInput.get();
+            int nTimes = changeTimesParam.size();
+            double processLength = skylineParameter.processLengthInput.get().get();
 
             if (skylineParameter.timesAreRelativeInput.get()) {
                 for (int i = 0; i < nTimes; i++) {
-                    changeTimesParam.setValue(i, ((double) (i + 1)) / (nTimes + 1));
+                    changeTimesParam.set(i, ((double) (i + 1)) / (nTimes + 1));
                 }
             } else {
                 for (int i = 0; i < nTimes; i++) {
-                    changeTimesParam.setValue(i, processLength*(i+1) / (nTimes + 1));
+                    changeTimesParam.set(i, processLength*(i+1) / (nTimes + 1));
                 }
             }
 
@@ -301,13 +306,13 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
      * @param parameter change times parameter
      * @param changeTimesEntryRow HBox containing time inputs
      */
-    void updateChangeTimesUI(RealParameter parameter,
+    void updateChangeTimesUI(RealVectorParam<? extends Real> parameter,
                              HBox changeTimesEntryRow) {
         changeTimesEntryRow.getChildren().clear();
         changeTimesEntryRow.getChildren().add(new Label("Change times:"));
-        for (int i=0; i<parameter.getDimension(); i++) {
+        for (int i=0; i<parameter.size(); i++) {
             changeTimesEntryRow.getChildren().add(new Label("Epoch " + (i+1) + "->" + (i+2) + ": "));
-            TextField textField = new TextField(parameter.getValue(i).toString());
+            TextField textField = new TextField(String.valueOf(parameter.get(i)));
 
             textField.setPrefWidth(50);
             textField.setPadding(new Insets(0));
@@ -315,7 +320,7 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
 
             int index = i;
             textField.textProperty().addListener((observable, oldValue, newValue) -> {
-                parameter.setValue(index, Double.valueOf(newValue));
+                parameter.set(index, Double.parseDouble(newValue));
                 sanitiseRealParameter(parameter);
                 skylineParameter.initAndValidate();
                 System.out.println(skylineParameter);
@@ -326,10 +331,10 @@ public abstract class SkylineInputEditor extends InputEditor.Base {
         }
     }
 
-    void sanitiseRealParameter(RealParameter parameter) {
+    void sanitiseRealParameter(RealVectorParam<? extends Real> parameter) {
         parameter.valuesInput.setValue(
-                Arrays.stream(parameter.getDoubleValues())
-                        .mapToObj(String::valueOf)
+                parameter.getElements().stream()
+                        .map(Object::toString)
                         .collect(Collectors.joining(" ")),
                 parameter);
         parameter.initAndValidate();
