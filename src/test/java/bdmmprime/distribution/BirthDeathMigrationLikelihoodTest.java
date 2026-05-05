@@ -26,6 +26,7 @@ import beast.base.spec.domain.Real;
 import beast.base.spec.domain.UnitInterval;
 import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.inference.parameter.SimplexParam;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -78,7 +79,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick,
                         false, false,
@@ -137,7 +138,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
 		density.initByName(
 				"parameterization", parameterization,
-				"startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
 				"conditionOnSurvival", false,
 				"tree", new TreeParser(newick,
 						false, false,
@@ -196,7 +197,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick,
                         false, false,
@@ -244,7 +245,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "typeLabel", "type",
@@ -260,7 +261,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
 		densityExact.initByName(
 				"parameterization", parameterization,
-				"startTypePriorProbs", "1.0",
+				"startTypePriorProbs", new SimplexParam(new double[] {1.0}),
 				"conditionOnSurvival", false,
 				"tree", new TreeParser(newick, false, false, true,0),
 				"typeLabel", "type",
@@ -306,7 +307,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 				"parameterization", parameterization,
-				"startTypePriorProbs", "1.0",
+				"startTypePriorProbs", new SimplexParam(new double[] {1.0}),
 				"conditionOnSurvival", false,
 				"tree", new TreeParser(newick, false, false, true,0),
 				"typeLabel", "type",
@@ -318,7 +319,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
 		densityExact.initByName(
 				"parameterization", parameterization,
-				"startTypePriorProbs", "1.0",
+				"startTypePriorProbs", new SimplexParam(new double[] {1.0}),
 				"conditionOnSurvival", false,
 				"tree", new TreeParser(newick, false, false, true,0),
 				"typeLabel", "type",
@@ -371,7 +372,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "typeLabel", "type",
@@ -398,7 +399,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
         Parameterization parameterization = new EpiParameterization();
 		parameterization.initByName(
 		        "typeSet", new TypeSet(1),
-                "processLength", tree,
+                "processLength", new ProcessLength(tree),
                 "Re", new SkylineVectorParameter(
                         null,
                         new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
@@ -424,7 +425,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
 				"conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -513,7 +514,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -594,7 +595,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName(
 		        "parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -668,7 +669,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -680,7 +681,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
 		BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
 		densityExact.initByName("parameterization", parameterization,
-				"startTypePriorProbs", "1.0",
+				"startTypePriorProbs", new SimplexParam(new double[] {1.0}),
 				"conditionOnSurvival", true,
 				"tree", tree,
 				"typeLabel", "type",
@@ -726,7 +727,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -775,7 +776,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -796,7 +797,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
         // rate-changes, rho-sampling in the past and present, with reversed times
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", tree,
+                "processLength", new ProcessLength(tree),
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
                         new RealVectorParam<>(new double[] {0.5, 1.0, 1.1}, NonNegativeReal.INSTANCE),
@@ -822,7 +823,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
 				"conditionOnRoot", true,
                 "tree", tree,
@@ -866,7 +867,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "state",
@@ -920,7 +921,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "state",
@@ -963,7 +964,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
 		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName("parameterization", parameterization,
-				"startTypePriorProbs", "1.0",
+				"startTypePriorProbs", new SimplexParam(new double[] {1.0}),
 				"conditionOnSurvival", false,
 				"tree", tree,
 				"typeLabel", "state",
@@ -1008,7 +1009,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
 		BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 		density.initByName("parameterization", parameterization,
-				"startTypePriorProbs", "1.0",
+				"startTypePriorProbs", new SimplexParam(new double[] {1.0}),
 				"conditionOnSurvival", true,
 				"tree", tree,
 				"typeLabel", "state",
@@ -1065,7 +1066,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "state",
@@ -1169,7 +1170,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1214,7 +1215,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1260,7 +1261,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1305,7 +1306,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1352,7 +1353,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1399,7 +1400,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0 0.0",
+				"startTypePriorProbs", new SimplexParam(new double[] {1.0, 0.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1443,7 +1444,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", (1.0/3.0 + " " + (1.0/3.0) + " " + (1.0/3.0)),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0/3.0, 1.0/3.0, 1.0/3.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1485,7 +1486,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1531,7 +1532,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1576,7 +1577,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1597,7 +1598,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", tree,
+                "processLength", new ProcessLength(tree),
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
                         null,
@@ -1621,7 +1622,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "0.6 0.4",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.6, 0.4}),
                 "conditionOnSurvival", false,
 				"conditionOnRoot", true,
                 "tree", tree,
@@ -1665,7 +1666,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1802,7 +1803,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1831,7 +1832,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", tree,
+                "processLength", new ProcessLength(tree),
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
                         null,
@@ -1848,7 +1849,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
-                "startTypePriorProbs", "1.0",
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
 				"conditionOnRoot", true,
                 "tree", tree,
@@ -1923,7 +1924,7 @@ public class BirthDeathMigrationLikelihoodTest extends LikelihoodTestClass {
 		density.initByName(
 				"parameterization", parameterization,
 				"tree", new TreeParser(newick1, false, false, true,0),
-				"startTypePriorProbs", "0.5 0.5",
+				"startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
 				"conditionOnSurvival", false,
 				"typeLabel", "type",
 				"parallelize", false

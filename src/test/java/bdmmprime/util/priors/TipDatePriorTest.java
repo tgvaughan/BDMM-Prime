@@ -17,11 +17,12 @@
 
 package bdmmprime.util.priors;
 
-import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.alignment.Taxon;
 import beast.base.evolution.alignment.TaxonSet;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealScalarParam;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -84,24 +85,24 @@ public class TipDatePriorTest {
         System.out.println(tree);
 
         double fso = laterBounds.getDate(0) - tipDates.getDate(0);
-        RealParameter fsoParam = new RealParameter(String.valueOf(fso));
+        RealScalarParam<?> fsoParam = new RealScalarParam<>(fso, Real.INSTANCE);
 
         TipDatePrior prior = new TipDatePrior();
         prior.initByName(
                 "tree", tree,
                 "finalSampleOffset", fsoParam,
-                "endOfSamplingTime", new RealParameter(String.valueOf(laterBounds.getDate(0))),
+                "endOfSamplingTime", new RealScalarParam<>(laterBounds.getDate(0), Real.INSTANCE),
                 "earlierBound", earlierBounds,
                 "laterBound", laterBounds,
                 "reportBoundsViolations", true);
 
         assertEquals(0.0, prior.calculateLogP(), 1e-10);
 
-        fsoParam.setValue(fso+0.99/365.25);
+        fsoParam.set(fso+0.99/365.25);
         prior.initAndValidate();
         assertEquals(0.0, prior.calculateLogP(), 1e-10);
 
-        fsoParam.setValue(fso-0.99/365.25);
+        fsoParam.set(fso-0.99/365.25);
         prior.initAndValidate();
         assertEquals(Double.NEGATIVE_INFINITY, prior.calculateLogP(), 1e-10);
 

@@ -17,8 +17,10 @@
 
 package bdmmprime.util.priors;
 
+import bdmmprime.testclasses.RealVectorParamFromString;
 import beast.base.inference.Distribution;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.PositiveReal;
+import beast.base.spec.domain.Real;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -31,10 +33,10 @@ public class MultivariateLogNormalTest {
     public void testValue() {
 
         Distribution dist = new MultivariateLogNormal();
-        dist.initByName("x", new RealParameter("1"),
-                "x", new RealParameter("2"),
-                "M", new RealParameter("0 0"),
-                "S", new RealParameter("1 0.1 0.1 1"));
+        dist.initByName("x", new RealVectorParamFromString<>("1", PositiveReal.INSTANCE),
+                "x", new RealVectorParamFromString<>("2", PositiveReal.INSTANCE),
+                "M", new RealVectorParamFromString<>("0 0", Real.INSTANCE),
+                "S", new RealVectorParamFromString<>("1 0.1 0.1 1", PositiveReal.INSTANCE));
 
         assertEquals(-2.8181831410741953, dist.calculateLogP(), 1e-10);
     }
@@ -43,10 +45,10 @@ public class MultivariateLogNormalTest {
     public void testNonSymmetric() {
         assertThrows(IllegalArgumentException.class, () -> {
             Distribution dist = new MultivariateLogNormal();
-            dist.initByName("x", new RealParameter("1"),
-                    "x", new RealParameter("2"),
-                    "M", new RealParameter("0 0"),
-                    "S", new RealParameter("1 1.1 1.2 1"));
+            dist.initByName("x", new RealVectorParamFromString<>("1", PositiveReal.INSTANCE),
+                    "x", new RealVectorParamFromString<>("2", PositiveReal.INSTANCE),
+                    "M", new RealVectorParamFromString<>("0 0", Real.INSTANCE),
+                    "S", new RealVectorParamFromString<>("1 1.1 1.2 1", PositiveReal.INSTANCE));
 
             System.out.println(dist.calculateLogP());
         });
@@ -56,10 +58,10 @@ public class MultivariateLogNormalTest {
     public void testNonPositiveDefinite() {
 
         Distribution dist = new MultivariateLogNormal();
-        dist.initByName("x", new RealParameter("1"),
-                "x", new RealParameter("2"),
-                "M", new RealParameter("0 0"),
-                "S", new RealParameter("1 1.1 1.1 1"));
+        dist.initByName("x", new RealVectorParamFromString<>("1", PositiveReal.INSTANCE),
+                "x", new RealVectorParamFromString<>("2", PositiveReal.INSTANCE),
+                "M", new RealVectorParamFromString<>("0 0", Real.INSTANCE),
+                "S", new RealVectorParamFromString<>("1 1.1 1.1 1", PositiveReal.INSTANCE));
 
         assertEquals(Double.NEGATIVE_INFINITY, dist.calculateLogP(), 0.0);
     }

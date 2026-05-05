@@ -17,7 +17,9 @@
 
 package bdmmprime.util.operators;
 
-import beast.base.inference.parameter.RealParameter;
+import bdmmprime.testclasses.RealVectorParamFromString;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,10 +29,8 @@ public class SmartScaleOperatorTest {
     @Test
     public void test() {
 
-        RealParameter startParam = new RealParameter("1 1 2 2 2");
-        RealParameter param = new RealParameter("1 1 2 2 2");
-        param.setLower(0.0);
-        param.setUpper(Double.POSITIVE_INFINITY);
+        RealVectorParam<?> startParam = new RealVectorParamFromString<>("1 1 2 2 2", NonNegativeReal.INSTANCE);
+        RealVectorParam<?> param = new RealVectorParamFromString<>("1 1 2 2 2", NonNegativeReal.INSTANCE);
         SmartScaleOperator operator = new SmartScaleOperator();
         operator.initByName("parameter", param,
                 "weight", 1.0);
@@ -38,19 +38,17 @@ public class SmartScaleOperatorTest {
         assertEquals(2, operator.nClasses);
 
         double hr = operator.proposal();
-        double f = param.getArrayValue(0) != startParam.getArrayValue(0)
-                ? param.getArrayValue(0)/startParam.getArrayValue(0)
-                : param.getArrayValue(2)/startParam.getArrayValue(2);
+        double f = param.get(0) != startParam.get(0)
+                ? param.get(0)/startParam.get(0)
+                : param.get(2)/startParam.get(2);
         assertEquals(-Math.log(f), hr, 1e-10);
     }
 
     @Test
     public void testScaleAll() {
 
-        RealParameter startParam = new RealParameter("1 1 2 2 2");
-        RealParameter param = new RealParameter("1 1 2 2 2");
-        param.setLower(0.0);
-        param.setUpper(Double.POSITIVE_INFINITY);
+        RealVectorParam<?> startParam = new RealVectorParamFromString<>("1 1 2 2 2", NonNegativeReal.INSTANCE);
+        RealVectorParam<?> param = new RealVectorParamFromString<>("1 1 2 2 2", NonNegativeReal.INSTANCE);
         SmartScaleOperator operator = new SmartScaleOperator();
         operator.initByName("parameter", param,
                 "scaleAll", true,
@@ -59,7 +57,7 @@ public class SmartScaleOperatorTest {
         assertEquals(2, operator.nClasses);
 
         double hr = operator.proposal();
-        double f = param.getArrayValue(0)/startParam.getArrayValue(0);
+        double f = param.get(0)/startParam.get(0);
         assertEquals(-(operator.nClasses-2)*Math.log(f), hr, 1e-10);
     }
 }

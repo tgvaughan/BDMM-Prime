@@ -17,12 +17,15 @@
 
 package bdmmprime.util.operators;
 
+import bdmmprime.testclasses.RealVectorParamFromString;
 import beast.base.inference.MCMC;
 import beast.base.inference.Operator;
 import beast.base.inference.State;
 import beast.base.inference.distribution.Prior;
-import beast.base.inference.distribution.Uniform;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.distribution.IID;
+import beast.base.spec.inference.distribution.Uniform;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.util.Randomizer;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -38,16 +41,12 @@ public class ChangeTimeOperatorTest extends OperatorTestParent {
     public void test() throws IOException, ParserConfigurationException, SAXException {
         Randomizer.setSeed(26);
 
-        RealParameter changeTimes= new RealParameter("0.1 0.2 0.3 0.4 0.5");
-        changeTimes.setLower(-10.0);
-        changeTimes.setUpper(10.0);
+        RealVectorParam<Real> changeTimes= new RealVectorParamFromString<>("0.1 0.2 0.3 0.4 0.5", Real.INSTANCE);
 
         Uniform unif = new Uniform();
         unif.initByName("lower", -10.0,
                 "upper", 10.0);
-        Prior prior = new Prior();
-        prior.initByName("x", changeTimes,
-                "distr", unif);
+        IID<?,?,?> prior = new IID<>(changeTimes, unif);
 
         Operator op = new ChangeTimeOperator();
         op.initByName("changeTimes", changeTimes,

@@ -19,9 +19,14 @@ package bdmmprime.mapping;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
+import bdmmprime.testclasses.RealVectorParamFromString;
 import bdmmprime.trajectories.simulation.SimulatedTree;
-import beast.base.inference.parameter.RealParameter;
 import beast.base.evolution.tree.Tree;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.Real;
+import beast.base.spec.domain.UnitInterval;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.inference.parameter.SimplexParam;
 import beast.base.util.Randomizer;
 import beast.base.evolution.tree.TreeParser;
 import org.apache.commons.math3.special.Gamma;
@@ -40,26 +45,26 @@ public class TypeMappedTreeTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", "6.0",
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter((4.0 / 3.0) + " " + 5.0)),
+                        new RealVectorParamFromString<>((4.0 / 3.0) + " " + 5.0, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.25")),
+                        new RealVectorParamFromString<>("1.5 1.25", NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter((1.0 / 3.0) + " " + (1.0/2.0))),
+                        new RealVectorParamFromString<>((1.0 / 3.0) + " " + (1.0/2.0), UnitInterval.INSTANCE)),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.2 0.1")),
+                        new RealVectorParamFromString<>("0.2 0.1", NonNegativeReal.INSTANCE)),
 
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParamFromString<>("1.0", UnitInterval.INSTANCE), 2));
 
-        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
+        SimplexParam startTypePriorProbs = new SimplexParam(new double[] {0.5, 0.5});
 
         // Compute density using regular BDMM phylodynamic likelihood
 
@@ -87,7 +92,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type=0; type<parameterization.getNTypes(); type++) {
-            logProb += y[type+parameterization.getNTypes()]*Math.exp(logScaleFactor)*startTypePriorProbs.getValue(type);
+            logProb += y[type+parameterization.getNTypes()]*Math.exp(logScaleFactor)*startTypePriorProbs.get(type);
         }
 
         logProb = Math.log(logProb)
@@ -106,28 +111,28 @@ public class TypeMappedTreeTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", "6.0",
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter((4.0 / 3.0) + " " + 5.0)),
+                        new RealVectorParamFromString<>((4.0 / 3.0) + " " + 5.0, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.25")),
+                        new RealVectorParamFromString<>("1.5 1.25", NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter((1.0 / 3.0) + " " + (1.0/2.0))),
+                        new RealVectorParamFromString<>((1.0 / 3.0) + " " + (1.0/2.0), UnitInterval.INSTANCE)),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.2 0.1")),
+                        new RealVectorParamFromString<>("0.2 0.1", NonNegativeReal.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParamFromString<>("1.0", UnitInterval.INSTANCE), 2),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("1.3 6.0"),
-                        new RealParameter("0.1 0.2 0.25 0.5")));
+                        new RealVectorParamFromString<>("1.3 6.0", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.1 0.2 0.25 0.5", UnitInterval.INSTANCE)));
 
-        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
+        SimplexParam startTypePriorProbs = new SimplexParam(new double[] {0.5, 0.5});
 
         // Compute density using regular BDMM phylodynamic likelihood
 
@@ -156,7 +161,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type=0; type<parameterization.getNTypes(); type++) {
-            logProb += y[type+parameterization.getNTypes()]*startTypePriorProbs.getValue(type);
+            logProb += y[type+parameterization.getNTypes()]*startTypePriorProbs.get(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
@@ -175,28 +180,28 @@ public class TypeMappedTreeTest {
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", "6.0",
                 "typeSet", new TypeSet(2),
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter((4.0 / 3.0) + " " + 5.0)),
+                        new RealVectorParamFromString<>((4.0 / 3.0) + " " + 5.0, NonNegativeReal.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.25")),
+                        new RealVectorParamFromString<>("1.5 1.25", NonNegativeReal.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.1 0.1")),
+                        new RealVectorParamFromString<>("0.1 0.1", NonNegativeReal.INSTANCE)),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.2 0.1")),
+                        new RealVectorParamFromString<>("0.2 0.1", NonNegativeReal.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParamFromString<>("1.0", UnitInterval.INSTANCE), 2),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("1.3 6.0"),
-                        new RealParameter("0.1 0.2 0.25 0.5")));
+                        new RealVectorParamFromString<>("1.3 6.0", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.1 0.2 0.25 0.5", UnitInterval.INSTANCE)));
 
-        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
+        SimplexParam startTypePriorProbs = new SimplexParam(new double[] {0.5, 0.5});
 
         // Compute density using regular BDMM phylodynamic likelihood
 
@@ -225,7 +230,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type=0; type<parameterization.getNTypes(); type++) {
-            logProb += y[type+parameterization.getNTypes()]*startTypePriorProbs.getValue(type);
+            logProb += y[type+parameterization.getNTypes()]*startTypePriorProbs.get(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
@@ -245,29 +250,29 @@ public class TypeMappedTreeTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter(Double.toString(tree.getRoot().getHeight() + 0.1)),
+                "processLength", new RealScalarParam<>(tree.getRoot().getHeight() + 0.1, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter((4.0 / 3.0) + " " + 5.0)),
+                        new RealVectorParamFromString<>((4.0 / 3.0) + " " + 5.0, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.25")),
+                        new RealVectorParamFromString<>("1.5 1.25", NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter((1.0 / 3.0) + " " + 0.5)),
+                        new RealVectorParamFromString<>((1.0 / 3.0) + " " + 0.5, UnitInterval.INSTANCE)),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.2 0.1")),
+                        new RealVectorParamFromString<>("0.2 0.1", NonNegativeReal.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.1 0.2")),
+                        new RealVectorParamFromString<>("0.1 0.2", NonNegativeReal.INSTANCE)),
 
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParamFromString<>("1.0", UnitInterval.INSTANCE), 2));
 
-        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
+        SimplexParam startTypePriorProbs = new SimplexParam(new double[] {0.5, 0.5});
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName("parameterization", parameterization,
@@ -293,7 +298,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type = 0; type < parameterization.getNTypes(); type++) {
-            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.getValue(type);
+            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.get(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (tree.getInternalNodeCount() - tree.getDirectAncestorNodeCount())
@@ -310,26 +315,26 @@ public class TypeMappedTreeTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", typeSet,
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0"), 2),
+                        new RealVectorParamFromString<>("2.0", NonNegativeReal.INSTANCE), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParamFromString<>("1.0", NonNegativeReal.INSTANCE), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5"), 2),
+                        new RealVectorParamFromString<>("0.5", NonNegativeReal.INSTANCE), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParamFromString<>("1.0", UnitInterval.INSTANCE), 2),
                 "migrationRate", new SkylineMatrixParameter(
-                        new RealParameter("3.5 4.0"),
-                        new RealParameter("0.0 0.0 1.0 1.0 0.0 0.0"), 2)
+                        new RealVectorParamFromString<>("3.5 4.0", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.0 0.0 1.0 1.0 0.0 0.0", NonNegativeReal.INSTANCE), 2)
         );
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
-        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
+        SimplexParam startTypePriorProbs = new SimplexParam(new double[] {0.5, 0.5});
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
@@ -361,7 +366,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type = 0; type < parameterization.getNTypes(); type++) {
-            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.getValue(type);
+            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.get(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (simulatedTree.getInternalNodeCount() - simulatedTree.getDirectAncestorNodeCount())
@@ -378,26 +383,26 @@ public class TypeMappedTreeTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", typeSet,
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0"), 2),
+                        new RealVectorParamFromString<>("2.0", NonNegativeReal.INSTANCE), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParamFromString<>("1.0", NonNegativeReal.INSTANCE), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5"), 2),
+                        new RealVectorParamFromString<>("0.5", NonNegativeReal.INSTANCE), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParamFromString<>("1.0", UnitInterval.INSTANCE), 2),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
-                        new RealParameter("3.9 4.0"),
-                        new RealParameter("0.0 0.0 1.0 1.0 0.0 0.0"), 2)
+                        new RealVectorParamFromString<>("3.9 4.0", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.0 0.0 1.0 1.0 0.0 0.0", NonNegativeReal.INSTANCE), 2)
         );
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
-        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
+        SimplexParam startTypePriorProbs = new SimplexParam(new double[] {0.5, 0.5});
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
@@ -429,7 +434,7 @@ public class TypeMappedTreeTest {
 
         double logProb = 0.0;
         for (int type = 0; type < parameterization.getNTypes(); type++) {
-            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.getValue(type);
+            logProb += y[type + parameterization.getNTypes()] * startTypePriorProbs.get(type);
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (simulatedTree.getInternalNodeCount() - simulatedTree.getDirectAncestorNodeCount())

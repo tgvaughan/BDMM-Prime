@@ -19,13 +19,13 @@ package bdmmprime.util.operators;
 
 import bdmmprime.parameterization.SkylineMatrixParameter;
 import bdmmprime.parameterization.SkylineVectorParameter;
-import bdmmprime.util.priors.SmartZeroExcludingPrior;
-import bdmmprime.util.priors.ZeroExcludingPrior;
-import beast.base.evolution.operator.ScaleOperator;
+import bdmmprime.testclasses.RealVectorParamFromString;
+import bdmmprime.util.priors.SmartZeroExcludingRealIID;
 import beast.base.inference.*;
-import beast.base.inference.distribution.Prior;
-import beast.base.inference.distribution.Uniform;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.inference.distribution.Uniform;
+import beast.base.spec.inference.operator.ScaleOperator;
+import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.util.Randomizer;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
@@ -42,17 +42,11 @@ public class JointSkylineScaleOperatorTest extends OperatorTestParent {
     public void test() throws IOException, ParserConfigurationException, SAXException {
         Randomizer.setSeed(42);
 
-        RealParameter sv1vals = new RealParameter("1 1 2 3 3");
-        sv1vals.setLower(0.0);
-        sv1vals.setUpper(10.0);
+        RealVectorParam<NonNegativeReal> sv1vals = new RealVectorParamFromString<>("1 1 2 3 3", NonNegativeReal.INSTANCE);
         sv1vals.setID("sv1vals");
-        RealParameter sv2vals = new RealParameter("1 2 2 2 2");
-        sv2vals.setLower(0.0);
-        sv2vals.setUpper(10.0);
+        RealVectorParam<NonNegativeReal> sv2vals = new RealVectorParamFromString<>("1 2 2 2 2", NonNegativeReal.INSTANCE);
         sv2vals.setID("sv2vals");
-        RealParameter smvals = new RealParameter("1 2 2 2 2 3");
-        smvals.setLower(0.0);
-        smvals.setUpper(10.0);
+        RealVectorParam<NonNegativeReal> smvals = new RealVectorParamFromString<>("1 2 2 2 2 3", NonNegativeReal.INSTANCE);
         smvals.setID("smvals");
 
         SkylineVectorParameter sv1 = new SkylineVectorParameter(
@@ -71,12 +65,9 @@ public class JointSkylineScaleOperatorTest extends OperatorTestParent {
         unif.initByName("lower", 0.0,
                 "upper", 10.0);
 
-        Prior sv1valsPrior = new SmartZeroExcludingPrior();
-        sv1valsPrior.initByName("x", sv1vals, "distr", unif);
-        Prior sv2valsPrior = new ZeroExcludingPrior();
-        sv2valsPrior.initByName("x", sv2vals, "distr", unif);
-        Prior smvalsPrior = new SmartZeroExcludingPrior();
-        smvalsPrior.initByName("x", smvals, "distr", unif);
+        SmartZeroExcludingRealIID sv1valsPrior = new SmartZeroExcludingRealIID(sv1vals, unif);
+        SmartZeroExcludingRealIID sv2valsPrior = new SmartZeroExcludingRealIID(sv2vals, unif);
+        SmartZeroExcludingRealIID smvalsPrior = new SmartZeroExcludingRealIID(smvals, unif);
 
         Distribution target = new CompoundDistribution();
         target.initByName("distribution", sv1valsPrior,
@@ -139,19 +130,19 @@ public class JointSkylineScaleOperatorTest extends OperatorTestParent {
             assertEquals(25.0/3.0, testLogger.getVariances(smvals)[idx], 0.2);
         }
 
-        assertEquals(sv1vals.getArrayValue(0),sv1vals.getArrayValue(1), 1e-10);
-        assertNotEquals(sv1vals.getArrayValue(0),sv1vals.getArrayValue(2), 1e-10);
-        assertEquals(sv1vals.getArrayValue(3),sv1vals.getArrayValue(4), 1e-10);
+        assertEquals(sv1vals.get(0),sv1vals.get(1), 1e-10);
+        assertNotEquals(sv1vals.get(0),sv1vals.get(2), 1e-10);
+        assertEquals(sv1vals.get(3),sv1vals.get(4), 1e-10);
 
-        assertNotEquals(sv2vals.getArrayValue(0),sv2vals.getArrayValue(1), 1e-10);
-        assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(2), 1e-10);
-        assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(3), 1e-10);
-        assertNotEquals(sv2vals.getArrayValue(1),sv2vals.getArrayValue(4), 1e-10);
+        assertNotEquals(sv2vals.get(0),sv2vals.get(1), 1e-10);
+        assertNotEquals(sv2vals.get(1),sv2vals.get(2), 1e-10);
+        assertNotEquals(sv2vals.get(1),sv2vals.get(3), 1e-10);
+        assertNotEquals(sv2vals.get(1),sv2vals.get(4), 1e-10);
 
-        assertNotEquals(smvals.getArrayValue(0),smvals.getArrayValue(1), 1e-10);
-        assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(2), 1e-10);
-        assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(3), 1e-10);
-        assertEquals(smvals.getArrayValue(1),smvals.getArrayValue(4), 1e-10);
-        assertNotEquals(smvals.getArrayValue(1),smvals.getArrayValue(5), 1e-10);
+        assertNotEquals(smvals.get(0),smvals.get(1), 1e-10);
+        assertEquals(smvals.get(1),smvals.get(2), 1e-10);
+        assertEquals(smvals.get(1),smvals.get(3), 1e-10);
+        assertEquals(smvals.get(1),smvals.get(4), 1e-10);
+        assertNotEquals(smvals.get(1),smvals.get(5), 1e-10);
     }
 }

@@ -19,8 +19,13 @@ package bdmmprime.trajectories;
 
 import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
+import bdmmprime.testclasses.RealVectorParamFromString;
 import bdmmprime.trajectories.simulation.SimulatedTree;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.inference.parameter.SimplexParam;
+import beast.base.spec.type.RealScalar;
 import beast.base.util.Randomizer;
 import beast.base.evolution.tree.TreeParser;
 import org.junit.jupiter.api.Test;
@@ -37,31 +42,31 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParamFromString<>("2.0", Real.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")));
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)));
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+        System.out.println("Final sample offset: " + finalSampleOffset.get());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -73,7 +78,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -93,31 +98,31 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParamFromString<>("2.0", Real.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")));
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)));
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+        System.out.println("Final sample offset: " + finalSampleOffset.get());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -132,7 +137,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[]{1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -152,31 +157,31 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParamFromString<>("2.0", Real.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")));
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE)));
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+        System.out.println("Final sample offset: " + finalSampleOffset.get());
         System.out.println("Sampled ancestor count: " + simulatedTree.getDirectAncestorNodeCount());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
@@ -189,7 +194,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -210,31 +215,31 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParamFromString<>("2.0", Real.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")));
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE)));
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+        System.out.println("Final sample offset: " + finalSampleOffset.get());
         System.out.println("Sampled ancestor count: " + simulatedTree.getDirectAncestorNodeCount());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
@@ -250,7 +255,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -270,32 +275,32 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
-                        new RealParameter("2.5"),
-                        new RealParameter("2.0 1.0"), 1),
+                        new RealVectorParamFromString<>("2.5", Real.INSTANCE),
+                        new RealVectorParamFromString<>("2.0 1.0", Real.INSTANCE), 1),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
-                        new RealParameter("2"),
-                        new RealParameter("0.0 0.5"), 1),
+                        new RealVectorParamFromString<>("2", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.0 0.5", Real.INSTANCE), 1),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")));
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)));
 
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+        System.out.println("Final sample offset: " + finalSampleOffset.get());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -307,7 +312,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -327,32 +332,32 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
-                        new RealParameter("2.5"),
-                        new RealParameter("2.0 1.0"), 1),
+                        new RealVectorParamFromString<>("2.5", Real.INSTANCE),
+                        new RealVectorParamFromString<>("2.0 1.0", Real.INSTANCE), 1),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
-                        new RealParameter("2"),
-                        new RealParameter("0.0 0.5"), 1),
+                        new RealVectorParamFromString<>("2", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.0 0.5", Real.INSTANCE), 1),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")));
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)));
 
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "minSamples", 2);
 
 //        System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+        System.out.println("Final sample offset: " + finalSampleOffset.get());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -367,7 +372,7 @@ public class TrajectorySamplerTest {
 
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -386,34 +391,34 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParamFromString<>("2.0", Real.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("2.5 5.0"),
-                        new RealParameter("0.3 0.5")),
+                        new RealVectorParamFromString<>("2.5 5.0", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.3 0.5", Real.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")));
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)));
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "minSamples", 2);
 
         System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+        System.out.println("Final sample offset: " + finalSampleOffset.get());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -427,7 +432,7 @@ public class TrajectorySamplerTest {
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "tree", simulatedTree);
@@ -446,34 +451,34 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("5.0"),
+                "processLength", "5.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParamFromString<>("2.0", Real.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.0")),
+                        new RealVectorParamFromString<>("0.0", Real.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("4.0 5.0"),
-                        new RealParameter("0.5 0.5")),
+                        new RealVectorParamFromString<>("4.0 5.0", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.5 0.5", Real.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")));
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE)));
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SimulatedTree simulatedTree = new SimulatedTree();
         simulatedTree.initByName(
                 "parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "minSamples", 2);
 
         System.out.println(simulatedTree);
-        System.out.println("Final sample offset: " + finalSampleOffset.getValue());
+        System.out.println("Final sample offset: " + finalSampleOffset.get());
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", simulatedTree,
@@ -487,7 +492,7 @@ public class TrajectorySamplerTest {
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "useAnalyticalSingleTypeSolution", true,
@@ -498,7 +503,7 @@ public class TrajectorySamplerTest {
         bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "useAnalyticalSingleTypeSolution", false,
@@ -525,24 +530,24 @@ public class TrajectorySamplerTest {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("3.0"),
+                "processLength", "3.0",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParamFromString<>("2.0", Real.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.0")),
+                        new RealVectorParamFromString<>("0.0", Real.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("2.0 3.0"),
-                        new RealParameter("0.5 0.5")),
+                        new RealVectorParamFromString<>("2.0 3.0", Real.INSTANCE),
+                        new RealVectorParamFromString<>("0.5 0.5", Real.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.0")));
+                        new RealVectorParamFromString<>("0.0", Real.INSTANCE)));
 
-        RealParameter finalSampleOffset = new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset = new RealScalarParam<Real>(0.0, Real.INSTANCE);
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", treeParser,
@@ -557,7 +562,7 @@ public class TrajectorySamplerTest {
         BirthDeathMigrationDistribution bdmm = new BirthDeathMigrationDistribution();
         bdmm.initByName("parameterization", parameterization,
                 "finalSampleOffset", finalSampleOffset,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "typeLabel", "type",
                 "conditionOnSurvival", false,
                 "useAnalyticalSingleTypeSolution", true,
@@ -572,35 +577,35 @@ public class TrajectorySamplerTest {
     @Test
     public void tinyTypedTreeLikelihoodTest() {
 
-        RealParameter startTypePriorProbs = new RealParameter("0.5 0.5");
+        SimplexParam startTypePriorProbs = new SimplexParam(new double[] {0.5, 0.5});
         int nTypes = 2;
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(nTypes),
-                "processLength", new RealParameter("1.2"),
+                "processLength", "1.2",
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0"), nTypes),
+                        new RealVectorParamFromString<>("2.0", Real.INSTANCE), nTypes),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), nTypes),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE), nTypes),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5"), nTypes),
+                        new RealVectorParamFromString<>("0.5", Real.INSTANCE), nTypes),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), nTypes),
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE), nTypes),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("1.0"), nTypes));
+                        new RealVectorParamFromString<>("1.0", Real.INSTANCE), nTypes));
 
         TreeParser typedTree = new TreeParser("((0[&type=\"0\"]:0.75)2[&type=\"1\"]:0.25,1[&type=\"1\"]:0.5)3[&type=\"1\"]:0.2;",
                 false, true, true, 0);
 
         System.out.println(typedTree);
 
-        RealParameter finalSampleOffset =  new RealParameter("0.0");
+        RealScalarParam<Real> finalSampleOffset =  new RealScalarParam<>(0.0, Real.INSTANCE);
 
         SampledTrajectory sampledTrajectory = new SampledTrajectory();
         sampledTrajectory.initByName("typeMappedTree", typedTree,

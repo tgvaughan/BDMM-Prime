@@ -18,8 +18,9 @@
 package bdmmprime.util.operators;
 
 import beast.base.core.BEASTObject;
-import beast.base.core.Function;
 import beast.base.inference.Logger;
+import beast.base.spec.domain.Real;
+import beast.base.spec.type.RealVector;
 
 import java.util.*;
 
@@ -28,7 +29,7 @@ public abstract class OperatorTestParent {
     public class TestLogger extends Logger {
 
 
-        Map<Function,Double[]> means, variances;
+        Map<RealVector<? extends Real>,Double[]> means, variances;
         int N;
 
         @Override
@@ -42,17 +43,17 @@ public abstract class OperatorTestParent {
         public void init() {
             N = 0;
             for (BEASTObject loggable : loggersInput.get()) {
-                if (!(loggable instanceof Function loggableFunction))
+                if (!(loggable instanceof RealVector<?> loggableRealVector))
                     throw new IllegalArgumentException("TestLogger only " +
-                            "compatible with objects of type Function");
+                            "compatible with objects of type RealVector");
 
-                Double[] theseMeans = new Double[loggableFunction.getDimension()];
+                Double[] theseMeans = new Double[loggableRealVector.size()];
                 Arrays.fill(theseMeans, 0.0);
-                means.put(loggableFunction, theseMeans);
+                means.put(loggableRealVector, theseMeans);
 
-                Double[] theseVars = new Double[loggableFunction.getDimension()];
+                Double[] theseVars = new Double[loggableRealVector.size()];
                 Arrays.fill(theseVars, 0.0);
-                variances.put(loggableFunction, theseVars);
+                variances.put(loggableRealVector, theseVars);
             }
 
         }
@@ -62,13 +63,13 @@ public abstract class OperatorTestParent {
             N += 1;
 
             for (BEASTObject loggable : loggersInput.get()) {
-                Function loggableFunction = (Function)loggable;
+                RealVector<? extends Real> loggableFunction = (RealVector<? extends Real>) loggable;
 
                 Double[] theseMeans = means.get(loggableFunction);
                 Double[] theseVars = variances.get(loggableFunction);
 
-                for (int idx=0; idx<loggableFunction.getDimension(); idx++) {
-                    double thisVal = loggableFunction.getArrayValue(idx);
+                for (int idx=0; idx<loggableFunction.size(); idx++) {
+                    double thisVal = loggableFunction.get(idx);
                     theseMeans[idx] += thisVal;
                     theseVars[idx] += thisVal*thisVal;
                 }
@@ -78,24 +79,24 @@ public abstract class OperatorTestParent {
         @Override
         public void close() {
             for (BEASTObject loggable : loggersInput.get()) {
-                Function loggableFunction = (Function)loggable;
+                RealVector<? extends Real> loggableFunction = (RealVector<? extends Real>) loggable;
 
                 Double[] theseMeans = means.get(loggableFunction);
                 Double[] theseVars = variances.get(loggableFunction);
 
-                for (int idx=0; idx<loggableFunction.getDimension(); idx++) {
+                for (int idx=0; idx<loggableFunction.size(); idx++) {
                     theseMeans[idx] /= N;
                     theseVars[idx] = theseVars[idx]/N - theseMeans[idx]*theseMeans[idx];
                 }
             }
         }
 
-        public Double[] getMeans(Function function) {
-            return means.get(function);
+        public Double[] getMeans(RealVector<? extends Real> realVector) {
+            return means.get(realVector);
         }
 
-        public Double[] getVariances(Function function) {
-            return variances.get(function);
+        public Double[] getVariances(RealVector<? extends Real> realVector) {
+            return variances.get(realVector);
         }
     }
 
