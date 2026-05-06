@@ -41,7 +41,7 @@
     <fileSets>
         <!-- fxtemplates/ (JPMS-safe module-namespaced resource path) -->
         <fileSet>
-            <directory>${project.basedir}/src/main/resources/sampled.ancestors/fxtemplates</directory>
+            <directory>${project.basedir}/src/main/resources/bdmmprime/fxtemplates</directory>
             <outputDirectory>/fxtemplates</outputDirectory>
         </fileSet>
         <!-- examples/ from project root -->
