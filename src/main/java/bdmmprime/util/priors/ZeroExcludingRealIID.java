@@ -22,6 +22,7 @@ public class ZeroExcludingRealIID extends IID<RealVector<NonNegativeReal>, Scala
 
     @Override
     public void initAndValidate() {
+        super.initAndValidate();
 
         // Set up index map
         indices = new ArrayList<>();
