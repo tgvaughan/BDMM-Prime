@@ -5,7 +5,7 @@
                   :beast.base.evolution.tree.coalescent
                   :beast.base.util
                   :beast.base.evolution.nuc
-                  :beast.base.evolution.operators
+                  :beast.base.spec.inference.operator
                   :beast.base.evolution.sitemodel
                   :beast.base.evolution.substitutionmodel
                   :beast.base.evolution.likelihood
@@ -93,27 +93,27 @@
                         <typeSet idref="typeSetBDMMPrime.t:$(n)"/>
                         <birthRate id="birthRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="processLengthBDMMPrime.t:$(n)"/>
-                            <skylineValues id="birthRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
+                            <skylineValues id="birthRateCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="NonNegativeReal"/>
                         </birthRate>
                         <birthRateAmongDemes id="birthRateAmongDemesSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="processLengthBDMMPrime.t:$(n)"/>
-                            <skylineValues id="birthRateAmongDemesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                            <skylineValues id="birthRateAmongDemesCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="NonNegativeReal" estimate="false"/>
                         </birthRateAmongDemes>
                         <deathRate id="deathRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="processLengthBDMMPrime.t:$(n)"/>
-                            <skylineValues id="deathRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0"/>
+                            <skylineValues id="deathRateCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="NonNegativeReal"/>
                         </deathRate>
                         <migrationRate id="migrationRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineMatrixParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="processLengthBDMMPrime.t:$(n)"/>
-                            <skylineValues id="migrationRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                            <skylineValues id="migrationRateCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="NonNegativeReal" estimate="false"/>
                         </migrationRate>
                         <samplingRate id="samplingRateSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="processLengthBDMMPrime.t:$(n)"/>
-                            <skylineValues id="samplingRateCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.1" lower="0.0"/>
+                            <skylineValues id="samplingRateCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="0.1" domain="NonNegativeReal"/>
                         </samplingRate>
                         <removalProb id="removalProbSPCanonical.t:$(n)" spec="bdmmprime.parameterization.SkylineVectorParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
                             <processLength idref="processLengthBDMMPrime.t:$(n)"/>
-                            <skylineValues id="removalProbCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                            <skylineValues id="removalProbCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="UnitInterval" estimate="false"/>
                         </removalProb>
 
                         <rhoSampling id="rhoSamplingProbSPCanonical.t:$(n)" spec="bdmmprime.parameterization.TimedParameter" typeSet="@typeSetBDMMPrime.t:$(n)" timesAreAges="true">
@@ -125,7 +125,7 @@
                         <taxa spec="beast.base.evolution.alignment.TaxonSet" alignment="@$(n)"/>
                     </typeTraitSet>
 
-                    <startTypePriorProbs id="startTypePriorProbs.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" upper="1.0" estimate="false"/>
+                    <startTypePriorProbs id="startTypePriorProbs.t:$(n)" spec="beast.base.spec.inference.parameter.SimplexParam" value="1.0" estimate="false"/>
                 </distribution>
 
                 <typeSet id="typeSetBDMMPrime.t:$(n)" spec="bdmmprime.parameterization.TypeSet" typeTraitSet="@typeTraitSet.t:$(n)"/>
@@ -134,28 +134,26 @@
                 <startTypePosteriorProbsLogger id="startTypePosteriorProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypePosteriorProbsLogger" bdmmTreePrior="@BDMMPrime.t:$(n)"/>
 
                 <processLength spec="bdmmprime.util.ProcessLength" id="processLengthBDMMPrime.t:$(n)">
-                    <origin spec="beast.base.inference.parameter.RealParameter" id="originBDMMPrime.t:$(n)" value="10.0"/>
+                    <origin spec="beast.base.spec.inference.parameter.RealScalarParam" id="originBDMMPrime.t:$(n)" value="10.0"/>
                 </processLength>
 
-                <prior id="processLengthBDMMPrimePrior.t:$(n)" x="@processLengthBDMMPrime.t:$(n)">
-                   <distr spec="beast.base.inference.distribution.OneOnX"/>
-                </prior>
+                <prior id="processLengthBDMMPrimePrior.t:$(n)" spec="beast.base.spec.inference.distribution.LogUniform" param="@processLengthBDMMPrime.t:$(n)" lower="1e-5" upper="1e5"/>
 
-                <operator id="originBDMMPrimeScaler.t:$(n)" spec="ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
+                <operator id="originBDMMPrimeScaler.t:$(n)" spec="beast.base.spec.inference.operator.ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
 
-                <operator id="startTypePriorProbsExchanger.t:$(n)" spec="DeltaExchangeOperator" parameter="@startTypePriorProbs.t:$(n)" delta="0.1" weight="1.0"/>
+                <operator id="startTypePriorProbsExchanger.t:$(n)" spec="beast.base.spec.inference.operator.DeltaExchangeOperator" parameter="@startTypePriorProbs.t:$(n)" delta="0.1" weight="1.0"/>
 
                 <operator id="JointBDMMPrimeSkylineScaleOperator.t:$(n)" spec="bdmmprime.util.operators.JointSkylineScaleOperator" scaleFactor="0.75" weight="3"/>
 
-                <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-                <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" lower="0.0" estimate="false"/>
-                <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-                <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-                <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
-                <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="1.0" lower="0.0" estimate="false"/>
+                <param id="birthRateChangeTimesCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="Real" estimate="false"/>
+                <param id="birthRateAmongDemesChangeTimesCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="0.0" domain="Real" estimate="false"/>
+                <param id="deathRateChangeTimesCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="Real" estimate="false"/>
+                <param id="migrationRateChangeTimesCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="Real" estimate="false"/>
+                <param id="samplingRateChangeTimesCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="Real" estimate="false"/>
+                <param id="removalProbChangeTimesCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="1.0" domain="Real" estimate="false"/>
 
-                <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
-                <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.base.inference.parameter.RealParameter" value="0.0" estimate="false"/>
+                <param id="rhoSamplingProbCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="0.0" domain="UnitInterval" estimate="false"/>
+                <param id="rhoSamplingProbTimesCanonical.t:$(n)" spec="beast.base.spec.inference.parameter.RealVectorParam" value="0.0" domain="Real" estimate="false"/>
 
                 <logger spec="bdmmprime.util.OptionalLogger" id="typedTreeLogger.t:$(n)"
                         fileName="$(filebase).$(tree).typed.trees" logEvery="1000" mode="tree"
