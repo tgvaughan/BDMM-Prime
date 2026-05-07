@@ -82,6 +82,14 @@ public abstract class Parameterization extends CalculationNode {
         update();
     }
 
+    /*
+     These methods, implemented by concrete Parameterization classes,
+     provide the information the class needs to compute the canonical
+     birth-death model parameters.  They are not generally intended for
+     external
+     use.
+     */
+
     public abstract double[] getBirthRateChangeTimes();
     public abstract double[] getMigRateChangeTimes();
     public abstract double[] getCrossBirthRateChangeTimes();
@@ -262,6 +270,12 @@ public abstract class Parameterization extends CalculationNode {
         }
         return true;
     }
+
+    /*
+    These methods are intended to be used by BirthDeathMigrationModel etc.
+    to query the canonical model parameters independently of the specific
+    parameterization.
+     */
 
     public double[][] getBirthRates() {
         update();
