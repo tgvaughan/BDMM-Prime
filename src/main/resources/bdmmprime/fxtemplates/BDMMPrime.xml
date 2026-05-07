@@ -80,7 +80,8 @@
                         bdmmprime.trajectories.SampledTrajectory.startTypePriorProbs,
                         bdmmprime.trajectories.SampledTrajectory.resampleOnLog,
                         bdmmprime.util.priors.SmartZeroExcludingPrior.classesToExclude,
-                        bdmmprime.util.priors.SmartZeroExcludingPrior.x"
+                        bdmmprime.util.priors.SmartZeroExcludingRealIID.param,
+                        bdmmprime.util.priors.ZeroExcludingRealIID.param"
                      inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
@@ -193,8 +194,10 @@
                 </logger>
             ]]>
 
-            <plate fragment="CanonicalBDMMPrimeParameters" var="thisparam"
-                   range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate,removalProb,rhoSamplingProb"/>
+            <plate fragment="CanonicalBDMMPrimeRateParameters" var="thisparam"
+                   range="birthRate,birthRateAmongDemes,deathRate,migrationRate,samplingRate"/>
+            <plate fragment="CanonicalBDMMPrimeProbParameters" var="thisparam"
+                   range="removalProb,rhoSamplingProb"/>
             <plate fragment="CanonicalBDMMPrimeChangeTimes" var="thisparam"
                    range="birthRateChangeTimes,birthRateAmongDemesChangeTimes,deathRateChangeTimes,migrationRateChangeTimes,samplingRateChangeTimes,removalProbChangeTimes,rhoSamplingProbTimes"/>
             <plate fragment="CanonicalBDMMPrimeSkylineLoggers" var="thisparam"
