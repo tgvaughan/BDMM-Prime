@@ -33,7 +33,7 @@
             <useProjectArtifact>true</useProjectArtifact>
             <scope>runtime</scope>
             <includes>
-                <include>io.github.tgvaughan:remaster</include>
+                <include>io.github.tgvaughan:bdmm-prime</include>
             </includes>
         </dependencySet>
     </dependencySets>
