@@ -22,7 +22,7 @@ import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.ProcessLength;
 import beast.base.core.BEASTInterface;
 import beast.base.core.Input;
-import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.inference.parameter.RealScalarParam;
 import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.util.FXUtils;
@@ -112,21 +112,21 @@ public class ProcessLengthInputEditor extends InputEditor.Base {
             processLength.isEstimatedInput.setValue(true, processLength);
 
         } else if (processLength.originInput.get() != null
-                && processLength.originInput.get() instanceof RealVectorParam<?> originParam) {
+                && processLength.originInput.get() instanceof RealScalarParam<?> originParam) {
 
             originButton.setSelected(true);
-            originTextField.setText(originParam.get().toString());
+            originTextField.setText(Double.toString(originParam.get()));
             originEstimate.setSelected(originParam.isEstimated());
             processLength.isEstimatedInput.setValue(originParam.isEstimated(), processLength);
 
-            originTextField.setOnAction(e -> {
+            originTextField.setOnAction(_ -> {
                 originParam.valuesInput.setValue(originTextField.getText(), originParam);
                 originParam.initAndValidate();
                 refreshPanel();
                 sync();
             });
 
-            originEstimate.setOnAction(e -> {
+            originEstimate.setOnAction(_ -> {
                 originParam.isEstimatedInput.setValue(originEstimate.isSelected(), originParam);
                 processLength.isEstimatedInput.setValue(originEstimate.isSelected(), originParam);
                 refreshPanel();
@@ -134,20 +134,20 @@ public class ProcessLengthInputEditor extends InputEditor.Base {
             });
         }
 
-        originButton.setOnAction(e -> {
+        originButton.setOnAction(_ -> {
             bdmm.conditionOnRootInput.setValue(false, bdmm);
             refreshPanel();
             sync();
         });
 
-        rootButton.setOnAction(e -> {
+        rootButton.setOnAction(_ -> {
             bdmm.conditionOnRootInput.setValue(true, bdmm);
             bdmm.conditionOnSurvivalInput.setValue(true, bdmm);
             refreshPanel();
             sync();
         });
 
-        survivalConditionedCheckBox.setOnAction(e -> {
+        survivalConditionedCheckBox.setOnAction(_ -> {
             bdmm.conditionOnSurvivalInput.setValue(survivalConditionedCheckBox.isSelected(), bdmm);
         });
 
