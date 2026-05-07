@@ -135,10 +135,10 @@
                 <startTypePosteriorProbsLogger id="startTypePosteriorProbsLogger.t:$(n)" spec="bdmmprime.util.StartTypePosteriorProbsLogger" bdmmTreePrior="@BDMMPrime.t:$(n)"/>
 
                 <processLength spec="bdmmprime.util.ProcessLength" id="processLengthBDMMPrime.t:$(n)">
-                    <origin spec="beast.base.spec.inference.parameter.RealScalarParam" id="originBDMMPrime.t:$(n)" value="10.0"/>
+                    <origin spec="beast.base.spec.inference.parameter.RealScalarParam" id="originBDMMPrime.t:$(n)" value="10.0" domain="NonNegativeReal"/>
                 </processLength>
 
-                <prior id="processLengthBDMMPrimePrior.t:$(n)" spec="beast.base.spec.inference.distribution.LogUniform" param="@processLengthBDMMPrime.t:$(n)" lower="1e-5" upper="1e5"/>
+                <prior id="processLengthBDMMPrimePrior.t:$(n)" spec="beast.base.spec.inference.distribution.Exponential" param="@processLengthBDMMPrime.t:$(n)" mean="1"/>
 
                 <operator id="originBDMMPrimeScaler.t:$(n)" spec="beast.base.spec.inference.operator.ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
 
