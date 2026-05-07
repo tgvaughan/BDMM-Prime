@@ -41,25 +41,18 @@ Building from Source
 --------------------
 
 To build BDMM-Prime from source you'll need the following to be installed:
-- OpenJDK version 17 or greater
-- A recent version of OpenJFX
-- the Apache Ant build system
+- OpenJDK version 25 or greater
+- the Apache Maven build system
 
 Once these are installed and in your execution path, issue the following
 command from the root directory of this repository:
 
 ```sh
-JAVA_FX_HOME=/path/to/openjfx/ ant
+mvn package
 ```
-The package archive will be left in the `dist/` subdirectory.
-
-Note that unless you already have a local copy of the latest
-[BEAST 2 source](https://github.com/CompEvol/beast2)
-in the directory `../beast2` and the latest
-[BeastFX source](https://github.com/CompEvol/beastfx)
-in the directory `../beastfx` relative to the BDMM-Prime root, the build
-script will attempt to download them automatically.  Thus, most builds
-will require a network connection.
+This will compile the package, run a collection of unit tests, and
+produce the package archive.  The package archive will be left in
+the `target/` subdirectory.
 
 
 Acknowledgements and Citations
