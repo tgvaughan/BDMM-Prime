@@ -1326,8 +1326,8 @@ as follows:
   This input expects an object of the abstract type =Parameterization= to
   specify the birth-death model parameters. Existing =Parameterization= objects
   are given in the next section.
-- =startTypePriorProbs= (=Function=, required for multiple types) :: This is a object
-  of type =Function=/=RealParameter= whose dimension is the number of types and
+- =startTypePriorProbs= (=Simplex=, required for multiple types) :: This is a object
+  of type =Simplex=/=SimplexParam= whose dimension is the number of types and
   whose values represent the prior probability for the type of the initial
   individual in the process belonging to each possible type.
 - =typeTraitSet= (=TraitSet=) :: This is a =TraitSet= specifying the type associated with
@@ -1341,7 +1341,7 @@ as follows:
   whether the tree prior should be condigioned on the time and presence of the
   root event.  **Note:** If enabled, all =processLength= inputs must also be
   provided with the tree instead of an origin parameter.
-- =finalSampleOffset= (=Function=, default 0) :: If provided, this determines
+- =finalSampleOffset= (=RealScalar=, default 0) :: If provided, this determines
   the time between the final sample and the end of the birth-death-sampling process.
   This input is important if you want the model to be able to include the absence of samples in this
   period as information for inferring the various rates.  It is also important when
@@ -1381,10 +1381,10 @@ There are several concrete classes of this type, as detailed below.
 
 *Note*: Besides the parameterization-specific inputs, each parameterization object takes
 the following inputs:
-- =processLength= (=Function= or =Tree=, required) ::
+- =processLength= (=RealScalar=, required) ::
   This should be the duration of the process, either from the origin
   or from the tree root, depending on whether =conditionOnRoot= is set
-  to true.  If the former, suppling an "origin" parameter is usual.
+  to true.  If the former, supplying an "origin" parameter is usual.
   If the latter, the tree object itself should be supplied.
 - =typeSet= (=TypeSet=) :: 
   A =TypeSet= defining the types present in the model.
@@ -1514,14 +1514,14 @@ these types.
 The skyline vector parameter specifies a piecewise-constant function
 with, in general, type-specific values. It takes the following inputs:
 
-- =skylineValues= (=Function=, required) ::
-- =changeTimes= (=Function=) ::
-  Each of this pair of inputs takes a =Function= (such as a =RealParameter=).
+- =skylineValues= (=RealVector=, required) ::
+- =changeTimes= (=RealVector=) ::
+  Each of this pair of inputs takes a =RealVector= (such as a =RealVectorParam=).
   Together they specify the change times and epoch values of the skyline
   parameter, and how these values are distributed across types.
   specifies the values associated with the piecewise-constant function.
-  The dimension $N$ of the skylineValues =Function= or =RealParameter=, in combination with the
-  dimension $K$ of the changeTimes =Function= or =RealParameter= (0 if this input is not set),
+  The dimension $N$ of the skylineValues =RealVector= or =RealVectorParam=, in combination with the
+  dimension $K$ of the changeTimes =RealVector= or =RealVectorParam= (0 if this input is not set),
   determine how these values are distributed among types and times.
 
   Defining $D$ to be the number of distinct types in the model, there are two main
@@ -1558,7 +1558,7 @@ with, in general, type-specific values. It takes the following inputs:
   when =timesAreAges= is true, but the oldest epoch when it is false.)
 - timesAreRelative (=Boolean=, default false) :: 
   When set to true, times or ages are treated as relative fractions of the process length.
-- processLength (=Function=) ::
+- processLength (=RealScalar=) ::
   This is the object specifying the process length.  It is only
   necessary when one or both of =timesAreAges= and =timesAreRelative=
   are set to true.
@@ -1577,14 +1577,14 @@ with, in general, type-specific values. It takes the following inputs:
 The skyline matrix parameter specifies a piecewise-constant function
 with, in general, type pair-specific values. It takes the following inputs:
 
-- =skylineValues= (=Function=, required) ::
-- =changeTimes= (=Function=) ::
+- =skylineValues= (=RealVector=, required) ::
+- =changeTimes= (=RealVector=) ::
   Just as for =SkylineVectorParameter=, 
-  each of this pair of inputs takes a =Function= (such as a =RealParameter=).
+  each of this pair of inputs takes a =RealVector= (such as a =RealVectorParam=).
   Together they specify the change times and epoch values of the skyline
   matrix parameter, and how these values are distributed across source/destination type pairs.
-  The dimension $N$ of the skylineValues =Function= or =RealParameter=, in combination with the
-  dimension $K$ of the changeTimes =Function= or =RealParameter= (0 if this input is not set),
+  The dimension $N$ of the skylineValues =RealVector= or =RealVectorParam=, in combination with the
+  dimension $K$ of the changeTimes =RealVector= or =RealVectorParam= (0 if this input is not set),
   determine how these values are distributed among types and times.
 
   Defining $D$ to be the number of distinct types in the model, there are two main
@@ -1633,7 +1633,7 @@ with, in general, type pair-specific values. It takes the following inputs:
   when =timesAreAges= is true, but the oldest epoch when it is false.)
 - timesAreRelative (=Boolean=, default false) :: 
   When set to true, times or ages are treated as relative fractions of the process length.
-- processLength (=Function=) ::
+- processLength (=RealScalar=) ::
   This is the object specifying the process length.  It is only
   necessary when one or both of =timesAreAges= and =timesAreRelative=
   are set to true.
@@ -1654,13 +1654,13 @@ The timed parameter specifies an, in general, type-dependent sequence
 of values associated with one or more times. It is used to define the
 timing and probabilities for "rho sampling" events. These are the possible inputs:
 
-- =values= (=Function=) ::
-- =times= (=Function=) ::
-  Each of this pair of inputs takes a =Function= (such as a =RealParameter=).
+- =values= (=RealVector=) ::
+- =times= (=RealVector=) ::
+  Each of this pair of inputs takes a =RealVector= (such as a =RealVectorParam=).
   Together they specify the timing and sampling probabilities associated with
   0 or more rho sampling events.
-  The dimension $N$ of the values =Function= or =RealParameter=, in combination with the
-  dimension $K$ of the times  =Function= or =RealParameter=,
+  The dimension $N$ of the values =RealVector= or =RealVectorParam=, in combination with the
+  dimension $K$ of the times  =RealVector= or =RealVectorParam=,
   determine how the probabilities provided are distributed among types and times.
 
   Defining $D$ to be the number of distinct types in the model, there are two main
@@ -1798,7 +1798,7 @@ The important inputs are:
   The label to be used for traits in the generated metadata. In other words, this is
   the key used in the key-value pairs which will be used to annotate the tree with
   the ancestral type information.
-- =finalSampleOffset= (=Function=, default 0) :: 
+- =finalSampleOffset= (=RealScalar=, default 0) :: 
   If provided, the difference in time between the final sample and the
   end of the BD process.
 
@@ -1845,7 +1845,7 @@ The main inputs for the =SkylineNodeTreeLogger= are:
   parameters are evaluated.
 - =skylineParameter= (=SkylineVectorParameter=, required, multiple allowed) ::
   One or more skyline vector parameters whose values are annotated at each node.
-- =finalSampleOffset= (=Function=, default 0.0) ::
+- =finalSampleOffset= (=RealScalar=, default 0.0) ::
   Optional offset between the final sample and the end of the birth-death
   process used when converting node heights to absolute times.
 - =precision= (=Integer=, default 6) ::
@@ -1905,7 +1905,7 @@ Objects of type =SampledTrajectory= accept the following inputs:
   An edge-typed tree. Ideally a reference to a =TypeMappedTree=.
 - =typeLabel= (=String=, required) ::
  The type label which was used to store type information on the tree.
-- =finalSampleOffset= (=Function=, default 0) :: 
+- =finalSampleOffset= (=RealScalar=, default 0) :: 
   If provided, the difference in time between the final sample and the
   end of the BD process.
 - =nParticles= (=Integer=, default 1000) :: 
@@ -1950,22 +1950,22 @@ The two objects below are intended to address exactly this situation.
 Firstly, we have the following prior distribution:
 
 #+begin_src xml
-  <distribution spec="bdmmprime.util.priors.SmartZeroExcludingPrior">
+  <distribution spec="bdmmprime.util.priors.SmartZeroExcludingRealIID">
     <!-- Inputs -->
   </distribution>
 #+end_src
 
 This prior is intended as a drop-in replacement for the standard
-"beast.base.inference.distribution.Prior" used to define parametric priors
-on ~RealParameters~. Indeed, it takes almost the same inputs:
-- =x= (=Function=, required) ::
+"beast.base.inference.distribution.IID" used to define parametric priors
+on ~RealVectorParam~s. Indeed, it takes almost the same inputs:
+- =param= (=RealVector=, required) ::
   Parameter to which prior is applied.
-- =distr= (=ParametricDistribution=, required) ::
+- =distr= (=ScalarDistribution=, required) ::
   Specifies which parametric distribution to apply, e.g. ~LogNormal~, ~Exponential~, etc.
-- =classesToExclude= (=Function=) ::
+- =classesToExclude= (=RealVector=) ::
   Elements possessing any of these values will be excluded from the prior calculation.
 
-Unlike the standard ~Prior~ distribution though, ~SmartZeroExcludingPrior~ does the following:
+Unlike the standard ~IID~ distribution though, ~SmartZeroExcludingRealIID~ does the following:
 1. It excludes any elements having the value 0 from the prior
    calculation.  For rates and probabilities, zero-valued parameters
    are almost never estimated in BEAST, and the presence of fixed
@@ -1982,8 +1982,8 @@ Unlike the standard ~Prior~ distribution though, ~SmartZeroExcludingPrior~ does 
 
 This operator provides the other half of the mechanism for linking elements.
 It behaves as a drop-in replacement for the "beast.base.evolution.operator.ScaleOperator",
-at least as it applies to a ~RealParameter~.  It takes the following inputs:
-- =parameter= (=[RealParameter]=, at least one required) ::
+at least as it applies to a ~RealVectorParam~.  It takes the following inputs:
+- =parameter= (=[RealVectorParam]=, at least one required) ::
   One or more parameters to operate on.
 - =scaleFactor= (=Double=, default 0.75) ::
   The scaling operation will scale some parameter elements by a value
@@ -1991,13 +1991,13 @@ at least as it applies to a ~RealParameter~.  It takes the following inputs:
 - =optimize= (=Boolean=, default true) ::
   Flag to indicate that the =scaleFactor= is to be adapted during the MCMC
   to achieve a good acceptance rate.
-- =classesToExclude= (=Function=) :: 
+- =classesToExclude= (=RealVector=) :: 
   Elements posessing any of these values will not be operated on.
 - =weight= (=Double=, required) :: 
   Operator weight. (Unnormalized probability with which this operator is chosen.)
 
 The principle difference between this operator and the standard ~ScaleOperator~ is
-that like the ~SmartZeroExcludingPrior~, the ~SmartScaleOperator~ groups identical
+that like the ~SmartZeroExcludinRealIID~, the ~SmartScaleOperator~ groups identical
 values together and treats them as a single degree of freedom.  That is, if
 two elements of the input =parameter= possess the identical value 1.237, those
 two elements will be operated on as if they were a single value, ensuring that
@@ -2048,7 +2048,7 @@ BDMMPrime provides a pair of operators which act on both tip dates and the =fina
 This takes the following inputs:
 - =tree= (=Tree=, required) ::
   The tree on whose tips to operate.
-- =finalSampleOffset= (=RealParameter=, required) ::
+- =finalSampleOffset= (=RealScalarParam=, required) ::
   The corresponding =finalSampleOffset= parameter to jointly update as required.
 - =taxonSet= (=TaxonSet=) :: 
   Taxon set contaiing taxa specifying leaves on which to operate. (Default is
@@ -2067,7 +2067,7 @@ This takes the following inputs:
 This takes the following inputs:
 - =tree= (=Tree=, required) ::
   The tree on whose tips to operate.
-- =finalSampleOffset= (=RealParameter=, required) ::
+- =finalSampleOffset= (=RealScalarParam=, required) ::
   The corresponding =finalSampleOffset= parameter to jointly update as required.
 - =taxonSet= (=TaxonSet=) :: 
   Taxon set contaiing taxa specifying leaves on which to operate. (Default is
@@ -2095,7 +2095,7 @@ number of tip date priors simultaneously using a =TraitSet= pair:
 It takes the following inputs:
 - =tree= (=Tree=, required) ::
   Tree whose tip dates we wish to place a prior on.
-- =finalSampleOffset= (=Function=, required) :: 
+- =finalSampleOffset= (=RealScalar=, required) :: 
   Final sample offset parameter.
 - =earlierBound= (=TraitSet=, required) :: 
   Trait set specifying earliest possible time for each tip in ages
@@ -2103,7 +2103,7 @@ It takes the following inputs:
 - =laterBound= (=TraitSet=, required) :: 
   Trait set specifying latest possible time for each tip in ages
   relative to the end of the birth-death-sampling process.
-- =endOfSamplingTime= (=Function=) :: 
+- =endOfSamplingTime= (=RealScalar=) :: 
   Time of the point when sampling ends.  (Necessary only when
   upper and lower bounds are given forwards in time.)
 - =reportBoundsViolations= (=Boolean=, default false) :: 
@@ -2128,16 +2128,16 @@ tip dates (useful when there are many constraints):
 It takes the following inputs:
 - =tree= (=Tree=, required) ::
   Tree whose tip dates to initialize.
-- =finalSampleOffset (=RealParameter=, required) :: 
+- =finalSampleOffset (=RealScalarParam=, required) :: 
   Final sample offset parameter.
 - =tipDatesTrait= (=TraitSet=, required) :: 
   Trait set specifying initial tip dates.
-- =endOfSamplingTime= (=Function=) :: 
+- =endOfSamplingTime= (=RealScalar=) :: 
   Time of the point when sampling ends.  (Necessary only when
   upper and lower bounds are given forwards in time.)
 - =adjustInternalNodes= (=Boolean=, default false) :: 
   If true, original divergence times of input tree are preserved.
-- =internalNodeSpacing= (=Function=, default 1.0) :: 
+- =internalNodeSpacing= (=RealScalar=, default 1.0) :: 
   Default spacing used when adjusting internal node times.
 
 ** Trajectory file format
