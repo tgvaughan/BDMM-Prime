@@ -67,5 +67,6 @@ open module bdmmprime {
         bdmmprime.beauti.SkylineVectorInputEditor,
         bdmmprime.beauti.SkylineMatrixInputEditor,
         bdmmprime.beauti.TypeTraitSetInputEditor,
-        bdmmprime.beauti.ProcessLengthInputEditor;
+        bdmmprime.beauti.ProcessLengthInputEditor,
+        bdmmprime.beauti.SimplexParamInputEditor;
 }
