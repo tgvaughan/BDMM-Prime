@@ -37,6 +37,8 @@ import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -301,14 +303,25 @@ public class TypeTraitSetInputEditor extends InputEditor.Base {
             if (startTypeProbs.size() == nTypes)
                 continue;
 
-            StringBuilder startTypeProbsBuilder = new StringBuilder();
+            // Distribute probability mass evenly among types, up to the
+            // following precision:
+            double precision = 1000.0;
 
-            for (int typeIdx=0; typeIdx<nTypes; typeIdx++) {
-                startTypeProbsBuilder.append(" ").append(1.0/nTypes);
+            List<Double> typeProbs = new ArrayList<>();
+            double totalProb = 0.0;
+            for (int i=0; i<nTypes; i++) {
+                double thisProb = Math.floor(precision/nTypes)/precision;
+                typeProbs.add(thisProb);
+                totalProb += thisProb;
             }
+            double delta = 1.0 - totalProb;
+            delta = Math.round(precision*delta)/precision;
+            typeProbs.set(nTypes-1, typeProbs.get(nTypes-1) + delta);
 
             startTypeProbs.setDimension(nTypes);
-            startTypeProbs.valuesInput.setValue(startTypeProbsBuilder.toString(), startTypeProbs);
+            startTypeProbs.valuesInput.setValue(typeProbs.stream()
+                    .map(String::valueOf)
+                    .collect(Collectors.joining(" ")), startTypeProbs);
 
             try {
                 startTypeProbs.initAndValidate();

@@ -26,10 +26,8 @@ import beastfx.app.inputeditor.BeautiDoc;
 import beastfx.app.inputeditor.InputEditor;
 import beastfx.app.inputeditor.WrappedOptionPane;
 import beastfx.app.util.FXUtils;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.Separator;
-import javafx.scene.control.TextField;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 
@@ -48,13 +46,10 @@ public class SimplexParamInputEditor extends InputEditor.Base {
         return SimplexParam.class;
     }
 
-    SimplexParam simplexParam;
-    int demes;
-
     @Override
     public void init(Input<?> input, BEASTInterface beastObject, int itemNr, ExpandOption isExpandOption, boolean addButtons) {
-        simplexParam = (SimplexParam) input.get();
-        demes = simplexParam.size();
+        SimplexParam simplexParam = (SimplexParam) input.get();
+        int demes = simplexParam.size();
 
         if (demes < 2)
             return;
@@ -67,47 +62,49 @@ public class SimplexParamInputEditor extends InputEditor.Base {
 
         addInputLabel();
 
-
         HBox mainInputBox = FXUtils.newHBox();
 
         Label valuesLabel = new Label("Must sum to one:");
         mainInputBox.getChildren().add(valuesLabel);
 
-        TextField valuesTextField = new TextField(getParamString());
-        valuesTextField.setOnAction(_ -> {
-            String oldString = getParamString();
-            if (valuesTextField.getText().split(" ").length != demes) {
-                WrappedOptionPane.showWrappedMessageDialog(
-                        "Number of probability values must match number of " +
-                                "types (currently " + demes + ").");
-                valuesTextField.setText(oldString);
-                return;
-            }
+        TextField textField = new TextField(getParamString(simplexParam));
+        textField.setOnAction(_ -> {
+            String oldString = getParamString(simplexParam);
 
-            try {
-                simplexParam.valuesInput.setValue(valuesTextField.getText(), simplexParam);
-                simplexParam.initAndValidate();
-            } catch (IllegalArgumentException _) {
-                WrappedOptionPane.showWrappedMessageDialog("Invalid values.  " +
-                        "Probabilities must be positive and must sum to 1.");
-                simplexParam.valuesInput.setValue(oldString, simplexParam);
-                simplexParam.initAndValidate();
-                valuesTextField.setText(oldString);
+            if (textField.getText().split(" ").length != demes) {
+                WrappedOptionPane.showWrappedMessageDialog("Number of probability " +
+                        "values must match number of types (" + demes + ").");
+                textField.setText(oldString);
+            } else {
+                try {
+                    simplexParam.valuesInput.setValue(textField.getText(), simplexParam);
+                    simplexParam.initAndValidate();
+                } catch (IllegalArgumentException _) {
+                    WrappedOptionPane.showWrappedMessageDialog("Invalid values. " +
+                            "Probabililities must be positive and add up to 1.");
+                    textField.setText(oldString);
+                    simplexParam.valuesInput.setValue(oldString, simplexParam);
+                    simplexParam.initAndValidate();
+                }
             }
         });
-        mainInputBox.getChildren().add(valuesTextField);
+        mainInputBox.getChildren().add(textField);
+
+        pane.getChildren().add(mainInputBox);
+        getChildren().add(pane);
+
+        // Layout
+        textField.prefWidthProperty().bind(mainInputBox.widthProperty()
+                .subtract(valuesLabel.widthProperty()).subtract(20));
+        HBox.setHgrow(mainInputBox, Priority.ALWAYS);
+        mainInputBox.setAlignment(Pos.CENTER);
+        pane.prefWidthProperty().bind(widthProperty());
 
         mainInputBox.setBorder(new Border(new BorderStroke(Color.LIGHTGRAY,
                 BorderStrokeStyle.SOLID, null, null)));
-
-        HBox.setHgrow(mainInputBox, Priority.ALWAYS);
-
-        pane.getChildren().add(mainInputBox);
-
-        getChildren().add(pane);
     }
 
-    private String getParamString() {
+    private String getParamString(SimplexParam simplexParam) {
         return simplexParam.getElements().stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(" "));
