@@ -1,4 +1,5 @@
 /*
+ * Copyright (c) 2012-2016 Denise Kühnert
  * Copyright (c) 2017-2026 ETH Zürich
  *
  * This file is part of bdmm-prime.
