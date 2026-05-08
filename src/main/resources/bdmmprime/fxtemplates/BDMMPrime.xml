@@ -140,7 +140,7 @@
 
                 <prior id="processLengthBDMMPrimePrior.t:$(n)" spec="beast.base.spec.inference.distribution.Exponential" param="@processLengthBDMMPrime.t:$(n)" mean="1"/>
 
-                <operator id="originBDMMPrimeScaler.t:$(n)" spec="beast.base.spec.inference.operator.ScaleOperator" scaleFactor="0.75" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
+                <operator id="originBDMMPrimeScaler.t:$(n)" spec="beast.base.spec.inference.operator.ScaleOperator" scaleFactor="1.0" weight="3" parameter="@originBDMMPrime.t:$(n)"/>
 
                 <operator id="startTypePriorProbsExchanger.t:$(n)" spec="beast.base.spec.inference.operator.DeltaExchangeOperator" parameter="@startTypePriorProbs.t:$(n)" delta="0.1" weight="1.0"/>
 

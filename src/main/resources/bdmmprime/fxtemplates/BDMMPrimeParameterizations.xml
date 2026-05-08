@@ -8,12 +8,12 @@
             <distribution spec="bdmmprime.util.priors.ZeroExcludingRealIID" id='$(thisparam)CanonicalPrior.t:$(n)' param='@$(thisparam)Canonical.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Exponential" mean="1"/>
             </distribution>
-  		    <operator id='$(thisparam)CanonicalScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
+  		    <operator id='$(thisparam)CanonicalScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="1.0" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
 
   		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingRealIID" id='$(thisparam)CanonicalPriorSmart.t:$(n)' param='@$(thisparam)Canonical.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Exponential" mean="1"/>
             </distribution>
-  		    <operator id='$(thisparam)CanonicalScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
+  		    <operator id='$(thisparam)CanonicalScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="1.0" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)Canonical.t:$(n)' targetID='state' inputName='stateNode'
@@ -59,12 +59,12 @@
             <distribution spec="bdmmprime.util.priors.ZeroExcludingRealIID" id='$(thisparam)CanonicalPrior.t:$(n)' param='@$(thisparam)Canonical.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Uniform" lower="0" upper="1"/>
             </distribution>
-  		    <operator id='$(thisparam)CanonicalScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
+  		    <operator id='$(thisparam)CanonicalScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.1" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
 
   		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingRealIID" id='$(thisparam)CanonicalPriorSmart.t:$(n)' param='@$(thisparam)Canonical.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Uniform" lower="0" upper="1"/>
             </distribution>
-  		    <operator id='$(thisparam)CanonicalScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
+  		    <operator id='$(thisparam)CanonicalScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.1" weight="3" parameter="@$(thisparam)Canonical.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)Canonical.t:$(n)' targetID='state' inputName='stateNode'
@@ -156,12 +156,12 @@
             <distribution spec="bdmmprime.util.priors.ZeroExcludingRealIID" id='$(thisparam)EpiPrior.t:$(n)' param='@$(thisparam)Epi.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Exponential" mean="1"/>
             </distribution>
-  		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
+  		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="1.0" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
 
   		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingRealIID" id='$(thisparam)EpiPriorSmart.t:$(n)' param='@$(thisparam)Epi.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Exponential" mean="1"/>
             </distribution>
-  		    <operator id='$(thisparam)EpiScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
+  		    <operator id='$(thisparam)EpiScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="1.0" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)Epi.t:$(n)' targetID='state' inputName='stateNode'
@@ -208,12 +208,64 @@
             <distribution spec="bdmmprime.util.priors.ZeroExcludingRealIID" id='$(thisparam)EpiPrior.t:$(n)' param='@$(thisparam)Epi.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Uniform" lower="0" upper="1"/>
             </distribution>
-  		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
+  		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.1" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
 
   		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingRealIID" id='$(thisparam)EpiPriorSmart.t:$(n)' param='@$(thisparam)Epi.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Uniform" lower="0" upper="1"/>
             </distribution>
-  		    <operator id='$(thisparam)EpiScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
+  		    <operator id='$(thisparam)EpiScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.1" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
+            ]]>
+
+            <connect srcID='$(thisparam)Epi.t:$(n)' targetID='state' inputName='stateNode'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+
+            <connect srcID='$(thisparam)EpiPrior.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPEpi.t:$(n)/linkIdenticalValues=false
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)EpiScaler.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPEpi.t:$(n)/linkIdenticalValues=false
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+
+            <connect srcID='$(thisparam)EpiPriorSmart.t:$(n)' targetID='prior' inputName='distribution'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPEpi.t:$(n)/linkIdenticalValues=true
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+            <connect srcID='$(thisparam)EpiScalerSmart.t:$(n)' targetID='mcmc' inputName='operator'
+                     if='inposterior(BDMMPrime.t:$(n))
+                     and inposterior(Tree.t:$(n))
+                     and inposterior($(thisparam)Epi.t:$(n))
+                     and inposterior(EpiBDMMPrimeParameterization.t:$(n))
+                     and $(thisparam)SPEpi.t:$(n)/linkIdenticalValues=true
+                     and $(thisparam)Epi.t:$(n)/estimate=true'/>
+        </fragment>
+
+        <fragment id='EpiBDMMPrimeReParameters' spec="beastfx.app.beauti.Fragment">
+            <![CDATA[
+
+            <distribution spec="bdmmprime.util.priors.ZeroExcludingRealIID" id='$(thisparam)EpiPrior.t:$(n)' param='@$(thisparam)Epi.t:$(n)'>
+                   <distr spec="beast.base.spec.inference.distribution.Exponential" mean="1"/>
+            </distribution>
+  		    <operator id='$(thisparam)EpiScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.1" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
+
+  		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingRealIID" id='$(thisparam)EpiPriorSmart.t:$(n)' param='@$(thisparam)Epi.t:$(n)'>
+                   <distr spec="beast.base.spec.inference.distribution.Exponential" mean="1"/>
+            </distribution>
+  		    <operator id='$(thisparam)EpiScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.1" weight="3" parameter="@$(thisparam)Epi.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)Epi.t:$(n)' targetID='state' inputName='stateNode'
@@ -306,12 +358,12 @@
             <distribution spec="bdmmprime.util.priors.ZeroExcludingRealIID" id='$(thisparam)FBDPrior.t:$(n)' param='@$(thisparam)FBD.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Exponential" mean="1"/>
             </distribution>
-  		    <operator id='$(thisparam)FBDScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
+  		    <operator id='$(thisparam)FBDScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="1.0" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
 
    		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingRealIID" id='$(thisparam)FBDPriorSmart.t:$(n)' param='@$(thisparam)FBD.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Exponential" mean="1"/>
             </distribution>
-  		    <operator id='$(thisparam)FBDScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
+  		    <operator id='$(thisparam)FBDScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="1.0" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)FBD.t:$(n)' targetID='state' inputName='stateNode'
@@ -358,12 +410,12 @@
             <distribution spec="bdmmprime.util.priors.ZeroExcludingRealIID" id='$(thisparam)FBDPrior.t:$(n)' param='@$(thisparam)FBD.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Uniform" lower="0" upper="1"/>
             </distribution>
-  		    <operator id='$(thisparam)FBDScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
+  		    <operator id='$(thisparam)FBDScaler.t:$(n)' spec='beast.base.spec.inference.operator.ScaleOperator' scaleFactor="0.1" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
 
    		    <distribution spec="bdmmprime.util.priors.SmartZeroExcludingRealIID" id='$(thisparam)FBDPriorSmart.t:$(n)' param='@$(thisparam)FBD.t:$(n)'>
                    <distr spec="beast.base.spec.inference.distribution.Uniform" lower="0" upper="1"/>
             </distribution>
-  		    <operator id='$(thisparam)FBDScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.75" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
+  		    <operator id='$(thisparam)FBDScalerSmart.t:$(n)' spec='bdmmprime.util.operators.SmartScaleOperator' scaleFactor="0.1" weight="3" parameter="@$(thisparam)FBD.t:$(n)"/>
             ]]>
 
             <connect srcID='$(thisparam)FBD.t:$(n)' targetID='state' inputName='stateNode'
@@ -569,7 +621,9 @@
             ]]>
 
             <plate fragment="EpiBDMMPrimeRateParameters" var="thisparam"
-                   range="Re,ReAmongDemes,becomeUninfectiousRate,migrationRate"/>
+                   range="becomeUninfectiousRate,migrationRate"/>
+            <plate fragment="EpiBDMMPrimeReParameters" var="thisparam"
+                   range="Re,ReAmongDemes"/>
             <plate fragment="EpiBDMMPrimeProbParameters" var="thisparam"
                    range="samplingProportion,removalProb,rhoSamplingProb"/>
             <plate fragment="EpiBDMMPrimeJointScaler" var="thisparam"
