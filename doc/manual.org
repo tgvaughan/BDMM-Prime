@@ -75,16 +75,10 @@ built-in package manager in the following way:
 
 1. Open BEAUti.
 2. From the =File= menu select =Manage Packages=.
-3. Click the =Package repositories= button at the bottom of the dialog box.
-4. Click =Add URL= and enter the following repository URL:\\
-    https://tgvaughan.github.io/BDMM-Prime/package.xml.\\
-    The list of repositories should now look like this:
-    [[./figures/package_repo.png]]
-5. Close the repository manager.
-6. The latest version of BDMM-Prime should now appear in the list of packages:
+3. The latest version of BDMM-Prime should appear in the list of packages:
    [[./figures/package_manager.png]]
    Select it, then click the =Install/Upgrade= button.
-7. Close the package manager.
+4. Close the package manager.
 
 BDMM-Prime should now be available to use on your system. (You will need to
 restart BEAUti before you can set up any analyses.)
@@ -226,6 +220,7 @@ the drop-down menu next to ~Tree.t:h3n2_2deme~ and select "BDMMPrime".
 The next thing we want to do is to specify the locations associated with each of the
 samples included in our analysis.
 #+begin_quote
+Click the arrow to the left of "Tree.t:h3n2_2deme" to expand the tree prior section.
 Scroll down to end of the tree prior section and find the table associating tree leaves
 with locations. Notice that the sample names have the form =ID_Location_Date=. To
 extract the locations from the sample names, click the ~Auto-configure~ button,
@@ -317,7 +312,7 @@ whether or not the "estimate values" option is checked.
 
 [[./figures/tutorial_SampSetup.png]]
 
-Finally, we need to define how lineages change type in our multi-type
+We now need to define how lineages change type in our multi-type
 model.  Like BDMM, BDMM-Prime allows both direct "migration" as well
 as "birth to a new type" styles of multi-type models.  Given we are
 modelling the movement of infected influenza hosts, migration suits
@@ -337,6 +332,33 @@ Find the Migration Rate parameter, then:
 #+end_quote
 
 [[./figures/tutorial_migSetup.png]]
+
+There are a few other options which can be set here, in particular the
+process conditioning and the prior probabilities for the starting
+types, but we will leave these set to the default values for this
+tutorial.  (These options are discussed in detail in the [[Model
+specification using BEAUti]] chapter.)
+
+# Finally, we need to decide how we want to condition our birth-death
+# process. One aspect of this is decide whether we want to model the
+# process as starting at some defined point in the past which is older
+# than the tree (often called the "origin" of the process), or whether
+# we want the start of the process to conincide with the root of our
+# tree. Further, in the instance that we choose to condition on the
+# process origin, we can also decide to condition our birth-death tree
+# prior on having obtained at least one sample (confusingly called
+# "conditioning on survival").
+
+# The meanings, pros and cons for these options are discussed in more detail in the [[Process Conditioning]] section.  For now, 
+# we will assume the process starts at the origin, the time of which we will estimate,
+# and we will condition on "survival" (i.e. sampling) of at least one individual.
+
+# #+begin_quote
+# Observe and do not modify the default process conditioning options displayed
+# at the end of the parameterization section of the tree prior.
+# #+end_quote
+
+# file:./figures/tutorial_conditioning.png
 
 *** Setting the remaining parameter priors
 :PROPERTIES:
@@ -359,11 +381,15 @@ Set the following parameter priors:
 | Parameter                                | Prior            |
 |------------------------------------------+------------------|
 | =ReEpi.t:h3n2_2deme=                     | LogNormal(0,0.5) |
-| =becomeUninfectiousRateEpi.t:h3n2_2deme= | 1/X              |
+| =becomeUninfectiousRateEpi.t:h3n2_2deme= | LogNormal(4,0.5) |
 | =migrationRateEpi.t:h3n2_2deme=          | Exp(0.1)         |
 | =samplingProportionEpi.t:h3n2_2deme=     | Unif(0,1)        |
+| =Process Length=                         | Gamma(5,2)       |
 |------------------------------------------+------------------|
 #+end_quote
+
+The Process Length parameter here describes the duration of the birth-death process which,
+due to our choices above, corresponds to the time between the "origin" and the time of the most recent sample in our alignment.
 
 *** MCMC and Logging setup
 :PROPERTIES:
@@ -452,7 +478,7 @@ With this in mind, see firstly that each of the estimated parameters including ~
 ~becomeUninfectiousRate~ and ~migrationRate~ are represented in the log file
 by =ReSPEpi=, =becomeUninfectiousRateSPEpi= and =migrationRateSPEpi=.  The "SP"
 indicates that the parameter is a "Skyline parameter" (as opposed to BEAST 2's
-regular ~RealParameter~).
+regular ~RealVectorParam~).
 
 Also notice that when we have allowed type-specific (not scalar) values, as
 in the case of ~Re~, the parameter name appears multiple times with a suffix
@@ -627,6 +653,27 @@ tip type assignment table:
 [[./figures/additional_types.png]]
 (You can also include the names of sampled types in this list: duplication has no effect.)
 
+*** Type indices
+:PROPERTIES:
+:CUSTOM_ID: id-3-Defining-tip-types-Model-specification-using-BEAUti-Type-indices
+:END:
+
+Internally, BDMM-Prime uses numerical indices to refer to individual types.
+While you are generally shielded from this detail - most type-dependent
+input and output is labeled exlicitly using the type names provided by the
+type trait set, it is occasionally necessary to know these indices.
+
+For $M$ types, the type indices range from 0 through to $M-1$. They
+correspond to the type names sorted in (generalized) alphabetical
+order.  Thus in the tutorial analysis, the type indices are 0 and 1 for
+the types with labels HongKong and USA, respecticely.
+
+If you're ever confused about the type/index mapping, it is given explicitly
+in BEAUti directly underneath the Additional Types input at the base of the
+the type trait set input editor:
+
+[[./figures/typeIndices.png]]
+
 ** Start type prior probabilities
 :PROPERTIES:
 :CUSTOM_ID: id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities
@@ -644,11 +691,12 @@ the tree prior input editor. (It is usually located between the Parameterization
 and Type Trait Set input sections.) For a model with two types, it appears as
 follows in its initial configuration:
 [[./figures/startTypePriorProbs.png]]
+
 Probabilities are entered as numerical values with spaces between
 them.  The number of values must match the number of demes in your
 model.  The $i^{\text{th}}$ number is the prior probability for the
 $i^{\text{th}}$ type when the types are sorted in lexicographical
-(generalized alphabetical) order.
+(generalized alphabetical) order. (See the previous section on type indices.)
 
 By default the prior probabilities are chosen to be uniform.  In many
 cases this is a sensible choice, however it may be the case that you
@@ -657,16 +705,6 @@ some particular state.  For instance, you might know - or be willing
 to assume - that an outbreak was seeded by travel cases from other
 locations.  In such cases you can modify the probability values to reflect
 these prior assumptions, although take care that the values still sum to 1.
-
-It is also possible to "estimate" these prior probabilities. Clicking
-the estimate button causes BEAUti to assign a flat Dirichlet
-"hyper-prior" to the probabilities (i.e. a uniform distribution
-subject only to the constraint that the probabilities must be positive
-and sum to 1). We advise against doing this, as doing so is completely
-equivalent to simply setting a uniform prior in the first place.  This
-option is provided to allow for compatibility with previous
-implementations of this model, and beware that the values so estimated
-do not represent the posterior probabilities of the starting state.
 
 ** Parameterizations
 :PROPERTIES:
@@ -1697,7 +1735,7 @@ timing and probabilities for "rho sampling" events. These are the possible input
   when =timesAreAges= is true, but the oldest event when it is false.)
 - timesAreRelative (=Boolean=, default false) :: 
   When set to true, times or ages are treated as relative fractions of the process length.
-- processLength (=Function=) ::
+- processLength (=RealScalar=) ::
   This is the object specifying the process length.  It is only
   necessary when one or both of =timesAreAges= and =timesAreRelative=
   are set to true.
@@ -1792,7 +1830,7 @@ The important inputs are:
   The tree on which the type changes are to be stochastically mapped.
 - =typeTraitSet= (=TraitSet=, required) :: 
   Trait set specifying the taxon types.
-- =startTypePriorProbs= (=RealParameter=, required) ::
+- =startTypePriorProbs= (=Simplex=, required) ::
   The prior probabilities for the initial individual type.
 - =typeLabel= (=String=, required) :: 
   The label to be used for traits in the generated metadata. In other words, this is

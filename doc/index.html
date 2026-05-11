@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-05-07 Thu 18:05 -->
+<!-- 2026-05-11 Mon 10:44 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -65,6 +65,7 @@
 <ul>
 <li><a href="#id-3-Defining-tip-types-Model-specification-using-BEAUti-Leaves-with-unknown-type">3.2.1. Leaves with unknown type</a></li>
 <li><a href="#id-3-Defining-tip-types-Model-specification-using-BEAUti-Defining-additional-types">3.2.2. Defining additional types</a></li>
+<li><a href="#id-3-Defining-tip-types-Model-specification-using-BEAUti-Type-indices">3.2.3. Type indices</a></li>
 </ul>
 </li>
 <li><a href="#id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities">3.3. Start type prior probabilities</a></li>
@@ -135,7 +136,7 @@
 </div>
 </nav>
 
-<figure id="org3dc551d">
+<figure id="org807e19d">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -216,13 +217,7 @@ built-in package manager in the following way:
 <ol class="org-ol">
 <li>Open BEAUti.</li>
 <li>From the <code>File</code> menu select <code>Manage Packages</code>.</li>
-<li>Click the <code>Package repositories</code> button at the bottom of the dialog box.</li>
-<li>Click <code>Add URL</code> and enter the following repository URL:<br>
-<a href="https://tgvaughan.github.io/BDMM-Prime/package.xml">https://tgvaughan.github.io/BDMM-Prime/package.xml</a>.<br>
-The list of repositories should now look like this:
-<img src="./figures/package_repo.png" alt="package_repo.png"></li>
-<li>Close the repository manager.</li>
-<li>The latest version of BDMM-Prime should now appear in the list of packages:
+<li>The latest version of BDMM-Prime should appear in the list of packages:
 <img src="./figures/package_manager.png" alt="package_manager.png">
 Select it, then click the <code>Install/Upgrade</code> button.</li>
 <li>Close the package manager.</li>
@@ -327,7 +322,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="orgf608e26">
+<figure id="org18caea8">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -349,7 +344,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="org5d4f2e9">
+<figure id="org647cae6">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -380,7 +375,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="orge70a94c">
+<figure id="orga9013c2">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -403,7 +398,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="org5bea941">
+<figure id="org5ebf99b">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -418,6 +413,7 @@ samples included in our analysis.
 </p>
 <blockquote>
 <p>
+Click the arrow to the left of "Tree.t:h3n2<sub>2deme</sub>" to expand the tree prior section.
 Scroll down to end of the tree prior section and find the table associating tree leaves
 with locations. Notice that the sample names have the form <code>ID_Location_Date</code>. To
 extract the locations from the sample names, click the <code>Auto-configure</code> button,
@@ -427,7 +423,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="org8766821">
+<figure id="orgcc9b2ba">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -437,7 +433,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="orgdc0f4ac">
+<figure id="orgdb5259d">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -467,7 +463,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="org05dfbb4">
+<figure id="orge708632">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -493,7 +489,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="orgf17aae8">
+<figure id="orgcfa7dd6">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -516,7 +512,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="org1a2fdf9">
+<figure id="org542a35f">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -556,13 +552,13 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="org50f5a16">
+<figure id="orgd4039e3">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
 
 <p>
-Finally, we need to define how lineages change type in our multi-type
+We now need to define how lineages change type in our multi-type
 model.  Like BDMM, BDMM-Prime allows both direct "migration" as well
 as "birth to a new type" styles of multi-type models.  Given we are
 modelling the movement of infected influenza hosts, migration suits
@@ -589,10 +585,17 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org4043ad8">
+<figure id="org44084d6">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
+
+<p>
+There are a few other options which can be set here, in particular the
+process conditioning and the prior probabilities for the starting
+types, but we will leave these set to the default values for this
+tutorial.  (These options are discussed in detail in the <a href="#id-1-Model-specification-using-BEAUti">3</a> chapter.)
+</p>
 </div>
 </div>
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-Setting-the-remaining-parameter-priors" class="outline-4">
@@ -638,7 +641,7 @@ Set the following parameter priors:
 
 <tr>
 <td class="org-left"><code>becomeUninfectiousRateEpi.t:h3n2_2deme</code></td>
-<td class="org-left">1/X</td>
+<td class="org-left">LogNormal(4,0.5)</td>
 </tr>
 
 <tr>
@@ -650,9 +653,19 @@ Set the following parameter priors:
 <td class="org-left"><code>samplingProportionEpi.t:h3n2_2deme</code></td>
 <td class="org-left">Unif(0,1)</td>
 </tr>
+
+<tr>
+<td class="org-left"><code>Process Length</code></td>
+<td class="org-left">Gamma(5,2)</td>
+</tr>
 </tbody>
 </table>
 </blockquote>
+
+<p>
+The Process Length parameter here describes the duration of the birth-death process which,
+due to our choices above, corresponds to the time between the "origin" and the time of the most recent sample in our alignment.
+</p>
 </div>
 </div>
 <div id="outline-container-id-3-Setting-up-your-first-analysis-Getting-Started-MCMC-and-Logging-setup" class="outline-4">
@@ -670,7 +683,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="org4238f59">
+<figure id="org70c59bc">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -765,7 +778,7 @@ With this in mind, see firstly that each of the estimated parameters including <
 <code>becomeUninfectiousRate</code> and <code>migrationRate</code> are represented in the log file
 by <code>ReSPEpi</code>, <code>becomeUninfectiousRateSPEpi</code> and <code>migrationRateSPEpi</code>.  The "SP"
 indicates that the parameter is a "Skyline parameter" (as opposed to BEAST 2's
-regular <code>RealParameter</code>).
+regular <code>RealVectorParam</code>).
 </p>
 
 <p>
@@ -782,7 +795,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="orgfa55096">
+<figure id="orgf41e4e5">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -817,7 +830,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="orgb204a2a">
+<figure id="org99c05da">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -841,7 +854,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="org2cf8db3">
+<figure id="org39e3af2">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -963,7 +976,7 @@ is selected, as indicated by the red arrow in the following image:
 </p>
 
 
-<figure id="orgeb81aff">
+<figure id="orgf0227ed">
 <img src="./figures/unknown_types.png" alt="unknown_types.png">
 
 </figure>
@@ -1002,6 +1015,36 @@ tip type assignment table:
 </p>
 </div>
 </div>
+<div id="outline-container-id-3-Defining-tip-types-Model-specification-using-BEAUti-Type-indices" class="outline-4">
+<h4 id="id-3-Defining-tip-types-Model-specification-using-BEAUti-Type-indices"><span class="section-number-4">3.2.3.</span> Type indices</h4>
+<div class="outline-text-4" id="text-id-3-Defining-tip-types-Model-specification-using-BEAUti-Type-indices">
+<p>
+Internally, BDMM-Prime uses numerical indices to refer to individual types.
+While you are generally shielded from this detail - most type-dependent
+input and output is labeled exlicitly using the type names provided by the
+type trait set, it is occasionally necessary to know these indices.
+</p>
+
+<p>
+For $M$ types, the type indices range from 0 through to $M-1$. They
+correspond to the type names sorted in (generalized) alphabetical
+order.  Thus in the tutorial analysis, the type indices are 0 and 1 for
+the types with labels HongKong and USA, respecticely.
+</p>
+
+<p>
+If you're ever confused about the type/index mapping, it is given explicitly
+in BEAUti directly underneath the Additional Types input at the base of the
+the type trait set input editor:
+</p>
+
+
+<figure id="orgc9bd9cf">
+<img src="./figures/typeIndices.png" alt="typeIndices.png">
+
+</figure>
+</div>
+</div>
 </div>
 <div id="outline-container-id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities" class="outline-3">
 <h3 id="id-2-Model-specification-using-BEAUti-Start-type-prior-probabilities"><span class="section-number-3">3.3.</span> Start type prior probabilities</h3>
@@ -1021,11 +1064,14 @@ the tree prior input editor. (It is usually located between the Parameterization
 and Type Trait Set input sections.) For a model with two types, it appears as
 follows in its initial configuration:
 <img src="./figures/startTypePriorProbs.png" alt="startTypePriorProbs.png">
+</p>
+
+<p>
 Probabilities are entered as numerical values with spaces between
 them.  The number of values must match the number of demes in your
 model.  The $i^{\text{th}}$ number is the prior probability for the
 $i^{\text{th}}$ type when the types are sorted in lexicographical
-(generalized alphabetical) order.
+(generalized alphabetical) order. (See the previous section on type indices.)
 </p>
 
 <p>
@@ -1036,18 +1082,6 @@ some particular state.  For instance, you might know - or be willing
 to assume - that an outbreak was seeded by travel cases from other
 locations.  In such cases you can modify the probability values to reflect
 these prior assumptions, although take care that the values still sum to 1.
-</p>
-
-<p>
-It is also possible to "estimate" these prior probabilities. Clicking
-the estimate button causes BEAUti to assign a flat Dirichlet
-"hyper-prior" to the probabilities (i.e. a uniform distribution
-subject only to the constraint that the probabilities must be positive
-and sum to 1). We advise against doing this, as doing so is completely
-equivalent to simply setting a uniform prior in the first place.  This
-option is provided to allow for compatibility with previous
-implementations of this model, and beware that the values so estimated
-do not represent the posterior probabilities of the starting state.
 </p>
 </div>
 </div>
@@ -1227,7 +1261,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="org391fecb">
+<figure id="org1fa984f">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1266,7 +1300,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="org823b845">
+<figure id="org55acc17">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1393,7 +1427,7 @@ tree generation process is conditioned. By default it appears as follows:
 </p>
 
 
-<figure id="orgf540c72">
+<figure id="org72e7864">
 <img src="./figures/conditioning.png" alt="conditioning.png">
 
 </figure>
@@ -1450,7 +1484,7 @@ in their default configuration:
 </p>
 
 
-<figure id="org4be5dba">
+<figure id="org6758afc">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1510,7 +1544,7 @@ check/uncheck the "Enable Logger" checkbox.
 </p>
 
 
-<figure id="orgac25c83">
+<figure id="orgbb9780f">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1577,7 +1611,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="org037e203">
+<figure id="org447aa0b">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1598,7 +1632,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="org42ca207">
+<figure id="org91b15a8">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1736,7 +1770,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="org1a94c40">
+<figure id="orgb83e7b4">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1810,7 +1844,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="org9c74cba">
+<figure id="org04175f9">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1835,7 +1869,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="org2ae547c">
+<figure id="org4d77f14">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -2624,7 +2658,7 @@ process. (I.e. the time of the final sample + the value of
 assignment to events. (E.g. value $v_1$ will be associated with the most recent event
 when <code>timesAreAges</code> is true, but the oldest event when it is false.)</dd>
 <dt>timesAreRelative (<code>Boolean</code>, default false)</dt><dd>When set to true, times or ages are treated as relative fractions of the process length.</dd>
-<dt>processLength (<code>Function</code>)</dt><dd>This is the object specifying the process length.  It is only
+<dt>processLength (<code>RealScalar</code>)</dt><dd>This is the object specifying the process length.  It is only
 necessary when one or both of <code>timesAreAges</code> and <code>timesAreRelative</code>
 are set to true.</dd>
 </dl>
@@ -2735,7 +2769,7 @@ The important inputs are:
 needed to sample the ancestral type distribution.</dd>
 <dt><code>untypedTree</code> (<code>Tree</code>, required)</dt><dd>The tree on which the type changes are to be stochastically mapped.</dd>
 <dt><code>typeTraitSet</code> (<code>TraitSet</code>, required)</dt><dd>Trait set specifying the taxon types.</dd>
-<dt><code>startTypePriorProbs</code> (<code>RealParameter</code>, required)</dt><dd>The prior probabilities for the initial individual type.</dd>
+<dt><code>startTypePriorProbs</code> (<code>Simplex</code>, required)</dt><dd>The prior probabilities for the initial individual type.</dd>
 <dt><code>typeLabel</code> (<code>String</code>, required)</dt><dd>The label to be used for traits in the generated metadata. In other words, this is
 the key used in the key-value pairs which will be used to annotate the tree with
 the ancestral type information.</dd>
@@ -3298,7 +3332,7 @@ extend the same courtesy to other users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2026-05-07 Thu 18:05</p>
+<p class="date">Created: 2026-05-11 Mon 10:44</p>
 </div>
 </body>
 </html>
