@@ -115,6 +115,14 @@ public class TimedParameterInputEditor extends InputEditor.Base {
         boxHoriz = FXUtils.newHBox();
         CheckBox scalarValues = new CheckBox("Scalar values");
         boxHoriz.getChildren().add(scalarValues);
+        CheckBox linkValuesCheckBox = new CheckBox("Link identical values");
+        linkValuesCheckBox.setSelected(timedParameter.linkIdenticalValuesInput.get());
+        linkValuesCheckBox.setTooltip(new Tooltip("Cause BEAST to treat initially identical values as a single parameter."));
+        boxHoriz.getChildren().add(linkValuesCheckBox);
+
+        timesAndValuesBox.getChildren().add(boxHoriz);
+
+        boxHoriz = FXUtils.newHBox();
         CheckBox estimateValuesCheckBox = new CheckBox("Estimate values");
         boxHoriz.getChildren().add(estimateValuesCheckBox);
 
@@ -215,6 +223,11 @@ public class TimedParameterInputEditor extends InputEditor.Base {
             ensureValuesConsistency(newValue);
             updateValuesUI();
             System.out.println(timedParameter);
+        });
+
+        linkValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            timedParameter.linkIdenticalValuesInput.setValue(newValue, beastObject);
+            sync();
         });
 
         estimateValuesCheckBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
