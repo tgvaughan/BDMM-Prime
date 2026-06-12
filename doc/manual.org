@@ -63,7 +63,6 @@ If you use this package as part of your research, please cite these papers:
 :CUSTOM_ID: id-1-Getting-Started
 :END:
 
-
 ** Installation
 :PROPERTIES:
 :CUSTOM_ID: id-2-Getting-Started-Installation
@@ -75,16 +74,10 @@ built-in package manager in the following way:
 
 1. Open BEAUti.
 2. From the =File= menu select =Manage Packages=.
-3. Click the =Package repositories= button at the bottom of the dialog box.
-4. Click =Add URL= and enter the following repository URL:\\
-    https://tgvaughan.github.io/BDMM-Prime/package.xml.\\
-    The list of repositories should now look like this:
-    [[./figures/package_repo.png]]
-5. Close the repository manager.
-6. The latest version of BDMM-Prime should now appear in the list of packages:
+3. The latest version of BDMM-Prime should appear in the list of packages:
    [[./figures/package_manager.png]]
    Select it, then click the =Install/Upgrade= button.
-7. Close the package manager.
+4. Close the package manager.
 
 BDMM-Prime should now be available to use on your system. (You will need to
 restart BEAUti before you can set up any analyses.)
