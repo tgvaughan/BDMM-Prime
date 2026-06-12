@@ -57,6 +57,11 @@ public class TimedParameter extends CalculationNode implements Loggable {
             "Type set defining distinct types in model. Used when a" +
                     "single value is to be shared amongst several types.");
 
+    public Input<Boolean> linkIdenticalValuesInput = new Input<>("linkIdenticalValues",
+            "BEAUti hint to create XMLs in which identical values are considered " +
+                    "linked. WARNING: The value of this input usually has no impact " +
+                    "outside of BEAUti!",
+            false);
 
     public Input<RealVector<? extends Real>> valuesInput = new Input<>(
             "values",
