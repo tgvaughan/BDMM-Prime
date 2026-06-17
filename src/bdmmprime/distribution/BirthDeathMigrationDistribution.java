@@ -1105,7 +1105,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (conditionOnSurvivalInput.get() || conditionOnRootInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
-            double p_i = get_p_i(parameterization.getBirthRates()[i][0],
+            double p_i = get_log_p_i(parameterization.getBirthRates()[i][0],
                     parameterization.getDeathRates()[i][0],
                     parameterization.getSamplingRates()[i][0],
                     A[i], B[i], Bplus1[i],
