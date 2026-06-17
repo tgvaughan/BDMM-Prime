@@ -819,7 +819,7 @@ public class TypeMappedTree extends Tree {
                         * y[param.getNTypes() + type];
         }
 
-        if (y[param.getNTypes()+fromType]<=0.0) {
+        if (y[param.getNTypes()+fromType]<=0.0 || (param.getNTypes() == 1 && result[0] == 0.0)) {
             // The source type prob approaches zero as the integration closes
             // in on a node with a defined type.  This causes the transition
             // rate to this type to become infinite.  What follows is a hack
