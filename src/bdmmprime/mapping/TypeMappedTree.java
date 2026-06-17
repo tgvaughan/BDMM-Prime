@@ -156,6 +156,14 @@ public class TypeMappedTree extends Tree {
      */
     private void doStochasticMapping() {
 
+        if (param.getNTypes()==1) {
+            // Avoid the full stochastic mapping calculation when unnecessary
+            Node dummyTypedTreeRoot = mapSingleTypeTree(untypedTree.getRoot());
+            numberInternalNodesOnSubtree(dummyTypedTreeRoot, untypedTree.getLeafNodeCount());
+            assignFromWithoutID(new Tree(dummyTypedTreeRoot));
+            return;
+        }
+
         // Record time at start of calculation
         calculationTime = System.currentTimeMillis();
 
@@ -886,6 +894,47 @@ public class TypeMappedTree extends Tree {
         subtreeRoot.setNr(nextNumber);
 
         return nextNumber+1;
+    }
+
+    /**
+     * Produce a dummy "stochastically mapped" tree for single-type models.
+     * This is necessary since users of TypeMappedTree expect a new tree with
+     * appropriately labeled nodes.
+     *
+     * @param subtreeRoot root of single-type tree to "map"
+     * @return root of "mapped" single-type tree
+     */
+    private Node mapSingleTypeTree(Node subtreeRoot) {
+        Node newSubtreeRoot = new Node();
+        setNodeType(newSubtreeRoot, 0);
+        newSubtreeRoot.setHeight(subtreeRoot.getHeight());
+
+        switch(getNodeKind(subtreeRoot)) {
+            case LEAF:
+                newSubtreeRoot.setNr(subtreeRoot.getNr());
+                newSubtreeRoot.setID(subtreeRoot.getID());
+                break;
+
+            case SA:
+                Node oldDAChild = subtreeRoot.getDirectAncestorChild();
+                Node newDAChild = new Node();
+
+                newDAChild.setHeight(oldDAChild.getHeight());
+                setNodeType(newDAChild, 0);
+                newDAChild.setNr(oldDAChild.getNr());
+                newDAChild.setID(oldDAChild.getID());
+
+                newSubtreeRoot.addChild(newDAChild);
+                newSubtreeRoot.addChild(mapSingleTypeTree(subtreeRoot.getNonDirectAncestorChild()));
+                break;
+
+            case INTERNAL:
+                newSubtreeRoot.addChild(mapSingleTypeTree(subtreeRoot.getChild(0)));
+                newSubtreeRoot.addChild(mapSingleTypeTree(subtreeRoot.getChild(1)));
+                break;
+        }
+
+        return newSubtreeRoot;
     }
 
     /*
