@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<!-- 2026-06-12 Fri 18:06 -->
+<!-- 2026-06-17 Wed 18:20 -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>BDMM-Prime</title>
@@ -93,9 +93,9 @@
 <li><a href="#id-1-Sampling-Latent-Variables">4. Sampling Latent Variables</a>
 <ul>
 <li><a href="#id-2-Sampling-Latent-Variables-Tree-edge-types-and-type-transitions">4.1. Tree edge types and type transitions</a></li>
-<li><a href="#id-2-Sampling-Latent-Variables-Multi-type-trajectories">4.2. Multi-type trajectories</a>
+<li><a href="#id-2-Sampling-Latent-Variables-Population-trajectories">4.2. Population trajectories</a>
 <ul>
-<li><a href="#id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories">4.2.1. Plotting sampled trajectories</a></li>
+<li><a href="#id-3-Population-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories">4.2.1. Plotting sampled trajectories</a></li>
 </ul>
 </li>
 </ul>
@@ -135,7 +135,7 @@
 </div>
 </nav>
 
-<figure id="orgdfb1e72">
+<figure id="org762ce3b">
 <img src="./logos/bdmm-prime-logo.png" alt="BDMM-Prime: Linear birth-death-sampling phylodynamics">
 
 </figure>
@@ -321,7 +321,7 @@ character as a numerical tip time.
 </blockquote>
 
 
-<figure id="org720e3fe">
+<figure id="orge4b7687">
 <img src="./figures/tutorial_tipdates.png" alt="tutorial_tipdates.png">
 
 </figure>
@@ -343,7 +343,7 @@ Select the "Site model" panel. Select the HKY model with "empirical" nucleotide 
 </blockquote>
 
 
-<figure id="orge25c3cc">
+<figure id="orgb456362">
 <img src="./figures/tutorial_sitemodel.png" alt="tutorial_sitemodel.png">
 
 </figure>
@@ -374,7 +374,7 @@ Select the "Clock model" panel. Set the "mean clock rate" value to 0.005.
 </blockquote>
 
 
-<figure id="orga564760">
+<figure id="orge5fe651">
 <img src="./figures/tutorial_clock.png" alt="tutorial_clock.png">
 
 </figure>
@@ -397,7 +397,7 @@ the drop-down menu next to <code>Tree.t:h3n2_2deme</code> and select "BDMMPrime"
 </blockquote>
 
 
-<figure id="org9166d74">
+<figure id="org3b78713">
 <img src="./figures/tutorial_treeprior.png" alt="tutorial_treeprior.png">
 
 </figure>
@@ -421,7 +421,7 @@ select <code>split on character</code>, ensure "<code>_</code>" is specified as 
 </blockquote>
 
 
-<figure id="org27a0910">
+<figure id="org845cbed">
 <img src="./figures/tutorial_tiptypes.png" alt="tutorial_tiptypes.png">
 
 </figure>
@@ -431,7 +431,7 @@ The table should now be populated with types extracted from the sample names.
 </p>
 
 
-<figure id="org3a0f07b">
+<figure id="orgc7d301a">
 <img src="./figures/tutorial_tiptypes2.png" alt="tutorial_tiptypes2.png">
 
 </figure>
@@ -461,7 +461,7 @@ drop-down menu at the top of the expanded section.
 </blockquote>
 
 
-<figure id="org76a83aa">
+<figure id="orgc4da7ef">
 <img src="./figures/tutorial_parameterization.png" alt="tutorial_parameterization.png">
 
 </figure>
@@ -487,7 +487,7 @@ allow this parameter to take type-dependent values.
 </blockquote>
 
 
-<figure id="org0e281a8">
+<figure id="org2a0c6fb">
 <img src="./figures/tutorial_ReSetup.png" alt="tutorial_ReSetup.png">
 
 </figure>
@@ -510,7 +510,7 @@ the new value.</b>
 </blockquote>
 
 
-<figure id="org3cbea8b">
+<figure id="org6f2dff5">
 <img src="./figures/tutorial_BUSetup.png" alt="tutorial_BUSetup.png">
 
 </figure>
@@ -550,7 +550,7 @@ whether or not the "estimate values" option is checked.
 </p>
 
 
-<figure id="org3138304">
+<figure id="orgaa3d2dd">
 <img src="./figures/tutorial_SampSetup.png" alt="tutorial_SampSetup.png">
 
 </figure>
@@ -583,7 +583,7 @@ rates are estimated.</li>
 </blockquote>
 
 
-<figure id="org8ae4628">
+<figure id="org536303d">
 <img src="./figures/tutorial_migSetup.png" alt="tutorial_migSetup.png">
 
 </figure>
@@ -664,7 +664,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 </blockquote>
 
 
-<figure id="orgb9668d1">
+<figure id="org2b86be3">
 <img src="./figures/tutorial_MCMC.png" alt="tutorial_MCMC.png">
 
 </figure>
@@ -672,7 +672,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 <p>
 For this demonstration we will leave everything else as-is. Notice however that
 beyond the regular trace, screen and tree logs, there are three additional loggers.
-We'll discuss these in more detail 
+They include:
 </p>
 
 <dl class="org-dl">
@@ -692,8 +692,10 @@ from the marginal posterior of multi-type population trajectories.</dd>
 <p>
 Each of these loggers is optional, and can be enabled/disabled by
 clicking the arrow buttons to their left and checking/unchecking the
-"Enable logger" box.  By default edge-typed tree logging is enabled,
-but trajectory logging is disabled.
+"Enable logger" box.  (NB: in recent versions of BDMM-Prime, typed
+tree loggers are only displayed when two or more types are present in
+the model.)  By default edge-typed tree logging is enabled, but
+trajectory logging is disabled.
 </p>
 </div>
 </div>
@@ -776,7 +778,7 @@ of a specific interval, measured relative to the start time of the process.
 </p>
 
 
-<figure id="org84445ff">
+<figure id="org660bae1">
 <img src="./analyses/tracer.png" alt="tracer.png">
 
 </figure>
@@ -811,7 +813,7 @@ less biased estimates of divergence times than the default.)</li>
 </blockquote>
 
 
-<figure id="org7f3ebfe">
+<figure id="orgd93dc0c">
 <img src="./analyses/treeannotator.png" alt="treeannotator.png">
 
 </figure>
@@ -835,7 +837,7 @@ This should produce something quite like the figure below:
 </p>
 
 
-<figure id="orgbae22c6">
+<figure id="org04b19aa">
 <img src="./analyses/summary_tree.png" alt="summary_tree.png">
 
 </figure>
@@ -957,7 +959,7 @@ is selected, as indicated by the red arrow in the following image:
 </p>
 
 
-<figure id="orga56acee">
+<figure id="org9b63b4f">
 <img src="./figures/unknown_types.png" alt="unknown_types.png">
 
 </figure>
@@ -1221,7 +1223,7 @@ illustrated in the following schematic:
 </p>
 
 
-<figure id="orgf43c29f">
+<figure id="org7b03126">
 <img src="./figures/epochsAndChangeTimes.png" alt="epochsAndChangeTimes.png">
 
 </figure>
@@ -1260,7 +1262,7 @@ can be configured.  The general layout is as follows:
 </p>
 
 
-<figure id="org2a9ceed">
+<figure id="org2b7d891">
 <img src="./figures/skylineLayout.png" alt="skylineLayout.png">
 
 </figure>
@@ -1387,7 +1389,7 @@ tree generation process is conditioned. By default it appears as follows:
 </p>
 
 
-<figure id="orgf011588">
+<figure id="org1dbc712">
 <img src="./figures/conditioning.png" alt="conditioning.png">
 
 </figure>
@@ -1444,7 +1446,7 @@ in their default configuration:
 </p>
 
 
-<figure id="orgc241378">
+<figure id="org38f456f">
 <img src="./figures/miscParams.png" alt="miscParams.png">
 
 </figure>
@@ -1500,11 +1502,12 @@ mapping algorithm based on the work of <a href="https://doi.org/10.1101/555805">
 mapping procedure and the corresponding logging of edge-typed trees is
 enabled by default.  To enable/disable stochastic mapping, simply
 expand the <code>typedTreeLogger</code> and <code>nodeTypedTreeLogger</code> input editors
-check/uncheck the "Enable Logger" checkbox.
+check/uncheck the "Enable Logger" checkbox. (<b><b>Note: these input editors
+are only displayed when your model specifies more than one type!</b></b>)
 </p>
 
 
-<figure id="org2f6b961">
+<figure id="org683adbf">
 <img src="./figures/mappingEnable.png" alt="mappingEnable.png">
 
 </figure>
@@ -1547,12 +1550,12 @@ then be characterised.
 </p>
 </div>
 </div>
-<div id="outline-container-id-2-Sampling-Latent-Variables-Multi-type-trajectories" class="outline-3">
-<h3 id="id-2-Sampling-Latent-Variables-Multi-type-trajectories"><span class="section-number-3">4.2.</span> Multi-type trajectories</h3>
-<div class="outline-text-3" id="text-id-2-Sampling-Latent-Variables-Multi-type-trajectories">
+<div id="outline-container-id-2-Sampling-Latent-Variables-Population-trajectories" class="outline-3">
+<h3 id="id-2-Sampling-Latent-Variables-Population-trajectories"><span class="section-number-3">4.2.</span> Population trajectories</h3>
+<div class="outline-text-3" id="text-id-2-Sampling-Latent-Variables-Population-trajectories">
 <p>
-Multi-type trajectories are sampled using a phylogenetic particle
-filtering algorithm based on the method described by
+Multi-type population trajectories are sampled using a phylogenetic
+particle filtering algorithm based on the method described by
 <a href="https://doi.org/10.1093/molbev/msz106">Vaughan et al., 2019</a>.  For a given sampled tree and set of model
 parameters, this algorithm simulates an ensemble of possible
 histories, members of which are weighted by their agreement with the
@@ -1571,7 +1574,7 @@ can be enabled by expanding the relevant logger input editor -
 </p>
 
 
-<figure id="org3caeb6f">
+<figure id="org1597a34">
 <img src="./figures/trajectoryEnable.png" alt="trajectoryEnable.png">
 
 </figure>
@@ -1592,7 +1595,7 @@ label, which brings up a dialog box as shown below:
 </p>
 
 
-<figure id="orgc1a4fd8">
+<figure id="orgb274cb9">
 <img src="./figures/trajectoryOptions.png" alt="trajectoryOptions.png">
 
 </figure>
@@ -1630,9 +1633,9 @@ selecting step sizes, with smaller values yielding shorter step sizes.
 It's almost always okay to leave these parameters alone.
 </p>
 </div>
-<div id="outline-container-id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories" class="outline-4">
-<h4 id="id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories"><span class="section-number-4">4.2.1.</span> Plotting sampled trajectories</h4>
-<div class="outline-text-4" id="text-id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories">
+<div id="outline-container-id-3-Population-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories" class="outline-4">
+<h4 id="id-3-Population-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories"><span class="section-number-4">4.2.1.</span> Plotting sampled trajectories</h4>
+<div class="outline-text-4" id="text-id-3-Population-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories">
 <blockquote>
 <p>
 For our example here, we use the trajectory file generated by the 
@@ -1730,7 +1733,7 @@ domain covered by the majority of the trajectories.
 </p>
 
 
-<figure id="org420d53a">
+<figure id="orga99eec9">
 <img src="./analyses/trajectories.png" alt="trajectories.png">
 
 </figure>
@@ -1804,7 +1807,7 @@ This yields the following graphic:
 </p>
 
 
-<figure id="orgc41a51a">
+<figure id="org57094b6">
 <img src="./analyses/trajectories_CI.png" alt="trajectories_CI.png">
 
 </figure>
@@ -1829,7 +1832,7 @@ are the number of years prior to this date.)
 </div>
 
 
-<figure id="orga19147e">
+<figure id="org6338253">
 <img src="./analyses/trajectories_CI_years.png" alt="trajectories_CI_years.png">
 
 </figure>
@@ -3292,7 +3295,7 @@ extend the same courtesy to other users.
 </div>
 <div id="postamble" class="status">
 <p class="author">Author: Tim Vaughan</p>
-<p class="date">Created: 2026-06-12 Fri 18:06</p>
+<p class="date">Created: 2026-06-17 Wed 18:20</p>
 </div>
 </body>
 </html>

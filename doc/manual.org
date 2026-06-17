@@ -374,7 +374,7 @@ Switch to the MCMC panel and change the Chain Length to 1000000 ($10^6$).
 
 For this demonstration we will leave everything else as-is. Notice however that
 beyond the regular trace, screen and tree logs, there are three additional loggers.
-We'll discuss these in more detail 
+They include:
 
 - typedTreeLogger :: A logger which uses stochastic mapping to
   generate samples from the marginal posterior over edge-typed trees,
@@ -390,8 +390,10 @@ We'll discuss these in more detail
   
 Each of these loggers is optional, and can be enabled/disabled by
 clicking the arrow buttons to their left and checking/unchecking the
-"Enable logger" box.  By default edge-typed tree logging is enabled,
-but trajectory logging is disabled.
+"Enable logger" box.  (NB: in recent versions of BDMM-Prime, typed
+tree loggers are only displayed when two or more types are present in
+the model.)  By default edge-typed tree logging is enabled, but
+trajectory logging is disabled.
 
 ** Saving and Running the analysis
 :PROPERTIES:
@@ -1019,7 +1021,8 @@ mapping algorithm based on the work of [[https://doi.org/10.1101/555805][Höhna 
 mapping procedure and the corresponding logging of edge-typed trees is
 enabled by default.  To enable/disable stochastic mapping, simply
 expand the =typedTreeLogger= and =nodeTypedTreeLogger= input editors
-check/uncheck the "Enable Logger" checkbox.
+check/uncheck the "Enable Logger" checkbox. (**Note: these input editors
+are only displayed when your model specifies more than one type!**)
 
 [[./figures/mappingEnable.png]]
 
@@ -1050,13 +1053,13 @@ then compute this time for every tree. This would yield a set of
 samples from the posterior distribution for this time, which could
 then be characterised.
 
-** Multi-type trajectories
+** Population trajectories
 :PROPERTIES:
-:CUSTOM_ID: id-2-Sampling-Latent-Variables-Multi-type-trajectories
+:CUSTOM_ID: id-2-Sampling-Latent-Variables-Population-trajectories
 :END:
 
-Multi-type trajectories are sampled using a phylogenetic particle
-filtering algorithm based on the method described by
+Multi-type population trajectories are sampled using a phylogenetic
+particle filtering algorithm based on the method described by
 [[https://doi.org/10.1093/molbev/msz106][Vaughan et al., 2019]].  For a given sampled tree and set of model
 parameters, this algorithm simulates an ensemble of possible
 histories, members of which are weighted by their agreement with the
@@ -1113,7 +1116,7 @@ It's almost always okay to leave these parameters alone.
 
 *** Plotting sampled trajectories
 :PROPERTIES:
-:CUSTOM_ID: id-3-Multi-type-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories
+:CUSTOM_ID: id-3-Population-trajectories-Sampling-Latent-Variables-Plotting-sampled-trajectories
 :END:
 
 #+begin_quote
