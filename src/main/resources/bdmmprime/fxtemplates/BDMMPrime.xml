@@ -274,6 +274,7 @@
                      if="inposterior(BDMMPrime.t:$(n)) and inposterior(Tree.t:$(n))"/>
 
             <connect method="bdmmprime.util.operators.JointSkylineScaleOperator.customConnector"/>
+            <connect method="bdmmprime.beauti.MultiTypeLoggerDisconnector.customConnector"/>
         </subtemplate>
 
     </mergewith>
