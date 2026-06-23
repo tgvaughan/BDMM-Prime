@@ -964,9 +964,71 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
     }
 
+    private double logsumexp(double[] arr, double[] signs) {
+        double maxV = arr[0];
+        for (double v : arr) {
+            if (v > maxV) {
+                maxV = v;
+            }
+        }
+        double logS = 0.0;
+        for (int vi = 0; vi < arr.length; vi++) {
+          double v = arr[vi];
+          double si = signs[vi];
+          double newV = v - maxV;
+          logS += si*Math.exp(newV);
+        }
+        logS = Math.log(logS);
+        logS += maxV;
+        return logS;
+    }
+
+    private double get_rv_logsumexp(double v, double B, double Bplus1) {
+        double c1 = v + Math.log(Bplus1);
+        double c2_sign = 1 - B < 0 ? -1.0 : 1.0;
+        double c2 = c2_sign * Math.log(Math.abs(1 - B));
+        double maxVal = Math.max(c1, c2);
+        double minVal = Math.min(c1, c2);
+        double lse_rhs = maxVal + Math.log1p(Math.exp(minVal - maxVal));
+        double lse = Math.log(4.0) + v - 2*lse_rhs;
+        return lse;
+    }
+
     private double get_logq_i(double A, double B, double Bplus1, double t_i, double t) {
         double v = A * (t_i - t);
-        return Math.log(4) + v - 2*Math.log(Math.exp(v)*Bplus1 + (1-B));
+        double rv;
+
+        if (v > 10) {
+            rv = get_rv_logsumexp(v, B, Bplus1);
+        } else {
+            rv = Math.log(4) + v - 2*Math.log(Math.exp(v)*Bplus1 + (1-B));
+        }
+        return rv;
+    }
+
+
+    private double get_log_p_i(double lambda, double mu, double psi, double A, double B, double Bplus1, double t_i, double t) {
+        double logv = (A * (t_i - t)) + Math.log(Bplus1);
+        if (lambda > 0.0) {
+            double sign1MinusB = (1 - B) < 0 ? -1.0 : 1.0;
+            double[] lv1m2Arr = {logv, Math.log(Math.abs(1 - B))};
+            double[] lv1m2Si = {1.0, -1.0 * sign1MinusB};
+            double lv1m2 = logsumexp(lv1m2Arr, lv1m2Si);
+
+            double[] lv1p2Arr = {logv, Math.log(Math.abs(1 - B))};
+            double[] lv1p2Si = {1.0, 1.0 * sign1MinusB};
+            double lv1p2 = logsumexp(lv1p2Arr, lv1p2Si);
+            double log_tmp2 = Math.log(A) + lv1m2 - lv1p2;
+
+            double[] lse_args = {Math.log(lambda), Math.log(mu), Math.log(psi), log_tmp2};
+
+            double[] lse_signs = {1.0, 1.0, 1.0, -1.0};
+            double log_p_i = logsumexp(lse_args, lse_signs) - Math.log(lambda) - Math.log(2);
+            return log_p_i;
+        } else {
+            // The limit of p_i as lambda -> 0
+            return Math.log(0.5);
+        }
     }
 
     private void computeConstants(double[] A, double[] B, double[] Bplus1) {
@@ -1043,7 +1105,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (conditionOnSurvivalInput.get() || conditionOnRootInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
-            double p_i = get_p_i(parameterization.getBirthRates()[i][0],
+            double p_i = get_log_p_i(parameterization.getBirthRates()[i][0],
                     parameterization.getDeathRates()[i][0],
                     parameterization.getSamplingRates()[i][0],
                     A[i], B[i], Bplus1[i],
@@ -1061,6 +1123,21 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // Account for possible label permutations
         logP -= Gamma.logGamma(tree.getLeafNodeCount() + 1);
 
+        return logP;
+    }
+
+    private double get_node_lse_logP(double r, double lambda, double mu, double psi, double A, double B, double Bplus1, double t_i, double t_node) {
+        double logp_i = get_log_p_i(lambda, mu, psi, A, B, Bplus1, t_i, t_node);
+        double log_rhs = Math.log(1 - r) + logp_i;
+        double rhs_sign = log_rhs < 0.0 ? -1.0 : 1.0;
+        double[] arr = {Math.log(r), log_rhs};
+        double logr = Math.log(r);
+        double[] signs = {1.0, 1.0};
+        double tmp = logsumexp(arr, signs);
+        double logq_i = get_logq_i(A, B, Bplus1, t_i, t_node);
+        double logP = Math.log(psi)
+                + tmp
+                - logq_i;
         return logP;
     }
 
@@ -1101,9 +1178,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             } else {
 
-                logP += Math.log(psi_i)
-                        + Math.log(r_i + (1-r_i)*get_p_i(lambda_i, mu_i, psi_i, A[i], B[i], Bplus1[i], t_i, t_node))
-                        - get_logq_i(A[i], B[i], Bplus1[i], t_i, t_node);
+                if (r_i == 1.0) {
+                    logP += Math.log(psi_i)
+                            - get_logq_i(A[i], B[i], Bplus1[i], t_i, t_node);
+                } else {
+                    if (t_i - t_node > 10) {
+                        // use log_p_i
+                        logP += get_node_lse_logP(r_i, lambda_i, mu_i, psi_i, A[i], B[i], Bplus1[i], t_i, t_node);
+                    } else {
+                        // use p_i directly
+                        logP += Math.log(psi_i)
+                                + Math.log(r_i + (1-r_i)*get_p_i(lambda_i, mu_i, psi_i, A[i], B[i], Bplus1[i], t_i, t_node))
+                                - get_logq_i(A[i], B[i], Bplus1[i], t_i, t_node);
+                    }
+                }
 
             }
 
