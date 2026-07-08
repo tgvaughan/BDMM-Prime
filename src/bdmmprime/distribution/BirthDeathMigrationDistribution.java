@@ -964,9 +964,55 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         }
     }
 
+    /**
+     * Computes log(exp(v1)+exp(v2)...) using LSE
+     *
+     * @param signsAndVals vararg of form {s1, v1, s2, v2, ...} where si and vi
+     *                     represent the signs and (log) values respectively
+     * @return log absolute sum of exponentiated values. The field logSumExpSign
+     * is set to the sign of the sum.
+     */
+    private double logSumExp(double ... signsAndVals) {
+
+        double maxVal = Double.NEGATIVE_INFINITY;
+        for (int i=0; i<signsAndVals.length; i+=2) {
+            if (signsAndVals[i+1]>maxVal)
+                maxVal = signsAndVals[i+1];
+        }
+
+        double sum = 0.0;
+        for (int i = 0; i < signsAndVals.length; i+=2)
+          sum += signsAndVals[i]*Math.exp(signsAndVals[i+1] - maxVal);
+
+        logSumExpSign = sum>=0.0 ? 1.0 : -1.0;
+        sum *= logSumExpSign;
+
+        return Math.log(sum) + maxVal;
+    }
+    double logSumExpSign = 1.0;
+
     private double get_logq_i(double A, double B, double Bplus1, double t_i, double t) {
         double v = A * (t_i - t);
-        return Math.log(4) + v - 2*Math.log(Math.exp(v)*Bplus1 + (1-B));
+        return Math.log(4) + v - 2*logSumExp(1.0, v+Math.log(Bplus1),
+                    B>1.0 ? -1.0 : 1.0, Math.log(Math.abs(1.0-B)));
+    }
+
+    private double get_log_p_i(double lambda, double mu, double psi, double A, double B, double Bplus1, double t_i, double t) {
+        double logv = (A * (t_i - t)) + Math.log(Bplus1);
+        if (lambda > 0.0) {
+            double sign1MinusB = (1.0 - B) < 0 ? -1.0 : 1.0;
+            double logAbs1MinusB = Math.log(Math.abs(1-B));
+            double lv1m2 = logSumExp(1.0, logv, -1.0*sign1MinusB, logAbs1MinusB);
+            double s1 = logSumExpSign;
+            double lv1p2 = logSumExp(1.0, logv, sign1MinusB, logAbs1MinusB);
+            double s2 = logSumExpSign;
+            double log_tmp2 = Math.log(A) + lv1m2 - lv1p2;
+
+            return logSumExp(1.0, Math.log(lambda+mu+psi), -s1*s2, log_tmp2) - Math.log(lambda) - Math.log(2);
+        } else {
+            // The limit of p_i as lambda -> 0
+            return Math.log(0.5);
+        }
     }
 
     private void computeConstants(double[] A, double[] B, double[] Bplus1) {
@@ -975,12 +1021,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
             double p_i_prev;
             if (i + 1 < parameterization.getTotalIntervalCount()) {
-                p_i_prev = get_p_i(parameterization.getBirthRates()[i+1][0],
+                p_i_prev = Math.exp(get_log_p_i(parameterization.getBirthRates()[i+1][0],
                         parameterization.getDeathRates()[i+1][0],
                         parameterization.getSamplingRates()[i+1][0],
                         A[i+1], B[i+1], Bplus1[i+1],
                         parameterization.getIntervalEndTimes()[i+1],
-                        parameterization.getIntervalEndTimes()[i]);
+                        parameterization.getIntervalEndTimes()[i]));
             } else {
                 p_i_prev = 1.0;
             }
@@ -1043,11 +1089,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (conditionOnSurvivalInput.get() || conditionOnRootInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
-            double p_i = get_p_i(parameterization.getBirthRates()[i][0],
+            double p_i = Math.exp(get_log_p_i(parameterization.getBirthRates()[i][0],
                     parameterization.getDeathRates()[i][0],
                     parameterization.getSamplingRates()[i][0],
                     A[i], B[i], Bplus1[i],
-                    parameterization.getIntervalEndTimes()[i], 0.0);
+                    parameterization.getIntervalEndTimes()[i], 0.0));
 
             if (p_i == 1)
                 return Double.NEGATIVE_INFINITY; // Following BDSKY's behaviour
@@ -1091,20 +1137,25 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             if (isRhoTip[subtreeRoot.getNr()]) {
 
                 double p_iplus1 = i + 1 < parameterization.getTotalIntervalCount()
-                        ? get_p_i(parameterization.getBirthRates()[i + 1][0],
+                        ? Math.exp(get_log_p_i(parameterization.getBirthRates()[i + 1][0],
                         parameterization.getDeathRates()[i + 1][0],
                         parameterization.getSamplingRates()[i + 1][0],
-                        A[i + 1], B[i + 1], Bplus1[i+1], parameterization.getIntervalEndTimes()[i+1], t_node)
+                        A[i + 1], B[i + 1], Bplus1[i+1], parameterization.getIntervalEndTimes()[i+1], t_node))
                         : 1.0;
 
                 logP += Math.log(rho_i*(r_iplus1 + (1 - r_iplus1) * p_iplus1));
 
             } else {
 
-                logP += Math.log(psi_i)
-                        + Math.log(r_i + (1-r_i)*get_p_i(lambda_i, mu_i, psi_i, A[i], B[i], Bplus1[i], t_i, t_node))
-                        - get_logq_i(A[i], B[i], Bplus1[i], t_i, t_node);
-
+                if (r_i == 1.0) {
+                    logP += Math.log(psi_i)
+                            - get_logq_i(A[i], B[i], Bplus1[i], t_i, t_node);
+                } else {
+                    double logp_i = get_log_p_i(lambda_i, mu_i, psi_i, A[i], B[i], Bplus1[i], t_i, t_node);
+                    logP +=  Math.log(psi_i)
+                            + logSumExp(1.0, Math.log(r_i), 1.0, Math.log(1-r_i)+logp_i)
+                            - get_logq_i(A[i], B[i], Bplus1[i], t_i, t_node);
+                }
             }
 
 
