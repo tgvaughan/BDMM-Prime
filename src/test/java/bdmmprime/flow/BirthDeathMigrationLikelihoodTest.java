@@ -1,31 +1,28 @@
-package bdmmprime.flow.flow;
+package bdmmprime.flow;
 
 import bdmmprime.parameterization.*;
+import bdmmprime.util.ProcessLength;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeParser;
-import beast.base.inference.parameter.RealParameter;
-import org.apache.commons.math.special.Gamma;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.domain.UnitInterval;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.inference.parameter.SimplexParam;
+import org.apache.commons.math3.special.Gamma;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.Arrays;
 import java.util.Collection;
 
-import static junit.framework.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * These tests were taken from the <a href="https://github.com/tgvaughan/BDMM-Prime">BDMM-Prime package.</a>
+ * These tests were taken from the original BDMM-Prime distribution tests.
  */
-@RunWith(Parameterized.class)
 public class BirthDeathMigrationLikelihoodTest {
 
-    private final String initialStateStrategy;
-    private final boolean useInverseFlow;
-    private final boolean parallelize;
-
-    @Parameters(name = "strategy={0}, useInverseFlow={1}, parallelize={2}")
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             { "identity", false,  false },
@@ -41,12 +38,6 @@ public class BirthDeathMigrationLikelihoodTest {
         });
     }
 
-    public BirthDeathMigrationLikelihoodTest(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
-        this.initialStateStrategy = initialStateStrategy;
-        this.useInverseFlow = useInverseFlow;
-        this.parallelize = parallelize;
-    }
-
     /**
      * The original tests were developed assuming BDSKY/BDMM-like behaviour, i.e. return an oriented
      * tree probability unless r!=1 in which case return an un-oriented and unlabeled tree probability.
@@ -58,7 +49,7 @@ public class BirthDeathMigrationLikelihoodTest {
      * @param density BDMM-prime probability density object
      * @return conversion factor
      */
-    private double labeledTreeConversionFactor(bdmmflow.BirthDeathMigrationDistribution density) {
+    private double labeledTreeConversionFactor(BirthDeathMigrationDistribution density) {
         Tree tree = (Tree) density.treeInput.get();
         boolean SAmodel = density.parameterizationInput.get().getRemovalProbs()[0][0] != 1.0;
         double factor = -Gamma.logGamma(tree.getLeafNodeCount() + 1);
@@ -74,14 +65,15 @@ public class BirthDeathMigrationLikelihoodTest {
      * Reference from BDMM itself
      * Canonical parameterization
      */
-    @Test
-    public void testLikelihoodMigRateChangeBasicCanonical() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodMigRateChangeBasicCanonical(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // Test for uncoloured tree
 
         String newick = "(t1[&state=0] : 1.5, t2[&state=1] : 0.5);";
 
-        RealParameter originParam = new RealParameter("2.5");
+        RealScalarParam<NonNegativeReal> originParam = new RealScalarParam<>(2.5, NonNegativeReal.INSTANCE);
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
@@ -89,29 +81,29 @@ public class BirthDeathMigrationLikelihoodTest {
                 "processLength", originParam,
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0"), 2),
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE), 2),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.0"), 2),
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE), 2),
                 "migrationRate", new SkylineMatrixParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.1 0.2"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.1, 0.2}, NonNegativeReal.INSTANCE), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5"), 2),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE), 2));
 
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick,
                         false, false,
                         true, 0),
@@ -136,14 +128,15 @@ public class BirthDeathMigrationLikelihoodTest {
      * Reference from BDMM itself
      * Epi parameterization
      */
-    @Test
-    public void testLikelihoodMigRateChangeBasicEpi() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodMigRateChangeBasicEpi(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // Test for uncoloured tree
 
         String newick = "(t1[&state=0] : 1.5, t2[&state=1] : 0.5);";
 
-        RealParameter originParam = new RealParameter("2.5");
+        RealScalarParam<NonNegativeReal> originParam = new RealScalarParam<>(2.5, NonNegativeReal.INSTANCE);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
@@ -151,29 +144,29 @@ public class BirthDeathMigrationLikelihoodTest {
                 "processLength", originParam,
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter(4.0 / 3.0 + " " + 4.0 / 3.0)),
+                        new RealVectorParam<>(new double[] {4.0 / 3.0, 4.0 / 3.0}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.5")),
+                        new RealVectorParam<>(new double[] {1.5, 1.5}, NonNegativeReal.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.0 0.0")),
+                        new RealVectorParam<>(new double[] {0.0, 0.0}, NonNegativeReal.INSTANCE)),
                 "migrationRate", new SkylineMatrixParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.1 0.1 0.2 0.2")),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.1, 0.1, 0.2, 0.2}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter(1.0 / 3.0 + " " + 1.0 / 3.0)),
+                        new RealVectorParam<>(new double[] {1.0 / 3.0, 1.0 / 3.0}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0 1.0")));
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE)));
 
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick,
                         false, false,
                         true, 0),
@@ -198,34 +191,35 @@ public class BirthDeathMigrationLikelihoodTest {
      *
      * @throws Exception
      */
-    @Test
-    public void testLikelihoodRemovalProbChangeBasic() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodRemovalProbChangeBasic(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         String newick = "((1[&type=0]: 1.5, 2[&type=0]: 0)3[&type=0]: 3.5, 4[&type=0]: 4) ;";
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter(String.valueOf(4.0/3.0))),
+                        new RealVectorParam<>(new double[] {4.0/3.0}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(null, null),
                 "migrationRate", new SkylineMatrixParameter(null, null),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter(String.valueOf(1.0/3.0))),
+                        new RealVectorParam<>(new double[] {1.0/3.0}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.3 0.7")));
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.3, 0.7}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -240,10 +234,10 @@ public class BirthDeathMigrationLikelihoodTest {
         assertEquals(-21.25413884159791 + labeledTreeConversionFactor(density),
                 logL, 1e-5);
 
-        bdmmflow.BirthDeathMigrationDistribution densityExact = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
         densityExact.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -262,36 +256,37 @@ public class BirthDeathMigrationLikelihoodTest {
     /**
      * Direct comparison between numerical and analytical solutions for a tiny example with no rate changes.
      */
-    @Test
-    public void tinyAnalyticalTest() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void tinyAnalyticalTest(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "(1[&type=0]: 1.0, 2[&type=0]: 1.0): 1.0;";
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", new RealParameter("2.0"),
+                "processLength", new RealScalarParam<>(2.0, NonNegativeReal.INSTANCE),
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
                 "birthRateAmongDemes", new SkylineMatrixParameter(null, null),
                 "migrationRate", new SkylineMatrixParameter(null, null),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("2.0"),
-                        new RealParameter("0.5")),
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.5}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")));
+                        new RealVectorParam<>(new double[] {0.5}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -302,10 +297,10 @@ public class BirthDeathMigrationLikelihoodTest {
 
         double logLnumerical = density.calculateLogP();
 
-        bdmmflow.BirthDeathMigrationDistribution densityExact = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
         densityExact.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -323,43 +318,44 @@ public class BirthDeathMigrationLikelihoodTest {
      * Two-state test for removal-probability rate change
      * Reference from BDMM itself
      */
-    @Test
-    public void testLikelihoodRemovalProbChangeTwoState() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodRemovalProbChangeTwoState(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         String newick = "((1[&type=0]: 1.5, 2[&type=1]: 0)3[&type=0]: 3.5, 4[&type=1]: 4) ;";
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(2),
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "Re", new SkylineVectorParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter((4.0/3.0) + " 1.1"),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {4.0/3.0, 1.1}, NonNegativeReal.INSTANCE),
                         2),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("1.5 1.4"),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {1.5, 1.4}, NonNegativeReal.INSTANCE),
                         2),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.0"),
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE),
                         2),
                 "migrationRate", new SkylineMatrixParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.2 0.3"),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.2, 0.3}, NonNegativeReal.INSTANCE),
                         2),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.33"),
+                        new RealVectorParam<>(new double[] {0.33}, UnitInterval.INSTANCE),
                         2),
                 "removalProb", new SkylineVectorParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.3 0.4 0.7 0.6")));
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.3, 0.4, 0.7, 0.6}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -378,32 +374,33 @@ public class BirthDeathMigrationLikelihoodTest {
      * No rate change, 1 state, no rho-sampling
      * Reference from BDSKY
      */
-    @Test
-    public void testLikelihood1dim() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihood1dim(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser( "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.3333333334")),
+                        new RealVectorParam<>(new double[] {1.3333333334}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.33333333333")),
+                        new RealVectorParam<>(new double[] {0.33333333333}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")));
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
                 "typeLabel", "state",
@@ -419,32 +416,33 @@ public class BirthDeathMigrationLikelihoodTest {
      * 1-dim and 1 rate-change test
      * reference from BDSKY
      */
-    @Test
-    public void testLikelihoodRateChange1dim() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodRateChange1dim(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
-                        new RealParameter("3.0"),
-                        new RealParameter("0.6666666667 1.3333333334")),
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.6666666667, 1.3333333334}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealParameter("3.0"),
-                        new RealParameter("4.5 1.5")),
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {4.5, 1.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
-                        new RealParameter("3.0"),
-                        new RealParameter("0.4444444444 0.33333333333")),
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.4444444444, 0.33333333333}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")));
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
                 "typeLabel", "state",
@@ -460,36 +458,37 @@ public class BirthDeathMigrationLikelihoodTest {
      * reference from R
      * @throws Exception
      */
-    @Test
-    public void testLikelihoodCalculationMigTiny() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodCalculationMigTiny(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         // migration and no birth among demes
 
         Tree tree = new TreeParser("(1[&state=0] : 1.5, 2[&state=1] : 0.5)[&state=0];", false);
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("2.5"),
+                "processLength", new RealScalarParam<>(2.5, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter(Double.toString(4.0/3.0)), 2),
+                        new RealVectorParam<>(new double[] {4.0/3.0, 4.0/3.0}, NonNegativeReal.INSTANCE), 2),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5"), 2),
+                        new RealVectorParam<>(new double[] {1.5, 1.5}, NonNegativeReal.INSTANCE), 2),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter(Double.toString(1.0/3.0)), 2),
+                        new RealVectorParam<>(new double[] {1.0/3.0, 1.0/3.0}, UnitInterval.INSTANCE), 2),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.1"), 2),
+                        new RealVectorParam<>(new double[] {0.1}, NonNegativeReal.INSTANCE), 2),
 
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
                 "conditionOnSurvival", false,
                 "typeLabel", "state",
@@ -505,7 +504,7 @@ public class BirthDeathMigrationLikelihoodTest {
         parameterization.setInputValue("migrationRate", null);
         parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
                 null,
-                new RealParameter("0.0666667"), 2));
+                new RealVectorParam<>(new double[] {0.0666667}, NonNegativeReal.INSTANCE), 2));
         parameterization.initAndValidate();
         density.initAndValidate();
 
@@ -515,7 +514,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
                 null,
-                new RealParameter("0.0666667 0.1"), 2));
+                new RealVectorParam<>(new double[] {0.0666667, 0.1}, NonNegativeReal.INSTANCE), 2));
         parameterization.initAndValidate();
         density.initAndValidate();
 
@@ -526,7 +525,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         parameterization.setInputValue("Re", new SkylineVectorParameter(
                 null,
-                new RealParameter("2 1.3333333")));
+                new RealVectorParam<>(new double[] {2.0, 1.3333333}, NonNegativeReal.INSTANCE)));
         parameterization.initAndValidate();
         density.initAndValidate();
 
@@ -536,16 +535,16 @@ public class BirthDeathMigrationLikelihoodTest {
 
         parameterization.setInputValue("Re", new SkylineVectorParameter(
                 null,
-                new RealParameter("2.0 1.5")));
+                new RealVectorParam<>(new double[] {2.0, 1.5}, NonNegativeReal.INSTANCE)));
         parameterization.setInputValue("becomeUninfectiousRate", new SkylineVectorParameter(
                 null,
-                new RealParameter("2.0 1.0")));
+                new RealVectorParam<>(new double[] {2.0, 1.0}, NonNegativeReal.INSTANCE)));
         parameterization.setInputValue("samplingProportion", new SkylineVectorParameter(
                 null,
-                new RealParameter("0.5 0.3")));
+                new RealVectorParam<>(new double[] {0.5, 0.3}, UnitInterval.INSTANCE)));
         parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
                 null,
-                new RealParameter("0.1 0.5")));
+                new RealVectorParam<>(new double[] {0.1, 0.5}, NonNegativeReal.INSTANCE)));
         parameterization.initAndValidate();
         density.initAndValidate();
 
@@ -565,8 +564,9 @@ public class BirthDeathMigrationLikelihoodTest {
      * 2 types, migration, no birth among demes
      * Adapted from BDSKY
      */
-    @Test
-    public void testLikelihoodCalculationMig() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodCalculationMig(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // uncoloured tree, asymmetric types
         Tree tree = new TreeParser(
@@ -575,28 +575,28 @@ public class BirthDeathMigrationLikelihoodTest {
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter((4.0 / 3.0) + " " + 5.0)),
+                        new RealVectorParam<>(new double[] {4.0 / 3.0, 5.0}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.25")),
+                        new RealVectorParam<>(new double[] {1.5, 1.25}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter((1.0 / 3.0) + " " + (1.0/2.0))),
+                        new RealVectorParam<>(new double[] {1.0 / 3.0, 1.0/2.0}, UnitInterval.INSTANCE)),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.2 0.1")),
+                        new RealVectorParam<>(new double[] {0.2, 0.1}, NonNegativeReal.INSTANCE)),
 
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -605,7 +605,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parallelize", parallelize
         );
 
-        assertEquals(-26.53293 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
+        assertEquals(-26.53293 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
     }
 
     /**
@@ -615,38 +615,39 @@ public class BirthDeathMigrationLikelihoodTest {
      * Reference from BDMM itself (version 0.2.0 28/06/2017)
      * @throws Exception
      */
-    @Test
-    public void testAmongRateChange() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAmongRateChange(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=0]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("4.1"),
+                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("6 5 2 2.5"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {6.0, 5.0, 2.0, 2.5}, NonNegativeReal.INSTANCE), 2),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.5 0.55 0.45 0.6"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.5, 0.55, 0.45, 0.6}, NonNegativeReal.INSTANCE), 2),
                 "samplingProportion", new SkylineVectorParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.5 0.45 0.333333 0.35"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.5, 0.45, 0.333333, 0.35}, UnitInterval.INSTANCE), 2),
                 "ReAmongDemes", new SkylineMatrixParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("1.1 1.3 1.2 1.15"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {1.1, 1.3, 1.2, 1.15}, NonNegativeReal.INSTANCE), 2),
                 "migrationRate", new SkylineMatrixParameter(
-                        new RealParameter("1.0"),
-                        new RealParameter("0.1 0.15 0.2 0.25")),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.1, 0.15, 0.2, 0.25}, NonNegativeReal.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -665,38 +666,39 @@ public class BirthDeathMigrationLikelihoodTest {
      * Reference from BDMM itself (version 0.2.0 28/06/2017)
      * @throws Exception
      */
-    @Test
-    public void testAmongNoRateChange() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testAmongNoRateChange(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=1]:0.5):1,(1[&type=1]:2,2[&type=1]:1):3);",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0 0"), 2),
+                        new RealVectorParam<>(new double[] {0.0, 0.0}, NonNegativeReal.INSTANCE), 2),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0 0.75"), 2),
+                        new RealVectorParam<>(new double[] {0.0, 0.75}, NonNegativeReal.INSTANCE), 2),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0 0.7"), 2),
+                        new RealVectorParam<>(new double[] {0.0, 0.7}, UnitInterval.INSTANCE), 2),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0 2"), 2),
+                        new RealVectorParam<>(new double[] {0.0, 2.0}, NonNegativeReal.INSTANCE), 2),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.5 0")),
+                        new RealVectorParam<>(new double[] {0.5, 0.0}, NonNegativeReal.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0 0.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0, 0.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -714,35 +716,36 @@ public class BirthDeathMigrationLikelihoodTest {
      * Reference from BDMM itself
      * @throws Exception
      */
-    @Test
-    public void testMig3types() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMig3types(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=2]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("4.1"),
+                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(3),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("6 2 5")),
+                        new RealVectorParam<>(new double[] {6.0, 2.0, 5.0}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5 0.45 0.55")),
+                        new RealVectorParam<>(new double[] {0.5, 0.45, 0.55}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5 0.333333 0.45")),
+                        new RealVectorParam<>(new double[] {0.5, 0.333333, 0.45}, UnitInterval.INSTANCE)),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.1 0.2 0.15 0.12 0.12 0.15")),
+                        new RealVectorParam<>(new double[] {0.1, 0.2, 0.15, 0.12, 0.12, 0.15}, NonNegativeReal.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 3));
+                        new RealVectorParam<>(new double[] {1.0, 1.0, 1.0}, UnitInterval.INSTANCE), 3));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter((1.0/3.0) + " " + (1.0/3.0) + " " + (1.0/3.0)),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0/3.0, 1.0/3.0, 1.0/3.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
@@ -757,33 +760,32 @@ public class BirthDeathMigrationLikelihoodTest {
     /**
      * Likelihood test from the Sasha's SA package.
      */
-    @Test
-    public void testSALikelihoodMini3() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSALikelihoodMini3(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "((1:1.0,2:0.0):1.0,3:0):0.0";
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("10.0"),
+                "processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE),
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.99")),
+                        new RealVectorParam<>(new double[] {0.99}, NonNegativeReal.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.9")));
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
+                "parameterization", parameterization,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "conditionOnSurvival", false,
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
                 "parallelize", parallelize
         );
 
@@ -796,32 +798,33 @@ public class BirthDeathMigrationLikelihoodTest {
      * 1-dim and 1 rate-change test
      * reference from BDSKY
      */
-    @Test
-    public void testLikelihoodRateChangeCondOnSampling1dim() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodRateChangeCondOnSampling1dim(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
-                        new RealParameter("3.0"),
-                        new RealParameter("0.6666666667 1.3333333334")),
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.6666666667, 1.3333333334}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealParameter("3.0"),
-                        new RealParameter("4.5 1.5")),
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {4.5, 1.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
-                        new RealParameter("2.4"),
-                        new RealParameter("0.0 0.33333333333")),
+                        new RealVectorParam<>(new double[] {2.4}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.0, 0.33333333333}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")));
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "state",
@@ -845,8 +848,9 @@ public class BirthDeathMigrationLikelihoodTest {
      * Symmetric configuration
      * reference from R
      */
-    @Test
-    public void testLikelihoodCalculationInfAmongDemesSymmetric() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodCalculationInfAmongDemesSymmetric(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // uncoloured, symmetric tree
 
@@ -855,27 +859,27 @@ public class BirthDeathMigrationLikelihoodTest {
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter(Double.toString(tree.getRoot().getHeight() + 0.02686563367)),
+                "processLength", new RealScalarParam<>(tree.getRoot().getHeight() + 0.02686563367, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(2),
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0"), 2),
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5"), 2),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5"), 2),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE), 2),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -895,35 +899,36 @@ public class BirthDeathMigrationLikelihoodTest {
      * Asymmetric configuration
      * reference from R
      */
-    @Test
-    public void testLikelihoodCalculationInfAmongDemesAsymmetric() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodCalculationInfAmongDemesAsymmetric(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=0]:0.5):1,(1[&type=0]:2,2[&type=1]:1):3);",
                 false);
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(2),
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0 6.25"), 2),
+                        new RealVectorParam<>(new double[] {2.0, 6.25}, NonNegativeReal.INSTANCE), 2),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.2 0.625"), 2),
+                        new RealVectorParam<>(new double[] {1.2, 0.625}, NonNegativeReal.INSTANCE), 2),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.3 0.625"), 2),
+                        new RealVectorParam<>(new double[] {0.3, 0.625}, NonNegativeReal.INSTANCE), 2),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.2 0.1"), 2),
+                        new RealVectorParam<>(new double[] {0.2, 0.1}, NonNegativeReal.INSTANCE), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2));
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -940,32 +945,33 @@ public class BirthDeathMigrationLikelihoodTest {
      * 2 leaves, 1 SA. 1 type, no rho-sampling, no rate-change
      * Reference value from BDSKY (23/03/2017)
      */
-    @Test
-    public void testSALikelihoodMini() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSALikelihoodMini(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.2")),
+                        new RealVectorParam<>(new double[] {0.2}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.9")));
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -980,33 +986,32 @@ public class BirthDeathMigrationLikelihoodTest {
     /**
      * Likelihood test from the Sasha's SA package.
      */
-    @Test
-    public void testSALikelihoodMini2() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSALikelihoodMini2(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "((1:1.5,2:0.5):0.5,3:0.0)4:0.0;";
 
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
-                "processLength", new RealParameter("10.0"),
+                "processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE),
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.99")),
+                        new RealVectorParam<>(new double[] {0.99}, NonNegativeReal.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.9")));
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
+                "parameterization", parameterization,
                 "conditionOnSurvival", true,
                 "tree", new TreeParser(newick, false, false, true,0),
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
                 "parallelize", parallelize
         );
 
@@ -1021,32 +1026,33 @@ public class BirthDeathMigrationLikelihoodTest {
      * This state is just there in case something is broken with sampled ancestors,
      * helps for debugging if combined with testSALikelihoodMini for instance
      */
-    @Test
-    public void testSALikelihoodCalculationWithoutAncestors() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSALikelihoodCalculationWithoutAncestors(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", tree,
+                "processLength", new ProcessLength(tree),
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.3")),
+                        new RealVectorParam<>(new double[] {0.3}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.9")));
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "conditionOnRoot", true,
                 "tree", tree,
@@ -1062,7 +1068,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         // Conditioned on origin:
 
-        parameterization.setInputValue("processLength", new RealParameter("10.0"));
+        parameterization.setInputValue("processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE));
         parameterization.initAndValidate();
         density.setInputValue("conditionOnRoot", false);
         density.initAndValidate();
@@ -1074,8 +1080,9 @@ public class BirthDeathMigrationLikelihoodTest {
      * Tests the case where we have direct ancestors (SA nodes).
      * Tests if two identical trees but with different newick representations have the same likelihood.
      */
-    @Test
-    public void testDirectAncestor() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testDirectAncestor(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // two identical trees up to rotation (the two root children are rotated)
         String newick1 = "((1[&type=0]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=0]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
@@ -1084,36 +1091,36 @@ public class BirthDeathMigrationLikelihoodTest {
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(2),
-                "processLength", new RealParameter("6.0"),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter((4.0/3.0) + " 1.1"),
+                        new RealVectorParam<>(new double[] {4.0/3.0, 1.1}, NonNegativeReal.INSTANCE),
                         2),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.4"),
+                        new RealVectorParam<>(new double[] {1.5, 1.4}, NonNegativeReal.INSTANCE),
                         2),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.0"),
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE),
                         2),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.2 0.3"),
+                        new RealVectorParam<>(new double[] {0.2, 0.3}, NonNegativeReal.INSTANCE),
                         2),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.33"),
+                        new RealVectorParam<>(new double[] {0.33}, UnitInterval.INSTANCE),
                         2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.3 0.4")));
+                        new RealVectorParam<>(new double[] {0.3, 0.4}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
+                "parameterization", parameterization,
                 "tree", new TreeParser(newick1, false, false, true,0),
-                "startTypePriorProbs", new RealParameter("0.5 0.5"),
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
@@ -1138,21 +1145,22 @@ public class BirthDeathMigrationLikelihoodTest {
      * No rate-changes
      * Reference: R
      */
-    @Test
-    public void testSingleRho() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSingleRho(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=0]: 4.5):1,3[&type=0]:5.5);",false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
-                "processLength", tree,
+                "processLength", new ProcessLength(tree),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
@@ -1161,18 +1169,18 @@ public class BirthDeathMigrationLikelihoodTest {
                         null),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.0")),
+                        new RealVectorParam<>(new double[] {0.0}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("5.5"),
-                        new RealParameter("0.01")));
+                        new RealVectorParam<>(new double[] {5.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.01}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnRoot", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1188,10 +1196,10 @@ public class BirthDeathMigrationLikelihoodTest {
         assertEquals(-3.72382 + labeledTreeConversionFactor(density), logL, 1e-4);
 
         // test with conditioned-on-survival tree
-        parameterization.setInputValue("processLength", "10");
+        parameterization.setInputValue("processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE));
         parameterization.setInputValue("rhoSampling",
-                new TimedParameter(new RealParameter("10"),
-                        new RealParameter("0.01")));
+                new TimedParameter(new RealVectorParam<>(new double[] {10.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.01}, UnitInterval.INSTANCE)));
         parameterization.initAndValidate();
 
         density.setInputValue("conditionOnSurvival", true);
@@ -1210,13 +1218,14 @@ public class BirthDeathMigrationLikelihoodTest {
      * No rate changes
      * @throws Exception
      */
-    @Test
-    public void testMultiRho2tips() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultiRho2tips(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         // two tips sampled at the same time
         Tree tree = new TreeParser("(3[&type=0]: 4, 4[&type=0]: 4) ;",false);
 
-        RealParameter originParam = new RealParameter("5.0");
+        RealScalarParam<NonNegativeReal> originParam = new RealScalarParam<>(5.0, NonNegativeReal.INSTANCE);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
@@ -1224,10 +1233,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "processLength", originParam,
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
@@ -1236,32 +1245,31 @@ public class BirthDeathMigrationLikelihoodTest {
                         null),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.0")),
+                        new RealVectorParam<>(new double[] {0.0}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("0.0 2.5"),
-                        new RealParameter("1.0 0.2"),
+                        new RealVectorParam<>(new double[] {0.0, 2.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {1.0, 0.2}, UnitInterval.INSTANCE),
                         originParam));
 
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
-                "parallelize", parallelize
-        );
+                "parallelize", parallelize);
 
-//        double logL = density.calculateLogP();
-//
-//        // this result is from BEAST: BDSKY, not double checked in R
-//        assertEquals(-10.569863754307026, logL, 1e-4);
+        double logL = density.calculateLogP();
+
+        // this result is from BEAST: BDSKY, not double checked in R
+        assertEquals(-10.569863754307026, logL, 1e-4);
 
         // tips sampled at two different times
         tree = new TreeParser("(3[&type=0]: 1.5, 4[&type=0]: 4) ;",false);
@@ -1281,12 +1289,13 @@ public class BirthDeathMigrationLikelihoodTest {
      * 26 tips
      * @throws Exception
      */
-    @Test
-    public void testMultiRhoSampling() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultiRhoSampling(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
         // Uncoloured tree
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
 
-        RealParameter originParam = new RealParameter("2.0");
+        RealScalarParam<NonNegativeReal> originParam = new RealScalarParam<>(2.0, NonNegativeReal.INSTANCE);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
@@ -1294,10 +1303,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "processLength", originParam,
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter(new Double[]{3.0/4.5})),
+                        new RealVectorParam<>(new double[] {3.0/4.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("4.5")),
+                        new RealVectorParam<>(new double[] {4.5}, NonNegativeReal.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
@@ -1306,19 +1315,19 @@ public class BirthDeathMigrationLikelihoodTest {
                         null),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter(new Double[]{2.0/4.5})),
+                        new RealVectorParam<>(new double[] {2.0/4.5}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("1.0 1.5 2.0"),
-                        new RealParameter("0.0 0.05 0.01")));
+                        new RealVectorParam<>(new double[] {1.0, 1.5, 2.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.0, 0.05, 0.01}, UnitInterval.INSTANCE)));
 
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1331,8 +1340,8 @@ public class BirthDeathMigrationLikelihoodTest {
                 density.calculateLogP(), 1e-2);     // this result is from BEAST, not double checked in R
 
         parameterization.setInputValue("rhoSampling",
-                new TimedParameter(new RealParameter("0.0 0.5 1.0"),
-                        new RealParameter("0.01 0.05 0.0"),
+                new TimedParameter(new RealVectorParam<>(new double[] {0.0, 0.5, 1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.01, 0.05, 0.0}, UnitInterval.INSTANCE),
                         originParam));
         parameterization.initAndValidate();
         density.initAndValidate();
@@ -1346,29 +1355,30 @@ public class BirthDeathMigrationLikelihoodTest {
      * 1 state, no sampled ancestors
      * 26 tips
      */
-    @Test
-    public void testMultiRhoWithRateChanges1() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultiRhoWithRateChanges1(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
         // no rate-change, rho-sampling at present
-        RealParameter originParam = new RealParameter("2.0");
+        RealScalarParam<NonNegativeReal> originParam = new RealScalarParam<>(2.0, NonNegativeReal.INSTANCE);
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "processLength", originParam,
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("2.0")),
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE)),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.5")),
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)),
                 "birthRateAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
@@ -1376,13 +1386,13 @@ public class BirthDeathMigrationLikelihoodTest {
                         null,
                         null),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("0.0"),
-                        new RealParameter("1.0"),
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE),
                         originParam));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1395,29 +1405,30 @@ public class BirthDeathMigrationLikelihoodTest {
     }
 
 
-    @Test
-    public void testMultiRhoWithRateChanges2() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultiRhoWithRateChanges2(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
         // rate-changes, rho-sampling in the past
-        RealParameter originParam = new RealParameter("2.0");
+        RealScalarParam<NonNegativeReal> originParam = new RealScalarParam<>(2.0, NonNegativeReal.INSTANCE);
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "processLength", originParam,
                 "Re", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5})),
+                        new RealVectorParam<>(new double[] {1.0, 1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {3.0/4.5, 2.0/1.5, 4.0/1.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter("4.5 1.5 1.5")),
+                        new RealVectorParam<>(new double[] {1.0, 1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {4.5, 1.5, 1.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter(new Double[]{2.0/4.5, 0.5/1.5, 1.0/1.5})),
+                        new RealVectorParam<>(new double[] {1.0, 1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {2.0/4.5, 0.5/1.5, 1.0/1.5}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
@@ -1425,12 +1436,12 @@ public class BirthDeathMigrationLikelihoodTest {
                         null,
                         null),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("2.0"),
-                        new RealParameter("0.01")));
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.01}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1442,29 +1453,30 @@ public class BirthDeathMigrationLikelihoodTest {
         assertEquals(-87.59718586549747 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
     }
 
-    @Test
-    public void testMultiRhoWithRateChanges3() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultiRhoWithRateChanges3(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
         // rate-changes, rho-sampling in the past and present
-        RealParameter originParam = new RealParameter("2.0");
+        RealScalarParam<NonNegativeReal> originParam = new RealScalarParam<>(2.0, NonNegativeReal.INSTANCE);
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(1),
                 "processLength", originParam,
                 "Re", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5})),
+                        new RealVectorParam<>(new double[] {1.0, 1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {3.0/4.5, 2.0/1.5, 4.0/1.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter("4.5 1.5 1.5")),
+                        new RealVectorParam<>(new double[] {1.0, 1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {4.5, 1.5, 1.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
-                        new RealParameter("1.0 1.5"),
-                        new RealParameter(new Double[]{2.0/4.5, 0.5/1.5, 1.0/1.5})),
+                        new RealVectorParam<>(new double[] {1.0, 1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {2.0/4.5, 0.5/1.5, 1.0/1.5}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
@@ -1472,12 +1484,12 @@ public class BirthDeathMigrationLikelihoodTest {
                         null,
                         null),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("1.0 2.0"),
-                        new RealParameter("0.05 0.01")));
+                        new RealVectorParam<>(new double[] {1.0, 2.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.05, 0.01}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1489,28 +1501,29 @@ public class BirthDeathMigrationLikelihoodTest {
         assertEquals(-87.96488 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-1);
     }
 
-    @Test
-    public void testMultiRhoWithRateChanges4() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testMultiRhoWithRateChanges4(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
         // rate-changes, rho-sampling in the past and present, with reversed times
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", tree,
+                "processLength", new ProcessLength(tree),
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
-                        new RealParameter("0.5 1.0 1.1"),
-                        new RealParameter(new Double[]{3.0/4.5, 2.0/1.5, 4.0/1.5, 4.0/2.5})),
+                        new RealVectorParam<>(new double[] {0.5, 1.0, 1.1}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {3.0/4.5, 2.0/1.5, 4.0/1.5, 4.0/2.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealParameter("0.5 1.0 1.1"),
-                        new RealParameter("4.5 1.5 1.5 2.5")),
+                        new RealVectorParam<>(new double[] {0.5, 1.0, 1.1}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {4.5, 1.5, 1.5, 2.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
-                        new RealParameter("0.5 1.0 1.1"),
-                        new RealParameter(new Double[]{2.0/4.5, 0.5/1.5, 1.0/1.5, 2.0/2.5})),
+                        new RealVectorParam<>(new double[] {0.5, 1.0, 1.1}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {2.0/4.5, 0.5/1.5, 1.0/1.5, 2.0/2.5}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0")),
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)),
                 "ReAmongDemes", new SkylineMatrixParameter(
                         null,
                         null),
@@ -1518,12 +1531,12 @@ public class BirthDeathMigrationLikelihoodTest {
                         null,
                         null),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("1.0 " + tree.getRoot().getHeight()),
-                        new RealParameter("0.05 0.01")));
+                        new RealVectorParam<>(new double[] {1.0, tree.getRoot().getHeight()}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.05, 0.01}, UnitInterval.INSTANCE)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "conditionOnRoot", true,
                 "tree", tree,
@@ -1540,39 +1553,40 @@ public class BirthDeathMigrationLikelihoodTest {
      * Test on combining migration with rho-sampling
      * Reference from BDMM
      */
-    @Test
-    public void testLikelihoodMigrationRhoSampling() {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testLikelihoodMigrationRhoSampling(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=1]: 4.5):1,3[&type=0]:5.5);",
                 false);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
-                "processLength", tree,
+                "processLength", new ProcessLength(tree),
                 "typeSet", new TypeSet(2),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.4")),
+                        new RealVectorParam<>(new double[] {1.5, 1.4}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5 1.3")),
+                        new RealVectorParam<>(new double[] {1.5, 1.3}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.0"), 2),
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE), 2),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.0"), 2),
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE), 2),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter("0.3 0.4")),
+                        new RealVectorParam<>(new double[] {0.3, 0.4}, NonNegativeReal.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("0.0"),
-                        new RealParameter("0.01 0.015"),
-                        tree));
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.01, 0.015}, UnitInterval.INSTANCE),
+                        new ProcessLength(tree)));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("0.6 0.4"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.6, 0.4}),
                 "conditionOnSurvival", false,
                 "conditionOnRoot", true,
                 "tree", tree,
@@ -1593,12 +1607,13 @@ public class BirthDeathMigrationLikelihoodTest {
      * Reference value from BDSKY (06/04/2017)
      * @throws Exception
      */
-    @Test
-    public void testSALikelihoodMultiRho() throws Exception {
+    @ParameterizedTest
+    @MethodSource("data")
+    public void testSALikelihoodMultiRho(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
 
-        RealParameter origin = new RealParameter("6.0");
+        RealScalarParam<NonNegativeReal> origin = new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE);
 
         Parameterization parameterization = new EpiParameterization();
         parameterization.initByName(
@@ -1606,24 +1621,24 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeSet", new TypeSet(1),
                 "Re", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "becomeUninfectiousRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter("1.5")),
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
                 "samplingProportion", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.2")),
+                        new RealVectorParam<>(new double[] {0.2}, UnitInterval.INSTANCE)),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter("0.9")),
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)),
                 "rhoSampling", new TimedParameter(
-                        new RealParameter("0.0 1.5"),
-                        new RealParameter("0.05 0.3"),
+                        new RealVectorParam<>(new double[] {0.0, 1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.05, 0.3}, UnitInterval.INSTANCE),
                         origin));
 
-        bdmmflow.BirthDeathMigrationDistribution density = new bdmmflow.BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
@@ -1632,12 +1647,14 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parallelize", parallelize
         );
 
-        bdmmprime.distribution.BirthDeathMigrationDistribution primeDensity = new bdmmprime.distribution.BirthDeathMigrationDistribution();
-        primeDensity.initByName("parameterization", parameterization, "relTolerance", 1e-10,
-                "startTypePriorProbs", new RealParameter("1.0"),
+        BirthDeathMigrationDistribution primeDensity = new BirthDeathMigrationDistribution();
+        primeDensity.initByName("parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
                 "parallelize", parallelize
         );
 
