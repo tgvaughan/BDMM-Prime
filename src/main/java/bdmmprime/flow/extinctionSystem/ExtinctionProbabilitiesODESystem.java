@@ -1,7 +1,7 @@
-package bdmmflow.extinctionSystem;
+package bdmmprime.flow.extinctionSystem;
 
-import bdmmflow.intervals.Interval;
-import bdmmflow.intervals.IntervalODESystem;
+import bdmmprime.flow.intervals.Interval;
+import bdmmprime.flow.intervals.IntervalODESystem;
 import bdmmprime.parameterization.Parameterization;
 
 import java.util.List;

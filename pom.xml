@@ -78,6 +78,14 @@
             <scope>compile</scope>
         </dependency>
 
+        <!-- linear algebra (org.hipparchus.linear.*) lives in hipparchus-core -->
+        <dependency>
+            <groupId>org.hipparchus</groupId>
+            <artifactId>hipparchus-core</artifactId>
+            <version>4.0.3</version>
+            <scope>compile</scope>
+        </dependency>
+
         <!-- BEAST 3 core -->
         <dependency>
             <groupId>io.github.compevol</groupId>

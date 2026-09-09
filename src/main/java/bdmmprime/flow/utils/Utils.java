@@ -1,9 +1,6 @@
-package bdmmflow.utils;
+package bdmmprime.flow.utils;
 
-import com.flag4j.Matrix;
-import org.apache.commons.math3.exception.MathArithmeticException;
 import org.apache.commons.math3.linear.*;
-import org.jblas.DoubleMatrix;
 
 import java.util.Arrays;
 import java.util.Random;
@@ -35,31 +32,6 @@ public class Utils {
         return randomMatrix;
     }
 
-    public static RealMatrix computeRegularMinimizer(RealMatrix A) {
-        // Compute SVD
-        SingularValueDecomposition svd = new SingularValueDecomposition(A);
-        RealMatrix V = svd.getV();
-        double[] sigma = svd.getSingularValues();
-        int n = sigma.length;
-
-        // Compute product of singular values directly (avoid streams)
-        double logProd = 0.0;
-        for (double s : sigma) logProd += Math.log(s);
-        double geomMean = Math.exp((Math.log(1.0) + logProd) / n); // d=1.0 inline
-
-        // Compute V * Σ⁻¹ efficiently (scale columns of V by 1/σᵢ)
-        double[][] vData = V.getData();
-        for (int j = 0; j < n; j++) {
-            double scale = geomMean / sigma[j];  // combine scalarMultiply(g_d) + Σ⁻¹
-            for (int i = 0; i < n; i++) {
-                vData[i][j] *= scale;
-            }
-        }
-        RealMatrix Xstar = MatrixUtils.createRealMatrix(vData).multiply(V.transpose());
-
-        return Xstar;
-    }
-
     /**
      * Returns a RealMatrix matrix filled with the values in the array in column-major order.
      */
@@ -80,52 +52,12 @@ public class Utils {
         return matrix;
     }
 
-    public static RealMatrix toMatrix(DoubleMatrix source) {
-        RealMatrix destination = new BlockRealMatrix(source.rows, source.columns);
-        for (int i = 0; i < source.rows; i++) {
-            for (int j = 0; j < source.columns; j++) {
-                destination.setEntry(i, j, source.get(i, j));
-            }
-        }
-        return destination;
-    }
-
     public static RealMatrix toMatrix(org.hipparchus.linear.RealMatrix source) {
         return new BlockRealMatrix(source.getData());
     }
 
     public static org.hipparchus.linear.RealMatrix toHipparchusMatrix(RealMatrix source) {
         return new org.hipparchus.linear.BlockRealMatrix(source.getData());
-    }
-
-    public static DoubleMatrix toMatrix(RealMatrix source) {
-        DoubleMatrix destination = new DoubleMatrix(source.getRowDimension(), source.getColumnDimension());
-        for (int i = 0; i < source.getRowDimension(); i++) {
-            for (int j = 0; j < source.getColumnDimension(); j++) {
-                destination.put(i, j, source.getEntry(i, j));
-            }
-        }
-        return destination;
-    }
-
-    public static Matrix toFlag4JMatrix(RealMatrix source) {
-        Matrix destination = new Matrix(source.getRowDimension(), source.getColumnDimension());
-        for (int i = 0; i < source.getRowDimension(); i++) {
-            for (int j = 0; j < source.getColumnDimension(); j++) {
-                destination.set(source.getEntry(i, j), i, j);
-            }
-        }
-        return destination;
-    }
-
-    public static RealMatrix toMatrix(Matrix source) {
-        RealMatrix destination = new BlockRealMatrix(source.numRows(), source.numCols());
-        for (int i = 0; i < source.numRows(); i++) {
-            for (int j = 0; j < source.numCols(); j++) {
-                destination.setEntry(i, j, source.get(i, j));
-            }
-        }
-        return destination;
     }
 
     /**

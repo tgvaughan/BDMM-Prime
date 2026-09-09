@@ -1,9 +1,9 @@
-package bdmmflow.flowSystems;
+package bdmmprime.flow.flowSystems;
 
-import bdmmflow.extinctionSystem.ExtinctionProbabilities;
-import bdmmflow.intervals.Interval;
-import bdmmflow.intervals.IntervalODESystem;
-import bdmmflow.utils.Utils;
+import bdmmprime.flow.extinctionSystem.ExtinctionProbabilities;
+import bdmmprime.flow.intervals.Interval;
+import bdmmprime.flow.intervals.IntervalODESystem;
+import bdmmprime.flow.utils.Utils;
 import bdmmprime.parameterization.Parameterization;
 import org.apache.commons.math3.linear.*;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
@@ -12,8 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static bdmmflow.utils.Utils.*;
 
 /**
  * This class represents the ODE that has the forward-in-time inverse flow as a solution.
@@ -151,11 +149,11 @@ public class InverseFlowODESystem extends IntervalODESystem implements IFlowODES
 
         int numTypes = this.parameterization.getNTypes();
 
-        RealMatrix yMatrix = toMatrix(y, numTypes);
+        RealMatrix yMatrix = Utils.toMatrix(y, numTypes);
         RealMatrix systemMatrix = this.buildSystemMatrix(t);
 
         RealMatrix yDotMatrix = yMatrix.multiply(systemMatrix);
-        fillArray(yDotMatrix, yDot);
+        Utils.fillArray(yDotMatrix, yDot);
     }
 
     @Override

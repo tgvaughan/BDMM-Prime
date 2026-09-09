@@ -1,11 +1,14 @@
-package bdmmflow.benchmark;
+package bdmmprime.flow.benchmark;
 
 import bdmmprime.parameterization.*;
 import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.Real;
+import beast.base.spec.inference.parameter.RealVectorParam;
+import beast.base.spec.inference.parameter.SimplexParam;
+import beast.base.spec.type.Simplex;
 
 import java.util.Arrays;
 import java.util.Random;
-import java.util.StringJoiner;
 
 public class ParameterizationSampler {
 
@@ -30,27 +33,27 @@ public class ParameterizationSampler {
                 "processLength", Double.toString(processLength),
                 "birthRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter(buildParameterString(birthRates)),
+                        new RealVectorParam<>(birthRates, Real.INSTANCE),
                         numTypes
                 ),
                 "deathRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter(buildParameterString(deathRates)),
+                        new RealVectorParam<>(deathRates, Real.INSTANCE),
                         numTypes
                 ),
                 "samplingRate", new SkylineVectorParameter(
                         null,
-                        new RealParameter(buildParameterString(samplingRates)),
+                        new RealVectorParam<>(samplingRates, Real.INSTANCE),
                         numTypes
                 ),
                 "removalProb", new SkylineVectorParameter(
                         null,
-                        new RealParameter(buildParameterString(removalProbabilities)),
+                        new RealVectorParam<>(removalProbabilities, Real.INSTANCE),
                         numTypes
                 ),
                 "migrationRate", new SkylineMatrixParameter(
                         null,
-                        new RealParameter(buildParameterString(migrationRates)),
+                        new RealVectorParam<>(migrationRates, Real.INSTANCE),
                         numTypes
                 )
         );
@@ -58,17 +61,13 @@ public class ParameterizationSampler {
         return parameterization;
     }
 
-    public RealParameter sampleStartTypePriorProbs(Parameterization parameterization) {
+    public Simplex sampleStartTypePriorProbs(Parameterization parameterization) {
         int numTypes = parameterization.getNTypes();
 
         double[] frequencies = new double[numTypes];
         Arrays.fill(frequencies, 1.0 / numTypes);
 
-        return new RealParameter(buildParameterString(frequencies));
-    }
-
-    int sampleNumTypes() {
-        return this.random.nextInt(2, 11);
+        return new SimplexParam(frequencies);
     }
 
     double[] sampleUniformDoubles(int numValues, double lower, double upper) {
@@ -79,11 +78,4 @@ public class ParameterizationSampler {
         return 1 ; //Runtime.getRuntime().availableProcessors();
     }
 
-    String buildParameterString(double[] parameters) {
-        StringJoiner joiner = new StringJoiner(" ");
-        for (double value : parameters) {
-            joiner.add(Double.toString(value));
-        }
-        return joiner.toString();
-    }
 }

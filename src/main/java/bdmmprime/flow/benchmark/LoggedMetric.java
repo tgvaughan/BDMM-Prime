@@ -1,4 +1,4 @@
-package bdmmflow.benchmark;
+package bdmmprime.flow.benchmark;
 
 import java.io.FileWriter;
 import java.io.IOException;

@@ -1,10 +1,12 @@
-package bdmmflow.benchmark;
+package bdmmprime.flow.benchmark;
 
-import bdmmflow.BirthDeathMigrationDistribution;
+import bdmmprime.flow.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.simulation.SimulatedTree;
 import beast.base.evolution.tree.Tree;
-import beast.base.inference.parameter.RealParameter;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.type.Simplex;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -14,7 +16,7 @@ import java.util.List;
 
 public class Benchmark {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         int NUM_TRIALS = 30_000;
 
         ParameterizationSampler sampler = new ParameterizationSampler();
@@ -39,16 +41,18 @@ public class Benchmark {
             };
 
             Parameterization parameterization = sampler.sampleParameterization();
-            RealParameter startTypePriorProbs = sampler.sampleStartTypePriorProbs(parameterization);
+            Simplex startTypePriorProbs = sampler.sampleStartTypePriorProbs(parameterization);
             Tree tree = simulateTree(parameterization, startTypePriorProbs);
             int minNumIntervals = sampler.sampleMinIntervals();
+            boolean parallelized = false;
+            boolean useSplitting = false;
 
             for (Boolean useInverseFlow : choices) {
                 for (String strategy : initialStateStrategies) {
-                    BenchmarkRun bdmmRun = runBDMMBenchmark(tree, parameterization, startTypePriorProbs);
-                    BenchmarkRun flowRun = runFlowBenchmark(tree, parameterization, startTypePriorProbs, useInverseFlow, false, strategy, minNumIntervals, false);
+                    BenchmarkRun bdmmRun = runBDMMBenchmark(tree, parameterization, startTypePriorProbs, parallelized);
+                    BenchmarkRun flowRun = runFlowBenchmark(tree, parameterization, startTypePriorProbs, useInverseFlow, strategy, parallelized);
                     BenchmarkResult result = new BenchmarkResult(
-                            start + i, parameterization, tree, flowRun, bdmmRun, useInverseFlow, false, strategy, minNumIntervals, false
+                            start + i, parameterization, tree, flowRun, bdmmRun, useInverseFlow, useSplitting, strategy, minNumIntervals, parallelized
                     );
                     results.add(result);
                 }
@@ -63,38 +67,33 @@ public class Benchmark {
         return results;
     }
 
-    static Tree simulateTree(Parameterization parameterization, RealParameter startTypePriorProbs) throws IllegalStateException {
+    static Tree simulateTree(Parameterization parameterization, Simplex startTypePriorProbs) throws IllegalStateException {
         SimulatedTree simulatedTree = new SimulatedTree();
-        simulatedTree.initByName(
-                "parameterization", parameterization,
-                "finalSampleOffset", new RealParameter("0.0"),
-                "startTypePriorProbs", startTypePriorProbs,
-                "minSamples", 2,
-                "simulateUntypedTree", true
-        );
+        simulatedTree.parameterizationInput.setTypedValue(parameterization, simulatedTree);
+        simulatedTree.finalSampleOffsetInput.setTypedValue(new RealScalarParam<>(0.0, NonNegativeReal.INSTANCE), simulatedTree);
+        simulatedTree.startTypePriorProbsInput.setTypedValue(startTypePriorProbs, simulatedTree);
+        simulatedTree.minSamplesInput.setTypedValue(2, simulatedTree);
+        simulatedTree.simulateUntypedTreeInput.setTypedValue(true, simulatedTree);
+        simulatedTree.initAndValidate();
         return simulatedTree;
     }
 
     static BenchmarkRun runFlowBenchmark(
             Tree tree,
             Parameterization parameterization,
-            RealParameter startTypePriorProbs,
+            Simplex startTypePriorProbs,
             boolean useInverseFlow,
-            boolean useSplitting,
             String initialStateStrategy,
-            int minNumIntervals,
             boolean parallelized
     ) {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName(
-                "parameterization", parameterization,
-                "tree", tree,
-                "startTypePriorProbs", startTypePriorProbs,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "parallelize", parallelized
-        );
+        density.parameterizationInput.setTypedValue(parameterization, density);
+        density.treeInput.setTypedValue(tree, density);
+        density.startTypePriorProbsInput.setTypedValue(startTypePriorProbs, density);
+        density.typeLabelInput.setTypedValue("type", density);
+        density.initialMatrixStrategyInput.setTypedValue(initialStateStrategy, density);
+        density.useInverseFlowInput.setTypedValue(useInverseFlow, density);
+        density.parallelizeInput.setTypedValue(parallelized, density);
         density.initAndValidate();
 
         long start = System.nanoTime();
@@ -104,7 +103,7 @@ public class Benchmark {
         return new BenchmarkRun(duration, likelihood);
     }
 
-    static BenchmarkRun runBDMMBenchmark(Tree tree, Parameterization parameterization, RealParameter startTypePriorProbs) {
+    static BenchmarkRun runBDMMBenchmark(Tree tree, Parameterization parameterization, Simplex startTypePriorProbs, boolean parallelized) {
         bdmmprime.distribution.BirthDeathMigrationDistribution density = new bdmmprime.distribution.BirthDeathMigrationDistribution();
         density.initByName(
                 "parameterization", parameterization,
@@ -113,6 +112,11 @@ public class Benchmark {
                 "typeLabel", "type",
                 "parallelize", false
         );
+        density.parameterizationInput.setTypedValue(parameterization, density);
+        density.treeInput.setTypedValue(tree, density);
+        density.startTypePriorProbsInput.setTypedValue(startTypePriorProbs, density);
+        density.typeLabelInput.setTypedValue("type", density);
+        density.parallelizeInput.setTypedValue(parallelized, density);
         density.initAndValidate();
 
         long start = System.nanoTime();

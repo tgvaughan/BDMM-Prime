@@ -1,13 +1,13 @@
-package bdmmflow;
+package bdmmprime.flow;
 
-import bdmmflow.extinctionSystem.ExtinctionProbabilities;
-import bdmmflow.extinctionSystem.ExtinctionProbabilitiesODESystem;
-import bdmmflow.flowSystems.*;
-import bdmmflow.intervals.Interval;
-import bdmmflow.intervals.IntervalODESystem;
-import bdmmflow.intervals.IntervalUtils;
-import bdmmflow.utils.Result;
-import bdmmflow.utils.Utils;
+import bdmmprime.flow.extinctionSystem.ExtinctionProbabilities;
+import bdmmprime.flow.extinctionSystem.ExtinctionProbabilitiesODESystem;
+import bdmmprime.flow.flowSystems.*;
+import bdmmprime.flow.intervals.Interval;
+import bdmmprime.flow.intervals.IntervalODESystem;
+import bdmmprime.flow.intervals.IntervalUtils;
+import bdmmprime.flow.utils.Result;
+import bdmmprime.flow.utils.Utils;
 import bdmmprime.parameterization.Parameterization;
 import beast.base.core.*;
 import beast.base.evolution.speciation.SpeciesTreeDistribution;
@@ -15,8 +15,12 @@ import beast.base.evolution.tree.Node;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeInterface;
-import beast.base.inference.parameter.RealParameter;
-import org.apache.commons.math.special.Gamma;
+import beast.base.spec.domain.NonNegativeReal;
+import beast.base.spec.inference.parameter.RealScalarParam;
+import beast.base.spec.inference.parameter.SimplexParam;
+import beast.base.spec.type.RealScalar;
+import beast.base.spec.type.Simplex;
+import org.apache.commons.math3.special.Gamma;
 import org.apache.commons.math3.exception.NumberIsTooSmallException;
 import org.apache.commons.math3.linear.SingularMatrixException;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
@@ -29,7 +33,7 @@ import java.util.concurrent.CompletionException;
 import java.util.concurrent.ForkJoinPool;
 import java.util.stream.DoubleStream;
 
-@Citation(value = "Kuehnert D, Stadler T, Vaughan TG, Drummond AJ. (2016). " +
+@Citation(value = "Stilianos Louca , Matthew W Pennell. (2019). " +
         "A General and Efficient Algorithm for the Likelihood of Diversification and Discrete-Trait Evolutionary Models, \n" +
         "Systematic Biology, Volume 69, Issue 3, May 2020, Pages 545–556."
         , DOI = "10.1093/sysbio/syz055", year = 2020, firstAuthorSurname = "Louca")
@@ -48,16 +52,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             Input.Validate.REQUIRED
     );
 
-    public Input<Function> finalSampleOffsetInput = new Input<>(
+    public Input<RealScalar<? extends NonNegativeReal>> finalSampleOffsetInput = new Input<>(
             "finalSampleOffset",
             "If provided, the difference in time between the final sample and the end of the BD process.",
-            new RealParameter("0.0")
+            new RealScalarParam<>(0.0, NonNegativeReal.INSTANCE)
     );
 
-    public Input<RealParameter> startTypePriorProbsInput = new Input<>(
+    public Input<Simplex> startTypePriorProbsInput = new Input<>(
             "startTypePriorProbs",
             "The prior probabilities for the type of the first individual",
-            new RealParameter("1.0")
+            new SimplexParam(new double[] {1.0})
     );
 
     public Input<String> typeLabelInput = new Input<>(
@@ -139,7 +143,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private String typeLabel;
     private TraitSet typeTraitSet;
 
-    double[] startTypePriorProbs;
+    Simplex startTypePriorProbs;
 
     boolean conditionOnRoot;
     boolean conditionOnSurvival;
@@ -185,11 +189,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         // unpack input values
 
         this.parameterization = this.parameterizationInput.get();
-        this.finalSampleOffset = this.finalSampleOffsetInput.get().getArrayValue();
+        this.finalSampleOffset = this.finalSampleOffsetInput.get().get();
         this.tree = this.treeInput.get();
         this.typeLabel = this.typeLabelInput.get();
         this.typeTraitSet = this.typeTraitSetInput.get();
-        this.startTypePriorProbs = this.startTypePriorProbsInput.get().getDoubleValues();
+        this.startTypePriorProbs = this.startTypePriorProbsInput.get();
         this.conditionOnRoot = this.conditionOnRootInput.get();
         this.conditionOnSurvival = this.conditionOnSurvivalInput.get();
         this.absoluteTolerance = this.absoluteToleranceInput.get();
@@ -220,14 +224,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         // validate start type prior probabilities
 
-        if (this.startTypePriorProbs.length != numTypes) {
+        if (this.startTypePriorProbs.size() != numTypes) {
             throw new RuntimeException(
                     "Error: dimension of start type prior probabilities must match number of types."
             );
         }
 
         double probSum = 0.0;
-        for (double f : this.startTypePriorProbs) {
+        for (double f : this.startTypePriorProbs.getElements()) {
             probSum += f;
         }
         if (!bdmmprime.util.Utils.equalWithPrecision(probSum, 1.0)) {
@@ -235,14 +239,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                     "Error: start type prior probabilities must add up to 1 but currently add to %f.".formatted(probSum)
             );
         }
-
-        // check that we don't have birth events with two different birth types
-
-//        if (this.parameterization.hasCrossBirthRates3()) {
-//            throw new RuntimeException(
-//                    "Error: BDMM-Flow does not support birth events with two different child types. Use BDMM-Prime instead."
-//            );
-//        }
 
         // initialize utils
 
@@ -373,7 +369,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         double treeLikelihood = 0.0;
         for (int i = 0; i < this.parameterization.getNTypes(); i++) {
-            treeLikelihood += rootLikelihoodPerState[i] * this.startTypePriorProbs[i];
+            treeLikelihood += rootLikelihoodPerState[i] * this.startTypePriorProbs.get(i);
         }
 
         if (treeLikelihood <= 0) {
@@ -445,14 +441,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             this.numDeviations++;
         }
 
+        if (deviation > 1e-3) {
+            // we decrease the maximum allowed condition number
+            this.maxConditioningNumber *= 0.7;
+            Log.debug("Max conditioning number decreased to " + this.maxConditioningNumber);
+        }
+
         if (deviation > 1e-2) {
-            Log.warning("Found relative deviation of " + 100*deviation + "% to BDMM-Prime. Consider using BDMM-Prime instead of BDMM-Flow.");
+            Log.warning("Found relative deviation of " + 100*deviation + "% to BDMM-Prime. Consider using BDMM-Prime instead of BDMM-Flow if this warning continues to show up.");
         }
 
         // we log the deviation every 20_000 steps
         if (this.numDeviations % 10 == 0) {
             double meanDeviation = this.sumDeviation / this.numDeviations;
-            Log.warning("Mean deviation was " + meanDeviation + " (sum " + this.sumDeviation + ", num " + this.numDeviations + ")");
+            Log.debug("Mean deviation was " + meanDeviation + " (sum " + this.sumDeviation + ", num " + this.numDeviations + ")");
         }
     }
 
@@ -599,7 +601,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
                             ? parameterization.getBirthRates()[startInterval][type1]
                             : parameterization.getCrossBirthRates()[startInterval][type1][type2];
 
-                    conditionDensity += rate * this.startTypePriorProbs[type1]
+                    conditionDensity += rate * this.startTypePriorProbs.get(type1)
                             * (1 - extinctionAtRoot[type1])
                             * (1 - extinctionAtRoot[type2]);
                 }
@@ -608,7 +610,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             double[] extinctionAtRoot = extinctionProbabilities.getProbability(0);
 
             for (int type = 0; type < parameterization.getNTypes(); type++) {
-                conditionDensity += this.startTypePriorProbs[type] * (1 - extinctionAtRoot[type]);
+                conditionDensity += this.startTypePriorProbs.get(type) * (1 - extinctionAtRoot[type]);
             }
         } else {
             conditionDensity = 1.0;

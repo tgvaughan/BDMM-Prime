@@ -1,6 +1,6 @@
-package bdmmflow.intervals;
+package bdmmprime.flow.intervals;
 
-import bdmmflow.utils.Result;
+import bdmmprime.flow.utils.Result;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
 import org.apache.commons.math3.exception.*;
@@ -9,10 +9,6 @@ import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
 import org.apache.commons.math3.ode.nonstiff.*;
 
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 

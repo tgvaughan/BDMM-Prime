@@ -1,4 +1,4 @@
-package bdmmflow.flowSystems;
+package bdmmprime.flow.flowSystems;
 
 /**
  * Stores an integration result as well as a scaling factor.

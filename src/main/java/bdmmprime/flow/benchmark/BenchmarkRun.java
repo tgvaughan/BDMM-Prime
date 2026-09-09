@@ -1,4 +1,4 @@
-package bdmmflow.benchmark;
+package bdmmprime.flow.benchmark;
 
 import java.util.HashMap;
 import java.util.Map;

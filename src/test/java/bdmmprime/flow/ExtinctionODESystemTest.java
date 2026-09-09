@@ -1,9 +1,9 @@
-package bdmmflow.flow;
+package bdmmprime.flow.flow;
 
 
-import bdmmflow.extinctionSystem.ExtinctionProbabilities;
-import bdmmflow.extinctionSystem.ExtinctionProbabilitiesODESystem;
-import bdmmflow.intervals.IntervalODESystem;
+import bdmmprime.flow.extinctionSystem.ExtinctionProbabilities;
+import bdmmprime.flow.extinctionSystem.ExtinctionProbabilitiesODESystem;
+import bdmmprime.flow.intervals.IntervalODESystem;
 import bdmmprime.distribution.P0GeSystem;
 import bdmmprime.parameterization.*;
 import beast.base.inference.parameter.RealParameter;

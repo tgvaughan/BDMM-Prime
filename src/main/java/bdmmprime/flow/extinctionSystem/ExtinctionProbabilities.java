@@ -1,4 +1,4 @@
-package bdmmflow.extinctionSystem;
+package bdmmprime.flow.extinctionSystem;
 
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 

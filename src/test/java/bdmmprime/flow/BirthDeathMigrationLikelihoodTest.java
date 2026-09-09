@@ -1,4 +1,4 @@
-package bdmmflow.flow;
+package bdmmprime.flow.flow;
 
 import bdmmprime.parameterization.*;
 import beast.base.evolution.tree.Tree;

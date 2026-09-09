@@ -8,6 +8,7 @@ open module bdmmprime {
     requires commons.math3;
     requires javafx.controls;
     requires colt;
+    requires hipparchus.core;
 
     exports bdmmprime.distribution;
     exports bdmmprime.mapping;

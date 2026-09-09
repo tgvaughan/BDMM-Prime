@@ -1,4 +1,4 @@
-package bdmmflow.utils;
+package bdmmprime.flow.utils;
 
 import java.util.List;
 import java.util.function.Supplier;
