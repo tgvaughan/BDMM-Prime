@@ -20,6 +20,7 @@
 
 package bdmmprime.distribution;
 
+import bdmmprime.facade.BirthDeathMigrationLikelihoodEngine;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
 import beast.base.core.*;
@@ -61,7 +62,7 @@ import java.util.concurrent.*;
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel " +
         "with discrete locations and migration events among demes. " +
         "This implementation also works with sampled ancestor trees.")
-public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
+public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution implements BirthDeathMigrationLikelihoodEngine {
 
     public Input<Parameterization> parameterizationInput = new Input<>("parameterization",
             "BDMM parameterization",
@@ -1268,6 +1269,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             integrationResults = storedIntegrationResults;
             storedIntegrationResults = tmpIR;
         }
+    }
+
+    @Override
+    public void accept() {
+        super.accept();
     }
 
     /*

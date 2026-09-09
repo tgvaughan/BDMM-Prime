@@ -1,5 +1,6 @@
 package bdmmprime.flow;
 
+import bdmmprime.facade.BirthDeathMigrationLikelihoodEngine;
 import bdmmprime.flow.extinctionSystem.ExtinctionProbabilities;
 import bdmmprime.flow.extinctionSystem.ExtinctionProbabilitiesODESystem;
 import bdmmprime.flow.flowSystems.*;
@@ -44,7 +45,7 @@ import java.util.stream.DoubleStream;
         "        \"ODE for better performance. \" +\n" +
         "        \"It can be used as a drop-in replacement of the BDMM-Prime package."
 )
-public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
+public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution implements BirthDeathMigrationLikelihoodEngine {
 
     public Input<Parameterization> parameterizationInput = new Input<>(
             "parameterization",
@@ -443,7 +444,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
         if (deviation > 1e-3) {
             // we decrease the maximum allowed condition number
-            this.maxConditioningNumber *= 0.7;
+            this.maxConditioningNumber *= 0.3;
             Log.debug("Max conditioning number decreased to " + this.maxConditioningNumber);
         }
 
