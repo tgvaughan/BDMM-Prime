@@ -145,6 +145,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private TraitSet typeTraitSet;
 
     Simplex startTypePriorProbs;
+    double[] startTypePosteriorProbs;
+    double[] storedStartTypePosteriorProbs;
 
     boolean conditionOnRoot;
     boolean conditionOnSurvival;
@@ -244,6 +246,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // initialize utils
 
         this.logScalingFactors = new double[this.tree.getNodeCount()];
+        this.startTypePosteriorProbs = new double[this.numTypes];
+        this.storedStartTypePosteriorProbs = new double[this.numTypes];
         this.initializeIsRhoSampled();
         this.forkJoinPool = new ForkJoinPool();
 
@@ -345,7 +349,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         } catch (NumberIsTooSmallException | SingularMatrixException | IllegalStateException e) {
             this.numFailedEvaluationsSinceReset++;
             this.resetCache();
-            return this.bdmmPrime.calculateTreeLogLikelihood(dummyTree);
+            return this.fallBackToBDMMPrime(dummyTree);
         }
 
         // recursively traverse the tree to calculate the root likelihood per state
@@ -363,7 +367,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             );
         } catch (CompletionException | SingularMatrixException | IllegalStateException exception) {
             this.numFailedEvaluationsSinceReset++;
-            return this.bdmmPrime.calculateTreeLogLikelihood(dummyTree);
+            return this.fallBackToBDMMPrime(dummyTree);
         }
 
         // get tree likelihood by a weighted average of the root likelihood per state
@@ -376,6 +380,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         if (treeLikelihood <= 0) {
             return Double.NEGATIVE_INFINITY;
         };
+
+        // normalize the per-state root likelihoods into start type posterior probabilities.
+        // the common scaling factor of the root likelihoods cancels out here.
+
+        for (int i = 0; i < this.parameterization.getNTypes(); i++) {
+            this.startTypePosteriorProbs[i] =
+                    rootLikelihoodPerState[i] * this.startTypePriorProbs.get(i) / treeLikelihood;
+        }
 
         // consider different ways to condition the tree
 
@@ -894,7 +906,34 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         return parameterization.getTypeSet().getTypeIndex(nodeTypeName);
     }
 
+    /**
+     * Delegates the likelihood computation to the classic BDMM-Prime implementation. This is used
+     * in case numerical issues are detected.
+     */
+    private double fallBackToBDMMPrime(TreeInterface dummyTree) {
+        // compute tree likelihood
+        double logTreeLikelihood = this.bdmmPrime.calculateTreeLogLikelihood(dummyTree);
+
+        // copy the start type posterior probability
+        System.arraycopy(
+                this.bdmmPrime.getStartTypePosteriorProbs(), 0, this.startTypePosteriorProbs, 0, this.numTypes
+        );
+
+        return logTreeLikelihood;
+    }
+
+    @Override
+    public double[] getStartTypePosteriorProbs() {
+        return this.startTypePosteriorProbs;
+    }
+
     /** Caching **/
+
+    @Override
+    public void store() {
+        super.store();
+        System.arraycopy(this.startTypePosteriorProbs, 0, this.storedStartTypePosteriorProbs, 0, this.numTypes);
+    }
 
     @Override
     public boolean requiresRecalculation() {
@@ -911,6 +950,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     public void restore() {
         this.currentExtinctionProbabilities = this.storedExtinctionProbabilities;
         this.currentFlow = this.storedFlow;
+
+        double[] tmp = this.startTypePosteriorProbs;
+        this.startTypePosteriorProbs = this.storedStartTypePosteriorProbs;
+        this.storedStartTypePosteriorProbs = tmp;
     }
 
     public void resetCache() {

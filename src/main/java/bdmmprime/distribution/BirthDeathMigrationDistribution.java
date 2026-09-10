@@ -684,6 +684,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     /**
      * @return retrieve current set of start type posterior probabilities.
      */
+    @Override
     public double[] getStartTypePosteriorProbs() {
         return startTypePosteriorProbs;
     }

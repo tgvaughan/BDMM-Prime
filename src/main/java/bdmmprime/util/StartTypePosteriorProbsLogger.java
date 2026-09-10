@@ -68,7 +68,7 @@ public class StartTypePosteriorProbsLogger extends CalculationNode implements Lo
         if (typeSet.getNTypes()==1)
             return;
 
-        for (double startTypeProb : treePrior.startTypePriorProbsInput.get().getElements())
+        for (double startTypeProb : treePrior.getStartTypePosteriorProbs())
             out.print(startTypeProb + "\t");
     }
 
