@@ -1,6 +1,7 @@
 package bdmmprime.flow.benchmark;
 
 import bdmmprime.flow.BirthDeathMigrationDistribution;
+import bdmmprime.flow.flowSystems.InitialMatrixStrategy;
 import bdmmprime.parameterization.*;
 import bdmmprime.trajectories.simulation.SimulatedTree;
 import beast.base.evolution.tree.Tree;
@@ -31,10 +32,10 @@ public class Benchmark {
         long start = System.currentTimeMillis();
 
         for (int i = 0; i < numTrials; i++) {
-            String[] initialStateStrategies = new String[]{
-                    "identity",
-                    "random",
-                    "average_inverse",
+            InitialMatrixStrategy[] initialStateStrategies = new InitialMatrixStrategy[]{
+                    InitialMatrixStrategy.identity,
+                    InitialMatrixStrategy.random,
+                    InitialMatrixStrategy.average_inverse,
             };
             Boolean[] choices = new Boolean[]{
                     false, true
@@ -48,7 +49,7 @@ public class Benchmark {
             boolean useSplitting = false;
 
             for (Boolean useInverseFlow : choices) {
-                for (String strategy : initialStateStrategies) {
+                for (InitialMatrixStrategy strategy : initialStateStrategies) {
                     BenchmarkRun bdmmRun = runBDMMBenchmark(tree, parameterization, startTypePriorProbs, parallelized);
                     BenchmarkRun flowRun = runFlowBenchmark(tree, parameterization, startTypePriorProbs, useInverseFlow, strategy, parallelized);
                     BenchmarkResult result = new BenchmarkResult(
@@ -83,7 +84,7 @@ public class Benchmark {
             Parameterization parameterization,
             Simplex startTypePriorProbs,
             boolean useInverseFlow,
-            String initialStateStrategy,
+            InitialMatrixStrategy initialStateStrategy,
             boolean parallelized
     ) {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();

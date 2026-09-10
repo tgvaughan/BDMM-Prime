@@ -1,5 +1,6 @@
 package bdmmprime.facade;
 
+import bdmmprime.flow.flowSystems.InitialMatrixStrategy;
 import bdmmprime.parameterization.Parameterization;
 import beast.base.core.*;
 import beast.base.evolution.speciation.SpeciesTreeDistribution;
@@ -120,10 +121,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     // inputs specific to the flow (bdmmprime.flow) engine
 
-    public Input<String> initialMatrixStrategyInput = new Input<>(
+    public Input<InitialMatrixStrategy> initialMatrixStrategyInput = new Input<>(
             "initialMatrixStrategy",
-            "Flow engine only: strategy for the initial flow state. Either 'random', 'heuristic', or 'identity'.",
-            "identity"
+            "Flow engine only: strategy for the initial flow state.",
+            InitialMatrixStrategy.average_inverse,
+            InitialMatrixStrategy.values()
     );
 
     public Input<Boolean> useInverseFlowInput = new Input<>(

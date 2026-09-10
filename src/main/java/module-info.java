@@ -13,6 +13,7 @@ open module bdmmprime {
     exports bdmmprime.distribution;
     exports bdmmprime.facade;
     exports bdmmprime.flow;
+    exports bdmmprime.flow.flowSystems;
     exports bdmmprime.mapping;
     exports bdmmprime.parameterization;
     exports bdmmprime.trajectories;

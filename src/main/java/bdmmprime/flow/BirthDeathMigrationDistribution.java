@@ -28,7 +28,6 @@ import org.apache.commons.math3.ode.ContinuousOutputModel;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ForkJoinPool;
@@ -92,10 +91,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             1e-100
     );
 
-    public Input<String> initialMatrixStrategyInput = new Input<>(
+    public Input<InitialMatrixStrategy> initialMatrixStrategyInput = new Input<>(
             "initialMatrixStrategy",
-            "The strategy to use to get the initial flow state. Either 'random', 'heuristic', or 'identity'.",
-            "identity"
+            "The strategy to use to get the initial flow state.",
+            InitialMatrixStrategy.average_inverse,
+            InitialMatrixStrategy.values()
     );
 
     public Input<Boolean> useInverseFlowInput = new Input<>(
@@ -137,7 +137,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
     private Parameterization parameterization;
 
-    private String initialMatrixStrategy;
+    private InitialMatrixStrategy initialMatrixStrategy;
 
     private double finalSampleOffset;
     private TreeInterface tree;
@@ -581,7 +581,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         extinctionProbabilities.validateProbabilities(true);
         IFlow flow = system.calculateFlowIntegral(
-                initialMatrixStrategy,
+                this.initialMatrixStrategy,
                 this.parallelize
         );
         extinctionProbabilities.validateProbabilities(false);
@@ -965,7 +965,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
     @Override
     public boolean isStochastic() {
-        return Objects.equals(this.initialMatrixStrategy, "random");
+        return this.initialMatrixStrategy == InitialMatrixStrategy.random;
     }
 
 }

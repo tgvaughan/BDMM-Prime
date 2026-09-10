@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface IFlowODESystem {
     IFlow calculateFlowIntegral(
-            String initialMatrixStrategy,
+            InitialMatrixStrategy initialMatrixStrategy,
             boolean parallelize
     );
 }

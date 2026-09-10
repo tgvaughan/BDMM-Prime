@@ -1,5 +1,6 @@
 package bdmmprime.flow.benchmark;
 
+import bdmmprime.flow.flowSystems.InitialMatrixStrategy;
 import bdmmprime.parameterization.Parameterization;
 import beast.base.evolution.tree.Tree;
 
@@ -15,7 +16,7 @@ public class BenchmarkResult {
     BenchmarkRun bdmmRun;
     boolean useInverseFlow;
     boolean useSplitting;
-    String initialStateStrategy;
+    InitialMatrixStrategy initialStateStrategy;
     int minNumInterval;
     boolean parallelized;
 
@@ -30,7 +31,7 @@ public class BenchmarkResult {
             BenchmarkRun bdmmRun,
             boolean useInverseFlow,
             boolean useSplitting,
-            String initialStateStrategy,
+            InitialMatrixStrategy initialStateStrategy,
             int minNumInterval,
             boolean parallelized
     ) {
@@ -69,7 +70,7 @@ public class BenchmarkResult {
 
         joiner.add(Boolean.toString(this.useInverseFlow));
         joiner.add(Boolean.toString(this.useSplitting));
-        joiner.add(this.initialStateStrategy);
+        joiner.add(this.initialStateStrategy.name());
         joiner.add(Integer.toString(this.minNumInterval));
         joiner.add(Boolean.toString(this.parallelized));
 

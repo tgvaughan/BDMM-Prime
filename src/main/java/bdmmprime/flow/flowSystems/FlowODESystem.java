@@ -170,9 +170,9 @@ public class FlowODESystem extends IntervalODESystem implements IFlowODESystem {
     /**
      * Computes the initial states (preconditioners) for the given strategy and intervals.
      */
-    List<InitialState> getInitialStates(String initialMatrixStrategy, List<Interval> intervals) {
+    List<InitialState> getInitialStates(InitialMatrixStrategy initialMatrixStrategy, List<Interval> intervals) {
         return switch (initialMatrixStrategy) {
-            case "random" -> {
+            case random -> {
                 RealMatrix matrix = Utils.getRandomMatrix(
                         this.parameterization.getNTypes(), this.seed
                 );
@@ -197,7 +197,7 @@ public class FlowODESystem extends IntervalODESystem implements IFlowODESystem {
 
                 yield initialStates;
             }
-            case "identity" -> {
+            case identity -> {
                 RealMatrix matrix = MatrixUtils.createRealIdentityMatrix(this.parameterization.getNTypes());
 
                 double[] array = new double[this.parameterization.getNTypes() * this.parameterization.getNTypes()];
@@ -210,7 +210,7 @@ public class FlowODESystem extends IntervalODESystem implements IFlowODESystem {
 
                 yield initialStates;
             }
-            case "average_inverse" -> intervals.stream().parallel().map((interval) -> {
+            case average_inverse -> intervals.stream().parallel().map((interval) -> {
                 double h = interval.end() - interval.start();
                 RealMatrix startA = this.buildSystemMatrix(interval.start() + bdmmprime.util.Utils.globalPrecisionThreshold);
                 RealMatrix midA = this.buildSystemMatrix((interval.start() + interval.end()) / 2.0);
@@ -236,9 +236,6 @@ public class FlowODESystem extends IntervalODESystem implements IFlowODESystem {
 
                 return new InitialState(array, inverse);
             }).toList();
-            default -> throw new RuntimeException(
-                    "Error: initial state strategy not known."
-            );
         };
     }
 
@@ -249,7 +246,7 @@ public class FlowODESystem extends IntervalODESystem implements IFlowODESystem {
      */
     @Override
     public IFlow calculateFlowIntegral(
-            String initialMatrixStrategy,
+            InitialMatrixStrategy initialMatrixStrategy,
             boolean parallelize
     ) {
         this.splitUpIntervals();
