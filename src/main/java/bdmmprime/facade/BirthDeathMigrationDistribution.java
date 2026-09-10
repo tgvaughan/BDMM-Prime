@@ -182,32 +182,32 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * Builds the flow engine, forwarding the shared inputs and the flow-specific ones.
      */
     private BirthDeathMigrationLikelihoodEngine buildFlowEngine() {
-        Log.info("Using the flow implementation of BDMM'.");
+        Log.info("Using the flow implementation of BDMM-Prime.");
 
         bdmmprime.flow.BirthDeathMigrationDistribution impl = new bdmmprime.flow.BirthDeathMigrationDistribution();
 
         // shared inputs
 
-        forward(impl.treeInput, treeInput, impl);
-        forward(impl.parameterizationInput, parameterizationInput, impl);
-        forward(impl.finalSampleOffsetInput, finalSampleOffsetInput, impl);
-        forward(impl.startTypePriorProbsInput, startTypePriorProbsInput, impl);
-        forward(impl.typeLabelInput, typeLabelInput, impl);
-        forward(impl.typeTraitSetInput, typeTraitSetInput, impl);
-        forward(impl.conditionOnSurvivalInput, conditionOnSurvivalInput, impl);
-        forward(impl.conditionOnRootInput, conditionOnRootInput, impl);
-        forward(impl.relativeToleranceInput, relativeToleranceInput, impl);
-        forward(impl.absoluteToleranceInput, absoluteToleranceInput, impl);
-        forward(impl.parallelizeInput, parallelizeInput, impl);
+        forward(impl.treeInput, this.treeInput, impl);
+        forward(impl.parameterizationInput, this.parameterizationInput, impl);
+        forward(impl.finalSampleOffsetInput, this.finalSampleOffsetInput, impl);
+        forward(impl.startTypePriorProbsInput, this.startTypePriorProbsInput, impl);
+        forward(impl.typeLabelInput, this.typeLabelInput, impl);
+        forward(impl.typeTraitSetInput, this.typeTraitSetInput, impl);
+        forward(impl.conditionOnSurvivalInput, this.conditionOnSurvivalInput, impl);
+        forward(impl.conditionOnRootInput, this.conditionOnRootInput, impl);
+        forward(impl.relativeToleranceInput, this.relativeToleranceInput, impl);
+        forward(impl.absoluteToleranceInput, this.absoluteToleranceInput, impl);
+        forward(impl.parallelizeInput, this.parallelizeInput, impl);
 
         // flow-specific inputs
 
-        forward(impl.initialMatrixStrategyInput, initialMatrixStrategyInput, impl);
-        forward(impl.useInverseFlowInput, useInverseFlowInput, impl);
-        forward(impl.seedInput, seedInput, impl);
-        forward(impl.minimalSubtreeSizeForParallelizationInput, minimalSubtreeSizeForParallelizationInput, impl);
-        forward(impl.maxConditioningNumberInput, maxConditioningNumberInput, impl);
-        forward(impl.useLoucaPennellIntervalsInput, useLoucaPennellIntervalsInput, impl);
+        forward(impl.initialMatrixStrategyInput, this.initialMatrixStrategyInput, impl);
+        forward(impl.useInverseFlowInput, this.useInverseFlowInput, impl);
+        forward(impl.seedInput, this.seedInput, impl);
+        forward(impl.minimalSubtreeSizeForParallelizationInput, this.minimalSubtreeSizeForParallelizationInput, impl);
+        forward(impl.maxConditioningNumberInput, this.maxConditioningNumberInput, impl);
+        forward(impl.useLoucaPennellIntervalsInput, this.useLoucaPennellIntervalsInput, impl);
 
         impl.initAndValidate();
         return impl;
@@ -217,30 +217,30 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * Builds the classic engine, forwarding the shared inputs and the classic-specific ones.
      */
     private BirthDeathMigrationLikelihoodEngine buildClassicEngine() {
-        Log.info("Using the classic implementation of BDMM'.");
+        Log.info("Using the classic implementation of BDMM-Prime.");
 
         bdmmprime.distribution.BirthDeathMigrationDistribution impl = new bdmmprime.distribution.BirthDeathMigrationDistribution();
 
         // shared inputs
 
-        forward(impl.treeInput, treeInput, impl);
-        forward(impl.parameterizationInput, parameterizationInput, impl);
-        forward(impl.finalSampleOffsetInput, finalSampleOffsetInput, impl);
-        forward(impl.startTypePriorProbsInput, startTypePriorProbsInput, impl);
-        forward(impl.typeLabelInput, typeLabelInput, impl);
-        forward(impl.typeTraitSetInput, typeTraitSetInput, impl);
-        forward(impl.conditionOnSurvivalInput, conditionOnSurvivalInput, impl);
-        forward(impl.conditionOnRootInput, conditionOnRootInput, impl);
-        forward(impl.relativeToleranceInput, relativeToleranceInput, impl);
-        forward(impl.absoluteToleranceInput, absoluteToleranceInput, impl);
-        forward(impl.parallelizeInput, parallelizeInput, impl);
+        forward(impl.treeInput, this.treeInput, impl);
+        forward(impl.parameterizationInput, this.parameterizationInput, impl);
+        forward(impl.finalSampleOffsetInput, this.finalSampleOffsetInput, impl);
+        forward(impl.startTypePriorProbsInput, this.startTypePriorProbsInput, impl);
+        forward(impl.typeLabelInput, this.typeLabelInput, impl);
+        forward(impl.typeTraitSetInput, this.typeTraitSetInput, impl);
+        forward(impl.conditionOnSurvivalInput, this.conditionOnSurvivalInput, impl);
+        forward(impl.conditionOnRootInput, this.conditionOnRootInput, impl);
+        forward(impl.relativeToleranceInput, this.relativeToleranceInput, impl);
+        forward(impl.absoluteToleranceInput, this.absoluteToleranceInput, impl);
+        forward(impl.parallelizeInput, this.parallelizeInput, impl);
 
         // classic-specific inputs
 
-        forward(impl.useAnalyticalSingleTypeSolutionInput, useAnalyticalSingleTypeSolutionInput, impl);
-        forward(impl.minimalProportionForParallelizationInput, minimalProportionForParallelizationInput, impl);
-        forward(impl.savePartialLikelihoodsToFileInput, savePartialLikelihoodsToFileInput, impl);
-        forward(impl.saveIntegrationResultsInput, saveIntegrationResultsInput, impl);
+        forward(impl.useAnalyticalSingleTypeSolutionInput, this.useAnalyticalSingleTypeSolutionInput, impl);
+        forward(impl.minimalProportionForParallelizationInput, this.minimalProportionForParallelizationInput, impl);
+        forward(impl.savePartialLikelihoodsToFileInput, this.savePartialLikelihoodsToFileInput, impl);
+        forward(impl.saveIntegrationResultsInput, this.saveIntegrationResultsInput, impl);
 
         impl.initAndValidate();
         return impl;
@@ -259,35 +259,43 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     @Override
     public double calculateTreeLogLikelihood(TreeInterface dummyTree) {
-        return engine.calculateTreeLogLikelihood(treeInput.get());
+        return this.engine.calculateTreeLogLikelihood(this.treeInput.get());
+    }
+
+    /**
+     * Returns the posterior probabilities for the type of the first individual, as computed during the most
+     * recent likelihood evaluation.
+     */
+    public double[] getStartTypePosteriorProbs() {
+        return this.engine.getStartTypePosteriorProbs();
     }
 
     @Override
     public boolean requiresRecalculation() {
-        return engine.requiresRecalculation();
+        return this.engine.requiresRecalculation();
     }
 
     @Override
     public void store() {
         super.store();
-        engine.store();
+        this.engine.store();
     }
 
     @Override
     public void restore() {
         super.restore();
-        engine.restore();
+        this.engine.restore();
     }
 
     @Override
     public void accept() {
         super.accept();
-        engine.accept();
+        this.engine.accept();
     }
 
     @Override
     public boolean isStochastic() {
-        return engine.isStochastic();
+        return this.engine.isStochastic();
     }
 
 }
