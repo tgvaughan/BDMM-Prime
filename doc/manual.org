@@ -1024,6 +1024,12 @@ in their default configuration:
 
 Below we describe each of them in turn.
 
+- Method :: This determines which of BDMM-Prime's two calculation engines is
+  used to compute the tree prior.  Both compute the same quantity, but the
+  flow engine is substantially faster on large trees with several types.
+  Under the default "auto" setting, BDMM-Prime chooses between them for you,
+  and you should usually leave this as-is.
+
 - Rel Tolerance and Abs Tolerance :: These parameters determine the tolerance
   thresholds given to the numerical integration algorithm used to compute
   the tree probability when multiple types are in play.  You should usually
@@ -1037,6 +1043,9 @@ Below we describe each of them in turn.
   determines the fraction of all of the tree nodes a subtree must
   contain for its tree prior calculation to be assigned to a different
   thread. The default value of 0.1 should be fine in most cases.
+  (This applies to the classic engine only. The flow engine uses its own
+  threshold, which can be customized in the XML as described in the reference
+  section below.)
   
 * Sampling Latent Variables
 :PROPERTIES:
@@ -1348,14 +1357,14 @@ the BEAST 2 XML model description language as it pertains to BDMM-Prime.
 :END:
 
 The principle object contained in every BDMM-Prime analysis is the
-=bdmmprime.distribution.BirthDeathMigrationDistribution= object representing
+=bdmmprime.facade.BirthDeathMigrationDistribution= object representing
 the probability of a tree under some birth-death distribution.
 
 In the XML the element defining this object usually appears as the
 value of a =distribution= input to a higher leverl
 =CompoundDistribution= object in the following form:
 #+begin_src xml
-  <distribution spec="bdmmprime.distribution.BirthDeathMigrationDistribution">
+  <distribution spec="bdmmprime.facade.BirthDeathMigrationDistribution">
     <!-- Inputs -->
   </distribution>
 #+end_src
@@ -1363,6 +1372,11 @@ value of a =distribution= input to a higher leverl
 The main inputs defined for the =BirthDeathMigrationDistribution= are
 as follows:
 
+- =method= (=String=, default auto) :: This selects the engine used to
+  compute the tree probability, and is one of =auto=, =classic= or =flow=.
+  Under =auto=, the classic engine is used for single-type analyses and for
+  trees with fewer than 100 leaves, and the flow engine is used for
+  everything else.
 - =parameterization= (=Parameterization=, required) ::
   This input expects an object of the abstract type =Parameterization= to
   specify the birth-death model parameters. Existing =Parameterization= objects
@@ -1391,25 +1405,53 @@ as follows:
 
 
 Besides these, the following inputs are also defined.  These are primarily used
-for debugging and/or tuning the calculation performance:
+for debugging and/or tuning the calculation performance, and are understood by
+both engines:
   
-- =useAnalyticalSingleTypeSolution= (=Boolean=, default true) :: This
-  indicates whether to use the fast analytical solution for the tree prior in the case
-  of single-type analyses.  Ideally this should always be left on.
 - =relTolerance= (=Double=, default 1e-7) :: Relative tolerance for
   numerical integration algorithm.
 - =absTolerance= (=Double=, default 1e-100) :: Absolute tolerance for
   numerical integration algorithm.
 - =parallelize= (=Boolean=, default true) :: Indicates whether to
   spawn threads to parallelize the calculation of subtree likelihoods.
+
+The following inputs have an effect only when the classic engine is in use.
+They are ignored by the flow engine:
+
+- =useAnalyticalSingleTypeSolution= (=Boolean=, default true) :: This
+  indicates whether to use the fast analytical solution for the tree prior in the case
+  of single-type analyses.  Ideally this should always be left on.
 - =parallelizationFactor= (=Double=, default 0.1) :: The minimum
   relative size (number of nodes) the smallest of a pair of subtrees
   must have in order for their calculations to be carried out in
   separate threads.
-- =savePartialLikelihoodsTofile= (=String=) :: If provided, the name
+- =savePartialLikelihoodsToFile= (=String=) :: If provided, the name
   of a file to which a tree annotated with partial likelihoods will be
   written.  This is useful for debugging the cause of chain
   initialization failures.
+- =storeIntegrationResults= (=Boolean=, default false) :: Indicates whether
+  to retain the results of the ge(t) integration so that they can be used by
+  other models.
+
+Likewise, the following inputs have an effect only when the flow engine is in
+use, and are ignored by the classic engine:
+
+- =initialMatrixStrategy= (=String=, default average_inverse) :: The strategy
+  used to choose the initial state of the flow integration on each interval,
+  and is one of =identity=, =random=, =average_inverse=.
+- =useInverseFlow= (=Boolean=, default false) :: Indicates whether to use the
+  inverse flow algorithm.  This is faster, but can lead to greater numerical
+  instability.
+- =seed= (=Integer=, default 3215) :: The random seed used to draw the initial
+  state under the =random= initial matrix strategy.
+- =minimalSubtreeSizeForParallelization= (=Integer=, default 64) :: The
+  minimum size (number of nodes) the smaller of a pair of subtrees must have
+  in order for their calculations to be carried out in separate threads.
+  This is the flow engine's counterpart to =parallelizationFactor=.
+- =maxConditioningNumber= (=Double=, default 1e8) :: The largest condition
+  number tolerated before an interval is split into smaller ones.
+- =useLoucaPennellIntervals= (=Boolean=, default false) :: Indicates whether
+  to use the interval heuristic introduced by Louca and Pennell.
 
 **** Parameterizations
 :PROPERTIES:
@@ -1417,7 +1459,7 @@ for debugging and/or tuning the calculation performance:
 :END:
 
 The =Parameterization= is an abstract class of objects tasked with connecting parameter
-values to the internal representation of birth-death models used by =BirthDeathMigrationModel=.
+values to the internal representation of birth-death models used by =BirthDeathMigrationDistribution=.
 There are several concrete classes of this type, as detailed below.
 
 *Note*: Besides the parameterization-specific inputs, each parameterization object takes
@@ -1805,7 +1847,8 @@ state conditional on the data.
 
 This object takes the following input:
 - =bdmmTreePrior= (=BirthDeathMigrationDistribution=) ::
-  Reference to the ~BirthDeathMigrationDistribution~ used in the analysis.
+  Reference to the =bdmmprime.facade.BirthDeathMigrationDistribution= used in
+  the analysis.
 
 *** Stochastic mapping
 :PROPERTIES:
@@ -1828,7 +1871,8 @@ The important inputs are:
 - =parameterization= (=Parameterization=) ::
 - =bdmmDistrib= (=BirthDeathMigrationDistribution=) :: 
   One of these two inputs must be provided, as these provide the parameters
-  needed to sample the ancestral type distribution.
+  needed to sample the ancestral type distribution.  If used, this must be a
+  reference to the =bdmmprime.facade.BirthDeathMigrationDistribution=.
 - =untypedTree= (=Tree=, required) :: 
   The tree on which the type changes are to be stochastically mapped.
 - =typeTraitSet= (=TraitSet=, required) :: 
@@ -1941,7 +1985,8 @@ Objects of type =SampledTrajectory= accept the following inputs:
 - =parameterization= (=Parameterization=) :: 
 - =bdmmDistrib= (=BirthDeathMigrationDistribution=) :: 
   One of these two inputs must be provided, as these provide the parameters
-  needed to sample the population dynamics.
+  needed to sample the population dynamics.  If used, this must be a
+  reference to the =bdmmprime.facade.BirthDeathMigrationDistribution=.
 - =typeMappedTree= (=Tree=, required) ::
   An edge-typed tree. Ideally a reference to a =TypeMappedTree=.
 - =typeLabel= (=String=, required) ::
