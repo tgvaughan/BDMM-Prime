@@ -23,6 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  */
 public class BirthDeathMigrationLikelihoodTest {
 
+    /**
+     * Creates the different test parameterizations.
+     * Format is { method, initial matrix, use inverse flow, parallelize }.
+     */
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
             { Method.classic, "identity", false,  false },
