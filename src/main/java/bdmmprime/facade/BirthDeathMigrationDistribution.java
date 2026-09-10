@@ -1,10 +1,7 @@
 package bdmmprime.facade;
 
 import bdmmprime.parameterization.Parameterization;
-import beast.base.core.BEASTInterface;
-import beast.base.core.Citation;
-import beast.base.core.Description;
-import beast.base.core.Input;
+import beast.base.core.*;
 import beast.base.evolution.speciation.SpeciesTreeDistribution;
 import beast.base.evolution.tree.TraitSet;
 import beast.base.evolution.tree.Tree;
@@ -185,6 +182,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * Builds the flow engine, forwarding the shared inputs and the flow-specific ones.
      */
     private BirthDeathMigrationLikelihoodEngine buildFlowEngine() {
+        Log.info("Using the flow implementation of BDMM'.");
+
         bdmmprime.flow.BirthDeathMigrationDistribution impl = new bdmmprime.flow.BirthDeathMigrationDistribution();
 
         // shared inputs
@@ -218,6 +217,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * Builds the classic engine, forwarding the shared inputs and the classic-specific ones.
      */
     private BirthDeathMigrationLikelihoodEngine buildClassicEngine() {
+        Log.info("Using the classic implementation of BDMM'.");
+
         bdmmprime.distribution.BirthDeathMigrationDistribution impl = new bdmmprime.distribution.BirthDeathMigrationDistribution();
 
         // shared inputs
