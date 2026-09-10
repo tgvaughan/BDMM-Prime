@@ -13,10 +13,10 @@ public interface BirthDeathMigrationLikelihoodEngine {
     double calculateTreeLogLikelihood(TreeInterface tree);
 
     /* BEAST StateNode methods */
-
     void store();
     void restore();
     void accept();
     boolean requiresRecalculation();
     boolean isStochastic();
+
 }

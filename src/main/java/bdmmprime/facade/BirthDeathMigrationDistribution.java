@@ -7,14 +7,13 @@ import beast.base.core.Description;
 import beast.base.core.Input;
 import beast.base.evolution.speciation.SpeciesTreeDistribution;
 import beast.base.evolution.tree.TraitSet;
+import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeInterface;
 import beast.base.spec.domain.NonNegativeReal;
 import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.inference.parameter.SimplexParam;
 import beast.base.spec.type.RealScalar;
 import beast.base.spec.type.Simplex;
-
-import java.util.Locale;
 
 @Citation(value = "Kuehnert D, Stadler T, Vaughan TG, Drummond AJ. (2016). Phylodynamics with migration: " +
         "A computational framework to quantify population structure from genomic data. " +
@@ -28,11 +27,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     // engine selection
 
-    public Input<String> methodInput = new Input<>(
+    public Input<Method> methodInput = new Input<>(
             "method",
-            "Which likelihood engine to use: 'auto' (default; the flow engine, or the classic engine when the " +
-                    "model has a single type so the analytical solution applies), 'flow', or 'classic'.",
-            "auto"
+            "Which likelihood engine to use: 'auto', 'flow', or 'classic'.",
+            Method.auto
     );
 
     // inputs shared by both engines
@@ -168,18 +166,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public void initAndValidate() {
         super.initAndValidate();
 
-        String method = methodInput.get().trim().toLowerCase(Locale.ROOT);
+        Method method = this.methodInput.get();
+        Parameterization param = this.parameterizationInput.get();
+        TreeInterface tree = this.treeInput.get();
 
         this.engine = switch (method) {
-            case "auto" -> {
-                boolean useClassic = this.parameterizationInput.get().getNTypes() == 1;
-                yield useClassic ? buildClassicEngine() : buildFlowEngine();
+            case Method.auto -> {
+                boolean useClassic = param.getNTypes() == 1 || tree.getLeafNodeCount() < 100;
+                yield useClassic ? this.buildClassicEngine() : this.buildFlowEngine();
             }
-            case "flow" -> buildFlowEngine();
-            case "classic" -> buildClassicEngine();
-            default -> throw new IllegalArgumentException(
-                    "Unknown method '" + methodInput.get() + "'. Use 'auto', 'flow', or 'classic'."
-            );
+            case Method.flow -> this.buildFlowEngine();
+            case Method.classic -> this.buildClassicEngine();
         };
     }
 
@@ -187,8 +184,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * Builds the flow engine, forwarding the shared inputs and the flow-specific ones.
      */
     private BirthDeathMigrationLikelihoodEngine buildFlowEngine() {
-        bdmmprime.flow.BirthDeathMigrationDistribution impl =
-                new bdmmprime.flow.BirthDeathMigrationDistribution();
+        bdmmprime.flow.BirthDeathMigrationDistribution impl = new bdmmprime.flow.BirthDeathMigrationDistribution();
 
         // shared inputs
 
@@ -221,8 +217,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
      * Builds the classic engine, forwarding the shared inputs and the classic-specific ones.
      */
     private BirthDeathMigrationLikelihoodEngine buildClassicEngine() {
-        bdmmprime.distribution.BirthDeathMigrationDistribution impl =
-                new bdmmprime.distribution.BirthDeathMigrationDistribution();
+        bdmmprime.distribution.BirthDeathMigrationDistribution impl = new bdmmprime.distribution.BirthDeathMigrationDistribution();
 
         // shared inputs
 
@@ -250,7 +245,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     }
 
     /**
-     * Copies the value of a facade input into the matching engine input, using the type-checked setter.
+     * Copies the value of a facade input into the matching engine input.
      * Inputs left unset on the facade (e.g. the optional {@code typeLabel}) are skipped so the engine keeps its default.
      */
     private static <T> void forward(Input<T> target, Input<T> source, BEASTInterface owner) {
