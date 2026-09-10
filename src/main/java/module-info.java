@@ -11,6 +11,8 @@ open module bdmmprime {
     requires hipparchus.core;
 
     exports bdmmprime.distribution;
+    exports bdmmprime.facade;
+    exports bdmmprime.flow;
     exports bdmmprime.mapping;
     exports bdmmprime.parameterization;
     exports bdmmprime.trajectories;
@@ -54,6 +56,8 @@ open module bdmmprime {
         bdmmprime.parameterization.FBDParameterization,
         bdmmprime.parameterization.TypeSet,
         bdmmprime.facade.BirthDeathMigrationDistribution,
+        bdmmprime.flow.BirthDeathMigrationDistribution,
+        bdmmprime.distribution.BirthDeathMigrationDistribution,
         bdmmprime.trajectories.simulation.SimulatedTrajectoryLogger,
         bdmmprime.trajectories.simulation.UnconditionedTrajectoryLogger,
         bdmmprime.trajectories.simulation.SimulatedTree,
