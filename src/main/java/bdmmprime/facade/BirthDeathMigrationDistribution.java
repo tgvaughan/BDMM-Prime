@@ -5,7 +5,6 @@ import bdmmprime.parameterization.Parameterization;
 import beast.base.core.*;
 import beast.base.evolution.speciation.SpeciesTreeDistribution;
 import beast.base.evolution.tree.TraitSet;
-import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeInterface;
 import beast.base.spec.domain.NonNegativeReal;
 import beast.base.spec.inference.parameter.RealScalarParam;
@@ -27,7 +26,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     public Input<Method> methodInput = new Input<>(
             "method",
-            "Which likelihood engine to use: 'auto', 'flow', or 'classic'.",
+            "Which likelihood engine to use: 'auto', 'flow', or 'classic'. 'auto' uses the classic implementation " +
+                    "when there is a single type or when there are fewer than 100 samples.",
             Method.auto,
             Method.values()
     );
