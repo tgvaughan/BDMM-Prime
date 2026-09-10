@@ -19,7 +19,7 @@
 
 package bdmmprime.util;
 
-import bdmmprime.distribution.BirthDeathMigrationDistribution;
+import bdmmprime.facade.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.TypeSet;
 import beast.base.core.Input;
 import beast.base.core.Loggable;
@@ -68,7 +68,7 @@ public class StartTypePosteriorProbsLogger extends CalculationNode implements Lo
         if (typeSet.getNTypes()==1)
             return;
 
-        for (double startTypeProb : treePrior.getStartTypePosteriorProbs())
+        for (double startTypeProb : treePrior.startTypePriorProbsInput.get().getElements())
             out.print(startTypeProb + "\t");
     }
 

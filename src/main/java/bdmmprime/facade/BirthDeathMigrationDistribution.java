@@ -30,7 +30,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public Input<Method> methodInput = new Input<>(
             "method",
             "Which likelihood engine to use: 'auto', 'flow', or 'classic'.",
-            Method.auto
+            Method.auto,
+            Method.values()
     );
 
     // inputs shared by both engines

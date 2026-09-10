@@ -56,7 +56,7 @@
 
     <mergewith point="treePriorTemplates">
 
-        <subtemplate id="BDMMPrime" class="bdmmprime.distribution.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
+        <subtemplate id="BDMMPrime" class="bdmmprime.facade.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
                      suppressInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.typeLabel,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.storeNodeTypes,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.tree,
@@ -85,7 +85,7 @@
                      inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
-                <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distribution.BirthDeathMigrationDistribution"
+                <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.facade.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="true" parallelize="true">
 
                     <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"

@@ -53,7 +53,7 @@ open module bdmmprime {
         bdmmprime.parameterization.EpiParameterization,
         bdmmprime.parameterization.FBDParameterization,
         bdmmprime.parameterization.TypeSet,
-        bdmmprime.distribution.BirthDeathMigrationDistribution,
+        bdmmprime.facade.BirthDeathMigrationDistribution,
         bdmmprime.trajectories.simulation.SimulatedTrajectoryLogger,
         bdmmprime.trajectories.simulation.UnconditionedTrajectoryLogger,
         bdmmprime.trajectories.simulation.SimulatedTree,
