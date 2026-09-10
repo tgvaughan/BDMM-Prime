@@ -1,4 +1,4 @@
-package bdmmprime.flow;
+package bdmmprime.facade;
 
 import bdmmprime.parameterization.*;
 import bdmmprime.util.ProcessLength;
@@ -25,16 +25,18 @@ public class BirthDeathMigrationLikelihoodTest {
 
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            { "identity", false,  false },
-            { "identity", false,  true },
-            { "random",  false, false },
-            { "random",  false, true },
-            { "random", true,  false },
-            { "random", true,  true },
-            { "average_inverse",  false, false },
-            { "average_inverse",  false, true },
-            { "average_inverse", true,  false },
-            { "average_inverse", true,  true },
+            { Method.classic, "identity", false,  false },
+            { Method.classic, "identity", false,  true },
+            { Method.flow, "identity", false,  false },
+            { Method.flow, "identity", false,  true },
+            { Method.flow, "random",  false, false },
+            { Method.flow, "random",  false, true },
+            { Method.flow, "random", true,  false },
+            { Method.flow, "random", true,  true },
+            { Method.flow, "average_inverse",  false, false },
+            { Method.flow, "average_inverse",  false, true },
+            { Method.flow, "average_inverse", true,  false },
+            { Method.flow, "average_inverse", true,  true }
         });
     }
 
@@ -67,7 +69,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigRateChangeBasicCanonical(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigRateChangeBasicCanonical(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // Test for uncoloured tree
 
@@ -102,6 +104,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick,
@@ -130,7 +133,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigRateChangeBasicEpi(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigRateChangeBasicEpi(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // Test for uncoloured tree
 
@@ -165,6 +168,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick,
@@ -193,7 +197,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRemovalProbChangeBasic(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRemovalProbChangeBasic(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         String newick = "((1[&type=0]: 1.5, 2[&type=0]: 0)3[&type=0]: 3.5, 4[&type=0]: 4) ;";
 
@@ -218,6 +222,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -236,6 +241,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
         densityExact.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -258,7 +264,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void tinyAnalyticalTest(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void tinyAnalyticalTest(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "(1[&type=0]: 1.0, 2[&type=0]: 1.0): 1.0;";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -285,6 +291,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -299,6 +306,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
         densityExact.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -320,7 +328,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRemovalProbChangeTwoState(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRemovalProbChangeTwoState(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         String newick = "((1[&type=0]: 1.5, 2[&type=1]: 0)3[&type=0]: 3.5, 4[&type=1]: 4) ;";
 
@@ -354,6 +362,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -376,7 +385,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihood1dim(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihood1dim(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser( "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -399,7 +408,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
@@ -418,7 +428,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRateChange1dim(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRateChange1dim(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -441,7 +451,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
@@ -460,7 +471,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationMigTiny(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testLikelihoodCalculationMigTiny(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         // migration and no birth among demes
 
@@ -487,7 +498,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
                 "conditionOnSurvival", false,
@@ -566,7 +578,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationMig(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationMig(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // uncoloured tree, asymmetric types
         Tree tree = new TreeParser(
@@ -595,7 +607,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
                 "conditionOnSurvival", false,
@@ -617,7 +630,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testAmongRateChange(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testAmongRateChange(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=0]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
                 false);
@@ -646,7 +659,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
                 "conditionOnSurvival", false,
@@ -668,7 +682,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testAmongNoRateChange(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testAmongNoRateChange(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=1]:0.5):1,(1[&type=1]:2,2[&type=1]:1):3);",
                 false);
@@ -697,7 +711,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0, 0.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
@@ -718,7 +733,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMig3types(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMig3types(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=2]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
                 false);
@@ -744,7 +759,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0, 1.0}, UnitInterval.INSTANCE), 3));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0/3.0, 1.0/3.0, 1.0/3.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
@@ -762,7 +778,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini3(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini3(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "((1:1.0,2:0.0):1.0,3:0):0.0";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -783,6 +799,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "conditionOnSurvival", false,
@@ -800,7 +817,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRateChangeCondOnSampling1dim(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRateChangeCondOnSampling1dim(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -823,7 +840,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
@@ -850,7 +868,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationInfAmongDemesSymmetric(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationInfAmongDemesSymmetric(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // uncoloured, symmetric tree
 
@@ -878,7 +896,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
                 "tree", tree,
@@ -901,7 +920,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationInfAmongDemesAsymmetric(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationInfAmongDemesAsymmetric(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=0]:0.5):1,(1[&type=0]:2,2[&type=1]:1):3);",
                 false);
@@ -927,7 +946,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
                 "tree", tree,
@@ -947,7 +967,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
                 false);
@@ -970,7 +990,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
@@ -988,7 +1009,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini2(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini2(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "((1:1.5,2:0.5):0.5,3:0.0)4:0.0;";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -1009,6 +1030,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "conditionOnSurvival", true,
                 "tree", new TreeParser(newick, false, false, true,0),
@@ -1028,7 +1050,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodCalculationWithoutAncestors(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodCalculationWithoutAncestors(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
                 false);
@@ -1051,7 +1073,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "conditionOnRoot", true,
@@ -1082,7 +1105,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testDirectAncestor(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testDirectAncestor(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // two identical trees up to rotation (the two root children are rotated)
         String newick1 = "((1[&type=0]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=0]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
@@ -1118,6 +1141,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "tree", new TreeParser(newick1, false, false, true,0),
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
@@ -1147,7 +1171,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSingleRho(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSingleRho(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=0]: 4.5):1,3[&type=0]:5.5);",false);
 
@@ -1179,6 +1203,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnRoot", true,
@@ -1220,7 +1245,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRho2tips(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMultiRho2tips(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         // two tips sampled at the same time
         Tree tree = new TreeParser("(3[&type=0]: 4, 4[&type=0]: 4) ;",false);
@@ -1257,6 +1282,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
@@ -1291,7 +1317,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoSampling(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMultiRhoSampling(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
         // Uncoloured tree
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
 
@@ -1326,6 +1352,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
+                "method", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
@@ -1357,7 +1384,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges1(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges1(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1391,7 +1418,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         originParam));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
@@ -1407,7 +1435,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges2(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges2(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1440,7 +1468,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.01}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
@@ -1455,7 +1484,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges3(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges3(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1488,7 +1517,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.05, 0.01}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "tree", tree,
@@ -1503,7 +1533,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges4(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges4(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1535,7 +1565,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.05, 0.01}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
                 "conditionOnRoot", true,
@@ -1555,7 +1586,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigrationRhoSampling(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigrationRhoSampling(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=1]: 4.5):1,3[&type=0]:5.5);",
                 false);
@@ -1585,7 +1616,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         new ProcessLength(tree)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.6, 0.4}),
                 "conditionOnSurvival", false,
                 "conditionOnRoot", true,
@@ -1609,7 +1641,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMultiRho(String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testSALikelihoodMultiRho(Method method, String initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
 
@@ -1637,7 +1669,8 @@ public class BirthDeathMigrationLikelihoodTest {
                         origin));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("parameterization", parameterization,
+        density.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
@@ -1648,7 +1681,8 @@ public class BirthDeathMigrationLikelihoodTest {
         );
 
         BirthDeathMigrationDistribution primeDensity = new BirthDeathMigrationDistribution();
-        primeDensity.initByName("parameterization", parameterization,
+        primeDensity.initByName("method", method,
+                "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
