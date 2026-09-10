@@ -17,9 +17,13 @@ import beast.base.spec.type.Simplex;
         "Mol Biol Evol. 33(8):2102-2116.",
         DOI = "10.1093/molbev/msw064", year = 2016, firstAuthorSurname = "Kuehnert")
 
-@Description("Single entry point for the BDMM tree prior. Exposes the union of the inputs understood by the " +
-        "classic P0Ge implementation (bdmmprime.distribution) and the flow implementation (bdmmprime.flow), " +
-        "and delegates the actual likelihood computation to whichever engine the 'method' input selects.")
+@Description("This model implements a multi-deme version of the BirthDeathSkylineModel " +
+        "with discrete locations and migration events among demes. " +
+        "This class supports both the classic implementation " +
+        "(bdmmprime.distribution.BirthDeathMigrationDistribution) " +
+        "and the flow implementation " +
+        "(bdmmprime.flow.BirthDeathMigrationDistribution) depending on " +
+        "the 'method' input.")
 public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     // engine selection
@@ -264,10 +268,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         return this.engine.calculateTreeLogLikelihood(this.treeInput.get());
     }
 
-    /**
-     * Returns the posterior probabilities for the type of the first individual, as computed during the most
-     * recent likelihood evaluation.
-     */
     public double[] getStartTypePosteriorProbs() {
         return this.engine.getStartTypePosteriorProbs();
     }
