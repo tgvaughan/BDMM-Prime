@@ -17,6 +17,11 @@ import beast.base.spec.type.Simplex;
         "Mol Biol Evol. 33(8):2102-2116.",
         DOI = "10.1093/molbev/msw064", year = 2016, firstAuthorSurname = "Kuehnert")
 
+@Citation(value = "Louca S, Pennell MW. (2020). A general and efficient algorithm for the likelihood of " +
+        "diversification and discrete-trait evolutionary models. " +
+        "Syst Biol. 69(3):545-556.",
+        DOI = "10.1093/sysbio/syz055", year = 2020, firstAuthorSurname = "Louca")
+
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel " +
         "with discrete locations and migration events among demes. " +
         "This class supports both the classic implementation " +
