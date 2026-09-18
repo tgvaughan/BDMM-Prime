@@ -19,7 +19,7 @@
 
 package bdmmprime.mapping;
 
-import bdmmprime.distribution.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.classic.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
 import bdmmprime.testclasses.RealVectorParamFromString;
 import bdmmprime.trajectories.simulation.SimulatedTree;

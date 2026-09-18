@@ -1,0 +1,134 @@
+/*
+ * Copyright (c) 2017-2026 ETH Zürich
+ *
+ * This file is part of bdmm-prime.
+ *
+ * bdmm-prime is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or (at
+ * your option) any later version.
+ *
+ * bdmm-prime is distributed in the hope that it will be useful, but
+ * WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with bdmm-prime. If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package bdmmprime.distribution.classic;
+
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
+public class SmallNumberTest {
+
+    double TOLERANCE = 1e-20;
+
+    @Test
+    public void test1() {
+
+        double testedA = 2.2914985084252684E90;
+        SmallNumber snA = new SmallNumber(testedA);
+
+        assertEquals(Math.log(testedA), snA.log(), TOLERANCE);
+    }
+
+    @Test
+    public void test2() {
+
+        double aOld = 1.2364544564e-75;
+        SmallNumber a = new SmallNumber(aOld);
+        SmallNumber f = new SmallNumber(Math.exp(-50));
+        SmallNumber c = new SmallNumber(0);
+
+        assertEquals(Math.log(aOld), a.log(), TOLERANCE);
+
+        SmallNumber b = new SmallNumber(1.0)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a)
+                .multiplyBy(a);
+
+        double trueLogB = -1379.8530719994023;
+        assertEquals(trueLogB, b.log(), TOLERANCE);
+
+
+        //		SmallNumber sampling = new SmallNumber();
+        //		System.out.println(sampling.toString());
+        //		SmallNumber[] emptyTable = new SmallNumber[4];
+        //		double emptyDouble[] = new double[4];
+        //		for (int i=0; i<4; i++) emptyTable[i] = new SmallNumber();
+        //		System.out.println(SmallNumber.toString(emptyTable));
+        //		System.out.println(emptyDouble[2]);
+
+
+        // Tests on basic operations
+//				double aOld = 0.45643453;
+//				double bOld = 8900.;
+//				//				double bOld = 0;
+//				SmallNumber a = new SmallNumber(aOld);
+//				SmallNumber birth = new SmallNumber(bOld);
+//				SmallNumber c = SmallNumber.multiply(a, birth);
+//				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld);
+//				double lambda = 0.00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005;
+//				c = c.scalarMultiply(lambda);
+//				System.out.println("The value of c is " + c.toString()+" vs " + aOld*bOld*lambda);
+//				SmallNumber death = SmallNumber.add(a, birth);
+//				System.out.println("With SmallNumber implementation: " + death.toString() + " vs "+ (aOld+bOld));
+
+        //		double aOld = 4564.3453;
+        //		double bOld = 89;
+        //		double cOld = aOld*bOld*lambda;
+        //		double dOld = aOld+bOld;
+        //		System.out.println("With classic double implementation: " + dOld);
+
+    }
+
+    @Test
+    public void test3() {
+
+		// Test on scaledNumbers
+		double[] eqp = {0, 1, 0.5, 0.8, 0.9, 1.0, 0.6};
+		SmallNumber[] eq = {
+		        new SmallNumber(0),
+                new SmallNumber(0),
+                new SmallNumber(1.5),
+                new SmallNumber(0),
+                new SmallNumber(1., 400),
+                new SmallNumber(1., -200),
+                new SmallNumber(1., -1000)};
+		double m = SmallNumber.averageExponent(eq);
+
+		ScaledNumbers scaeq = (new P0GeState(eqp, eq)).getScaledState();
+		System.out.println(SmallNumber.toString(eq) +  "with an average exponent of: " + m + "\t and minimal exponent compared to the set threshold of: " + SmallNumber.compareExponent(eq));
+		System.out.println(scaeq.getScalingFactor());
+		System.out.println("\n"
+                + scaeq.getEquation()[0] + " "
+                + scaeq.getEquation()[1] + " "
+                + scaeq.getEquation()[2] + " "
+                + scaeq.getEquation()[3] + " "
+                + scaeq.getEquation()[4] + " "
+                + scaeq.getEquation()[5] + " "
+                + scaeq.getEquation()[6]);
+
+		// TODO: Implement assertions for this test (not sure what it's meant to be doing TBH!)
+
+		//		double res = 0*Math.exp(Math.log(10)*(389));
+		//		System.out.println(Math.exp(2*389));
+		//
+		//		SmallNumber ka = new SmallNumber(Double.POSITIVE_INFINITY);
+		//		System.out.println(SmallNumber.isInfinite(ka));
+		//		System.out.println(ka.toString());
+		//		SmallNumber kb = new SmallNumber(0);
+		//		System.out.println(SmallNumber.isInfinite(kb));
+
+
+    }
+}

@@ -10,14 +10,15 @@ open module bdmmprime {
     requires colt;
     requires hipparchus.core;
 
-    exports bdmmprime.distribution;
-    exports bdmmprime.facade;
-    exports bdmmprime.flow;
-    exports bdmmprime.flow.flowSystems;
+    exports bdmmprime.distribution.classic;
+    exports bdmmprime.distribution.flow;
+    exports bdmmprime.distribution.flow.flowSystems;
     exports bdmmprime.mapping;
     exports bdmmprime.parameterization;
     exports bdmmprime.trajectories;
     exports bdmmprime.util;
+    exports bdmmprime.distribution;
+    exports bdmmprime.facade;
 
     provides beast.base.core.BEASTInterface with
         bdmmprime.mapping.TypeMappedTree,
@@ -56,9 +57,9 @@ open module bdmmprime {
         bdmmprime.parameterization.EpiParameterization,
         bdmmprime.parameterization.FBDParameterization,
         bdmmprime.parameterization.TypeSet,
-        bdmmprime.facade.BirthDeathMigrationDistribution,
-        bdmmprime.flow.BirthDeathMigrationDistribution,
-        bdmmprime.distribution.BirthDeathMigrationDistribution,
+            bdmmprime.facade.BirthDeathMigrationDistribution,
+            bdmmprime.distribution.flow.BirthDeathMigrationDistribution,
+            bdmmprime.distribution.classic.BirthDeathMigrationDistribution,
         bdmmprime.trajectories.simulation.SimulatedTrajectoryLogger,
         bdmmprime.trajectories.simulation.UnconditionedTrajectoryLogger,
         bdmmprime.trajectories.simulation.SimulatedTree,

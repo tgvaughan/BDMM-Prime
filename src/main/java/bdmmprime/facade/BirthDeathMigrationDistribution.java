@@ -1,6 +1,6 @@
 package bdmmprime.facade;
 
-import bdmmprime.flow.flowSystems.InitialMatrixStrategy;
+import bdmmprime.distribution.flow.flowSystems.InitialMatrixStrategy;
 import bdmmprime.parameterization.Parameterization;
 import beast.base.core.*;
 import beast.base.evolution.speciation.SpeciesTreeDistribution;
@@ -30,16 +30,6 @@ import beast.base.spec.type.Simplex;
         "(bdmmprime.flow.BirthDeathMigrationDistribution) depending on " +
         "the 'method' input.")
 public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
-
-    // engine selection
-
-    public Input<Method> methodInput = new Input<>(
-            "method",
-            "Which likelihood engine to use: 'auto', 'flow', or 'classic'. 'auto' uses the classic implementation " +
-                    "when there is a single type or when there are fewer than 100 samples.",
-            Method.auto,
-            Method.values()
-    );
 
     // inputs shared by both engines
 
@@ -169,23 +159,33 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             false
     );
 
+    // engine selection
+
+    public Input<Engine> engineInput = new Input<>(
+            "engine",
+            "Which likelihood engine to use: 'auto', 'flow', or 'classic'. 'auto' uses the classic implementation " +
+                    "when there is a single type or when there are fewer than 100 samples.",
+            Engine.auto,
+            Engine.values()
+    );
+
     private BirthDeathMigrationLikelihoodEngine engine;
 
     @Override
     public void initAndValidate() {
         super.initAndValidate();
 
-        Method method = this.methodInput.get();
+        Engine method = this.engineInput.get();
         Parameterization param = this.parameterizationInput.get();
         TreeInterface tree = this.treeInput.get();
 
         this.engine = switch (method) {
-            case Method.auto -> {
+            case Engine.auto -> {
                 boolean useClassic = param.getNTypes() == 1 || tree.getLeafNodeCount() < 100;
                 yield useClassic ? this.buildClassicEngine() : this.buildFlowEngine();
             }
-            case Method.flow -> this.buildFlowEngine();
-            case Method.classic -> this.buildClassicEngine();
+            case Engine.flow -> this.buildFlowEngine();
+            case Engine.classic -> this.buildClassicEngine();
         };
     }
 
@@ -195,7 +195,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private BirthDeathMigrationLikelihoodEngine buildFlowEngine() {
         Log.info("Using the flow implementation of BDMM-Prime.");
 
-        bdmmprime.flow.BirthDeathMigrationDistribution impl = new bdmmprime.flow.BirthDeathMigrationDistribution();
+        bdmmprime.distribution.flow.BirthDeathMigrationDistribution impl = new bdmmprime.distribution.flow.BirthDeathMigrationDistribution();
 
         // shared inputs
 
@@ -230,7 +230,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     private BirthDeathMigrationLikelihoodEngine buildClassicEngine() {
         Log.info("Using the classic implementation of BDMM-Prime.");
 
-        bdmmprime.distribution.BirthDeathMigrationDistribution impl = new bdmmprime.distribution.BirthDeathMigrationDistribution();
+        bdmmprime.distribution.classic.BirthDeathMigrationDistribution impl = new bdmmprime.distribution.classic.BirthDeathMigrationDistribution();
 
         // shared inputs
 

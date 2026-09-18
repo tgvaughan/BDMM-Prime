@@ -1,6 +1,6 @@
 package bdmmprime.facade;
 
-import bdmmprime.flow.flowSystems.InitialMatrixStrategy;
+import bdmmprime.distribution.flow.flowSystems.InitialMatrixStrategy;
 import bdmmprime.parameterization.*;
 import bdmmprime.util.ProcessLength;
 import beast.base.evolution.tree.Tree;
@@ -30,20 +30,20 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            { Method.classic, InitialMatrixStrategy.identity, false,  false },
-            { Method.classic, InitialMatrixStrategy.identity, false,  true },
-            { Method.flow, InitialMatrixStrategy.identity, false,  false },
-            { Method.flow, InitialMatrixStrategy.identity, false,  true },
-            { Method.flow, InitialMatrixStrategy.identity, true,  false },
-            { Method.flow, InitialMatrixStrategy.identity, true,  true },
-            { Method.flow, InitialMatrixStrategy.random,  false, false },
-            { Method.flow, InitialMatrixStrategy.random,  false, true },
-            { Method.flow, InitialMatrixStrategy.random, true,  false },
-            { Method.flow, InitialMatrixStrategy.random, true,  true },
-            { Method.flow, InitialMatrixStrategy.average_inverse,  false, false },
-            { Method.flow, InitialMatrixStrategy.average_inverse,  false, true },
-            { Method.flow, InitialMatrixStrategy.average_inverse, true,  false },
-            { Method.flow, InitialMatrixStrategy.average_inverse, true,  true }
+            { Engine.classic, InitialMatrixStrategy.identity, false,  false },
+            { Engine.classic, InitialMatrixStrategy.identity, false,  true },
+            { Engine.flow, InitialMatrixStrategy.identity, false,  false },
+            { Engine.flow, InitialMatrixStrategy.identity, false,  true },
+            { Engine.flow, InitialMatrixStrategy.identity, true,  false },
+            { Engine.flow, InitialMatrixStrategy.identity, true,  true },
+            { Engine.flow, InitialMatrixStrategy.random,  false, false },
+            { Engine.flow, InitialMatrixStrategy.random,  false, true },
+            { Engine.flow, InitialMatrixStrategy.random, true,  false },
+            { Engine.flow, InitialMatrixStrategy.random, true,  true },
+            { Engine.flow, InitialMatrixStrategy.average_inverse,  false, false },
+            { Engine.flow, InitialMatrixStrategy.average_inverse,  false, true },
+            { Engine.flow, InitialMatrixStrategy.average_inverse, true,  false },
+            { Engine.flow, InitialMatrixStrategy.average_inverse, true,  true }
         });
     }
 
@@ -76,7 +76,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigRateChangeBasicCanonical(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigRateChangeBasicCanonical(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // Test for uncoloured tree
 
@@ -140,7 +140,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigRateChangeBasicEpi(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigRateChangeBasicEpi(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // Test for uncoloured tree
 
@@ -204,7 +204,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRemovalProbChangeBasic(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRemovalProbChangeBasic(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         String newick = "((1[&type=0]: 1.5, 2[&type=0]: 0)3[&type=0]: 3.5, 4[&type=0]: 4) ;";
 
@@ -271,7 +271,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void tinyAnalyticalTest(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void tinyAnalyticalTest(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "(1[&type=0]: 1.0, 2[&type=0]: 1.0): 1.0;";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -335,7 +335,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRemovalProbChangeTwoState(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRemovalProbChangeTwoState(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         String newick = "((1[&type=0]: 1.5, 2[&type=1]: 0)3[&type=0]: 3.5, 4[&type=1]: 4) ;";
 
@@ -392,7 +392,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihood1dim(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihood1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser( "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -435,7 +435,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRateChange1dim(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRateChange1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -478,7 +478,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationMigTiny(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testLikelihoodCalculationMigTiny(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         // migration and no birth among demes
 
@@ -585,7 +585,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationMig(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationMig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // uncoloured tree, asymmetric types
         Tree tree = new TreeParser(
@@ -637,7 +637,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testAmongRateChange(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testAmongRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=0]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
                 false);
@@ -689,7 +689,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testAmongNoRateChange(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testAmongNoRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=1]:0.5):1,(1[&type=1]:2,2[&type=1]:1):3);",
                 false);
@@ -740,7 +740,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMig3types(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMig3types(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=2]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
                 false);
@@ -785,7 +785,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini3(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini3(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "((1:1.0,2:0.0):1.0,3:0):0.0";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -824,7 +824,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRateChangeCondOnSampling1dim(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRateChangeCondOnSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -875,7 +875,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationInfAmongDemesSymmetric(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationInfAmongDemesSymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // uncoloured, symmetric tree
 
@@ -927,7 +927,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationInfAmongDemesAsymmetric(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationInfAmongDemesAsymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=0]:0.5):1,(1[&type=0]:2,2[&type=1]:1):3);",
                 false);
@@ -974,7 +974,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
                 false);
@@ -1016,7 +1016,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini2(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
         String newick = "((1:1.5,2:0.5):0.5,3:0.0)4:0.0;";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -1057,7 +1057,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodCalculationWithoutAncestors(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodCalculationWithoutAncestors(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
                 false);
@@ -1112,7 +1112,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testDirectAncestor(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testDirectAncestor(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         // two identical trees up to rotation (the two root children are rotated)
         String newick1 = "((1[&type=0]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=0]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
@@ -1178,7 +1178,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSingleRho(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSingleRho(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=0]: 4.5):1,3[&type=0]:5.5);",false);
 
@@ -1252,7 +1252,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRho2tips(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMultiRho2tips(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         // two tips sampled at the same time
         Tree tree = new TreeParser("(3[&type=0]: 4, 4[&type=0]: 4) ;",false);
@@ -1324,7 +1324,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoSampling(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMultiRhoSampling(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
         // Uncoloured tree
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
 
@@ -1391,7 +1391,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges1(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges1(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1442,7 +1442,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges2(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1491,7 +1491,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges3(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges3(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1540,7 +1540,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges4(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges4(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1593,7 +1593,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigrationRhoSampling(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigrationRhoSampling(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
 
         Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=1]: 4.5):1,3[&type=0]:5.5);",
                 false);
@@ -1648,7 +1648,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMultiRho(Method method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testSALikelihoodMultiRho(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
 
