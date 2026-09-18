@@ -39,30 +39,34 @@ import java.util.Collection;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 /**
- * These tests were taken from the original BDMM-Prime distribution tests.
+ * Likelihood tests for the {@link BirthDeathMigrationDistribution} facade, run against both engines.
  */
 public class BirthDeathMigrationLikelihoodTest {
 
     /**
      * Creates the different test parameterizations.
-     * Format is { method, initial matrix, use inverse flow, parallelize }.
+     * Format is { method, initial matrix, use inverse flow, parallelize, use analytical single-type solution }.
+     * The analytical single-type solution is only implemented by the classic engine and only kicks in when
+     * the model has a single type.
      */
     public static Collection<Object[]> data() {
         return Arrays.asList(new Object[][] {
-            { Engine.classic, InitialMatrixStrategy.identity, false,  false },
-            { Engine.classic, InitialMatrixStrategy.identity, false,  true },
-            { Engine.flow, InitialMatrixStrategy.identity, false,  false },
-            { Engine.flow, InitialMatrixStrategy.identity, false,  true },
-            { Engine.flow, InitialMatrixStrategy.identity, true,  false },
-            { Engine.flow, InitialMatrixStrategy.identity, true,  true },
-            { Engine.flow, InitialMatrixStrategy.random,  false, false },
-            { Engine.flow, InitialMatrixStrategy.random,  false, true },
-            { Engine.flow, InitialMatrixStrategy.random, true,  false },
-            { Engine.flow, InitialMatrixStrategy.random, true,  true },
-            { Engine.flow, InitialMatrixStrategy.average_inverse,  false, false },
-            { Engine.flow, InitialMatrixStrategy.average_inverse,  false, true },
-            { Engine.flow, InitialMatrixStrategy.average_inverse, true,  false },
-            { Engine.flow, InitialMatrixStrategy.average_inverse, true,  true }
+            { Engine.classic, InitialMatrixStrategy.identity, false,  false, false },
+            { Engine.classic, InitialMatrixStrategy.identity, false,  true, false },
+            { Engine.classic, InitialMatrixStrategy.identity, false,  false, true },
+            { Engine.classic, InitialMatrixStrategy.identity, false,  true, true },
+            { Engine.flow, InitialMatrixStrategy.identity, false,  false, false },
+            { Engine.flow, InitialMatrixStrategy.identity, false,  true, false },
+            { Engine.flow, InitialMatrixStrategy.identity, true,  false, false },
+            { Engine.flow, InitialMatrixStrategy.identity, true,  true, false },
+            { Engine.flow, InitialMatrixStrategy.random,  false, false, false },
+            { Engine.flow, InitialMatrixStrategy.random,  false, true, false },
+            { Engine.flow, InitialMatrixStrategy.random, true,  false, false },
+            { Engine.flow, InitialMatrixStrategy.random, true,  true, false },
+            { Engine.flow, InitialMatrixStrategy.average_inverse,  false, false, false },
+            { Engine.flow, InitialMatrixStrategy.average_inverse,  false, true, false },
+            { Engine.flow, InitialMatrixStrategy.average_inverse, true,  false, false },
+            { Engine.flow, InitialMatrixStrategy.average_inverse, true,  true, false }
         });
     }
 
@@ -95,7 +99,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigRateChangeBasicCanonical(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigRateChangeBasicCanonical(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         // Test for uncoloured tree
 
@@ -140,6 +144,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -159,7 +164,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigRateChangeBasicCanonicalRevTime(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigRateChangeBasicCanonicalRevTime(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         // Test for uncoloured tree
 
@@ -202,6 +207,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -219,7 +225,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigRateChangeBasicEpi(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigRateChangeBasicEpi(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         // Test for uncoloured tree
 
@@ -264,6 +270,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -283,7 +290,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRemovalProbChangeBasic(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRemovalProbChangeBasic(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         String newick = "((1[&type=0]: 1.5, 2[&type=0]: 0)3[&type=0]: 3.5, 4[&type=0]: 4) ;";
 
@@ -316,6 +323,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -325,16 +333,17 @@ public class BirthDeathMigrationLikelihoodTest {
         assertEquals(-21.25413884159791 + labeledTreeConversionFactor(density),
                 logL, 1e-5);
 
+        // cross-check against the classic engine's analytical single-type solution
+
         BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
         densityExact.initByName(
-                "engine", method,
+                "engine", Engine.classic,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", true,
                 "parallelize", parallelize
         );
 
@@ -350,7 +359,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void tinyAnalyticalTest(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void tinyAnalyticalTest(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
         String newick = "(1[&type=0]: 1.0, 2[&type=0]: 1.0): 1.0;";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -385,21 +394,23 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
                 );
 
         double logLnumerical = density.calculateLogP();
 
+        // cross-check against the classic engine's analytical single-type solution
+
         BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
         densityExact.initByName(
-                "engine", method,
+                "engine", Engine.classic,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
                 "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", true,
                 "parallelize", parallelize
                 );
 
@@ -414,7 +425,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRemovalProbChangeTwoState(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRemovalProbChangeTwoState(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         String newick = "((1[&type=0]: 1.5, 2[&type=1]: 0)3[&type=0]: 3.5, 4[&type=1]: 4) ;";
 
@@ -456,6 +467,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize);
 
         double logL = density.calculateLogP();
@@ -471,7 +483,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihood1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihood1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser( "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -502,10 +514,16 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
                 );
 
         assertEquals(-19.019796073623493 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
+
+        density.setInputValue("conditionOnSurvival", true);
+        density.initAndValidate();
+
+        assertEquals(-18.574104140202046 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
     }
 
     /**
@@ -514,7 +532,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRateChange1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRateChange1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -545,6 +563,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize);
 
         assertEquals(-33.7573 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // Reference BDSKY
@@ -556,7 +575,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRateTrancatedSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRateTrancatedSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -587,19 +606,21 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize);
 
         double logPNumerical = density.calculateLogP();
 
+        // cross-check against the classic engine's analytical single-type solution
+
         BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
-        densityExact.initByName("engine", method,
+        densityExact.initByName("engine", Engine.classic,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", tree,
                 "conditionOnSurvival", false,
                 "typeLabel", "state",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", true,
                 "parallelize", parallelize);
 
         double logPAnalytical = densityExact.calculateLogP();
@@ -614,7 +635,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationMigTiny(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testLikelihoodCalculationMigTiny(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
 
         // migration and no birth among demes
 
@@ -649,6 +670,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
                 );
 
@@ -721,7 +743,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationMig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationMig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         // uncoloured tree, asymmetric types
         Tree tree = new TreeParser(
@@ -758,6 +780,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -771,7 +794,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationMigBig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationMigBig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         // uncoloured tree, 291 tips
 
@@ -808,6 +831,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -823,7 +847,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testAmongRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testAmongRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=0]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
                 false);
@@ -860,6 +884,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -875,7 +900,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testAmongNoRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testAmongNoRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=1]:0.5):1,(1[&type=1]:2,2[&type=1]:1):3);",
                 false);
@@ -912,6 +937,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -926,7 +952,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMig3types(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMig3types(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=2]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
                 false);
@@ -960,6 +986,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -973,7 +1000,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testUnknownStatesWithoutMigrationOrRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testUnknownStatesWithoutMigrationOrRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
                 false);
@@ -1007,6 +1034,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1020,7 +1048,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testUnknownStatesWithMigration(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testUnknownStatesWithMigration(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
                 false);
@@ -1057,6 +1085,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1070,7 +1099,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testUnknownStatesWithMigrationAndRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testUnknownStatesWithMigrationAndRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
                 false);
@@ -1107,6 +1136,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1118,7 +1148,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini3(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini3(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
         String newick = "((1:1.0,2:0.0):1.0,3:0):0.0";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -1143,6 +1173,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parameterization", parameterization,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "conditionOnSurvival", false,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1157,7 +1188,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodRateChangeCondOnSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodRateChangeCondOnSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
                 false);
@@ -1188,14 +1219,26 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
         double logPnumeric = density.calculateLogP();
-        System.out.println("Numerical solution: " + logPnumeric);
 
-        double logPanalytic = density.calculateLogP();
-        System.out.println("Analytical solution: " + logPnumeric);
+        // cross-check against the classic engine's analytical single-type solution
+
+        BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
+        densityExact.initByName("engine", Engine.classic,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "state",
+                "useAnalyticalSingleTypeSolution", true,
+                "parallelize", parallelize
+        );
+
+        double logPanalytic = densityExact.calculateLogP();
 
         assertEquals(logPnumeric, logPanalytic, 1e-5);
     }
@@ -1208,7 +1251,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationInfAmongDemesSymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationInfAmongDemesSymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         // uncoloured, symmetric tree
 
@@ -1244,6 +1287,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1260,7 +1304,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodCalculationInfAmongDemesAsymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodCalculationInfAmongDemesAsymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=0]:0.5):1,(1[&type=0]:2,2[&type=1]:1):3);",
                 false);
@@ -1294,6 +1338,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1307,7 +1352,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
                 false);
@@ -1338,6 +1383,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1349,7 +1395,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMini2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodMini2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
         String newick = "((1:1.5,2:0.5):0.5,3:0.0)4:0.0;";
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -1374,6 +1420,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "parameterization", parameterization,
                 "conditionOnSurvival", true,
                 "tree", new TreeParser(newick, false, false, true,0),
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1390,7 +1437,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodCalculationWithoutAncestors(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSALikelihoodCalculationWithoutAncestors(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
                 false);
@@ -1422,6 +1469,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1445,7 +1493,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testDirectAncestor(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testDirectAncestor(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         // two identical trees up to rotation (the two root children are rotated)
         String newick1 = "((1[&type=0]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=0]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
@@ -1489,6 +1537,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1501,6 +1550,21 @@ public class BirthDeathMigrationLikelihoodTest {
         double logL2 = density.calculateLogP();
 
         assertEquals(logL1, logL2, 1e-5);
+
+        // the same invariance has to hold when the non-ancestral tips sit in type 1 instead
+
+        String newick3 = "((1[&type=1]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=1]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
+        String newick4 = "((1[&type=1]: 1.5, 2[&type=1]: 1.5)3[&type=0]: 3.5, (4[&type=1]: 1.5, 5[&type=1]: 0.0)6[&type=0]: 3.5) ;";
+
+        density.setInputValue("tree", new TreeParser(newick3, false, false, true,0));
+        density.initAndValidate();
+        double logL3 = density.calculateLogP();
+
+        density.setInputValue("tree", new TreeParser(newick4, false, false, true,0));
+        density.initAndValidate();
+        double logL4 = density.calculateLogP();
+
+        assertEquals(logL3, logL4, 1e-5);
     }
 
     /**
@@ -1511,7 +1575,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSingleRho(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testSingleRho(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=0]: 4.5):1,3[&type=0]:5.5);",false);
 
@@ -1551,6 +1615,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1585,7 +1650,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRho2tips(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMultiRho2tips(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
 
         // two tips sampled at the same time
         Tree tree = new TreeParser("(3[&type=0]: 4, 4[&type=0]: 4) ;",false);
@@ -1630,6 +1695,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize);
 
         double logL = density.calculateLogP();
@@ -1657,7 +1723,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoSampling(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testMultiRhoSampling(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
         // Uncoloured tree
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);",false);
 
@@ -1700,6 +1766,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1724,7 +1791,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges1(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges1(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1766,6 +1833,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1775,7 +1843,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1816,6 +1884,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1824,7 +1893,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges3(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges3(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1865,6 +1934,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1873,7 +1943,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
     @ParameterizedTest
     @MethodSource("data")
-    public void testMultiRhoWithRateChanges4(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testMultiRhoWithRateChanges4(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("(((((t1[&type=0]:0.4595008531,t25[&type=0]:0.4595008531)[&type=0]:0.3373053072,t23[&type=0]:0.3567584538)[&type=0]:0.007310819036,t16[&type=0]:0.3489190732)[&type=0]:0.331009529,((t18[&type=0]:0.03315384045,t14[&type=0]:0.03315384045)[&type=0]:0.5063451374,(t10[&type=0]:0.4211543131,t15[&type=0]:0.4211543131)[&type=0]:0.1183446648)[&type=0]:0.5956275305)[&type=0]:0.1158090878,((t19[&type=0]:0.9429393194,((t6[&type=0]:0.363527235,t11[&type=0]:0.4417423167)[&type=0]:0.01881829549,((((t3[&type=0]:0.3071904376,(((t24[&type=0]:0.01065209364,t13[&type=0]:0.01065209364)[&type=0]:0.06076485145,t8[&type=0]:0.07141694509)[&type=0]:0.123620245,(t22[&type=0]:0.1616119808,t2[&type=0]:0.1616119808)[&type=0]:0.03342520927)[&type=0]:0.1121532475)[&type=0]:0.24520579,t9[&type=0]:0.5523962276)[&type=0]:0.3852615426,(((t20[&type=0]:0.2935970782,(t17[&type=0]:0.06569090089,t4[&type=0]:0.06569090089)[&type=0]:0.2279061773)[&type=0]:0.08350780408,(t21[&type=0]:0.05109047139,t5[&type=0]:0.05109047139)[&type=0]:0.3260144109)[&type=0]:0.2298344132,t7[&type=0]:0.6069392955)[&type=0]:0.3307184747)[&type=0]:0.01206284377,t26[&type=0]:0.9497206139)[&type=0]:0.05755333197)[&type=0]:0.03290891884)[&type=0]:0.07263755325,t12[&type=0]:1.112820418)[&type=0]:0.1381151782);", false);
 
@@ -1914,6 +1984,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1926,7 +1997,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testLikelihoodMigrationRhoSampling(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) {
+    public void testLikelihoodMigrationRhoSampling(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
 
         Tree tree = new TreeParser("((1[&type=0]: 4.5, 2[&type=1]: 4.5):1,3[&type=0]:5.5);",
                 false);
@@ -1965,6 +2036,7 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
@@ -1981,7 +2053,7 @@ public class BirthDeathMigrationLikelihoodTest {
      */
     @ParameterizedTest
     @MethodSource("data")
-    public void testSALikelihoodMultiRho(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize) throws Exception {
+    public void testSALikelihoodMultiRho(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
 
         Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",false);
 
@@ -2017,22 +2089,24 @@ public class BirthDeathMigrationLikelihoodTest {
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
                 "parallelize", parallelize
         );
 
-        BirthDeathMigrationDistribution primeDensity = new BirthDeathMigrationDistribution();
-        primeDensity.initByName("engine", method,
+        // cross-check against the classic engine's analytical single-type solution
+
+        BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
+        densityExact.initByName("engine", Engine.classic,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
                 "tree", tree,
                 "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", true,
                 "parallelize", parallelize
         );
 
         assertEquals(-22.348462265673483 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017)
-        assertEquals(density.calculateLogP(), primeDensity.calculateLogP(), 1e-5);
+        assertEquals(density.calculateLogP(), densityExact.calculateLogP(), 1e-5);
     }
 }
