@@ -22,8 +22,8 @@ package bdmmprime.distribution;
 import bdmmprime.distribution.flow.flowSystems.InitialMatrixStrategy;
 import bdmmprime.parameterization.*;
 import bdmmprime.util.ProcessLength;
-import beast.base.evolution.tree.Tree;
 import beast.base.evolution.tree.TreeParser;
+import beast.base.evolution.tree.Tree;
 import beast.base.spec.domain.NonNegativeReal;
 import beast.base.spec.domain.UnitInterval;
 import beast.base.spec.inference.parameter.RealScalarParam;
@@ -137,10 +137,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
                 "tree", new TreeParser(newick,
                         false, false,
                         true, 0),
-                "conditionOnSurvival", false,
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
@@ -200,10 +200,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
                 "tree", new TreeParser(newick,
                         false, false,
                         true, 0),
-                "conditionOnSurvival", false,
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
@@ -263,10 +263,10 @@ public class BirthDeathMigrationLikelihoodTest {
                 "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
                 "tree", new TreeParser(newick,
                         false, false,
                         true, 0),
-                "conditionOnSurvival", false,
                 "typeLabel", "state",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
@@ -318,8 +318,8 @@ public class BirthDeathMigrationLikelihoodTest {
                 "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
+                "tree", new TreeParser(newick, false, false, true, 0),
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
@@ -340,8 +340,8 @@ public class BirthDeathMigrationLikelihoodTest {
                 "engine", Engine.classic,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
+                "tree", new TreeParser(newick, false, false, true, 0),
                 "typeLabel", "type",
                 "useAnalyticalSingleTypeSolution", true,
                 "parallelize", parallelize
@@ -389,8 +389,8 @@ public class BirthDeathMigrationLikelihoodTest {
                 "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
+                "tree", new TreeParser(newick, false, false, true, 0),
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
@@ -407,8 +407,8 @@ public class BirthDeathMigrationLikelihoodTest {
                 "engine", Engine.classic,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
+                "tree", new TreeParser(newick, false, false, true, 0),
                 "typeLabel", "type",
                 "useAnalyticalSingleTypeSolution", true,
                 "parallelize", parallelize
@@ -462,8 +462,8 @@ public class BirthDeathMigrationLikelihoodTest {
                 "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "tree", new TreeParser(newick, false, false, true, 0),
                 "conditionOnSurvival", false,
+                "tree", new TreeParser(newick, false, false, true, 0),
                 "typeLabel", "type",
                 "initialMatrixStrategy", initialStateStrategy,
                 "useInverseFlow", useInverseFlow,
@@ -474,1097 +474,6 @@ public class BirthDeathMigrationLikelihoodTest {
 
         // Reference BDMM (version 0.2.0) 29/03/2018
         assertEquals(-22.82747259570373, logL, 1e-5);
-    }
-
-    /**
-     * Basic 1-dim test
-     * No rate change, 1 state, no rho-sampling
-     * Reference from BDSKY
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihood1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser( "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(1),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.3333333334}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.33333333333}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "state",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-                );
-
-        assertEquals(-19.019796073623493 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
-
-        density.setInputValue("conditionOnSurvival", true);
-        density.initAndValidate();
-
-        assertEquals(-18.574104140202046 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
-    }
-
-    /**
-     * 1-dim and 1 rate-change test
-     * reference from BDSKY
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihoodRateChange1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(1),
-                "Re", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.6666666667, 1.3333333334}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {4.5, 1.5}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.4444444444, 0.33333333333}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "state",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize);
-
-        assertEquals(-33.7573 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // Reference BDSKY
-    }
-
-    /**
-     * 1-dim test with sampling truncated to the most recent interval
-     * Checks that the two likelihood evaluations agree
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihoodRateTrancatedSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(1),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.2}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {2.4}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.0, 0.33333333333}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "state",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize);
-
-        double logPNumerical = density.calculateLogP();
-
-        // cross-check against the classic engine's analytical single-type solution
-
-        BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
-        densityExact.initByName("engine", Engine.classic,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "state",
-                "useAnalyticalSingleTypeSolution", true,
-                "parallelize", parallelize);
-
-        double logPAnalytical = densityExact.calculateLogP();
-
-        assertEquals(logPNumerical, logPAnalytical, 1e-5);
-    }
-
-    /**
-     * Basic tests on 2 types situations with migration or birth among demes
-     * reference from R
-     * @throws Exception
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihoodCalculationMigTiny(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
-
-        // migration and no birth among demes
-
-        Tree tree = new TreeParser("(1[&state=0] : 1.5, 2[&state=1] : 0.5)[&state=0];", false);
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(2.5, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {4.0/3.0, 4.0/3.0}, NonNegativeReal.INSTANCE), 2),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5, 1.5}, NonNegativeReal.INSTANCE), 2),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0/3.0, 1.0/3.0}, UnitInterval.INSTANCE), 2),
-                "migrationRate", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.1}, NonNegativeReal.INSTANCE), 2),
-
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "state",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-                );
-
-        assertEquals(-7.215222 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from R
-
-        // no migration, symmetric birth among demes
-
-        parameterization.setInputValue("migrationRate", null);
-        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
-                null,
-                new RealVectorParam<>(new double[] {0.0666667}, NonNegativeReal.INSTANCE), 2));
-        parameterization.initAndValidate();
-        density.initAndValidate();
-
-        assertEquals(-7.404888 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
-
-        // no migration, asymmetric birth among demes
-
-        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
-                null,
-                new RealVectorParam<>(new double[] {0.0666667, 0.1}, NonNegativeReal.INSTANCE), 2));
-        parameterization.initAndValidate();
-        density.initAndValidate();
-
-        assertEquals(-7.18723 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
-
-
-        // no migration, asymmetric R0, asymmetric birth among demes
-
-        parameterization.setInputValue("Re", new SkylineVectorParameter(
-                null,
-                new RealVectorParam<>(new double[] {2.0, 1.3333333}, NonNegativeReal.INSTANCE)));
-        parameterization.initAndValidate();
-        density.initAndValidate();
-
-        assertEquals(-7.350649 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
-
-        // no migration, asymmetric R0, birth among demes, BU rate, samp proportion
-
-        parameterization.setInputValue("Re", new SkylineVectorParameter(
-                null,
-                new RealVectorParam<>(new double[] {2.0, 1.5}, NonNegativeReal.INSTANCE)));
-        parameterization.setInputValue("becomeUninfectiousRate", new SkylineVectorParameter(
-                null,
-                new RealVectorParam<>(new double[] {2.0, 1.0}, NonNegativeReal.INSTANCE)));
-        parameterization.setInputValue("samplingProportion", new SkylineVectorParameter(
-                null,
-                new RealVectorParam<>(new double[] {0.5, 0.3}, UnitInterval.INSTANCE)));
-        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
-                null,
-                new RealVectorParam<>(new double[] {0.1, 0.5}, NonNegativeReal.INSTANCE)));
-        parameterization.initAndValidate();
-        density.initAndValidate();
-
-        assertEquals(-6.504139 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
-
-        // Same params as last test, swapped leaf states
-
-        tree = new TreeParser("(1[&state=1] : 1.5, 2[&state=0] : 0.5)[&state=0];", false);
-        density.setInputValue("tree", tree);
-        density.initAndValidate();
-
-        assertEquals(-7.700916 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
-    }
-
-    /**
-     * Test migration
-     * 2 types, migration, no birth among demes
-     * Adapted from BDSKY
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihoodCalculationMig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        // uncoloured tree, asymmetric types
-        Tree tree = new TreeParser(
-                "((3[&type=0] : 1.5, 4[&type=1] : 0.5) : 1 , (1[&type=1] : 2, 2[&type=0] : 1) : 3);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {4.0 / 3.0, 5.0}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5, 1.25}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0 / 3.0, 1.0/2.0}, UnitInterval.INSTANCE)),
-                "migrationRate", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.2, 0.1}, NonNegativeReal.INSTANCE)),
-
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-26.53293 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
-    }
-
-    /**
-     * Test migration on big tree
-     * 2 types, migration, no birth among demes
-     * Adapted from BDSKY
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihoodCalculationMigBig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        // uncoloured tree, 291 tips
-
-        Tree tree = new TreeParser(
-                "(((((((t1[&type=0]:0.9803361397,t2[&type=0]:0.9035540882):0.0532383481,t3[&type=0]:0.2637392259):0.6273536528,(t4[&type=0]:0.8624112266,t5[&type=0]:0.3278892266):0.2606245542):0.2941323873,(t6[&type=0]:0.09820114588,t7[&type=0]:0.533115675):0.8625875909):0.7040311908,(((t8[&type=0]:0.8696136218,t9[&type=0]:0.08719484485):0.4204288905,(t10[&type=0]:0.102143287,(t11[&type=0]:0.9850614571,t12[&type=0]:0.7407912319):0.8715072596):0.5182644848):0.524062254,(((((((t13[&type=0]:0.3981794417,(t14[&type=0]:0.03889928572,t15[&type=0]:0.5187105467):0.1127638209):0.3431177251,((t16[&type=0]:0.4239511855,t17[&type=0]:0.001895790454):0.690600364,t18[&type=0]:0.6283850113):0.4073564562):0.6862231812,(((t19[&type=0]:0.9947085041,t20[&type=0]:0.4739363373):0.1873670686,t21[&type=0]:0.151270482):0.803061039,((t22[&type=0]:0.8899249982,((t23[&type=0]:0.1329096023,t24[&type=0]:0.84205155):0.8838408566,(t25[&type=0]:0.7541888549,t26[&type=0]:0.8602364615):0.8912267659):0.771449636):0.1022819551,(((t27[&type=0]:0.3134289116,(t28[&type=0]:0.2446750235,t29[&type=0]:0.8565168788):0.8277210968):0.4307989818,((t30[&type=0]:0.2330717787,t31[&type=0]:0.4438336496):0.6521712865,(t32[&type=0]:0.2534400895,t33[&type=0]:0.7885409284):0.3051449039):0.1196702593):0.4061951274,t34[&type=0]:0.8415271267):0.4365981282):0.753448925):0.1580670979):0.04210642632,(((t35[&type=0]:0.7504386581,t36[&type=0]:0.6328390085):0.9047614154,t37[&type=0]:0.4946133171):0.2264722914,((((t38[&type=0]:0.06683212146,t39[&type=0]:0.479845396):0.9424520086,t40[&type=0]:0.894530142):0.3844042511,(((t41[&type=0]:0.5215392481,t42[&type=0]:0.2366602973):0.8142298241,(t43[&type=0]:0.2968777204,(t44[&type=0]:0.655541793,t45[&type=0]:0.8608812049):0.3564132168):0.04912991729):0.1511388237,t46[&type=0]:0.9031036345):0.1874918914):0.9690212663,(t47[&type=0]:0.07753491728,(t48[&type=0]:0.8349514075,(t49[&type=0]:0.9689748741,t50[&type=0]:0.925813166):0.4534903264):0.3571097804):0.1324767114):0.5515443345):0.3330309158):0.7202291801,((t51[&type=0]:0.6977306763,((t52[&type=0]:0.9157640305,t53[&type=0]:0.4226291834):0.5872618856,t54[&type=0]:0.2063144948):0.1422286083):0.7182746637,t55[&type=0]:0.759545143):0.7437628019):0.2425582204,((t56[&type=0]:0.4614429038,(t57[&type=0]:0.9092229386,((t58[&type=0]:0.1049408391,t59[&type=0]:0.6328130178):0.642241966,((t60[&type=0]:0.264340204,t61[&type=0]:0.5904771155):0.7333205172,(t62[&type=0]:0.9183179205,t63[&type=0]:0.1090340314):0.3010568973):0.3240860389):0.3192155454):0.1835780439):0.5942421539,t64[&type=0]:0.7931551472):0.967891278):0.06263663713,(t65[&type=0]:0.5774453548,((t66[&type=0]:0.07208712469,((t67[&type=0]:0.8918803469,t68[&type=0]:0.5110983853):0.1491188321,t69[&type=0]:0.2471361952):0.9591872343):0.3133718621,(t70[&type=0]:0.944087367,t71[&type=0]:0.7830825299):0.2284035049):0.5492361034):0.1136150162):0.002181729767):0.4548798562):0.4258609388,((((((t72[&type=0]:0.27679418,t73[&type=0]:0.5398862793):0.8871422287,(((((t74[&type=0]:0.2531923286,t75[&type=0]:0.3796772889):0.4489221217,t76[&type=0]:0.2554209188):0.3248268673,t77[&type=0]:0.5372577759):0.5699883625,t78[&type=0]:0.1656995732):0.957750936,(t79[&type=0]:0.1301121258,t80[&type=0]:0.8925942327):0.2838441601):0.5258686764):0.47825964,(t81[&type=0]:0.5749240227,((t82[&type=0]:0.9574132746,(t83[&type=0]:0.00485483068,t84[&type=0]:0.8091488208):0.1985368489):0.3703975577,(((t85[&type=0]:0.3991035291,(t86[&type=0]:0.03201846033,t87[&type=0]:0.8380640063):0.05616304209):0.8414494572,t88[&type=0]:0.6844437125):0.2426782607,((t89[&type=0]:0.7543559887,t90[&type=0]:0.7162597755):0.8230077426,t91[&type=0]:0.08967904118):0.4460245941):0.8679371702):0.51572948):0.4362259945):0.2631344711,(((t92[&type=0]:0.3353162925,((t93[&type=0]:0.4025212794,t94[&type=0]:0.0281926766):0.7965471447,t95[&type=0]:0.1145715592):0.5993301494):0.08854756854,(t96[&type=0]:0.1461353719,((t97[&type=0]:0.3158547124,t98[&type=0]:0.06653800653):0.5634025722,t99[&type=0]:0.9711292514):0.9727503664):0.7684133062):0.4824229684,((t100[&type=0]:0.06834940333,t101[&type=0]:0.7794982188):0.3453287922,(t102[&type=0]:0.627945075,t103[&type=0]:0.1914187325):0.9974814849):0.6312927424):0.04858242651):0.2845227425,((t104[&type=0]:0.6782600286,(t105[&type=0]:0.03190574702,t106[&type=0]:0.5840284519):0.03041352634):0.725893975,(((t107[&type=0]:0.9885271091,t108[&type=0]:0.07126446022):0.8419693699,t109[&type=0]:0.1546431775):0.898004594,t110[&type=0]:0.2500803664):0.1493327522):0.4266726137):0.5946582041,(t111[&type=0]:0.1395377244,(((t112[&type=0]:0.7170655408,(t113[&type=0]:0.976886861,t114[&type=0]:0.9406369971):0.7471234254):0.8065501407,((t115[&type=0]:0.1713845057,(t116[&type=0]:0.7861330248,t117[&type=0]:0.6082276558):0.8413775554):0.3245444677,t118[&type=0]:0.3892389825):0.5992471091):0.7592411407,(((t119[&type=0]:0.535931844,t120[&type=0]:0.09058958571):0.4227561057,(t121[&type=0]:0.5531579193,t122[&type=0]:0.8276180199):0.6653355309):0.0941624688,t123[&type=0]:0.3623022255):0.1494971744):0.3526274569):0.9720881658):0.8149677955):0.6065687414,((((((t124[&type=0]:0.5406888947,t125[&type=0]:0.8892341822):0.06211395678,((t126[&type=0]:0.8203180477,(t127[&type=0]:0.8536844573,t128[&type=0]:0.360511546):0.9030223228):0.9095590916,((t129[&type=0]:0.9110714826,(t130[&type=0]:0.2346256471,t131[&type=0]:0.6523390864):0.1288849309):0.7077432328,(t132[&type=0]:0.4060195235,t133[&type=0]:0.1661393729):0.3910941551):0.205704404):0.8609933471):0.3724007562,((t134[&type=0]:0.1731842053,(t135[&type=0]:0.7232482471,(t136[&type=0]:0.3883952193,((t137[&type=0]:0.6709475764,t138[&type=0]:0.0372075201):0.5473196667,(t139[&type=0]:0.8092764446,t140[&type=0]:0.4123262055):0.2000603897):0.55258787):0.2654263263):0.745555162):0.2956101163,((t141[&type=0]:0.52147611,(t142[&type=0]:0.9462005703,t143[&type=0]:0.5671354234):0.6887917654):0.362258781,t144[&type=0]:0.4798202242):0.8242726682):0.6072624433):0.695287361,((((t145[&type=0]:0.03793937969,t146[&type=0]:0.07275558705):0.3482963489,t147[&type=0]:0.1457363514):0.1479936559,(t148[&type=0]:0.7158309214,((t149[&type=0]:0.2174433649,t150[&type=0]:0.04072828358):0.4112026501,t151[&type=0]:0.6422409331):0.3413406226):0.1693999742):0.6631712937,(((t152[&type=0]:0.2706006162,t153[&type=0]:0.9267972289):0.1387761638,((((t154[&type=0]:0.2563392594,t155[&type=0]:0.3058371837):0.5946117372,t156[&type=0]:0.6161190302):0.6970871226,(t157[&type=0]:0.2388902532,(t158[&type=0]:0.9486316761,t159[&type=0]:0.215360787):0.168830334):0.03888285463):0.1640696453,t160[&type=0]:0.6803096831):0.1418975852):0.4218000816,(((t161[&type=0]:0.8702562298,t162[&type=0]:0.9289729816):0.05807372741,t163[&type=0]:0.3533785399):0.5012762842,(((t164[&type=0]:0.8666574673,t165[&type=0]:0.9603798252):0.7887994377,t166[&type=0]:0.857058729):0.4139410679,(t167[&type=0]:0.5900272813,t168[&type=0]:0.3345388798):0.06017537019):0.9609203783):0.7103463742):0.696603697):0.6451920038):0.1909481271,((((t169[&type=0]:0.9171597108,t170[&type=0]:0.9479122513):0.7170342554,(t171[&type=0]:0.2722596873,((t172[&type=0]:0.1194724559,(t173[&type=0]:0.03922236571,t174[&type=0]:0.6290624789):0.07739861775):0.8598598302,(t175[&type=0]:0.2009421999,(t176[&type=0]:0.06154947914,t177[&type=0]:8.997193072E-4):0.04738179315):0.3235510678):0.3443877005):0.6351028818):0.5525081949,((((t178[&type=0]:0.7599076207,t179[&type=0]:0.2997759853):0.5921433992,t180[&type=0]:0.7098581635):0.3725496214,(t181[&type=0]:0.5053773888,(t182[&type=0]:0.5991492711,(t183[&type=0]:0.5036820578,t184[&type=0]:0.6361607853):0.510631816):0.9604382808):0.2464167587):0.6073093358,(((t185[&type=0]:0.03128415369,(t186[&type=0]:0.5260852403,(t187[&type=0]:0.878767435,t188[&type=0]:0.4992109234):0.5333148066):0.00347468094):0.5590308013,t189[&type=0]:0.3710992143):0.5034162949,(t190[&type=0]:0.778916508,((t191[&type=0]:0.3069154553,(((t192[&type=0]:0.9946115273,t193[&type=0]:0.9138687006):0.5209144899,t194[&type=0]:0.5152770842):0.9462409306,t195[&type=0]:0.7395236609):0.4110851623):0.930918345,(((t196[&type=0]:0.7895439987,((t197[&type=0]:0.4697002599,t198[&type=0]:0.1383787312):0.6911794308,(t199[&type=0]:0.8664436699,t200[&type=0]:0.1959039853):0.8656513852):0.3620497067):0.2839249384,(t201[&type=0]:0.6558795469,t202[&type=0]:0.2103423763):0.969477433):0.9058840063,(t203[&type=0]:0.0856692954,t204[&type=0]:0.4175976661):0.820434629):0.5355881769):0.2263581599):0.4512835185):0.7323478526):0.2479199937):0.1964542414,((t205[&type=0]:0.7537573762,(t206[&type=0]:0.1392466244,(t207[&type=0]:0.5136175761,(t208[&type=0]:0.7852529553,t209[&type=0]:0.07355738804):0.1220811389):0.7572090242):0.1422528555):0.5948274662,(((((t210[&type=0]:0.3068353184,(t211[&type=0]:0.3314456891,((t212[&type=0]:0.5265486804,t213[&type=0]:0.1382007354):0.1814086549,t214[&type=0]:0.9276472756):0.07718444197):0.03486835537):0.1617580003,(t215[&type=0]:0.3328830956,t216[&type=0]:0.8558843595):0.8366736979):0.347376487,t217[&type=0]:0.8222538356):0.2337225529,(t218[&type=0]:0.06199815008,t219[&type=0]:0.45975962):0.179990889):0.0635867205,(t220[&type=0]:0.3214025751,(t221[&type=0]:0.5022090652,t222[&type=0]:0.6454557138):0.6956466341):0.2711792416):0.1847200533):0.1051658324):0.4945860899):0.936143348,(((t223[&type=0]:0.06268779701,((t224[&type=0]:0.3337278806,t225[&type=0]:0.1570303424):0.3089733059,(t226[&type=0]:0.5069784883,t227[&type=0]:0.1434204187):0.2001587199):0.04750720505):0.3600859912,((((t228[&type=0]:0.9994731578,(t229[&type=0]:0.8934116936,t230[&type=0]:0.03698333143):0.8173468311):0.3089058488,((((t231[&type=0]:0.3216121283,t232[&type=0]:0.5232846253):0.8687884973,(t233[&type=0]:0.6280638413,((t234[&type=0]:0.6543256822,t235[&type=0]:0.8677638234):0.8895299246,t236[&type=0]:0.4047793006):0.7147388768):0.3533478715):0.9470084386,t237[&type=0]:0.7769409856):0.4955915695,((t238[&type=0]:0.2772087415,(t239[&type=0]:0.4904922615,(t240[&type=0]:0.05356206303,t241[&type=0]:0.08998329984):0.8154862223):0.5610961432):0.1617916438,(t242[&type=0]:0.5707751412,(t243[&type=0]:0.9836868793,t244[&type=0]:0.1984052949):0.6953297216):0.05552111682):0.9476150468):0.2473166997):0.9623488116,((t245[&type=0]:0.7935025664,t246[&type=0]:0.08509867964):0.3953444003,(t247[&type=0]:0.09163277131,(t248[&type=0]:0.5201428954,t249[&type=0]:0.8055520628):0.7452739514):0.3989078877):0.07581191277):0.9779064963,(((t250[&type=0]:0.943611098,(t251[&type=0]:0.33392801,t252[&type=0]:0.5996331484):0.4291575127):0.4906436009,((((t253[&type=0]:0.7749450852,(t254[&type=0]:0.8616885878,t255[&type=0]:0.585028409):0.06060880423):0.1238881133,((t256[&type=0]:0.7451687793,t257[&type=0]:0.6925335305):0.05338745634,t258[&type=0]:0.3357626374):0.2069296469):0.09644073155,((((t259[&type=0]:0.2258843291,t260[&type=0]:0.2671526412):0.3940743534,(t261[&type=0]:0.5022506947,(t262[&type=0]:0.9498897423,t263[&type=0]:0.1406114365):0.2847759123):0.04320593993):0.6982026948,t264[&type=0]:0.2693712024):0.959781138,(((t265[&type=0]:0.6035173486,t266[&type=0]:0.5529949202):0.9900399651,(t267[&type=0]:0.5455351078,t268[&type=0]:0.3530619899):0.4626278321):0.2735997427,(t269[&type=0]:0.9580646451,(t270[&type=0]:0.3280033092,t271[&type=0]:0.7206294278):0.03739526332):0.4967516926):0.9350089293):0.4371789068):0.1014483059,t272[&type=0]:0.2867298371):0.07522285799):0.06352435821,((t273[&type=0]:0.4001782183,t274[&type=0]:0.7190070178):0.1696753846,(t275[&type=0]:0.5535608665,t276[&type=0]:0.01324651297):0.2691543309):0.8676247413):0.8461736294):0.1769516913):0.344365149,(((t277[&type=0]:0.3245107541,(t278[&type=0]:0.4142541443,t279[&type=0]:0.5857141651):0.819547887):0.0867733527,(t280[&type=0]:0.4938162852,(t281[&type=0]:0.2444119717,t282[&type=0]:0.08141433029):0.05381231918):0.8375963389):0.176160393,((t283[&type=0]:0.4199601968,t284[&type=0]:0.8354801824):0.3150380594,(((t285[&type=0]:0.9818797186,(t286[&type=0]:0.8971825438,((t287[&type=0]:0.5155417006,t288[&type=0]:0.8260786769):0.7060374152,t289[&type=0]:0.6001661876):0.4120474763):0.9949228324):0.8038698458,t290[&type=0]:0.1939124272):0.6380942846,t291[&type=0]:0.3665255161):0.459349304):0.482901911):0.4833473735):0.5903116504):0.9973697898);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(tree.getRoot().getHeight() + 0.1, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {4.0/3.0, 5.0}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5, 1.25}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0/3.0, 0.5}, UnitInterval.INSTANCE)),
-                "migrationRate", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.2, 0.1}, NonNegativeReal.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "tree", tree,
-                "conditionOnSurvival", true,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-661.9588648301033 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from BEAST, not checked in R
-    }
-
-    /**
-     * Test of migration and infection among demes with rate changes
-     * 2 types, no SA
-     * Uncoloured tree
-     * Reference from BDMM itself (version 0.2.0 28/06/2017)
-     * @throws Exception
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testAmongRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
-
-        Tree tree = new TreeParser("((3[&type=0]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "Re", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {6.0, 5.0, 2.0, 2.5}, NonNegativeReal.INSTANCE), 2),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.5, 0.55, 0.45, 0.6}, NonNegativeReal.INSTANCE), 2),
-                "samplingProportion", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.5, 0.45, 0.333333, 0.35}, UnitInterval.INSTANCE), 2),
-                "ReAmongDemes", new SkylineMatrixParameter(
-                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {1.1, 1.3, 1.2, 1.15}, NonNegativeReal.INSTANCE), 2),
-                "migrationRate", new SkylineMatrixParameter(
-                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.1, 0.15, 0.2, 0.25}, NonNegativeReal.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-16.466832439520886 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from BDMM, 28/06/2017
-    }
-
-    /**
-     * Test of migration and infection among demes with rate changes
-     * 2 types, no SA
-     * Uncoloured tree
-     * Reference from BDMM itself (version 0.2.0 28/06/2017)
-     * @throws Exception
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testAmongNoRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
-
-        Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=1]:0.5):1,(1[&type=1]:2,2[&type=1]:1):3);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.0, 0.0}, NonNegativeReal.INSTANCE), 2),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.0, 0.75}, NonNegativeReal.INSTANCE), 2),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.0, 0.7}, UnitInterval.INSTANCE), 2),
-                "ReAmongDemes", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.0, 2.0}, NonNegativeReal.INSTANCE), 2),
-                "migrationRate", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5, 0.0}, NonNegativeReal.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0, 0.0}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-12.1441 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // tanja's result from R
-    }
-
-    /**
-     * Test of migration with 3 types
-     * No rate change, no SA
-     * Reference from BDMM itself
-     * @throws Exception
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testMig3types(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
-
-        Tree tree = new TreeParser("((3[&type=2]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(3),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {6.0, 2.0, 5.0}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5, 0.45, 0.55}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5, 0.333333, 0.45}, UnitInterval.INSTANCE)),
-                "migrationRate", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.1, 0.2, 0.15, 0.12, 0.12, 0.15}, NonNegativeReal.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0, 1.0}, UnitInterval.INSTANCE), 3));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0/3.0, 1.0/3.0, 1.0/3.0}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-16.88601100061662 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from BDMM, version 0.2.0, 06/07/2017
-    }
-
-    /**
-     * Test tree with unknown states
-     * Without migration and without rate changes
-     * 2 types, asymmetric
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testUnknownStatesWithoutMigrationOrRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {6.0, 2.0}, NonNegativeReal.INSTANCE)),
-                "ReAmongDemes", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5, 1.0}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5, 0.333333}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-18.82798 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // tanja's result from R
-    }
-
-    /**
-     * Test tree with unknown states
-     * With migration, without rate changes
-     * 2 types, asymmetric
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testUnknownStatesWithMigration(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {6.0, 2.0}, NonNegativeReal.INSTANCE)),
-                "ReAmongDemes", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5, 1.0}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5, 0.333333}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2),
-                "migrationRate", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.3, 0.4}, NonNegativeReal.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-18.986212857895506 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // reference from BDMM - 0.2.0 - 06/07/2017
-    }
-
-    /**
-     * Test tree with unknown states
-     * With migration and with rate changes
-     * 2 types, asymmetric
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testUnknownStatesWithMigrationAndRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "Re", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {6.0, 5.0, 2.0, 1.5}, NonNegativeReal.INSTANCE)),
-                "ReAmongDemes", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.2}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.5, 1.0, 1.0, 0.5}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.5, 0.45, 0.333333, 0.4}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2),
-                "migrationRate", new SkylineMatrixParameter(
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.3, 0.35, 0.4, 0.32}, NonNegativeReal.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "tree", tree,
-                "conditionOnSurvival", false,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-17.87099909579358 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // reference from BDMM - 0.2.0 - 06/07/2017
-    }
-
-    /**
-     * Likelihood test from the Sasha's SA package.
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testSALikelihoodMini3(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-        String newick = "((1:1.0,2:0.0):1.0,3:0):0.0";
-
-        Parameterization parameterization = new CanonicalParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE),
-                "birthRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE)),
-                "deathRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.99}, NonNegativeReal.INSTANCE)),
-                "samplingRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName(
-                "engine", method,
-                "parameterization", parameterization,
-                "tree", new TreeParser(newick, false, false, true,0),
-                "conditionOnSurvival", false,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        // this value was calculated by Sasha with Mathematica
-        assertEquals(-25.3707 + labeledTreeConversionFactor(density),
-                density.calculateLogP(), 1e-5); // likelihood conditioning on at least one sampled individual
-    }
-
-    /**
-     * 1-dim and 1 rate-change test
-     * reference from BDSKY
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihoodRateChangeCondOnSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(1),
-                "Re", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.6666666667, 1.3333333334}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {4.5, 1.5}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        new RealVectorParam<>(new double[] {2.4}, NonNegativeReal.INSTANCE),
-                        new RealVectorParam<>(new double[] {0.0, 0.33333333333}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "conditionOnSurvival", true,
-                "tree", tree,
-                "typeLabel", "state",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        double logPnumeric = density.calculateLogP();
-
-        // cross-check against the classic engine's analytical single-type solution
-
-        BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
-        densityExact.initByName("engine", Engine.classic,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "conditionOnSurvival", true,
-                "tree", tree,
-                "typeLabel", "state",
-                "useAnalyticalSingleTypeSolution", true,
-                "parallelize", parallelize
-        );
-
-        double logPanalytic = densityExact.calculateLogP();
-
-        assertEquals(logPnumeric, logPanalytic, 1e-5);
-    }
-
-    /**
-     * Test infection among demes
-     * No rate changes
-     * Symmetric configuration
-     * reference from R
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihoodCalculationInfAmongDemesSymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        // uncoloured, symmetric tree
-
-        Tree tree = new TreeParser("((t3[&type=1]:0.004214277605,t4[&type=1]:0.02157681391):0.229186993,(t2[&type=0]:0.624713651,t1[&type=1]:1.347400211):0.06231047755);",
-                false);
-
-        Parameterization parameterization = new CanonicalParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(tree.getRoot().getHeight() + 0.02686563367, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "birthRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE), 2),
-                "deathRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE), 2),
-                "samplingRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE), 2),
-                "birthRateAmongDemes", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE), 2),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "conditionOnSurvival", true,
-                "tree", tree,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        //System.out.println("Log-likelihood " + logL + " - testLikelihoodCalculationInfAmongDemes \t");
-        assertEquals(-5.1966118470881 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-3);
-
-    }
-
-    /**
-     * Test infection among demes
-     * No rate changes
-     * Asymmetric configuration
-     * reference from R
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testLikelihoodCalculationInfAmongDemesAsymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=0]:0.5):1,(1[&type=0]:2,2[&type=1]:1):3);",
-                false);
-
-        Parameterization parameterization = new CanonicalParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(2),
-                "birthRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {2.0, 6.25}, NonNegativeReal.INSTANCE), 2),
-                "deathRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.2, 0.625}, NonNegativeReal.INSTANCE), 2),
-                "samplingRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.3, 0.625}, NonNegativeReal.INSTANCE), 2),
-                "birthRateAmongDemes", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.2, 0.1}, NonNegativeReal.INSTANCE), 2),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "conditionOnSurvival", true,
-                "tree", tree,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-26.7939 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);  //result from R
-    }
-
-    /**
-     * Basic test on sampled-ancestors lik. calculation.
-     * 2 leaves, 1 SA. 1 type, no rho-sampling, no rate-change
-     * Reference value from BDSKY (23/03/2017)
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testSALikelihoodMini(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "typeSet", new TypeSet(1),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.2}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "conditionOnSurvival", true,
-                "tree", tree,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        assertEquals(-18.854438107814335 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); //Reference value from BDSKY (23/03/2017)
-    }
-
-    /**
-     * Likelihood test from the Sasha's SA package.
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testSALikelihoodMini2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-        String newick = "((1:1.5,2:0.5):0.5,3:0.0)4:0.0;";
-
-        Parameterization parameterization = new CanonicalParameterization();
-        parameterization.initByName(
-                "processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE),
-                "birthRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE)),
-                "deathRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.99}, NonNegativeReal.INSTANCE)),
-                "samplingRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName(
-                "engine", method,
-                "parameterization", parameterization,
-                "conditionOnSurvival", true,
-                "tree", new TreeParser(newick, false, false, true,0),
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        // this value was calculated by Sasha with Mathematica
-        assertEquals(-22.08332 + labeledTreeConversionFactor(density),
-                density.calculateLogP(), 1e-5); // likelihood conditioning on at least one sampled individual
-    }
-
-    /**
-     * Test on sampled-ancestors lik. calculation with no sampled ancestor
-     * No rate-change, one state, 4 tips
-     * This state is just there in case something is broken with sampled ancestors,
-     * helps for debugging if combined with testSALikelihoodMini for instance
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testSALikelihoodCalculationWithoutAncestors(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
-                false);
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "processLength", new ProcessLength(tree),
-                "typeSet", new TypeSet(1),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.3}, UnitInterval.INSTANCE)),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("engine", method,
-                "parameterization", parameterization,
-                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
-                "conditionOnSurvival", true,
-                "conditionOnRoot", true,
-                "tree", tree,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        // Conditioned on root:
-
-        assertEquals(-15.545323363405362 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
-
-        // Conditioned on origin:
-
-        parameterization.setInputValue("processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE));
-        parameterization.initAndValidate();
-        density.setInputValue("conditionOnRoot", false);
-        density.initAndValidate();
-
-        assertEquals(-25.991511346557598 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
-    }
-
-    /**
-     * Tests the case where we have direct ancestors (SA nodes).
-     * Tests if two identical trees but with different newick representations have the same likelihood.
-     */
-    @ParameterizedTest
-    @MethodSource("getParameterizations")
-    public void testDirectAncestor(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
-
-        // two identical trees up to rotation (the two root children are rotated)
-        String newick1 = "((1[&type=0]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=0]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
-        String newick2 = "((1[&type=0]: 1.5, 2[&type=1]: 1.5)3[&type=0]: 3.5, (4[&type=0]: 1.5, 5[&type=1]: 0.0)6[&type=0]: 3.5) ;";
-
-        Parameterization parameterization = new EpiParameterization();
-        parameterization.initByName(
-                "typeSet", new TypeSet(2),
-                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
-                "Re", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {4.0/3.0, 1.1}, NonNegativeReal.INSTANCE),
-                        2),
-                "becomeUninfectiousRate", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {1.5, 1.4}, NonNegativeReal.INSTANCE),
-                        2),
-                "ReAmongDemes", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE),
-                        2),
-                "migrationRate", new SkylineMatrixParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.2, 0.3}, NonNegativeReal.INSTANCE),
-                        2),
-                "samplingProportion", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.33}, UnitInterval.INSTANCE),
-                        2),
-                "removalProb", new SkylineVectorParameter(
-                        null,
-                        new RealVectorParam<>(new double[] {0.3, 0.4}, UnitInterval.INSTANCE)));
-
-        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName(
-                "engine", method,
-                "parameterization", parameterization,
-                "tree", new TreeParser(newick1, false, false, true,0),
-                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
-                "conditionOnSurvival", false,
-                "typeLabel", "type",
-                "initialMatrixStrategy", initialStateStrategy,
-                "useInverseFlow", useInverseFlow,
-                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
-                "parallelize", parallelize
-        );
-
-        density.setInputValue("tree", new TreeParser(newick1, false, false, true,0));
-        density.initAndValidate();
-        double logL1 = density.calculateLogP();
-
-        density.setInputValue("tree", new TreeParser(newick2, false, false, true,0));
-        density.initAndValidate();
-        double logL2 = density.calculateLogP();
-
-        assertEquals(logL1, logL2, 1e-5);
-
-        // the same invariance has to hold when the non-ancestral tips sit in type 1 instead
-
-        String newick3 = "((1[&type=1]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=1]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
-        String newick4 = "((1[&type=1]: 1.5, 2[&type=1]: 1.5)3[&type=0]: 3.5, (4[&type=1]: 1.5, 5[&type=1]: 0.0)6[&type=0]: 3.5) ;";
-
-        density.setInputValue("tree", new TreeParser(newick3, false, false, true,0));
-        density.initAndValidate();
-        double logL3 = density.calculateLogP();
-
-        density.setInputValue("tree", new TreeParser(newick4, false, false, true,0));
-        density.initAndValidate();
-        double logL4 = density.calculateLogP();
-
-        assertEquals(logL3, logL4, 1e-5);
     }
 
     /**
@@ -1840,7 +749,6 @@ public class BirthDeathMigrationLikelihoodTest {
         assertEquals(-21.42666177086957 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
     }
 
-
     @ParameterizedTest
     @MethodSource("getParameterizations")
     public void testMultiRhoWithRateChanges2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
@@ -1992,6 +900,836 @@ public class BirthDeathMigrationLikelihoodTest {
     }
 
     /**
+     * Basic 1-dim test
+     * No rate change, 1 state, no rho-sampling
+     * Reference from BDSKY
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihood1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser( "((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(1),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.3333333334}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.33333333333}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "state",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+                );
+
+        assertEquals(-19.019796073623493 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
+
+        density.setInputValue("conditionOnSurvival", true);
+        density.initAndValidate();
+
+        assertEquals(-18.574104140202046 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);   // Reference BDSKY (version 1.3.3)
+    }
+
+    /**
+     * 1-dim and 1 rate-change test
+     * reference from BDSKY
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihoodRateChange1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(1),
+                "Re", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.6666666667, 1.3333333334}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {4.5, 1.5}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.4444444444, 0.33333333333}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "state",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize);
+
+        assertEquals(-33.7573 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4); // Reference BDSKY
+    }
+
+    /**
+     * 1-dim test with sampling truncated to the most recent interval
+     * Checks that the two likelihood evaluations agree
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihoodRateTrancatedSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(1),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.2}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {2.4}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.0, 0.33333333333}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "state",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize);
+
+        double logPNumerical = density.calculateLogP();
+
+        // cross-check against the classic engine's analytical single-type solution
+
+        BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
+        densityExact.initByName("engine", Engine.classic,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "state",
+                "useAnalyticalSingleTypeSolution", true,
+                "parallelize", parallelize);
+
+        double logPAnalytical = densityExact.calculateLogP();
+
+        assertEquals(logPNumerical, logPAnalytical, 1e-5);
+    }
+
+    /**
+     * 1-dim and 1 rate-change test
+     * reference from BDSKY
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihoodRateChangeCondOnSampling1dim(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&state=0] : 1.5, 4[&state=0] : 0.5)[&state=0] : 1 , (1[&state=0] : 2, 2[&state=0] : 1)[&state=0] : 3)[&state=0];",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(1),
+                "Re", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.6666666667, 1.3333333334}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {3.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {4.5, 1.5}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {2.4}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.0, 0.33333333333}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "state",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        double logPnumeric = density.calculateLogP();
+
+        // cross-check against the classic engine's analytical single-type solution
+
+        BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
+        densityExact.initByName("engine", Engine.classic,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "state",
+                "useAnalyticalSingleTypeSolution", true,
+                "parallelize", parallelize
+        );
+
+        double logPanalytic = densityExact.calculateLogP();
+
+        assertEquals(logPnumeric, logPanalytic, 1e-5);
+    }
+
+    /**
+     * Basic tests on 2 types situations with migration or birth among demes
+     * reference from R
+     * @throws Exception
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihoodCalculationMigTiny(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
+
+        // migration and no birth among demes
+
+        Tree tree = new TreeParser("(1[&state=0] : 1.5, 2[&state=1] : 0.5)[&state=0];", false);
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(2.5, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {4.0/3.0, 4.0/3.0}, NonNegativeReal.INSTANCE), 2),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5, 1.5}, NonNegativeReal.INSTANCE), 2),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0/3.0, 1.0/3.0}, UnitInterval.INSTANCE), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.1}, NonNegativeReal.INSTANCE), 2),
+
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "state",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+                );
+
+        assertEquals(-7.215222 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from R
+
+        // no migration, symmetric birth among demes
+
+        parameterization.setInputValue("migrationRate", null);
+        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
+                null,
+                new RealVectorParam<>(new double[] {0.0666667}, NonNegativeReal.INSTANCE), 2));
+        parameterization.initAndValidate();
+        density.initAndValidate();
+
+        assertEquals(-7.404888 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
+
+        // no migration, asymmetric birth among demes
+
+        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
+                null,
+                new RealVectorParam<>(new double[] {0.0666667, 0.1}, NonNegativeReal.INSTANCE), 2));
+        parameterization.initAndValidate();
+        density.initAndValidate();
+
+        assertEquals(-7.18723 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
+
+
+        // no migration, asymmetric R0, asymmetric birth among demes
+
+        parameterization.setInputValue("Re", new SkylineVectorParameter(
+                null,
+                new RealVectorParam<>(new double[] {2.0, 1.3333333}, NonNegativeReal.INSTANCE)));
+        parameterization.initAndValidate();
+        density.initAndValidate();
+
+        assertEquals(-7.350649 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
+
+        // no migration, asymmetric R0, birth among demes, BU rate, samp proportion
+
+        parameterization.setInputValue("Re", new SkylineVectorParameter(
+                null,
+                new RealVectorParam<>(new double[] {2.0, 1.5}, NonNegativeReal.INSTANCE)));
+        parameterization.setInputValue("becomeUninfectiousRate", new SkylineVectorParameter(
+                null,
+                new RealVectorParam<>(new double[] {2.0, 1.0}, NonNegativeReal.INSTANCE)));
+        parameterization.setInputValue("samplingProportion", new SkylineVectorParameter(
+                null,
+                new RealVectorParam<>(new double[] {0.5, 0.3}, UnitInterval.INSTANCE)));
+        parameterization.setInputValue("ReAmongDemes", new SkylineMatrixParameter(
+                null,
+                new RealVectorParam<>(new double[] {0.1, 0.5}, NonNegativeReal.INSTANCE)));
+        parameterization.initAndValidate();
+        density.initAndValidate();
+
+        assertEquals(-6.504139 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
+
+        // Same params as last test, swapped leaf states
+
+        tree = new TreeParser("(1[&state=1] : 1.5, 2[&state=0] : 0.5)[&state=0];", false);
+        density.setInputValue("tree", tree);
+        density.initAndValidate();
+
+        assertEquals(-7.700916 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-6); // result from R
+    }
+
+    /**
+     * Test migration
+     * 2 types, migration, no birth among demes
+     * Adapted from BDSKY
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihoodCalculationMig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        // uncoloured tree, asymmetric types
+        Tree tree = new TreeParser(
+                "((3[&type=0] : 1.5, 4[&type=1] : 0.5) : 1 , (1[&type=1] : 2, 2[&type=0] : 1) : 3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {4.0 / 3.0, 5.0}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5, 1.25}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0 / 3.0, 1.0/2.0}, UnitInterval.INSTANCE)),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.2, 0.1}, NonNegativeReal.INSTANCE)),
+
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-26.53293 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-4);
+    }
+
+    /**
+     * Test migration on big tree
+     * 2 types, migration, no birth among demes
+     * Adapted from BDSKY
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihoodCalculationMigBig(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        // uncoloured tree, 291 tips
+
+        Tree tree = new TreeParser(
+                "(((((((t1[&type=0]:0.9803361397,t2[&type=0]:0.9035540882):0.0532383481,t3[&type=0]:0.2637392259):0.6273536528,(t4[&type=0]:0.8624112266,t5[&type=0]:0.3278892266):0.2606245542):0.2941323873,(t6[&type=0]:0.09820114588,t7[&type=0]:0.533115675):0.8625875909):0.7040311908,(((t8[&type=0]:0.8696136218,t9[&type=0]:0.08719484485):0.4204288905,(t10[&type=0]:0.102143287,(t11[&type=0]:0.9850614571,t12[&type=0]:0.7407912319):0.8715072596):0.5182644848):0.524062254,(((((((t13[&type=0]:0.3981794417,(t14[&type=0]:0.03889928572,t15[&type=0]:0.5187105467):0.1127638209):0.3431177251,((t16[&type=0]:0.4239511855,t17[&type=0]:0.001895790454):0.690600364,t18[&type=0]:0.6283850113):0.4073564562):0.6862231812,(((t19[&type=0]:0.9947085041,t20[&type=0]:0.4739363373):0.1873670686,t21[&type=0]:0.151270482):0.803061039,((t22[&type=0]:0.8899249982,((t23[&type=0]:0.1329096023,t24[&type=0]:0.84205155):0.8838408566,(t25[&type=0]:0.7541888549,t26[&type=0]:0.8602364615):0.8912267659):0.771449636):0.1022819551,(((t27[&type=0]:0.3134289116,(t28[&type=0]:0.2446750235,t29[&type=0]:0.8565168788):0.8277210968):0.4307989818,((t30[&type=0]:0.2330717787,t31[&type=0]:0.4438336496):0.6521712865,(t32[&type=0]:0.2534400895,t33[&type=0]:0.7885409284):0.3051449039):0.1196702593):0.4061951274,t34[&type=0]:0.8415271267):0.4365981282):0.753448925):0.1580670979):0.04210642632,(((t35[&type=0]:0.7504386581,t36[&type=0]:0.6328390085):0.9047614154,t37[&type=0]:0.4946133171):0.2264722914,((((t38[&type=0]:0.06683212146,t39[&type=0]:0.479845396):0.9424520086,t40[&type=0]:0.894530142):0.3844042511,(((t41[&type=0]:0.5215392481,t42[&type=0]:0.2366602973):0.8142298241,(t43[&type=0]:0.2968777204,(t44[&type=0]:0.655541793,t45[&type=0]:0.8608812049):0.3564132168):0.04912991729):0.1511388237,t46[&type=0]:0.9031036345):0.1874918914):0.9690212663,(t47[&type=0]:0.07753491728,(t48[&type=0]:0.8349514075,(t49[&type=0]:0.9689748741,t50[&type=0]:0.925813166):0.4534903264):0.3571097804):0.1324767114):0.5515443345):0.3330309158):0.7202291801,((t51[&type=0]:0.6977306763,((t52[&type=0]:0.9157640305,t53[&type=0]:0.4226291834):0.5872618856,t54[&type=0]:0.2063144948):0.1422286083):0.7182746637,t55[&type=0]:0.759545143):0.7437628019):0.2425582204,((t56[&type=0]:0.4614429038,(t57[&type=0]:0.9092229386,((t58[&type=0]:0.1049408391,t59[&type=0]:0.6328130178):0.642241966,((t60[&type=0]:0.264340204,t61[&type=0]:0.5904771155):0.7333205172,(t62[&type=0]:0.9183179205,t63[&type=0]:0.1090340314):0.3010568973):0.3240860389):0.3192155454):0.1835780439):0.5942421539,t64[&type=0]:0.7931551472):0.967891278):0.06263663713,(t65[&type=0]:0.5774453548,((t66[&type=0]:0.07208712469,((t67[&type=0]:0.8918803469,t68[&type=0]:0.5110983853):0.1491188321,t69[&type=0]:0.2471361952):0.9591872343):0.3133718621,(t70[&type=0]:0.944087367,t71[&type=0]:0.7830825299):0.2284035049):0.5492361034):0.1136150162):0.002181729767):0.4548798562):0.4258609388,((((((t72[&type=0]:0.27679418,t73[&type=0]:0.5398862793):0.8871422287,(((((t74[&type=0]:0.2531923286,t75[&type=0]:0.3796772889):0.4489221217,t76[&type=0]:0.2554209188):0.3248268673,t77[&type=0]:0.5372577759):0.5699883625,t78[&type=0]:0.1656995732):0.957750936,(t79[&type=0]:0.1301121258,t80[&type=0]:0.8925942327):0.2838441601):0.5258686764):0.47825964,(t81[&type=0]:0.5749240227,((t82[&type=0]:0.9574132746,(t83[&type=0]:0.00485483068,t84[&type=0]:0.8091488208):0.1985368489):0.3703975577,(((t85[&type=0]:0.3991035291,(t86[&type=0]:0.03201846033,t87[&type=0]:0.8380640063):0.05616304209):0.8414494572,t88[&type=0]:0.6844437125):0.2426782607,((t89[&type=0]:0.7543559887,t90[&type=0]:0.7162597755):0.8230077426,t91[&type=0]:0.08967904118):0.4460245941):0.8679371702):0.51572948):0.4362259945):0.2631344711,(((t92[&type=0]:0.3353162925,((t93[&type=0]:0.4025212794,t94[&type=0]:0.0281926766):0.7965471447,t95[&type=0]:0.1145715592):0.5993301494):0.08854756854,(t96[&type=0]:0.1461353719,((t97[&type=0]:0.3158547124,t98[&type=0]:0.06653800653):0.5634025722,t99[&type=0]:0.9711292514):0.9727503664):0.7684133062):0.4824229684,((t100[&type=0]:0.06834940333,t101[&type=0]:0.7794982188):0.3453287922,(t102[&type=0]:0.627945075,t103[&type=0]:0.1914187325):0.9974814849):0.6312927424):0.04858242651):0.2845227425,((t104[&type=0]:0.6782600286,(t105[&type=0]:0.03190574702,t106[&type=0]:0.5840284519):0.03041352634):0.725893975,(((t107[&type=0]:0.9885271091,t108[&type=0]:0.07126446022):0.8419693699,t109[&type=0]:0.1546431775):0.898004594,t110[&type=0]:0.2500803664):0.1493327522):0.4266726137):0.5946582041,(t111[&type=0]:0.1395377244,(((t112[&type=0]:0.7170655408,(t113[&type=0]:0.976886861,t114[&type=0]:0.9406369971):0.7471234254):0.8065501407,((t115[&type=0]:0.1713845057,(t116[&type=0]:0.7861330248,t117[&type=0]:0.6082276558):0.8413775554):0.3245444677,t118[&type=0]:0.3892389825):0.5992471091):0.7592411407,(((t119[&type=0]:0.535931844,t120[&type=0]:0.09058958571):0.4227561057,(t121[&type=0]:0.5531579193,t122[&type=0]:0.8276180199):0.6653355309):0.0941624688,t123[&type=0]:0.3623022255):0.1494971744):0.3526274569):0.9720881658):0.8149677955):0.6065687414,((((((t124[&type=0]:0.5406888947,t125[&type=0]:0.8892341822):0.06211395678,((t126[&type=0]:0.8203180477,(t127[&type=0]:0.8536844573,t128[&type=0]:0.360511546):0.9030223228):0.9095590916,((t129[&type=0]:0.9110714826,(t130[&type=0]:0.2346256471,t131[&type=0]:0.6523390864):0.1288849309):0.7077432328,(t132[&type=0]:0.4060195235,t133[&type=0]:0.1661393729):0.3910941551):0.205704404):0.8609933471):0.3724007562,((t134[&type=0]:0.1731842053,(t135[&type=0]:0.7232482471,(t136[&type=0]:0.3883952193,((t137[&type=0]:0.6709475764,t138[&type=0]:0.0372075201):0.5473196667,(t139[&type=0]:0.8092764446,t140[&type=0]:0.4123262055):0.2000603897):0.55258787):0.2654263263):0.745555162):0.2956101163,((t141[&type=0]:0.52147611,(t142[&type=0]:0.9462005703,t143[&type=0]:0.5671354234):0.6887917654):0.362258781,t144[&type=0]:0.4798202242):0.8242726682):0.6072624433):0.695287361,((((t145[&type=0]:0.03793937969,t146[&type=0]:0.07275558705):0.3482963489,t147[&type=0]:0.1457363514):0.1479936559,(t148[&type=0]:0.7158309214,((t149[&type=0]:0.2174433649,t150[&type=0]:0.04072828358):0.4112026501,t151[&type=0]:0.6422409331):0.3413406226):0.1693999742):0.6631712937,(((t152[&type=0]:0.2706006162,t153[&type=0]:0.9267972289):0.1387761638,((((t154[&type=0]:0.2563392594,t155[&type=0]:0.3058371837):0.5946117372,t156[&type=0]:0.6161190302):0.6970871226,(t157[&type=0]:0.2388902532,(t158[&type=0]:0.9486316761,t159[&type=0]:0.215360787):0.168830334):0.03888285463):0.1640696453,t160[&type=0]:0.6803096831):0.1418975852):0.4218000816,(((t161[&type=0]:0.8702562298,t162[&type=0]:0.9289729816):0.05807372741,t163[&type=0]:0.3533785399):0.5012762842,(((t164[&type=0]:0.8666574673,t165[&type=0]:0.9603798252):0.7887994377,t166[&type=0]:0.857058729):0.4139410679,(t167[&type=0]:0.5900272813,t168[&type=0]:0.3345388798):0.06017537019):0.9609203783):0.7103463742):0.696603697):0.6451920038):0.1909481271,((((t169[&type=0]:0.9171597108,t170[&type=0]:0.9479122513):0.7170342554,(t171[&type=0]:0.2722596873,((t172[&type=0]:0.1194724559,(t173[&type=0]:0.03922236571,t174[&type=0]:0.6290624789):0.07739861775):0.8598598302,(t175[&type=0]:0.2009421999,(t176[&type=0]:0.06154947914,t177[&type=0]:8.997193072E-4):0.04738179315):0.3235510678):0.3443877005):0.6351028818):0.5525081949,((((t178[&type=0]:0.7599076207,t179[&type=0]:0.2997759853):0.5921433992,t180[&type=0]:0.7098581635):0.3725496214,(t181[&type=0]:0.5053773888,(t182[&type=0]:0.5991492711,(t183[&type=0]:0.5036820578,t184[&type=0]:0.6361607853):0.510631816):0.9604382808):0.2464167587):0.6073093358,(((t185[&type=0]:0.03128415369,(t186[&type=0]:0.5260852403,(t187[&type=0]:0.878767435,t188[&type=0]:0.4992109234):0.5333148066):0.00347468094):0.5590308013,t189[&type=0]:0.3710992143):0.5034162949,(t190[&type=0]:0.778916508,((t191[&type=0]:0.3069154553,(((t192[&type=0]:0.9946115273,t193[&type=0]:0.9138687006):0.5209144899,t194[&type=0]:0.5152770842):0.9462409306,t195[&type=0]:0.7395236609):0.4110851623):0.930918345,(((t196[&type=0]:0.7895439987,((t197[&type=0]:0.4697002599,t198[&type=0]:0.1383787312):0.6911794308,(t199[&type=0]:0.8664436699,t200[&type=0]:0.1959039853):0.8656513852):0.3620497067):0.2839249384,(t201[&type=0]:0.6558795469,t202[&type=0]:0.2103423763):0.969477433):0.9058840063,(t203[&type=0]:0.0856692954,t204[&type=0]:0.4175976661):0.820434629):0.5355881769):0.2263581599):0.4512835185):0.7323478526):0.2479199937):0.1964542414,((t205[&type=0]:0.7537573762,(t206[&type=0]:0.1392466244,(t207[&type=0]:0.5136175761,(t208[&type=0]:0.7852529553,t209[&type=0]:0.07355738804):0.1220811389):0.7572090242):0.1422528555):0.5948274662,(((((t210[&type=0]:0.3068353184,(t211[&type=0]:0.3314456891,((t212[&type=0]:0.5265486804,t213[&type=0]:0.1382007354):0.1814086549,t214[&type=0]:0.9276472756):0.07718444197):0.03486835537):0.1617580003,(t215[&type=0]:0.3328830956,t216[&type=0]:0.8558843595):0.8366736979):0.347376487,t217[&type=0]:0.8222538356):0.2337225529,(t218[&type=0]:0.06199815008,t219[&type=0]:0.45975962):0.179990889):0.0635867205,(t220[&type=0]:0.3214025751,(t221[&type=0]:0.5022090652,t222[&type=0]:0.6454557138):0.6956466341):0.2711792416):0.1847200533):0.1051658324):0.4945860899):0.936143348,(((t223[&type=0]:0.06268779701,((t224[&type=0]:0.3337278806,t225[&type=0]:0.1570303424):0.3089733059,(t226[&type=0]:0.5069784883,t227[&type=0]:0.1434204187):0.2001587199):0.04750720505):0.3600859912,((((t228[&type=0]:0.9994731578,(t229[&type=0]:0.8934116936,t230[&type=0]:0.03698333143):0.8173468311):0.3089058488,((((t231[&type=0]:0.3216121283,t232[&type=0]:0.5232846253):0.8687884973,(t233[&type=0]:0.6280638413,((t234[&type=0]:0.6543256822,t235[&type=0]:0.8677638234):0.8895299246,t236[&type=0]:0.4047793006):0.7147388768):0.3533478715):0.9470084386,t237[&type=0]:0.7769409856):0.4955915695,((t238[&type=0]:0.2772087415,(t239[&type=0]:0.4904922615,(t240[&type=0]:0.05356206303,t241[&type=0]:0.08998329984):0.8154862223):0.5610961432):0.1617916438,(t242[&type=0]:0.5707751412,(t243[&type=0]:0.9836868793,t244[&type=0]:0.1984052949):0.6953297216):0.05552111682):0.9476150468):0.2473166997):0.9623488116,((t245[&type=0]:0.7935025664,t246[&type=0]:0.08509867964):0.3953444003,(t247[&type=0]:0.09163277131,(t248[&type=0]:0.5201428954,t249[&type=0]:0.8055520628):0.7452739514):0.3989078877):0.07581191277):0.9779064963,(((t250[&type=0]:0.943611098,(t251[&type=0]:0.33392801,t252[&type=0]:0.5996331484):0.4291575127):0.4906436009,((((t253[&type=0]:0.7749450852,(t254[&type=0]:0.8616885878,t255[&type=0]:0.585028409):0.06060880423):0.1238881133,((t256[&type=0]:0.7451687793,t257[&type=0]:0.6925335305):0.05338745634,t258[&type=0]:0.3357626374):0.2069296469):0.09644073155,((((t259[&type=0]:0.2258843291,t260[&type=0]:0.2671526412):0.3940743534,(t261[&type=0]:0.5022506947,(t262[&type=0]:0.9498897423,t263[&type=0]:0.1406114365):0.2847759123):0.04320593993):0.6982026948,t264[&type=0]:0.2693712024):0.959781138,(((t265[&type=0]:0.6035173486,t266[&type=0]:0.5529949202):0.9900399651,(t267[&type=0]:0.5455351078,t268[&type=0]:0.3530619899):0.4626278321):0.2735997427,(t269[&type=0]:0.9580646451,(t270[&type=0]:0.3280033092,t271[&type=0]:0.7206294278):0.03739526332):0.4967516926):0.9350089293):0.4371789068):0.1014483059,t272[&type=0]:0.2867298371):0.07522285799):0.06352435821,((t273[&type=0]:0.4001782183,t274[&type=0]:0.7190070178):0.1696753846,(t275[&type=0]:0.5535608665,t276[&type=0]:0.01324651297):0.2691543309):0.8676247413):0.8461736294):0.1769516913):0.344365149,(((t277[&type=0]:0.3245107541,(t278[&type=0]:0.4142541443,t279[&type=0]:0.5857141651):0.819547887):0.0867733527,(t280[&type=0]:0.4938162852,(t281[&type=0]:0.2444119717,t282[&type=0]:0.08141433029):0.05381231918):0.8375963389):0.176160393,((t283[&type=0]:0.4199601968,t284[&type=0]:0.8354801824):0.3150380594,(((t285[&type=0]:0.9818797186,(t286[&type=0]:0.8971825438,((t287[&type=0]:0.5155417006,t288[&type=0]:0.8260786769):0.7060374152,t289[&type=0]:0.6001661876):0.4120474763):0.9949228324):0.8038698458,t290[&type=0]:0.1939124272):0.6380942846,t291[&type=0]:0.3665255161):0.459349304):0.482901911):0.4833473735):0.5903116504):0.9973697898);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(tree.getRoot().getHeight() + 0.1, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {4.0/3.0, 5.0}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5, 1.25}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0/3.0, 0.5}, UnitInterval.INSTANCE)),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.2, 0.1}, NonNegativeReal.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-661.9588648301033 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from BEAST, not checked in R
+    }
+
+    /**
+     * Test infection among demes
+     * No rate changes
+     * Symmetric configuration
+     * reference from R
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihoodCalculationInfAmongDemesSymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        // uncoloured, symmetric tree
+
+        Tree tree = new TreeParser("((t3[&type=1]:0.004214277605,t4[&type=1]:0.02157681391):0.229186993,(t2[&type=0]:0.624713651,t1[&type=1]:1.347400211):0.06231047755);",
+                false);
+
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(tree.getRoot().getHeight() + 0.02686563367, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE), 2),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE), 2),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE), 2),
+                "birthRateAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE), 2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        //System.out.println("Log-likelihood " + logL + " - testLikelihoodCalculationInfAmongDemes \t");
+        assertEquals(-5.1966118470881 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-3);
+
+    }
+
+    /**
+     * Test infection among demes
+     * No rate changes
+     * Asymmetric configuration
+     * reference from R
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testLikelihoodCalculationInfAmongDemesAsymmetric(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=0]:0.5):1,(1[&type=0]:2,2[&type=1]:1):3);",
+                false);
+
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {2.0, 6.25}, NonNegativeReal.INSTANCE), 2),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.2, 0.625}, NonNegativeReal.INSTANCE), 2),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.3, 0.625}, NonNegativeReal.INSTANCE), 2),
+                "birthRateAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.2, 0.1}, NonNegativeReal.INSTANCE), 2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-26.7939 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);  //result from R
+    }
+
+    /**
+     * Test of migration and infection among demes with rate changes
+     * 2 types, no SA
+     * Uncoloured tree
+     * Reference from BDMM itself (version 0.2.0 28/06/2017)
+     * @throws Exception
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testAmongRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
+
+        Tree tree = new TreeParser("((3[&type=0]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "Re", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {6.0, 5.0, 2.0, 2.5}, NonNegativeReal.INSTANCE), 2),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.5, 0.55, 0.45, 0.6}, NonNegativeReal.INSTANCE), 2),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.5, 0.45, 0.333333, 0.35}, UnitInterval.INSTANCE), 2),
+                "ReAmongDemes", new SkylineMatrixParameter(
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {1.1, 1.3, 1.2, 1.15}, NonNegativeReal.INSTANCE), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        new RealVectorParam<>(new double[] {1.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.1, 0.15, 0.2, 0.25}, NonNegativeReal.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-16.466832439520886 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from BDMM, 28/06/2017
+    }
+
+    /**
+     * Test of migration and infection among demes with rate changes
+     * 2 types, no SA
+     * Uncoloured tree
+     * Reference from BDMM itself (version 0.2.0 28/06/2017)
+     * @throws Exception
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testAmongNoRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
+
+        Tree tree = new TreeParser("((3[&type=1]:1.5,4[&type=1]:0.5):1,(1[&type=1]:2,2[&type=1]:1):3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.0, 0.0}, NonNegativeReal.INSTANCE), 2),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.0, 0.75}, NonNegativeReal.INSTANCE), 2),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.0, 0.7}, UnitInterval.INSTANCE), 2),
+                "ReAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.0, 2.0}, NonNegativeReal.INSTANCE), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 0.0}, NonNegativeReal.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0, 0.0}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-12.1441 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // tanja's result from R
+    }
+
+    /**
+     * Test of migration with 3 types
+     * No rate change, no SA
+     * Reference from BDMM itself
+     * @throws Exception
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testMig3types(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) throws Exception {
+
+        Tree tree = new TreeParser("((3[&type=2]:1.5,4[&type=1]:0.5):1,(1[&type=1]:1,2[&type=0]:1):3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(3),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {6.0, 2.0, 5.0}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 0.45, 0.55}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 0.333333, 0.45}, UnitInterval.INSTANCE)),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.1, 0.2, 0.15, 0.12, 0.12, 0.15}, NonNegativeReal.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0, 1.0}, UnitInterval.INSTANCE), 3));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0/3.0, 1.0/3.0, 1.0/3.0}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-16.88601100061662 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // result from BDMM, version 0.2.0, 06/07/2017
+    }
+
+    /**
+     * Test tree with unknown states
+     * Without migration and without rate changes
+     * 2 types, asymmetric
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testUnknownStatesWithoutMigrationOrRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {6.0, 2.0}, NonNegativeReal.INSTANCE)),
+                "ReAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 1.0}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 0.333333}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-18.82798 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // tanja's result from R
+    }
+
+    /**
+     * Test tree with unknown states
+     * With migration, without rate changes
+     * 2 types, asymmetric
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testUnknownStatesWithMigration(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {6.0, 2.0}, NonNegativeReal.INSTANCE)),
+                "ReAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 1.0}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 0.333333}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.3, 0.4}, NonNegativeReal.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-18.986212857895506 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // reference from BDMM - 0.2.0 - 06/07/2017
+    }
+
+    /**
+     * Test tree with unknown states
+     * With migration and with rate changes
+     * 2 types, asymmetric
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testUnknownStatesWithMigrationAndRateChange(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&type=\"?\"]:1.5,4[&type=\"?\"]:0.5):1,(1[&type=\"?\"]:1,2[&type=\"?\"]:1):3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(4.1, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(2),
+                "Re", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {6.0, 5.0, 2.0, 1.5}, NonNegativeReal.INSTANCE)),
+                "ReAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.2}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.5, 1.0, 1.0, 0.5}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.5, 0.45, 0.333333, 0.4}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.3, 0.35, 0.4, 0.32}, NonNegativeReal.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-17.87099909579358 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); // reference from BDMM - 0.2.0 - 06/07/2017
+    }
+
+    /**
      * Test on combining migration with rho-sampling
      * Reference from BDMM
      */
@@ -2042,6 +1780,129 @@ public class BirthDeathMigrationLikelihoodTest {
 
         // Corrected value from BDMM (original was incorrectly conditioned)
         assertEquals(-5.5751511486962215 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
+    }
+
+    /**
+     * Basic test on sampled-ancestors lik. calculation.
+     * 2 leaves, 1 SA. 1 type, no rho-sampling, no rate-change
+     * Reference value from BDSKY (23/03/2017)
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testSALikelihoodMini(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&type=0]: 1.5, 6[&type=0]: 0)5[&type=0]: 3.5, 4[&type=0]: 4) ;",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "typeSet", new TypeSet(1),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.2}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        assertEquals(-18.854438107814335 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); //Reference value from BDSKY (23/03/2017)
+    }
+
+    /**
+     * Likelihood test from the Sasha's SA package.
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testSALikelihoodMini2(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+        String newick = "((1:1.5,2:0.5):0.5,3:0.0)4:0.0;";
+
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE),
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE)),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.99}, NonNegativeReal.INSTANCE)),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName(
+                "engine", method,
+                "parameterization", parameterization,
+                "conditionOnSurvival", true,
+                "tree", new TreeParser(newick, false, false, true,0),
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        // this value was calculated by Sasha with Mathematica
+        assertEquals(-22.08332 + labeledTreeConversionFactor(density),
+                density.calculateLogP(), 1e-5); // likelihood conditioning on at least one sampled individual
+    }
+
+    /**
+     * Likelihood test from the Sasha's SA package.
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testSALikelihoodMini3(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+        String newick = "((1:1.0,2:0.0):1.0,3:0):0.0";
+
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE),
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {2.0}, NonNegativeReal.INSTANCE)),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.99}, NonNegativeReal.INSTANCE)),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5}, NonNegativeReal.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName(
+                "engine", method,
+                "parameterization", parameterization,
+                "conditionOnSurvival", false,
+                "tree", new TreeParser(newick, false, false, true,0),
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        // this value was calculated by Sasha with Mathematica
+        assertEquals(-25.3707 + labeledTreeConversionFactor(density),
+                density.calculateLogP(), 1e-5); // likelihood conditioning on at least one sampled individual
     }
 
     /**
@@ -2108,5 +1969,143 @@ public class BirthDeathMigrationLikelihoodTest {
 
         assertEquals(-22.348462265673483 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5); //Reference value from BDSKY (06/04/2017)
         assertEquals(density.calculateLogP(), densityExact.calculateLogP(), 1e-5);
+    }
+
+    /**
+     * Test on sampled-ancestors lik. calculation with no sampled ancestor
+     * No rate-change, one state, 4 tips
+     * This state is just there in case something is broken with sampled ancestors,
+     * helps for debugging if combined with testSALikelihoodMini for instance
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testSALikelihoodCalculationWithoutAncestors(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        Tree tree = new TreeParser("((3[&type=0] : 1.5, 4[&type=0] : 0.5) : 1 , (1[&type=0] : 2, 2[&type=0] : 1) : 3);",
+                false);
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "processLength", new ProcessLength(tree),
+                "typeSet", new TypeSet(1),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5}, NonNegativeReal.INSTANCE)),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.3}, UnitInterval.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName("engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
+                "conditionOnSurvival", true,
+                "conditionOnRoot", true,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        // Conditioned on root:
+
+        assertEquals(-15.545323363405362 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
+
+        // Conditioned on origin:
+
+        parameterization.setInputValue("processLength", new RealScalarParam<>(10.0, NonNegativeReal.INSTANCE));
+        parameterization.initAndValidate();
+        density.setInputValue("conditionOnRoot", false);
+        density.initAndValidate();
+
+        assertEquals(-25.991511346557598 + labeledTreeConversionFactor(density), density.calculateLogP(), 1e-5);
+    }
+
+    /**
+     * Tests the case where we have direct ancestors (SA nodes).
+     * Tests if two identical trees but with different newick representations have the same likelihood.
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testDirectAncestor(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+
+        // two identical trees up to rotation (the two root children are rotated)
+        String newick1 = "((1[&type=0]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=0]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
+        String newick2 = "((1[&type=0]: 1.5, 2[&type=1]: 1.5)3[&type=0]: 3.5, (4[&type=0]: 1.5, 5[&type=1]: 0.0)6[&type=0]: 3.5) ;";
+
+        Parameterization parameterization = new EpiParameterization();
+        parameterization.initByName(
+                "typeSet", new TypeSet(2),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "Re", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {4.0/3.0, 1.1}, NonNegativeReal.INSTANCE),
+                        2),
+                "becomeUninfectiousRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.5, 1.4}, NonNegativeReal.INSTANCE),
+                        2),
+                "ReAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE),
+                        2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.2, 0.3}, NonNegativeReal.INSTANCE),
+                        2),
+                "samplingProportion", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.33}, UnitInterval.INSTANCE),
+                        2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.3, 0.4}, UnitInterval.INSTANCE)));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName(
+                "engine", method,
+                "parameterization", parameterization,
+                "conditionOnSurvival", false,
+                "tree", new TreeParser(newick1, false, false, true,0),
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        density.setInputValue("tree", new TreeParser(newick1, false, false, true,0));
+        density.initAndValidate();
+        double logL1 = density.calculateLogP();
+
+        density.setInputValue("tree", new TreeParser(newick2, false, false, true,0));
+        density.initAndValidate();
+        double logL2 = density.calculateLogP();
+
+        assertEquals(logL1, logL2, 1e-5);
+
+        // the same invariance has to hold when the non-ancestral tips sit in type 1 instead
+
+        String newick3 = "((1[&type=1]: 1.5, 2[&type=1]: 0.0)3[&type=0]: 3.5, (4[&type=1]: 1.5, 5[&type=1]: 1.5)6[&type=0]: 3.5) ;";
+        String newick4 = "((1[&type=1]: 1.5, 2[&type=1]: 1.5)3[&type=0]: 3.5, (4[&type=1]: 1.5, 5[&type=1]: 0.0)6[&type=0]: 3.5) ;";
+
+        density.setInputValue("tree", new TreeParser(newick3, false, false, true,0));
+        density.initAndValidate();
+        double logL3 = density.calculateLogP();
+
+        density.setInputValue("tree", new TreeParser(newick4, false, false, true,0));
+        density.initAndValidate();
+        double logL4 = density.calculateLogP();
+
+        assertEquals(logL3, logL4, 1e-5);
     }
 }
