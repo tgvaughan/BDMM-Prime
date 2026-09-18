@@ -27,7 +27,8 @@ import java.util.List;
 
 public class IntervalUtils {
     /**
-     * Returns the list of intervals for the given parameterization intervals.
+     * Returns the list of Interval objects for the given parameterization intervals.
+     * The intervals are added backwards in time.
      */
     public static List<Interval> getIntervals(Parameterization parameterization) {
         List<Interval> intervals = new ArrayList<>();
