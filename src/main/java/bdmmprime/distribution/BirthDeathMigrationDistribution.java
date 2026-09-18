@@ -25,10 +25,10 @@ import beast.base.spec.type.Simplex;
 @Description("This model implements a multi-deme version of the BirthDeathSkylineModel " +
         "with discrete locations and migration events among demes. " +
         "This class supports both the classic implementation " +
-        "(bdmmprime.distribution.BirthDeathMigrationDistribution) " +
+        "(bdmmprime.distribution.classic.BirthDeathMigrationDistribution) " +
         "and the flow implementation " +
-        "(bdmmprime.flow.BirthDeathMigrationDistribution) depending on " +
-        "the 'method' input.")
+        "(bdmmprime.distribution.flow.BirthDeathMigrationDistribution) depending on " +
+        "the 'engine' input.")
 public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     // inputs shared by both engines
@@ -91,7 +91,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             true
     );
 
-    // inputs specific to the classic (bdmmprime.distribution) engine
+    // inputs specific to the classic (bdmmprime.distribution.classic) engine
 
     public Input<Boolean> useAnalyticalSingleTypeSolutionInput = new Input<>(
             "useAnalyticalSingleTypeSolution",
@@ -118,7 +118,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             false
     );
 
-    // inputs specific to the flow (bdmmprime.flow) engine
+    // inputs specific to the flow (bdmmprime.distribution.flow) engine
 
     public Input<InitialMatrixStrategy> initialMatrixStrategyInput = new Input<>(
             "initialMatrixStrategy",

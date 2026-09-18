@@ -90,7 +90,7 @@
                      inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
-                <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.facade.BirthDeathMigrationDistribution"
+                <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.distribution.BirthDeathMigrationDistribution"
                               tree="@Tree.t:$(n)" conditionOnSurvival="true" parallelize="true">
 
                     <parameterization id="CanonicalBDMMPrimeParameterization.t:$(n)"

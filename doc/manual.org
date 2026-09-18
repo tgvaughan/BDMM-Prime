@@ -1024,7 +1024,7 @@ in their default configuration:
 
 Below we describe each of them in turn.
 
-- Method :: This determines which of BDMM-Prime's two calculation engines is
+- Engine :: This determines which of BDMM-Prime's two calculation engines is
   used to compute the tree prior.  Both compute the same quantity, but the
   flow engine is substantially faster on large trees with several types.
   Under the default "auto" setting, BDMM-Prime chooses between them for you,
@@ -1357,14 +1357,14 @@ the BEAST 2 XML model description language as it pertains to BDMM-Prime.
 :END:
 
 The principle object contained in every BDMM-Prime analysis is the
-=bdmmprime.facade.BirthDeathMigrationDistribution= object representing
+=bdmmprime.distribution.BirthDeathMigrationDistribution= object representing
 the probability of a tree under some birth-death distribution.
 
 In the XML the element defining this object usually appears as the
 value of a =distribution= input to a higher leverl
 =CompoundDistribution= object in the following form:
 #+begin_src xml
-  <distribution spec="bdmmprime.facade.BirthDeathMigrationDistribution">
+  <distribution spec="bdmmprime.distribution.BirthDeathMigrationDistribution">
     <!-- Inputs -->
   </distribution>
 #+end_src
@@ -1372,7 +1372,7 @@ value of a =distribution= input to a higher leverl
 The main inputs defined for the =BirthDeathMigrationDistribution= are
 as follows:
 
-- =method= (=String=, default auto) :: This selects the engine used to
+- =engine= (=String=, default auto) :: This selects the engine used to
   compute the tree probability, and is one of =auto=, =classic= or =flow=.
   Under =auto=, the classic engine is used for single-type analyses and for
   trees with fewer than 100 leaves, and the flow engine is used for
@@ -1847,7 +1847,7 @@ state conditional on the data.
 
 This object takes the following input:
 - =bdmmTreePrior= (=BirthDeathMigrationDistribution=) ::
-  Reference to the =bdmmprime.facade.BirthDeathMigrationDistribution= used in
+  Reference to the =bdmmprime.distribution.BirthDeathMigrationDistribution= used in
   the analysis.
 
 *** Stochastic mapping
@@ -1872,7 +1872,7 @@ The important inputs are:
 - =bdmmDistrib= (=BirthDeathMigrationDistribution=) :: 
   One of these two inputs must be provided, as these provide the parameters
   needed to sample the ancestral type distribution.  If used, this must be a
-  reference to the =bdmmprime.facade.BirthDeathMigrationDistribution=.
+  reference to the =bdmmprime.distribution.BirthDeathMigrationDistribution=.
 - =untypedTree= (=Tree=, required) :: 
   The tree on which the type changes are to be stochastically mapped.
 - =typeTraitSet= (=TraitSet=, required) :: 
@@ -1986,7 +1986,7 @@ Objects of type =SampledTrajectory= accept the following inputs:
 - =bdmmDistrib= (=BirthDeathMigrationDistribution=) :: 
   One of these two inputs must be provided, as these provide the parameters
   needed to sample the population dynamics.  If used, this must be a
-  reference to the =bdmmprime.facade.BirthDeathMigrationDistribution=.
+  reference to the =bdmmprime.distribution.BirthDeathMigrationDistribution=.
 - =typeMappedTree= (=Tree=, required) ::
   An edge-typed tree. Ideally a reference to a =TypeMappedTree=.
 - =typeLabel= (=String=, required) ::
