@@ -14,6 +14,8 @@ flexibility and ease of use.  It incorporates the following enhancements:
 - automatic fall-back to analytical solutions for unstructured (single
   type) analyses (meaning BDMM-Prime includes much of the
   functionality of [BDSKY](https://github.com/BEAST2-Dev/bdsky)),
+- an additional likelihood engine based on the flow representation of the probability
+  ODE which is substantially faster on large trees with several types,
 - use of stochastic mapping for sampling ancestral states,
 - a particle filtering algorithm allowing joint sampling of population trajectories,
 - a heavily refactored code base intended to make the package easier to use,
@@ -70,6 +72,10 @@ If you use this package as part of your research, please cite these papers:
 * Scire et al., "Robust Phylodynamic Analysis of Genetic Sequencing
   Data from Structured Populations", Viruses, 14(8):1648 (2022),
   [doi:10.3390/v14081648](https://doi.org/10.3390/v14081648).
+* Louca and Pennell, "A General and Efficient Algorithm for the Likelihood
+  of Diversification and Discrete-Trait Evolutionary Models", Syst Biol,
+  69(3):545-556 (2020),
+  [doi:10.1093/sysbio/syz055](https://doi.org/10.1093/sysbio/syz055).
 * Kühnert, et al., "Phylodynamics with Migration: A
   ComputationalFramework to Quantify Population Structure from Genomic
   Data", MBE, 33(8):2102-2116 (2016),

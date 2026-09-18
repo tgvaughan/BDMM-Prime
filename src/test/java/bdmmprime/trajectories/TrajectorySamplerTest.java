@@ -19,15 +19,13 @@
 
 package bdmmprime.trajectories;
 
-import bdmmprime.distribution.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.classic.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.*;
 import bdmmprime.testclasses.RealVectorParamFromString;
 import bdmmprime.trajectories.simulation.SimulatedTree;
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.parameter.RealScalarParam;
-import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.spec.inference.parameter.SimplexParam;
-import beast.base.spec.type.RealScalar;
 import beast.base.util.Randomizer;
 import beast.base.evolution.tree.TreeParser;
 import org.junit.jupiter.api.Test;

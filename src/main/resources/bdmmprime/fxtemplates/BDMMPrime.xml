@@ -58,7 +58,6 @@
 
         <subtemplate id="BDMMPrime" class="bdmmprime.distribution.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
                      suppressInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.typeLabel,
-                        bdmmprime.distribution.BirthDeathMigrationDistribution.storeNodeTypes,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.tree,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.finalSampleOffset,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.treeIntervals,
@@ -67,6 +66,12 @@
                         bdmmprime.distribution.BirthDeathMigrationDistribution.conditionOnSurvival,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.conditionOnRoot,
                         bdmmprime.distribution.BirthDeathMigrationDistribution.useAnalyticalSingleTypeSolution,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.initialMatrixStrategy,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.useInverseFlow,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.seed,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.minimalSubtreeSizeForParallelization,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.maxConditioningNumber,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.useLoucaPennellIntervals,
                         bdmmprime.parameterization.CanonicalParameterization.typeSet,
                         bdmmprime.parameterization.SkylineVectorParameter.processLength,
                         bdmmprime.parameterization.SkylineMatrixParameter.processLength,

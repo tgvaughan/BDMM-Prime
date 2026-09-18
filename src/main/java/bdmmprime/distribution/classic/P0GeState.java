@@ -17,7 +17,7 @@
  * along with bdmm-prime. If not, see <https://www.gnu.org/licenses/>.
  */
 
-package bdmmprime.distribution;
+package bdmmprime.distribution.classic;
 
 /**
  * Created by Jeremie Scire (jscire)
