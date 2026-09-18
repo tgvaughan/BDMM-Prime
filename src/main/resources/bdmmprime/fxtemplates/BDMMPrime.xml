@@ -56,22 +56,22 @@
 
     <mergewith point="treePriorTemplates">
 
-        <subtemplate id="BDMMPrime" class="bdmmprime.facade.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
-                     suppressInputs="bdmmprime.facade.BirthDeathMigrationDistribution.typeLabel,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.tree,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.finalSampleOffset,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.treeIntervals,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.savePartialLikelihoodsToFile,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.storeIntegrationResults,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.conditionOnSurvival,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.conditionOnRoot,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.useAnalyticalSingleTypeSolution,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.initialMatrixStrategy,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.useInverseFlow,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.seed,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.minimalSubtreeSizeForParallelization,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.maxConditioningNumber,
-                        bdmmprime.facade.BirthDeathMigrationDistribution.useLoucaPennellIntervals,
+        <subtemplate id="BDMMPrime" class="bdmmprime.distribution.BirthDeathMigrationDistribution" mainid="BDMMPrime.t:$(n)"
+                     suppressInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.typeLabel,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.tree,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.finalSampleOffset,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.treeIntervals,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.savePartialLikelihoodsToFile,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.storeIntegrationResults,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.conditionOnSurvival,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.conditionOnRoot,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.useAnalyticalSingleTypeSolution,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.initialMatrixStrategy,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.useInverseFlow,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.seed,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.minimalSubtreeSizeForParallelization,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.maxConditioningNumber,
+                        bdmmprime.distribution.BirthDeathMigrationDistribution.useLoucaPennellIntervals,
                         bdmmprime.parameterization.CanonicalParameterization.typeSet,
                         bdmmprime.parameterization.SkylineVectorParameter.processLength,
                         bdmmprime.parameterization.SkylineMatrixParameter.processLength,
@@ -87,7 +87,7 @@
                         bdmmprime.util.priors.SmartZeroExcludingPrior.classesToExclude,
                         bdmmprime.util.priors.SmartZeroExcludingRealIID.param,
                         bdmmprime.util.priors.ZeroExcludingRealIID.param"
-                     inlineInputs="bdmmprime.facade.BirthDeathMigrationDistribution.parameterization">
+                     inlineInputs="bdmmprime.distribution.BirthDeathMigrationDistribution.parameterization">
 
             <![CDATA[
                 <distribution id="BDMMPrime.t:$(n)" spec="bdmmprime.facade.BirthDeathMigrationDistribution"

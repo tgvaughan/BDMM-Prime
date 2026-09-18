@@ -19,7 +19,7 @@
 
 package bdmmprime.mapping;
 
-import bdmmprime.facade.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
 import beast.base.core.Citation;

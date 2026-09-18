@@ -1,4 +1,4 @@
-package bdmmprime.facade;
+package bdmmprime.distribution;
 
 import bdmmprime.distribution.flow.flowSystems.InitialMatrixStrategy;
 import bdmmprime.parameterization.Parameterization;

@@ -1,7 +1,7 @@
 package bdmmprime.distribution.flow;
 
 import bdmmprime.distribution.flow.flowSystems.*;
-import bdmmprime.facade.BirthDeathMigrationLikelihoodEngine;
+import bdmmprime.distribution.BirthDeathMigrationLikelihoodEngine;
 import bdmmprime.distribution.flow.extinctionSystem.ExtinctionProbabilities;
 import bdmmprime.distribution.flow.extinctionSystem.ExtinctionProbabilitiesODESystem;
 import bdmmprime.distribution.flow.intervals.Interval;

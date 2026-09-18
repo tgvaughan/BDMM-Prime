@@ -19,7 +19,7 @@
 
 package bdmmprime.trajectories;
 
-import bdmmprime.facade.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.mapping.TypeMappedTree;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.trajectories.obsevents.*;

@@ -20,7 +20,7 @@
 
 package bdmmprime.distribution.classic;
 
-import bdmmprime.facade.BirthDeathMigrationLikelihoodEngine;
+import bdmmprime.distribution.BirthDeathMigrationLikelihoodEngine;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
 import beast.base.core.*;

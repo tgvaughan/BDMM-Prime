@@ -19,7 +19,7 @@
 
 package bdmmprime.util;
 
-import bdmmprime.facade.BirthDeathMigrationDistribution;
+import bdmmprime.distribution.BirthDeathMigrationDistribution;
 import bdmmprime.parameterization.TypeSet;
 import beast.base.core.Input;
 import beast.base.core.Loggable;

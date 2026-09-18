@@ -18,7 +18,6 @@ open module bdmmprime {
     exports bdmmprime.trajectories;
     exports bdmmprime.util;
     exports bdmmprime.distribution;
-    exports bdmmprime.facade;
 
     provides beast.base.core.BEASTInterface with
         bdmmprime.mapping.TypeMappedTree,
@@ -57,7 +56,7 @@ open module bdmmprime {
         bdmmprime.parameterization.EpiParameterization,
         bdmmprime.parameterization.FBDParameterization,
         bdmmprime.parameterization.TypeSet,
-            bdmmprime.facade.BirthDeathMigrationDistribution,
+            bdmmprime.distribution.BirthDeathMigrationDistribution,
             bdmmprime.distribution.flow.BirthDeathMigrationDistribution,
             bdmmprime.distribution.classic.BirthDeathMigrationDistribution,
         bdmmprime.trajectories.simulation.SimulatedTrajectoryLogger,

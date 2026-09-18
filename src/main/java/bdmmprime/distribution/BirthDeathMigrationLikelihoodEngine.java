@@ -1,4 +1,4 @@
-package bdmmprime.facade;
+package bdmmprime.distribution;
 
 import beast.base.evolution.tree.TreeInterface;
 

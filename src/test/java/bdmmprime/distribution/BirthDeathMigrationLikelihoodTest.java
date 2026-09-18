@@ -1,4 +1,4 @@
-package bdmmprime.facade;
+package bdmmprime.distribution;
 
 import bdmmprime.distribution.flow.flowSystems.InitialMatrixStrategy;
 import bdmmprime.parameterization.*;
@@ -111,7 +111,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick,
@@ -175,7 +175,7 @@ public class BirthDeathMigrationLikelihoodTest {
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
 
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick,
@@ -229,7 +229,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -248,7 +248,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
         densityExact.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -298,7 +298,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -313,7 +313,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution densityExact = new BirthDeathMigrationDistribution();
         densityExact.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -369,7 +369,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", new TreeParser(newick, false, false, true, 0),
@@ -415,7 +415,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", tree,
@@ -458,7 +458,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "tree", tree,
@@ -505,7 +505,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
@@ -614,7 +614,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
@@ -666,7 +666,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "tree", tree,
@@ -718,7 +718,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0, 0.0}),
                 "tree", tree,
@@ -766,7 +766,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0, 1.0}, UnitInterval.INSTANCE), 3));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0/3.0, 1.0/3.0, 1.0/3.0}),
                 "tree", tree,
@@ -806,7 +806,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "tree", new TreeParser(newick, false, false, true,0),
                 "conditionOnSurvival", false,
@@ -847,7 +847,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
@@ -903,7 +903,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
@@ -953,7 +953,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {1.0, 1.0}, UnitInterval.INSTANCE), 2));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
                 "conditionOnSurvival", true,
@@ -997,7 +997,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
@@ -1037,7 +1037,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "conditionOnSurvival", true,
                 "tree", new TreeParser(newick, false, false, true,0),
@@ -1080,7 +1080,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.9}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
@@ -1148,7 +1148,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "tree", new TreeParser(newick1, false, false, true,0),
                 "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
@@ -1210,7 +1210,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnRoot", true,
@@ -1289,7 +1289,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
@@ -1359,7 +1359,7 @@ public class BirthDeathMigrationLikelihoodTest {
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
         density.initByName(
-                "method", method,
+                "engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
@@ -1425,7 +1425,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         originParam));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
@@ -1475,7 +1475,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.01}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
@@ -1524,7 +1524,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.05, 0.01}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
@@ -1572,7 +1572,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new RealVectorParam<>(new double[] {0.05, 0.01}, UnitInterval.INSTANCE)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", false,
@@ -1623,7 +1623,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         new ProcessLength(tree)));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {0.6, 0.4}),
                 "conditionOnSurvival", false,
@@ -1676,7 +1676,7 @@ public class BirthDeathMigrationLikelihoodTest {
                         origin));
 
         BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
-        density.initByName("method", method,
+        density.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
@@ -1688,7 +1688,7 @@ public class BirthDeathMigrationLikelihoodTest {
         );
 
         BirthDeathMigrationDistribution primeDensity = new BirthDeathMigrationDistribution();
-        primeDensity.initByName("method", method,
+        primeDensity.initByName("engine", method,
                 "parameterization", parameterization,
                 "startTypePriorProbs", new SimplexParam(new double[] {1.0}),
                 "conditionOnSurvival", true,
