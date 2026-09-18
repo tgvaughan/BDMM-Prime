@@ -35,15 +35,16 @@ import java.util.concurrent.ConcurrentHashMap;
  * <p>
  * It supports intervals and also reset of the initial state at each interval start.
  */
-public class InverseFlow implements IFlow {
-    ContinuousOutputModel[] outputModels;
+public class InverseFlow implements BaseFlow {
 
-    List<InitialState> initialStates;
-    boolean wasInitialStateResetAtEachInterval;
-    int n;
+    private final ContinuousOutputModel[] outputModels;
 
-    ConcurrentHashMap<Double, RealMatrix>[] flowCache;
-    ConcurrentHashMap<Double, DecompositionSolver>[] decompositionCache;
+    private final List<InitialState> initialStates;
+    private final boolean wasInitialStateResetAtEachInterval;
+    private final int n;
+
+    private final ConcurrentHashMap<Double, RealMatrix>[] flowCache;
+    private final ConcurrentHashMap<Double, DecompositionSolver>[] decompositionCache;
 
     public InverseFlow(ContinuousOutputModel[] outputModels, int n, List<InitialState> initialStates, boolean useIntervals) {
         this.outputModels = outputModels;
@@ -127,9 +128,9 @@ public class InverseFlow implements IFlow {
         return new ScaledVector(accumulatedVector, logScalingFactor);
     }
 
-    private record ScaledVector(RealVector vector, double logScalingFactor) {};
+    private record ScaledVector(RealVector vector, double logScalingFactor) { }
 
-    RealMatrix getFlow(int interval, double time) {
+    private RealMatrix getFlow(int interval, double time) {
         RealMatrix flow = this.flowCache[interval].get(time);
 
         if (flow == null) {
@@ -137,7 +138,7 @@ public class InverseFlow implements IFlow {
 
             synchronized (output) {
                 output.setInterpolatedTime(time);
-                flow = Utils.toMatrix(output.getInterpolatedState(), n);
+                flow = Utils.toMatrix(output.getInterpolatedState(), this.n);
             }
 
             this.flowCache[interval].put(time, flow);

@@ -51,8 +51,9 @@ public abstract class IntervalODESystem implements FirstOrderDifferentialEquatio
 
     protected double absoluteTolerance;
     protected double relativeTolerance;
-    protected double integrationMinStep;
-    protected double integrationMaxStep;
+
+    private double integrationMinStep;
+    private double integrationMaxStep;
 
     public IntervalODESystem(Parameterization parameterization, List<Interval> intervals, double absoluteTolerance, double relativeTolerance) {
         this.parameterization = parameterization;
@@ -69,11 +70,13 @@ public abstract class IntervalODESystem implements FirstOrderDifferentialEquatio
      * The parameterization interval boundaries are handled automatically
      * by calling handleParameterizationIntervalBoundary at the boundaries.
      *
-     * @param initialStates             the initial states at the interval starts-
+     * @param initialStates             the initial states at the interval starts.
      * @param intervals                 the list of intervals where integration is restarted. Should include the parameterization intervals.
      *                                  Use IntervalUtils.getIntervals to generate these.
      * @param alwaysStartAtInitialState if the integration should be restarted at the initial state at the interval boundaries.
      *                                  this can increase numerical stability.
+     * @param parallelize               whether the intervals may be integrated in parallel. This is only possible
+     *                                  when every interval starts at its own initial state.
      * @return the integration result.
      */
     public ContinuousOutputModel[] integrateForwards(List<double[]> initialStates, List<Interval> intervals, boolean alwaysStartAtInitialState, boolean parallelize) {
@@ -123,6 +126,8 @@ public abstract class IntervalODESystem implements FirstOrderDifferentialEquatio
      *                                  Use IntervalUtils.getIntervals to generate these.
      * @param alwaysStartAtInitialState if the integration should be restarted at the initial state at the interval boundaries.
      *                                  this can increase numerical stability.
+     * @param parallelize               whether the intervals may be integrated in parallel. This is only possible
+     *                                  when every interval starts at its own initial state.
      * @return the integration result.
      */
     public ContinuousOutputModel[] integrateBackwards(List<double[]> initialStates, List<Interval> intervals, boolean alwaysStartAtInitialState, boolean parallelize) {
@@ -163,6 +168,9 @@ public abstract class IntervalODESystem implements FirstOrderDifferentialEquatio
      * Integrate the system along the given interval from start to end using the given initialState.
      */
     protected ContinuousOutputModel integrate(double[] initialState, double start, double end, Interval interval) {
+        // needed in case of an error
+        double[] initialStateBackup = initialState.clone();
+
         try {
             ContinuousOutputModel intervalResult = new ContinuousOutputModel();
 
@@ -178,6 +186,8 @@ public abstract class IntervalODESystem implements FirstOrderDifferentialEquatio
             // NaN was found during integration
             // we switch to the slower but more robust DormandPrince54Integrator
             // with lower relative tolerance and try again
+
+            System.arraycopy(initialStateBackup, 0, initialState, 0, initialState.length);
 
             ContinuousOutputModel intervalResult = new ContinuousOutputModel();
 
@@ -226,7 +236,7 @@ public abstract class IntervalODESystem implements FirstOrderDifferentialEquatio
     /**
      * Checks if the given time lies on a parameterization interval boundary.
      */
-    boolean isParameterizationIntervalBoundary(double time) {
+    private boolean isParameterizationIntervalBoundary(double time) {
         for (int i = 0; i < this.parameterization.getTotalIntervalCount() - 1; i++) {
             double endTime = this.parameterization.getIntervalEndTimes()[i];
             if (Utils.equalWithPrecision(endTime, time)) return true;

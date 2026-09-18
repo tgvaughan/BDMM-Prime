@@ -35,21 +35,21 @@ import java.util.stream.Collectors;
 /**
  * This class represents the ODE that has the forward-in-time inverse flow as a solution.
  */
-public class InverseFlowODESystem extends IntervalODESystem implements IFlowODESystem {
-    final ExtinctionProbabilities extinctionProbabilities;
+public class InverseFlowODESystem extends IntervalODESystem implements BaseFlowODESystem {
+    private final ExtinctionProbabilities extinctionProbabilities;
 
-    final RealMatrix[] timeInvariantSystemMatrices;
+    private final RealMatrix[] timeInvariantSystemMatrices;
 
-    final double[][] birthRates;
-    final double[][] deathRates;
-    final double[][] samplingRates;
-    final double[][][] crossBirthRates;
-    final double[][][] migrationRates;
+    private final double[][] birthRates;
+    private final double[][] deathRates;
+    private final double[][] samplingRates;
+    private final double[][][] crossBirthRates;
+    private final double[][][] migrationRates;
 
-    boolean useLoucaPennellIntervals;
+    private final boolean useLoucaPennellIntervals;
 
-    int seed;
-    double maxConditionNumber;
+    private final int seed;
+    private final double maxConditionNumber;
 
     public InverseFlowODESystem(
             Parameterization parameterization,
@@ -82,23 +82,23 @@ public class InverseFlowODESystem extends IntervalODESystem implements IFlowODES
 
     @Override
     public int getDimension() {
-        return parameterization.getNTypes() * parameterization.getNTypes();
+        return this.parameterization.getNTypes() * this.parameterization.getNTypes();
     }
 
     /**
      * Builds the time-invariant part of the system matrix for a given interval. This can be reused.
      */
-    RealMatrix buildTimeInvariantSystemMatrix(int interval) {
-        RealMatrix system = new BlockRealMatrix(parameterization.getNTypes(), parameterization.getNTypes());
+    private RealMatrix buildTimeInvariantSystemMatrix(int interval) {
+        RealMatrix system = new BlockRealMatrix(this.parameterization.getNTypes(), this.parameterization.getNTypes());
 
-        for (int i = 0; i < parameterization.getNTypes(); i++) {
+        for (int i = 0; i < this.parameterization.getNTypes(); i++) {
             system.addToEntry(
                     i,
                     i,
                     -this.deathRates[interval][i] - this.samplingRates[interval][i] - this.birthRates[interval][i]
             );
 
-            for (int j = 0; j < parameterization.getNTypes(); j++) {
+            for (int j = 0; j < this.parameterization.getNTypes(); j++) {
                 system.addToEntry(
                         i,
                         i,
@@ -119,21 +119,21 @@ public class InverseFlowODESystem extends IntervalODESystem implements IFlowODES
      * Builds the time-varying part of the system matrix for a given interval. This has to be computed for every
      * time step.
      */
-    void addTimeVaryingSystemMatrix(double t, RealMatrix system) {
+    private void addTimeVaryingSystemMatrix(double t, RealMatrix system) {
         ContinuousOutputModel extinctionOutputModel = this.extinctionProbabilities.getOutputModel(t);
 
         synchronized (extinctionOutputModel) {
             double[] extinctProbabilities = this.extinctionProbabilities.unsafeGetProbability(extinctionOutputModel, t);
-            int interval = getCurrentParameterizationInterval(t);
+            int interval = this.getCurrentParameterizationInterval(t);
 
-            for (int i = 0; i < parameterization.getNTypes(); i++) {
+            for (int i = 0; i < this.parameterization.getNTypes(); i++) {
                 system.addToEntry(
                         i,
                         i,
                         2 * this.birthRates[interval][i] * extinctProbabilities[i]
                 );
 
-                for (int j = 0; j < parameterization.getNTypes(); j++) {
+                for (int j = 0; j < this.parameterization.getNTypes(); j++) {
                     system.addToEntry(
                             i,
                             i,
@@ -153,7 +153,7 @@ public class InverseFlowODESystem extends IntervalODESystem implements IFlowODES
     /**
      * Builds the system matrix for a given time point.
      */
-    RealMatrix buildSystemMatrix(double t) {
+    private RealMatrix buildSystemMatrix(double t) {
         int interval = this.parameterization.getIntervalIndex(t);
         RealMatrix systemMatrix = this.timeInvariantSystemMatrices[interval].copy();
         this.addTimeVaryingSystemMatrix(t, systemMatrix);
@@ -191,7 +191,7 @@ public class InverseFlowODESystem extends IntervalODESystem implements IFlowODES
     /**
      * Computes the initial states (preconditioners) for the given strategy and intervals.
      */
-    List<InitialState> getInitialStates(InitialMatrixStrategy initialMatrixStrategy, List<Interval> intervals) {
+    private List<InitialState> getInitialStates(InitialMatrixStrategy initialMatrixStrategy, List<Interval> intervals) {
         return switch (initialMatrixStrategy) {
             case random -> {
                 RealMatrix matrix = Utils.getRandomMatrix(
@@ -265,7 +265,7 @@ public class InverseFlowODESystem extends IntervalODESystem implements IFlowODES
      * @return the calculated flow.
      */
     @Override
-    public IFlow calculateFlowIntegral(
+    public BaseFlow calculateFlowIntegral(
             InitialMatrixStrategy initialMatrixStrategy,
             boolean parallelize
     ) {
@@ -292,7 +292,7 @@ public class InverseFlowODESystem extends IntervalODESystem implements IFlowODES
      * Splits up the stored intervals if numerical issues are expected. Depending on
      * this.useLoucaPennellIntervals, we use their interval heuristic or our own.
      */
-    protected void splitUpIntervals() {
+    private void splitUpIntervals() {
         double logMaxConditionNumber = Math.log(this.maxConditionNumber);
 
         List<Interval> newIntervals = this.intervals.stream().parallel().map((currentOldInterval) -> {
@@ -323,6 +323,20 @@ public class InverseFlowODESystem extends IntervalODESystem implements IFlowODES
                 }
 
                 double currentIntervalEnd = Math.min(currentIntervalStart + maxIntervalSize, currentOldInterval.end());
+
+                if (!Double.isFinite(currentIntervalEnd) || !(currentIntervalStart < currentIntervalEnd)) {
+                    // a non-finite or zero-width step would make this loop spin forever
+                    throw new IllegalStateException(
+                            "Interval splitting failed to make progress."
+                    );
+                }
+
+                final int MAX_SUBINTERVALS_PER_INTERVAL = 10_000;
+                if (MAX_SUBINTERVALS_PER_INTERVAL <= subIntervals.size()) {
+                    throw new IllegalStateException(
+                            "Interval splitting produced too many intervals"
+                    );
+                }
 
                 Interval newInterval = new Interval(
                         0, currentOldInterval.parameterizationInterval(), currentIntervalStart, currentIntervalEnd

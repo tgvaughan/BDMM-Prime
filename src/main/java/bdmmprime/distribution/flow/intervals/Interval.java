@@ -21,8 +21,10 @@ package bdmmprime.distribution.flow.intervals;
 
 /**
  * This record stores an interval.
- * @param interval - the index of the interval.
- * @param start - the start time.
- * @param end - the end time.
+ *
+ * @param interval                 the index of the interval.
+ * @param parameterizationInterval the index of the parameterization interval containing this interval.
+ * @param start                    the start time.
+ * @param end                      the end time.
  */
 public record Interval(int interval, int parameterizationInterval, double start, double end) { }

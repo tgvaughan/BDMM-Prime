@@ -32,8 +32,9 @@ import java.util.stream.Stream;
  * to potential deadlocks.
  */
 public class Result<T> {
-    T result;
-    RuntimeException error;
+
+    private final T result;
+    private final RuntimeException error;
 
     public Result(T result, RuntimeException error) {
         this.result = result;
@@ -41,7 +42,7 @@ public class Result<T> {
     }
 
     /**
-     * Executes the supplier and returns a Result error containing the result or error thrown.
+     * Executes the supplier and returns a Result object containing the result or the error thrown.
      * Any error is caught and stored in the returned object instead of thrown.
      */
     public static <T> Result<T> of(Supplier<T> supplier) {

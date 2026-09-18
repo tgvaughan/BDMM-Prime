@@ -19,9 +19,13 @@
 
 package bdmmprime.distribution.flow.flowSystems;
 
-public interface IFlowODESystem {
-    IFlow calculateFlowIntegral(
-            InitialMatrixStrategy initialMatrixStrategy,
-            boolean parallelize
+/**
+ * A precomputed solution of the flow ODE.
+ */
+public interface BaseFlow {
+    IntegrationResult integrateUsingFlow(
+            double timeStart,
+            double timeEnd,
+            double[] endState
     );
 }

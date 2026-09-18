@@ -57,11 +57,11 @@ import java.util.stream.DoubleStream;
         "Systematic Biology, Volume 69, Issue 3, May 2020, Pages 545–556."
         , DOI = "10.1093/sysbio/syz055", year = 2020, firstAuthorSurname = "Louca")
 
-@Description("This model implements a multi-deme version of the BirthDeathSkylineModel \" +\n" +
-        "        \"with discrete locations and migration events among demes. \" +\n" +
-        "        \"This implementation uses the Flow representation of the probability  \" +\n" +
-        "        \"ODE for better performance. \" +\n" +
-        "        \"It can be used as a drop-in replacement of the BDMM-Prime package."
+@Description("This model implements a multi-deme version of the BirthDeathSkylineModel " +
+        "with discrete locations and migration events among demes. " +
+        "This implementation uses the Flow representation of the probability " +
+        "ODE for better performance. " +
+        "It can be used as a drop-in replacement of the BDMM-Prime package."
 )
 public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution implements BirthDeathMigrationLikelihoodEngine {
 
@@ -131,7 +131,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
     public Input<Boolean> parallelizeInput = new Input<>(
             "parallelize",
-            "Whether or not parallelize the computation.",
+            "Whether or not to parallelize the computation.",
             true
     );
 
@@ -150,7 +150,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
     public Input<Boolean> useLoucaPennellIntervalsInput = new Input<>(
             "useLoucaPennellIntervals",
-            "Whether to use the interval heruistic introduced by Louca and Pennell.",
+            "Whether to use the interval heuristic introduced by Louca and Pennell.",
             false
     );
 
@@ -163,48 +163,48 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private String typeLabel;
     private TraitSet typeTraitSet;
 
-    Simplex startTypePriorProbs;
-    double[] startTypePosteriorProbs;
-    double[] storedStartTypePosteriorProbs;
+    private Simplex startTypePriorProbs;
+    private double[] startTypePosteriorProbs;
+    private double[] storedStartTypePosteriorProbs;
 
-    boolean conditionOnRoot;
-    boolean conditionOnSurvival;
+    private boolean conditionOnRoot;
+    private boolean conditionOnSurvival;
 
-    double absoluteTolerance;
-    double relativeTolerance;
+    private double absoluteTolerance;
+    private double relativeTolerance;
 
-    double maxConditioningNumber;
-    boolean useLoucaPennellIntervals;
+    private double maxConditioningNumber;
+    private boolean useLoucaPennellIntervals;
 
-    boolean useInverseFlow;
-    int seed;
+    private boolean useInverseFlow;
+    private int seed;
 
-    boolean parallelize;
-    double minimalProportionForParallelization = 0.05;
-    int minimalSubtreeSizeForParallelization;
+    private boolean parallelize;
+    private final double minimalProportionForParallelization = 0.05;
+    private int minimalSubtreeSizeForParallelization;
 
-    ForkJoinPool forkJoinPool;
-    int[] subtreeSizes;
-    double parallelizeSubtreeSizeThreshold;
+    private ForkJoinPool forkJoinPool;
+    private int[] subtreeSizes;
+    private double parallelizeSubtreeSizeThreshold;
 
-    int numTypes;
+    private int numTypes;
 
-    double[] logScalingFactors;
-    boolean[] isRhoSampled;
+    private double[] logScalingFactors;
+    private boolean[] isRhoSampled;
 
-    int totalNumEvaluations = 0;
-    int numEvaluationsSinceReset = 0;
-    int numFailedEvaluationsSinceReset = 0;
-    int numDeviations = 0;
-    double sumDeviation = 0;
+    private int totalNumEvaluations = 0;
+    private int numEvaluationsSinceReset = 0;
+    private int numFailedEvaluationsSinceReset = 0;
+    private int numDeviations = 0;
+    private double sumDeviation = 0;
 
-    bdmmprime.distribution.classic.BirthDeathMigrationDistribution bdmmPrime;
+    private bdmmprime.distribution.classic.BirthDeathMigrationDistribution bdmmPrime;
 
-    IFlow storedFlow;
-    ExtinctionProbabilities storedExtinctionProbabilities;
+    private BaseFlow storedFlow;
+    private ExtinctionProbabilities storedExtinctionProbabilities;
 
-    IFlow currentFlow;
-    ExtinctionProbabilities currentExtinctionProbabilities;
+    private BaseFlow currentFlow;
+    private ExtinctionProbabilities currentExtinctionProbabilities;
 
     @Override
     public void initAndValidate() {
@@ -224,7 +224,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         this.initialMatrixStrategy = this.initialMatrixStrategyInput.get();
         this.seed = this.seedInput.get();
         this.parallelize = this.parallelizeInput.get();
-        this.minimalSubtreeSizeForParallelization = minimalSubtreeSizeForParallelizationInput.get();
+        this.minimalSubtreeSizeForParallelization = this.minimalSubtreeSizeForParallelizationInput.get();
         this.useInverseFlow = this.useInverseFlowInput.get();
         this.maxConditioningNumber = this.maxConditioningNumberInput.get();
         this.useLoucaPennellIntervals = this.useLoucaPennellIntervalsInput.get();
@@ -246,7 +246,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         // validate start type prior probabilities
 
-        if (this.startTypePriorProbs.size() != numTypes) {
+        if (this.startTypePriorProbs.size() != this.numTypes) {
             throw new RuntimeException(
                     "Error: dimension of start type prior probabilities must match number of types."
             );
@@ -307,20 +307,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     }
 
     /**
-     * Initialized the `subtreeSizes` array with the number of nodes in the subtree of
+     * Initializes the `subtreeSizes` array with the number of nodes in the subtree of
      * each node.
      */
     private void initializeSubtreeSizes() {
         this.subtreeSizes = new int[this.tree.getNodeCount()];
-        initializeSubtreeSizes(tree.getRoot());
+        this.initializeSubtreeSizes(this.tree.getRoot());
         this.parallelizeSubtreeSizeThreshold = Math.max(
-                this.subtreeSizes[tree.getRoot().getNr()] * this.minimalProportionForParallelization,
+                this.subtreeSizes[this.tree.getRoot().getNr()] * this.minimalProportionForParallelization,
                 this.minimalSubtreeSizeForParallelization
         );
     }
 
     /**
-     * Initialized the `subtreeSizes` array with the number of nodes in the subtree of
+     * Initializes the `subtreeSizes` array with the number of nodes in the subtree of
      * `node`.
      */
     private int initializeSubtreeSizes(Node node) {
@@ -340,13 +340,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
      */
     @Override
     public double calculateTreeLogLikelihood(TreeInterface dummyTree) {
-        warnAboutNumericalIssuesIfNecessary();
+        this.warnAboutNumericalIssuesIfNecessary();
         this.numEvaluationsSinceReset++;
         this.totalNumEvaluations++;
 
         // validate input values
 
-        if (inputValuesHaveZeroDensity()) {
+        if (this.inputValuesHaveZeroDensity()) {
             return Double.NEGATIVE_INFINITY;
         }
 
@@ -361,7 +361,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // integrate over the extinction probabilities ODE and the flow ODE
 
         ExtinctionProbabilities extinctionProbabilities = null;
-        IFlow flow = null;
+        BaseFlow flow = null;
         try {
             extinctionProbabilities = this.calculateExtinctionProbabilities(intervals);
             flow = this.calculateFlow(intervals, extinctionProbabilities);
@@ -392,13 +392,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // get tree likelihood by a weighted average of the root likelihood per state
 
         double treeLikelihood = 0.0;
-        for (int i = 0; i < this.parameterization.getNTypes(); i++) {
+        for (int i = 0; i < this.numTypes; i++) {
             treeLikelihood += rootLikelihoodPerState[i] * this.startTypePriorProbs.get(i);
         }
 
         if (treeLikelihood <= 0) {
             return Double.NEGATIVE_INFINITY;
-        };
+        }
 
         // normalize the per-state root likelihoods into start type posterior probabilities.
         // the common scaling factor of the root likelihoods cancels out here.
@@ -419,8 +419,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         // convert from oriented to labeled tree likelihood
 
-        int internalNodeCount = tree.getLeafNodeCount() - ((Tree) tree).getDirectAncestorNodeCount() - 1;
-        logTreeLikelihood += Math.log(2) * internalNodeCount - Gamma.logGamma(tree.getLeafNodeCount() + 1);
+        int internalNodeCount = this.tree.getLeafNodeCount() - ((Tree) this.tree).getDirectAncestorNodeCount() - 1;
+        logTreeLikelihood += Math.log(2) * internalNodeCount - Gamma.logGamma(this.tree.getLeafNodeCount() + 1);
 
         // periodically compare with BDMMPrime
 
@@ -441,13 +441,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         }
 
         if (bdmmprime.util.Utils.lessThanWithPrecision(
-                parameterization.getNodeTime(tree.getRoot(), this.finalSampleOffset),
+                this.parameterization.getNodeTime(this.tree.getRoot(), this.finalSampleOffset),
                 0)) {
             // tree MRCA older than the start of the process
             return true;
         }
 
-        if (conditionOnRootInput.get() && tree.getRoot().isFake()) {
+        if (this.conditionOnRoot && this.tree.getRoot().isFake()) {
             // tree root is a sampled ancestor, but we're conditioning on a root birth.
             return true;
         }
@@ -547,7 +547,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // integrate
 
         ContinuousOutputModel[] integrationResults = system.integrateBackwards(
-                initialStates, intervals, false, parallelize
+                initialStates, intervals, false, this.parallelize
         );
 
         ExtinctionProbabilities extinctionProbabilities = new ExtinctionProbabilities(integrationResults, this.parameterization.getNTypes());
@@ -558,17 +558,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     /**
      * Precomputes the flow ODE.
      *
-     * @param intervals
+     * @param intervals               the intervals on which integration is restarted.
      * @param extinctionProbabilities the precomputed extinction probabilities.
      * @return a wrapper class that allows to query the flow at any given time.
      */
-    private IFlow calculateFlow(List<Interval> intervals, ExtinctionProbabilities extinctionProbabilities) {
+    private BaseFlow calculateFlow(List<Interval> intervals, ExtinctionProbabilities extinctionProbabilities) {
         if (!this.parameterization.isDirtyCalculation() && this.currentFlow != null) {
             // the parameterization hasn't changed, which means the flow is still the same
             return this.currentFlow;
         }
 
-        IFlowODESystem system;
+        BaseFlowODESystem system;
 
         // we use the sum of heights as seed, this makes it deterministic for identical trees
         DoubleStream heights = Arrays.stream(this.tree.getNodesAsArray()).mapToDouble(node -> node.getHeight());
@@ -599,7 +599,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         }
 
         extinctionProbabilities.validateProbabilities(true);
-        IFlow flow = system.calculateFlowIntegral(
+        BaseFlow flow = system.calculateFlowIntegral(
                 this.initialMatrixStrategy,
                 this.parallelize
         );
@@ -627,11 +627,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
             int startInterval = this.parameterization.getIntervalIndex(0);
 
-            for (int type1 = 0; type1 < parameterization.getNTypes(); type1++) {
-                for (int type2 = 0; type2 < parameterization.getNTypes(); type2++) {
+            for (int type1 = 0; type1 < this.numTypes; type1++) {
+                for (int type2 = 0; type2 < this.numTypes; type2++) {
                     double rate = type1 == type2
-                            ? parameterization.getBirthRates()[startInterval][type1]
-                            : parameterization.getCrossBirthRates()[startInterval][type1][type2];
+                            ? this.parameterization.getBirthRates()[startInterval][type1]
+                            : this.parameterization.getCrossBirthRates()[startInterval][type1][type2];
 
                     conditionDensity += rate * this.startTypePriorProbs.get(type1)
                             * (1 - extinctionAtRoot[type1])
@@ -641,7 +641,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         } else if (this.conditionOnSurvival) {
             double[] extinctionAtRoot = extinctionProbabilities.getProbability(0);
 
-            for (int type = 0; type < parameterization.getNTypes(); type++) {
+            for (int type = 0; type < this.numTypes; type++) {
                 conditionDensity += this.startTypePriorProbs.get(type) * (1 - extinctionAtRoot[type]);
             }
         } else {
@@ -659,17 +659,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             Node node,
             double timeEdgeStart,
             double timeEdgeEnd,
-            IFlow flow,
+            BaseFlow flow,
             ExtinctionProbabilities extinctionProbabilities
     ) {
         double[] likelihoodEdgeEnd;
 
         if (node.isLeaf()) {
-            likelihoodEdgeEnd = calculateLeafLikelihood(node, timeEdgeEnd, extinctionProbabilities);
+            likelihoodEdgeEnd = this.calculateLeafLikelihood(node, timeEdgeEnd, extinctionProbabilities);
         } else if (node.getChild(0).isDirectAncestor() || node.getChild(1).isDirectAncestor()) {
-            likelihoodEdgeEnd = calculateDirectAncestorWithChildLikelihood(node, timeEdgeEnd, flow, extinctionProbabilities);
+            likelihoodEdgeEnd = this.calculateDirectAncestorWithChildLikelihood(node, timeEdgeEnd, flow, extinctionProbabilities);
         } else {
-            likelihoodEdgeEnd = calculateInternalEdgeLikelihood(node, timeEdgeEnd, flow, extinctionProbabilities);
+            likelihoodEdgeEnd = this.calculateInternalEdgeLikelihood(node, timeEdgeEnd, flow, extinctionProbabilities);
         }
 
         IntegrationResult likelihoodEdgeStart = flow.integrateUsingFlow(
@@ -706,15 +706,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         double[] likelihoodEdgeEnd = new double[this.parameterization.getNTypes()];
 
-        if (parameterization.getTypeSet().isAmbiguousTypeIndex(nodeType)) {
+        if (this.parameterization.getTypeSet().isAmbiguousTypeIndex(nodeType)) {
             // this is an ambiguous state, we set the end likelihoods for all states
             // TODO: test if SA model case is properly implemented
 
-            for (int type = 0; type < parameterization.getNTypes(); type++) {
-                if (parameterization.getTypeSet().ambiguityExcludesType(nodeType, type))
+            for (int type = 0; type < this.numTypes; type++) {
+                if (this.parameterization.getTypeSet().ambiguityExcludesType(nodeType, type))
                     continue;
 
-                if (isRhoSampled[node.getNr()]) {
+                if (this.isRhoSampled[node.getNr()]) {
                     likelihoodEdgeEnd[type] = this.parameterization.getRhoValues()[intervalEdgeEnd][type];
                     // in this case, the other boundary conditions are handled by the ODE system in
                     // FlowODESystem and ExtinctionProbabilitiesODESystem
@@ -729,7 +729,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         } else {
             // we know the state and only set its end likelihood
 
-            if (isRhoSampled[node.getNr()]) {
+            if (this.isRhoSampled[node.getNr()]) {
                 likelihoodEdgeEnd[nodeType] = this.parameterization.getRhoValues()[intervalEdgeEnd][nodeType];
                 // in this case, the other boundary conditions are handled by the ODE system in
                 // FlowODESystem and ExtinctionProbabilitiesODESystem
@@ -752,7 +752,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private double[] calculateDirectAncestorWithChildLikelihood(
             Node node,
             double timeEdgeEnd,
-            IFlow flow,
+            BaseFlow flow,
             ExtinctionProbabilities extinctionProbabilities
     ) {
         int intervalEdgeEnd = this.parameterization.getIntervalIndex(timeEdgeEnd);
@@ -780,15 +780,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         int daNodeType = this.getNodeType(directAncestor);
 
-        if (parameterization.getTypeSet().isAmbiguousTypeIndex(daNodeType)) {
+        if (this.parameterization.getTypeSet().isAmbiguousTypeIndex(daNodeType)) {
             // the direct ancestor is in an ambiguous state, we set the end likelihoods for all states
             // TODO: test if SA model case is properly implemented
 
-            for (int type = 0; type < parameterization.getNTypes(); type++) {
-                if (parameterization.getTypeSet().ambiguityExcludesType(daNodeType, type))
+            for (int type = 0; type < this.numTypes; type++) {
+                if (this.parameterization.getTypeSet().ambiguityExcludesType(daNodeType, type))
                     continue;
 
-                if (isRhoSampled[directAncestor.getNr()]) {
+                if (this.isRhoSampled[directAncestor.getNr()]) {
                     likelihoodEdgeEnd[type] = this.parameterization.getRhoValues()[intervalEdgeEnd][type];
                 } else {
                     likelihoodEdgeEnd[type] = this.parameterization.getSamplingRates()[intervalEdgeEnd][type];
@@ -799,9 +799,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             }
 
         } else {
-            // we know the direct ancestor state and set the likelihood edge enf only for this type
+            // we know the direct ancestor state and set the likelihood edge end only for this type
 
-            if (isRhoSampled[directAncestor.getNr()]) {
+            if (this.isRhoSampled[directAncestor.getNr()]) {
                 likelihoodEdgeEnd[daNodeType] = this.parameterization.getRhoValues()[intervalEdgeEnd][daNodeType];
             } else {
                 likelihoodEdgeEnd[daNodeType] = this.parameterization.getSamplingRates()[intervalEdgeEnd][daNodeType];
@@ -822,7 +822,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private double[] calculateInternalEdgeLikelihood(
             Node node,
             double timeEdgeEnd,
-            IFlow flow,
+            BaseFlow flow,
             ExtinctionProbabilities extinctionProbabilities
     ) {
         int intervalEdgeEnd = this.parameterization.getIntervalIndex(timeEdgeEnd);
@@ -835,8 +835,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         double[] likelihoodChild1;
         double[] likelihoodChild2;
 
-        if (parallelize && subtreeSizes[child1.getNr()] > this.parallelizeSubtreeSizeThreshold
-                && subtreeSizes[child2.getNr()] > this.parallelizeSubtreeSizeThreshold) {
+        if (this.parallelize && this.subtreeSizes[child1.getNr()] > this.parallelizeSubtreeSizeThreshold
+                && this.subtreeSizes[child2.getNr()] > this.parallelizeSubtreeSizeThreshold) {
             CompletableFuture<Result<double[]>> futureLikelihoodChild1 = CompletableFuture.supplyAsync(() ->
                     Result.of(() -> this.calculateSubTreeLikelihood(
                         child1,
@@ -873,13 +873,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         // combine the child likelihoods to get the likelihood at the edge end
 
-        double[] likelihoodEdgeEnd = new double[this.parameterization.getNTypes()];
-        for (int i = 0; i < this.parameterization.getNTypes(); i++) {
+        double[] likelihoodEdgeEnd = new double[this.numTypes];
+        for (int i = 0; i < this.numTypes; i++) {
             likelihoodEdgeEnd[i] += this.parameterization.getBirthRates()[intervalEdgeEnd][i] * (
                     likelihoodChild1[i] * likelihoodChild2[i]
             );
 
-            for (int j = 0; j < parameterization.getNTypes(); j++) {
+            for (int j = 0; j < this.numTypes; j++) {
                 if (i == j) {
                     continue;
                 }
@@ -905,7 +905,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
      * @return the type of the node.
      */
     private int getNodeType(Node node) {
-        if (parameterization.getNTypes() == 1) {
+        if (this.numTypes == 1) {
             return 0;
         }
 
@@ -922,7 +922,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             }
         }
 
-        return parameterization.getTypeSet().getTypeIndex(nodeTypeName);
+        return this.parameterization.getTypeSet().getTypeIndex(nodeTypeName);
     }
 
     /**
@@ -961,12 +961,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
     @Override
     public void accept() {
+        super.accept();
+
         this.storedExtinctionProbabilities = this.currentExtinctionProbabilities;
         this.storedFlow = this.currentFlow;
     }
 
     @Override
     public void restore() {
+        super.restore();
+
         this.currentExtinctionProbabilities = this.storedExtinctionProbabilities;
         this.currentFlow = this.storedFlow;
 
@@ -982,9 +986,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         this.storedFlow = null;
     }
 
+    /**
+     * We always report the engine as stochastic.
+     * Beyond the random initial matrix strategy, periodicallyCompareToBDMMPrime can lower
+     * maxConditioningNumber while the chain runs, which changes the interval splitting and
+     * therefore the computed likelihood.
+     */
     @Override
     public boolean isStochastic() {
-        return this.initialMatrixStrategy == InitialMatrixStrategy.random;
+        return true;
     }
 
 }

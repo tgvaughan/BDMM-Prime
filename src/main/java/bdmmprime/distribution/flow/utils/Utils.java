@@ -32,7 +32,7 @@ public class Utils {
      * Returns a random square matrix of the given dimension.
      */
     public static RealMatrix getRandomMatrix(int dimension) {
-        return getRandomMatrix(dimension, new Random().nextInt());
+        return Utils.getRandomMatrix(dimension, new Random().nextInt());
     }
 
     /**
@@ -155,7 +155,7 @@ public class Utils {
         RealMatrix Q = Utils.toMatrix(schur.getP());
         RealMatrix T = Utils.toMatrix(schur.getT());
 
-        RealMatrix expT = expmUpperTriangular(T);
+        RealMatrix expT = Utils.expmUpperTriangular(T);
 
         return Q.multiply(expT).multiply(Q.transpose());
     }

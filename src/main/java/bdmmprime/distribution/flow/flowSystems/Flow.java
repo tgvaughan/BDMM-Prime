@@ -31,14 +31,15 @@ import java.util.concurrent.ConcurrentHashMap;
  * flow at every point in time and to use the flow to efficiently integrate over a time span.
  * It supports intervals and also reset of the initial state at each interval start.
  */
-public class Flow implements IFlow {
-    ContinuousOutputModel[] outputModels;
+public class Flow implements BaseFlow {
 
-    List<InitialState> initialStates;
-    boolean wasInitialStateResetAtEachInterval;
-    int n;
+    private final ContinuousOutputModel[] outputModels;
 
-    ConcurrentHashMap<Double, RealMatrix>[] flowCache;
+    private final List<InitialState> initialStates;
+    private final boolean wasInitialStateResetAtEachInterval;
+    private final int n;
+
+    private final ConcurrentHashMap<Double, RealMatrix>[] flowCache;
 
     public Flow(ContinuousOutputModel[] outputModels, int n, List<InitialState> initialStates, boolean wasInitialStateResetAtEachInterval) {
         this.outputModels = outputModels;
@@ -121,7 +122,7 @@ public class Flow implements IFlow {
         return new IntegrationResult(accumulatedVector.toArray(), logScalingFactor);
     }
 
-    RealMatrix getFlow(int interval, double time) {
+    private RealMatrix getFlow(int interval, double time) {
         RealMatrix flow = this.flowCache[interval].get(time);
 
         if (flow == null) {
@@ -129,7 +130,7 @@ public class Flow implements IFlow {
 
             synchronized (output) {
                 output.setInterpolatedTime(time);
-                flow = Utils.toMatrix(output.getInterpolatedState(), n);
+                flow = Utils.toMatrix(output.getInterpolatedState(), this.n);
             }
 
             this.flowCache[interval].put(time, flow);

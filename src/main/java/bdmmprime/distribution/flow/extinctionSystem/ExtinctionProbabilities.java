@@ -26,9 +26,10 @@ import org.apache.commons.math3.ode.ContinuousOutputModel;
  * to conveniently query the extinction probability at a given time.
  */
 public class ExtinctionProbabilities {
-    ContinuousOutputModel[] outputModels;
-    boolean validateProbabilities = false;
-    int n;
+
+    private final ContinuousOutputModel[] outputModels;
+    private final int n;
+    private boolean validateProbabilities = false;
 
     public ExtinctionProbabilities(ContinuousOutputModel[] outputModels, int n) {
         this.outputModels = outputModels;
@@ -50,7 +51,7 @@ public class ExtinctionProbabilities {
 
         if (this.validateProbabilities) {
             // check that all are valid probabilities
-            // (interpolation can give rise to values outside [0, 1]
+            // (interpolation can give rise to values outside [0, 1])
 
             for (int i = 0; i < state.length; i++) {
                 if (state[i] < -0.01 || 1.01 < state[i]) {
@@ -72,7 +73,7 @@ public class ExtinctionProbabilities {
 
         if (this.validateProbabilities) {
             // check that all are valid probabilities
-            // (interpolation can give rise to values outside [0, 1]
+            // (interpolation can give rise to values outside [0, 1])
 
             for (int i = 0; i < state.length; i++) {
                 if (state[i] < -0.01 || 1.01 < state[i]) {

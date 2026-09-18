@@ -88,8 +88,8 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
 
         // include rho sampling effects
 
-        for (int type = 0; type < parameterization.getNTypes(); type++) {
-            state[type] *= (1.0 - parameterization.getRhoValues()[newInterval][type]);
+        for (int type = 0; type < this.parameterization.getNTypes(); type++) {
+            state[type] *= (1.0 - this.parameterization.getRhoValues()[newInterval][type]);
         }
 
         this.currentInterval--;
