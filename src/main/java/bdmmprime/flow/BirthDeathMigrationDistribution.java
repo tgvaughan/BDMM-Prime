@@ -440,7 +440,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
     /**
      * Periodically computes the BDMM-Prime likelihood and compares it to the one we get. Prints a warning in case
-     * we detect a big deviation.
+     * we detect a big deviation and reduces the maximal conditioning number.
      */
     private void periodicallyCompareToBDMMPrime(TreeInterface dummyTree, double bdmmFlowLikelihood) {
         if (this.totalNumEvaluations < 1_000) return;
