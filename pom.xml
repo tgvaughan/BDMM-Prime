@@ -78,7 +78,6 @@
             <scope>compile</scope>
         </dependency>
 
-        <!-- linear algebra (org.hipparchus.linear.*) lives in hipparchus-core -->
         <dependency>
             <groupId>org.hipparchus</groupId>
             <artifactId>hipparchus-core</artifactId>

@@ -34,6 +34,11 @@ import java.io.IOException;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Standalone entry point that times the flow likelihood engine against the classic one over
+ * randomly sampled models and trees, writing the comparison to CSV. This is run directly, not
+ * through an XML file.
+ */
 public class Benchmark {
 
     static void main(String[] args) {
@@ -163,8 +168,6 @@ public class Benchmark {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        LoggedMetric.storeMetrics("metrics.csv");
     }
 
 }

@@ -1372,11 +1372,6 @@ value of a =distribution= input to a higher leverl
 The main inputs defined for the =BirthDeathMigrationDistribution= are
 as follows:
 
-- =engine= (=String=, default auto) :: This selects the engine used to
-  compute the tree probability, and is one of =auto=, =classic= or =flow=.
-  Under =auto=, the classic engine is used for single-type analyses and for
-  trees with fewer than 100 leaves, and the flow engine is used for
-  everything else.
 - =parameterization= (=Parameterization=, required) ::
   This input expects an object of the abstract type =Parameterization= to
   specify the birth-death model parameters. Existing =Parameterization= objects
@@ -1452,6 +1447,14 @@ use, and are ignored by the classic engine:
   number tolerated before an interval is split into smaller ones.
 - =useLoucaPennellIntervals= (=Boolean=, default false) :: Indicates whether
   to use the interval heuristic introduced by Louca and Pennell.
+
+Finally, the choice between the two engines is itself made by a single input:
+
+- =engine= (=String=, default auto) :: This selects the engine used to
+  compute the tree probability, and is one of =auto=, =classic= or =flow=.
+  Under =auto=, the classic engine is used for single-type analyses and for
+  trees with fewer than 100 leaves, and the flow engine is used for
+  everything else.
 
 **** Parameterizations
 :PROPERTIES:

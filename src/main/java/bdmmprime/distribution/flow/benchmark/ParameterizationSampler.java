@@ -29,6 +29,11 @@ import beast.base.spec.type.Simplex;
 import java.util.Arrays;
 import java.util.Random;
 
+/**
+ * Draws the random multi-type birth-death models that the benchmark runs against, so that the two
+ * engines are compared over a spread of model sizes and rates rather than a single hand-picked
+ * configuration.
+ */
 public class ParameterizationSampler {
 
     Random random = new Random();
@@ -94,7 +99,7 @@ public class ParameterizationSampler {
     }
 
     int sampleMinIntervals() {
-        return 1 ; //Runtime.getRuntime().availableProcessors();
+        return 1 ;
     }
 
 }

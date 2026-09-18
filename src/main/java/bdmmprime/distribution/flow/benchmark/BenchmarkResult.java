@@ -26,6 +26,10 @@ import beast.base.evolution.tree.Tree;
 import java.util.*;
 
 
+/**
+ * One row of the benchmark output: the flow and classic runs over the same tree and
+ * parameterization, together with the settings under which the flow run was performed.
+ */
 public class BenchmarkResult {
 
     long trial;
@@ -38,9 +42,6 @@ public class BenchmarkResult {
     InitialMatrixStrategy initialStateStrategy;
     int minNumInterval;
     boolean parallelized;
-
-    List<String> flowMetricNames;
-    List<String> bdmmMetricNames;
 
     public BenchmarkResult(
             long trial,
@@ -64,9 +65,6 @@ public class BenchmarkResult {
         this.initialStateStrategy = initialStateStrategy;
         this.minNumInterval = minNumInterval;
         this.parallelized = parallelized;
-
-        this.flowMetricNames = new ArrayList<>(this.flowRun.loggedMetrics.keySet());
-        this.bdmmMetricNames = new ArrayList<>(this.bdmmRun.loggedMetrics.keySet());
     }
 
     @Override
@@ -93,13 +91,6 @@ public class BenchmarkResult {
         joiner.add(Integer.toString(this.minNumInterval));
         joiner.add(Boolean.toString(this.parallelized));
 
-        for (String metricName : this.flowMetricNames) {
-            joiner.add(this.flowRun.loggedMetrics.get(metricName));
-        }
-        for (String metricName : this.bdmmMetricNames) {
-            joiner.add(this.bdmmRun.loggedMetrics.get(metricName));
-        }
-
         return joiner.toString();
     }
 
@@ -125,13 +116,6 @@ public class BenchmarkResult {
         joiner.add("initial_state_strategy");
         joiner.add("min_num_intervals");
         joiner.add("parallelized");
-
-        for (String metricName : this.flowMetricNames) {
-            joiner.add("flow_" + metricName);
-        }
-        for (String metricName : this.bdmmMetricNames) {
-            joiner.add("bdmm_" + metricName);
-        }
 
         return joiner.toString();
     }
