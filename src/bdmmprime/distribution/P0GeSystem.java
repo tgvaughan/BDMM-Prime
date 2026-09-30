@@ -24,6 +24,8 @@ import bdmmprime.util.Utils;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 import org.apache.commons.math3.ode.FirstOrderIntegrator;
 import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import org.apache.commons.math3.ode.sampling.StepHandler;
+import org.apache.commons.math3.ode.sampling.StepInterpolator;
 
 /**
  * User: Denise
@@ -42,6 +44,21 @@ public class P0GeSystem extends P0System {
 
 	    super(parameterization, absoluteTolerance, relativeTolerance);
 	}
+
+    /**
+     * Adds each integration step directly to continuousOutputModel.
+     * This avoids collecting each integration in a separate model and
+     * then copying its steps again with ContinuousOutputModel.append().
+     */
+    private final StepHandler storingStepHandler = new StepHandler() {
+        @Override
+        public void init(double t0, double[] y0, double t) { }
+
+        @Override
+        public void handleStep(StepInterpolator interpolator, boolean isLast) {
+            continuousOutputModel.handleStep(interpolator, isLast);
+        }
+    };
 
     public void setContinuousOutputModel(ContinuousOutputModel com) {
         storeIntegrationResults = true;
@@ -154,21 +171,10 @@ public class P0GeSystem extends P0System {
                     integrationMinStep, integrationMaxStep,
                     absoluteToleranceVector, relativeToleranceVector);
 
-            ContinuousOutputModel com = null;
-            if (storeIntegrationResults) {
-                com = new ContinuousOutputModel();
-                integrator.addStepHandler(com);
-            }
+            if (storeIntegrationResults)
+                integrator.addStepHandler(storingStepHandler);
 
             integrator.integrate(this, tStart, pgScaled.getEquation(), tEnd, integrationResults); // perform the integration step
-
-            if (storeIntegrationResults) {
-                if (continuousOutputModel == null) {
-                    continuousOutputModel = com;
-                } else {
-                    continuousOutputModel.append(com);
-                }
-            }
 
             double[] pConditions = new double[n];
             SmallNumber[] geConditions = new SmallNumber[n];
