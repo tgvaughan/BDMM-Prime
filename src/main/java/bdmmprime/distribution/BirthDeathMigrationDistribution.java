@@ -30,6 +30,7 @@ import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.inference.parameter.SimplexParam;
 import beast.base.spec.type.RealScalar;
 import beast.base.spec.type.Simplex;
+import org.apache.commons.math3.ode.ContinuousOutputModel;
 
 @Citation(value = "Kuehnert D, Stadler T, Vaughan TG, Drummond AJ. (2016). Phylodynamics with migration: " +
         "A computational framework to quantify population structure from genomic data. " +
@@ -294,6 +295,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
 
     public double[] getStartTypePosteriorProbs() {
         return this.engine.getStartTypePosteriorProbs();
+    }
+
+    /**
+     * Results of the p0/ge integration along each edge, indexed by node number.
+     * Only available from the classic engine with storeIntegrationResults enabled.
+     *
+     * @return one interpolated integration result per node
+     * @throws IllegalStateException if another engine is in use
+     */
+    public ContinuousOutputModel[] getIntegrationResults() {
+        if (!(this.engine instanceof bdmmprime.distribution.classic.BirthDeathMigrationDistribution classicEngine))
+            throw new IllegalStateException(
+                    "Integration results are only available from the classic engine (set engine=\"classic\").");
+        return classicEngine.getIntegrationResults();
     }
 
     @Override
