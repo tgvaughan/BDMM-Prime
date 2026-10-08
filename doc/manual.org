@@ -63,7 +63,6 @@ If you use this package as part of your research, please cite these papers:
 :CUSTOM_ID: id-1-Getting-Started
 :END:
 
-
 ** Installation
 :PROPERTIES:
 :CUSTOM_ID: id-2-Getting-Started-Installation
@@ -220,8 +219,8 @@ the drop-down menu next to ~Tree.t:h3n2_2deme~ and select "BDMMPrime".
 The next thing we want to do is to specify the locations associated with each of the
 samples included in our analysis.
 #+begin_quote
-Click the arrow to the left of ~Tree.t:h3n2_2deme~ to expand the tree prior section.
-Scroll down to end of the tree prior section and find the table associating tree leaves
+Click the arrow to the left of ~Tree.t:h3n2_2deme~ to make the tree prior options visible.
+Then, scroll down to end of the tree prior section and find the table associating tree leaves
 with locations. Notice that the sample names have the form =ID_Location_Date=. To
 extract the locations from the sample names, click the ~Auto-configure~ button,
 select ~split on character~, ensure "~_~" is specified as the delimiter, and select
@@ -425,7 +424,9 @@ They include:
   
 Each of these loggers is optional, and can be enabled/disabled by
 clicking the arrow buttons to their left and checking/unchecking the
-"Enable logger" box.  By default edge-typed tree logging is enabled, but
+"Enable logger" box.  (NB: in recent versions of BDMM-Prime, typed
+tree loggers are only displayed when two or more types are present in
+the model.)  By default edge-typed tree logging is enabled, but
 trajectory logging is disabled.
 
 ** Saving and Running the analysis
