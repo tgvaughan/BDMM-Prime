@@ -6,7 +6,7 @@
 
     <groupId>io.github.tgvaughan</groupId>
     <artifactId>bdmm-prime</artifactId>
-    <version>3.0.0</version>
+    <version>3.1.0</version>
 
     <name>bdmm-prime</name>
     <description>linear bith-death-sampling phylodynamics inference</description>
@@ -36,12 +36,12 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>25</maven.compiler.release>
-        <beast.version>2.8.0-beta5</beast.version>
+        <beast.version>2.8.0-rc1</beast.version>
         <beast.module>beast.base</beast.module>
         <beast.main>beast.base.minimal.BeastMain</beast.main>
         <beast.args/>
         <beast.pkg.name>bdmm-prime</beast.pkg.name>
-        <beast.pkg.version>3.0.0</beast.pkg.version>
+        <beast.pkg.version>3.1.0</beast.pkg.version>
     </properties>
 
     <repositories>
@@ -112,9 +112,15 @@
 
         <!-- Testing -->
         <dependency>
-            <groupId>org.junit.jupiter</groupId>
+            <groupId>org.junit.jupiter</groupId> <!-- JUnit 5 -->
             <artifactId>junit-jupiter</artifactId>
             <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId> <!-- JUnit 4 -->
+            <artifactId>junit</artifactId>
+            <version>4.13.2</version>
             <scope>test</scope>
         </dependency>
         <dependency>
@@ -123,12 +129,7 @@
             <version>3.20.2</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>junit</groupId>
-            <artifactId>junit</artifactId>
-            <version>4.13.2</version>
-            <scope>test</scope>
-        </dependency>
+
     </dependencies>
 
     <build>

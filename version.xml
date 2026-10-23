@@ -1,4 +1,4 @@
-<package name="BDMM-Prime" version="3.0.0">
+<package name="BDMM-Prime" version="3.1.0">
   <depends on="BEAST.base" atleast="2.8.0" atmost="2.8.9"/>
   <depends on="BEAST.app" atleast="2.8.0" atmost="2.8.9"/>
   <depends on="SA" atleast="2.3.0"/>
