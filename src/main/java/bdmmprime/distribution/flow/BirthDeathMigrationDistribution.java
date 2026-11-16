@@ -411,6 +411,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // consider different ways to condition the tree
 
         double conditionDensity = this.calculateConditionDensityFactor(extinctionProbabilities);
+
+        if (!(conditionDensity > 0)) {
+            // the conditioning event has no (or an invalid) probability
+            return Double.NEGATIVE_INFINITY;
+        }
+
         treeLikelihood /= conditionDensity;
 
         // turn the likelihood into log likelihood and correct for scaling
