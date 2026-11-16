@@ -72,6 +72,18 @@ public class SubtreeCachingTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
+    public void testDisabledCachingUpdatesAllNodes(boolean parallelize) {
+        Tree tree = new TreeParser(NEWICK, false);
+        BirthDeathMigrationDistribution density = this.buildDensity(tree, 1.0, parallelize, false);
+
+        double logP = density.calculateLogP();
+
+        assertEquals(logP, density.calculateLogP());
+        assertEquals(tree.getNodeCount(), density.getNumUpdatedNodes());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
     public void testInternalNodeHeightChange(boolean parallelize) {
         Tree tree = new TreeParser(NEWICK, false);
         BirthDeathMigrationDistribution density = this.buildDensity(tree, 1.0, parallelize);
@@ -196,11 +208,18 @@ public class SubtreeCachingTest {
     }
 
     /**
+     * Builds a flow density with subtree caching for the given tree.
+     */
+    private BirthDeathMigrationDistribution buildDensity(Tree tree, double removalProb, boolean parallelize) {
+        return this.buildDensity(tree, removalProb, parallelize, true);
+    }
+
+    /**
      * Builds a flow density with two types and migration for the given tree. When parallelization is
      * enabled, the subtree size needed to start parallel calculations is lowered such that the small
      * test trees are traversed in parallel.
      */
-    private BirthDeathMigrationDistribution buildDensity(Tree tree, double removalProb, boolean parallelize) {
+    private BirthDeathMigrationDistribution buildDensity(Tree tree, double removalProb, boolean parallelize, boolean useSubtreeCaching) {
         Parameterization parameterization = new CanonicalParameterization();
         parameterization.initByName(
                 "typeSet", new TypeSet(2),
@@ -232,7 +251,8 @@ public class SubtreeCachingTest {
                 "tree", tree,
                 "typeLabel", "type",
                 "parallelize", parallelize,
-                "minimalSubtreeSizeForParallelization", 1
+                "minimalSubtreeSizeForParallelization", 1,
+                "useSubtreeCaching", useSubtreeCaching
         );
 
         return density;
