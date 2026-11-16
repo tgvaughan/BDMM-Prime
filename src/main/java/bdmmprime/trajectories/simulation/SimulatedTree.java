@@ -70,6 +70,14 @@ public class SimulatedTree extends Tree {
     public Input<Integer> minSamplesInput = new Input<>("minSamples",
             "Minimum number of samples to accept in simulated trajectory.", 1);
 
+    public Input<Integer> maxEventsInput = new Input<>("maxEvents",
+            "Maximum number of events in a simulated trajectory. Simulation fails with an " +
+                    "IllegalStateException if this is exceeded. Unlimited by default.", Integer.MAX_VALUE);
+
+    public Input<Integer> maxAttemptsInput = new Input<>("maxAttempts",
+            "Maximum number of trajectories to simulate while trying to reach minSamples. Simulation " +
+                    "fails with an IllegalStateException if this is exceeded. Unlimited by default.", Integer.MAX_VALUE);
+
     public Input<String> typeLabelInput = new Input<>("typeLabel",
             "Used to label tree nodes with corresponding types.",
             "type");
@@ -106,11 +114,17 @@ public class SimulatedTree extends Tree {
         int minSamples = minSamplesInput.get();
         typeLabel = typeLabelInput.get();
         simulateUntypedTree = simulateUntypedTreeInput.get();
+        int maxAttempts = this.maxAttemptsInput.get();
         trajectorySimulator = new TrajectorySimulator(param,
-                startTypePriorProbsInput.get());
+                startTypePriorProbsInput.get(), this.maxEventsInput.get());
 
         traj = null;
+        int attempts = 0;
         do {
+            if (attempts++ >= maxAttempts)
+                throw new IllegalStateException("No trajectory with at least " + minSamples
+                        + " samples found in " + maxAttempts + " attempts.");
+
             traj = trajectorySimulator.simulateTrajectory();
         } while (traj.getSampleCount() < Math.max(minSamples,1));
 

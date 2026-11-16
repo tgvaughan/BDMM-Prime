@@ -41,6 +41,10 @@ import java.util.List;
  */
 public class Benchmark {
 
+    // trials whose tree simulation exceeds these limits are dropped
+    static final int MAX_SIMULATION_EVENTS = 100_000;
+    static final int MAX_SIMULATION_ATTEMPTS = 1_000;
+
     static void main(String[] args) {
         int NUM_TRIALS = 30_000;
 
@@ -67,7 +71,15 @@ public class Benchmark {
 
             Parameterization parameterization = sampler.sampleParameterization();
             Simplex startTypePriorProbs = sampler.sampleStartTypePriorProbs(parameterization);
-            Tree tree = simulateTree(parameterization, startTypePriorProbs);
+
+            Tree tree;
+            try {
+                tree = simulateTree(parameterization, startTypePriorProbs);
+            } catch (IllegalStateException e) {
+                System.out.println("Dropping trial " + i + ": " + e.getMessage());
+                continue;
+            }
+
             int minNumIntervals = sampler.sampleMinIntervals();
             boolean parallelized = false;
             boolean useSplitting = false;
@@ -86,8 +98,11 @@ public class Benchmark {
             if (i % 100 == 0) {
                 System.out.println(i);
                 writeResults(results, "results.csv");
+                results.clear();
             }
         }
+
+        // the remaining results are those added since the last write
 
         return results;
     }
@@ -98,6 +113,8 @@ public class Benchmark {
         simulatedTree.finalSampleOffsetInput.setTypedValue(new RealScalarParam<>(0.0, NonNegativeReal.INSTANCE), simulatedTree);
         simulatedTree.startTypePriorProbsInput.setTypedValue(startTypePriorProbs, simulatedTree);
         simulatedTree.minSamplesInput.setTypedValue(2, simulatedTree);
+        simulatedTree.maxEventsInput.setTypedValue(MAX_SIMULATION_EVENTS, simulatedTree);
+        simulatedTree.maxAttemptsInput.setTypedValue(MAX_SIMULATION_ATTEMPTS, simulatedTree);
         simulatedTree.simulateUntypedTreeInput.setTypedValue(true, simulatedTree);
         simulatedTree.initAndValidate();
         return simulatedTree;
@@ -152,6 +169,9 @@ public class Benchmark {
     }
 
     static void writeResults(List<BenchmarkResult> results, String fileName) {
+        if (results.isEmpty())
+            return;
+
         File file = new File(fileName);
         boolean writeHeader = !file.exists() || file.length() == 0;
 

@@ -39,7 +39,19 @@ public class TrajectorySimulator {
 
     Parameterization param;
 
+    int maxEvents;
+
     public TrajectorySimulator(Parameterization parameterization, Simplex initialTypeProbs) {
+        this(parameterization, initialTypeProbs, Integer.MAX_VALUE);
+    }
+
+    /**
+     * Creates a simulator that aborts any trajectory with more than maxEvents events by throwing an
+     * IllegalStateException. This bounds the runtime and memory of supercritical processes.
+     */
+    public TrajectorySimulator(Parameterization parameterization, Simplex initialTypeProbs, int maxEvents) {
+
+        this.maxEvents = maxEvents;
 
         param = parameterization;
 
@@ -178,6 +190,9 @@ public class TrajectorySimulator {
                 throw new IllegalStateException("Event selection loop fell through.");
 
             traj.addEvent(event);
+
+            if (traj.events.size() > this.maxEvents)
+                throw new IllegalStateException("Trajectory exceeded the maximum of " + this.maxEvents + " events.");
         }
 
         return traj;
