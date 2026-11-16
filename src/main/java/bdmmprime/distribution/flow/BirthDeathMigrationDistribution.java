@@ -155,6 +155,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             false
     );
 
+    public Input<Boolean> useSubtreeCachingInput = new Input<>(
+            "useSubtreeCaching",
+            "Whether to reuse the likelihoods of subtrees that did not change since the last calculation.",
+            true
+    );
+
     private Parameterization parameterization;
 
     private InitialMatrixStrategy initialMatrixStrategy;
@@ -187,6 +193,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private ForkJoinPool forkJoinPool;
     private double parallelizeNumUpdatesThreshold;
 
+    private boolean useSubtreeCaching;
     private SubtreeLikelihoodCache subtreeLikelihoodCache;
     private SubtreeLikelihoodCache.Fingerprint[] fingerprints;
     private boolean[] needsUpdate;
@@ -196,6 +203,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
     private double[] logScalingFactorsEdgeEnd;
     private boolean[] isRhoSampled;
+    private int[] traitSetLeafTypes;
 
     private int totalNumEvaluations = 0;
     private int numEvaluationsSinceReset = 0;
@@ -233,6 +241,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         this.useInverseFlow = this.useInverseFlowInput.get();
         this.maxConditioningNumber = this.maxConditioningNumberInput.get();
         this.useLoucaPennellIntervals = this.useLoucaPennellIntervalsInput.get();
+        this.useSubtreeCaching = this.useSubtreeCachingInput.get();
 
         // reset cache
 
@@ -278,6 +287,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         this.startTypePosteriorProbs = new double[this.numTypes];
         this.storedStartTypePosteriorProbs = new double[this.numTypes];
         this.initializeIsRhoSampled();
+        this.initializeTraitSetLeafTypes();
         this.forkJoinPool = new ForkJoinPool();
 
         // initialize bdmm prime as a fallback if we detect numerical issues
@@ -314,6 +324,24 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                 }
             }
         }
+    }
+
+    /**
+     * Initializes the traitSetLeafTypes array with the type of every leaf if the types are specified
+     * by a trait set. In contrast to the types stored in the tree, these cannot change.
+     */
+    private void initializeTraitSetLeafTypes() {
+        this.traitSetLeafTypes = null;
+
+        if (this.numTypes == 1 || this.typeTraitSet == null) return;
+
+        int[] leafTypes = new int[this.tree.getLeafNodeCount()];
+        for (int i = 0; i < leafTypes.length; i++) {
+            String nodeTypeName = this.typeTraitSet.getStringValue(this.tree.getNode(i).getID());
+            leafTypes[i] = this.parameterization.getTypeSet().getTypeIndex(nodeTypeName);
+        }
+
+        this.traitSetLeafTypes = leafTypes;
     }
 
     /**
@@ -637,7 +665,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         int nodeNr = node.getNr();
         SubtreeLikelihoodCache.Fingerprint fingerprint = this.createFingerprint(node, timeEdgeStart, timeEdgeEnd);
 
-        boolean needsUpdate = 0 < numUpdates || !this.subtreeLikelihoodCache.isValid(nodeNr, fingerprint);
+        boolean needsUpdate = !this.useSubtreeCaching
+                || 0 < numUpdates
+                || !this.subtreeLikelihoodCache.isValid(nodeNr, fingerprint);
         if (needsUpdate) {
             numUpdates++;
         }
@@ -997,17 +1027,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             return 0;
         }
 
+        if (this.traitSetLeafTypes != null) {
+            return this.traitSetLeafTypes[node.getNr()];
+        }
+
         String nodeTypeName;
 
-        if (this.typeTraitSet != null)
-            nodeTypeName = this.typeTraitSet.getStringValue(node.getID());
-        else {
-            Object metaData = node.getMetaData(this.typeLabel);
-            if (metaData instanceof Double) {
-                nodeTypeName = String.valueOf(Math.round((double) metaData));
-            } else {
-                nodeTypeName = metaData.toString();
-            }
+        Object metaData = node.getMetaData(this.typeLabel);
+        if (metaData instanceof Double) {
+            nodeTypeName = String.valueOf(Math.round((double) metaData));
+        } else {
+            nodeTypeName = metaData.toString();
         }
 
         return this.parameterization.getTypeSet().getTypeIndex(nodeTypeName);

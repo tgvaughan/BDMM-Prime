@@ -1,0 +1,8 @@
+<itsabeastystatewerein version='2.0' sample='10000000'>
+<statenode id='null'>null{5, }: -7.32754878660533 -4.1396541223462 1.9681339310310744 4.660406015852372 6.400531950291584 </statenode>
+</itsabeastystatewerein>
+<!--
+{"operators":[
+{"id":"unknown","p":"NaN","accept":8739615,"reject":1260386,"acceptFC":0,"rejectFC":0,"rejectIv":743176,"rejectOp":0}
+]}
+-->
