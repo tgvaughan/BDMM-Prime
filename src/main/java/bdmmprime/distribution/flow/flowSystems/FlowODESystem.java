@@ -177,11 +177,13 @@ public class FlowODESystem extends IntervalODESystem implements BaseFlowODESyste
     protected void handleParameterizationIntervalBoundary(double boundaryTime, int oldInterval, int newInterval, double[] state) {
         super.handleParameterizationIntervalBoundary(boundaryTime, oldInterval, newInterval, state);
 
-        // include rho sampling effects
+        // include rho sampling effects.
+        // the flow acts on the likelihood vector from the left, which is why we scale row i
+        // of the column-major state by the probability that type i is not sampled.
 
         for (int i = 0; i < this.parameterization.getNTypes(); i++) {
             for (int j = 0; j < this.parameterization.getNTypes(); j++) {
-                state[i * this.parameterization.getNTypes() + j] *= (1 - this.parameterization.getRhoValues()[newInterval][i]);
+                state[j * this.parameterization.getNTypes() + i] *= (1 - this.parameterization.getRhoValues()[newInterval][i]);
             }
         }
     }

@@ -2108,4 +2108,74 @@ public class BirthDeathMigrationLikelihoodTest {
 
         assertEquals(logL3, logL4, 1e-5);
     }
+
+    /**
+     * Test for type-dependent rho sampling at a time that is crossed by other lineages.
+     * 2 types, migration, psi-sampling and two rho-sampling events.
+     * The reference is the classic engine.
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testTypeDependentRhoCrossedByLineages(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+        BirthDeathMigrationDistribution density = this.getTypeDependentRhoDensity(
+                method, initialStateStrategy, useInverseFlow, parallelize, useAnalyticalSingleTypeSolution
+        );
+        BirthDeathMigrationDistribution reference = this.getTypeDependentRhoDensity(
+                Engine.classic, InitialMatrixStrategy.identity, false, false, false
+        );
+
+        assertEquals(reference.calculateLogP(), density.calculateLogP(), 1e-5);
+    }
+
+    /**
+     * Builds a density where the tips 3 and 4 are psi-sampled, tip 2 is rho-sampled at age 1 and
+     * tip 1 is rho-sampled at age 0. The lineage leading to tip 1 crosses the rho-sampling event at age 1.
+     */
+    private BirthDeathMigrationDistribution getTypeDependentRhoDensity(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+        Tree tree = new TreeParser(
+                "((3[&type=0] : 1.5, 4[&type=1] : 0.5) : 1 , (1[&type=1] : 2, 2[&type=0] : 1) : 3);",
+                false);
+
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "typeSet", new TypeSet(2),
+                "processLength", new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE),
+                "birthRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {2.0, 1.5}, NonNegativeReal.INSTANCE)),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 0.8}, NonNegativeReal.INSTANCE)),
+                "birthRateAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.2, 0.7}, NonNegativeReal.INSTANCE)),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 0.3}, NonNegativeReal.INSTANCE)),
+                "rhoSampling", new TimedParameter(
+                        new RealVectorParam<>(new double[] {5.0, 6.0}, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(new double[] {0.3, 0.45, 0.3, 0.6}, UnitInterval.INSTANCE), 2),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName(
+                "engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        return density;
+    }
 }
