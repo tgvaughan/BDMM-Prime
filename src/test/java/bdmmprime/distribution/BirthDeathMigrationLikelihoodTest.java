@@ -2178,4 +2178,76 @@ public class BirthDeathMigrationLikelihoodTest {
 
         return density;
     }
+
+    /**
+     * Test for a rate change that lies before the start of the process.
+     * 2 types, migration, birth rate changes at ages 1 and 7 with a process length of 6.
+     * The change at age 7 must not have any effect, which is why the reference is the classic
+     * engine without this change.
+     */
+    @ParameterizedTest
+    @MethodSource("getParameterizations")
+    public void testRateChangeBeforeProcessStart(Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+        BirthDeathMigrationDistribution density = this.getBirthRateChangeDensity(
+                new double[] {1.0, 7.0}, new double[] {2.0, 1.2, 5.0},
+                method, initialStateStrategy, useInverseFlow, parallelize, useAnalyticalSingleTypeSolution
+        );
+        BirthDeathMigrationDistribution reference = this.getBirthRateChangeDensity(
+                new double[] {1.0}, new double[] {2.0, 1.2},
+                Engine.classic, InitialMatrixStrategy.identity, false, false, false
+        );
+
+        assertEquals(reference.calculateLogP(), density.calculateLogP(), 1e-5);
+    }
+
+    /**
+     * Builds a density where the birth rate changes at the given ages. The birth rate values are
+     * ordered from the most recent to the oldest interval.
+     */
+    private BirthDeathMigrationDistribution getBirthRateChangeDensity(double[] birthRateChangeAges, double[] birthRates, Engine method, InitialMatrixStrategy initialStateStrategy, boolean useInverseFlow, boolean parallelize, boolean useAnalyticalSingleTypeSolution) {
+        Tree tree = new TreeParser(
+                "((3[&type=0] : 1.5, 4[&type=1] : 0.5) : 1 , (1[&type=1] : 2, 2[&type=0] : 1) : 3);",
+                false);
+
+        RealScalarParam<NonNegativeReal> processLength = new RealScalarParam<>(6.0, NonNegativeReal.INSTANCE);
+
+        Parameterization parameterization = new CanonicalParameterization();
+        parameterization.initByName(
+                "typeSet", new TypeSet(2),
+                "processLength", processLength,
+                "birthRate", new SkylineVectorParameter(
+                        new RealVectorParam<>(birthRateChangeAges, NonNegativeReal.INSTANCE),
+                        new RealVectorParam<>(birthRates, NonNegativeReal.INSTANCE), 2, processLength),
+                "deathRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0, 0.8}, NonNegativeReal.INSTANCE)),
+                "birthRateAmongDemes", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.0}, NonNegativeReal.INSTANCE), 2),
+                "migrationRate", new SkylineMatrixParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.2, 0.7}, NonNegativeReal.INSTANCE)),
+                "samplingRate", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {0.5, 0.3}, NonNegativeReal.INSTANCE)),
+                "removalProb", new SkylineVectorParameter(
+                        null,
+                        new RealVectorParam<>(new double[] {1.0}, UnitInterval.INSTANCE), 2));
+
+        BirthDeathMigrationDistribution density = new BirthDeathMigrationDistribution();
+        density.initByName(
+                "engine", method,
+                "parameterization", parameterization,
+                "startTypePriorProbs", new SimplexParam(new double[] {0.5, 0.5}),
+                "conditionOnSurvival", false,
+                "tree", tree,
+                "typeLabel", "type",
+                "initialMatrixStrategy", initialStateStrategy,
+                "useInverseFlow", useInverseFlow,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSingleTypeSolution,
+                "parallelize", parallelize
+        );
+
+        return density;
+    }
 }
