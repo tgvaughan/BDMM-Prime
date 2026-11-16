@@ -24,6 +24,7 @@ import org.apache.commons.math3.linear.*;
 import java.util.Arrays;
 import java.util.Random;
 
+import org.hipparchus.exception.MathRuntimeException;
 import org.hipparchus.linear.SchurTransformer;
 
 public class Utils {
@@ -150,8 +151,20 @@ public class Utils {
         return Math.log(max) + previousLogFactor;
     }
 
+    /**
+     * Returns the matrix exponential of the given matrix.
+     *
+     * @throws IllegalStateException if the Schur decomposition of the matrix fails.
+     */
     public static RealMatrix expm(RealMatrix A) {
-        SchurTransformer schur = new SchurTransformer(Utils.toHipparchusMatrix(A));
+        SchurTransformer schur;
+        try {
+            schur = new SchurTransformer(Utils.toHipparchusMatrix(A));
+        } catch (MathRuntimeException e) {
+            // hipparchus exceptions do not extend the standard java exceptions
+            throw new IllegalStateException("Schur decomposition failed.", e);
+        }
+
         RealMatrix Q = Utils.toMatrix(schur.getP());
         RealMatrix T = Utils.toMatrix(schur.getT());
 
@@ -199,15 +212,11 @@ public class Utils {
     }
 
     public static double getHermitianSpread(RealMatrix matrix) {
-        try {
-            RealMatrix hermitian = matrix.add(matrix.transpose()).scalarMultiply(0.5);
-            EigenDecomposition eigenDecomposition = new EigenDecomposition(hermitian);
-            double minEV = Arrays.stream(eigenDecomposition.getRealEigenvalues()).min().orElseThrow();
-            double maxEV = Arrays.stream(eigenDecomposition.getRealEigenvalues()).max().orElseThrow();
-            return maxEV - minEV;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        RealMatrix hermitian = matrix.add(matrix.transpose()).scalarMultiply(0.5);
+        EigenDecomposition eigenDecomposition = new EigenDecomposition(hermitian);
+        double minEV = Arrays.stream(eigenDecomposition.getRealEigenvalues()).min().orElseThrow();
+        double maxEV = Arrays.stream(eigenDecomposition.getRealEigenvalues()).max().orElseThrow();
+        return maxEV - minEV;
     }
 
 }
