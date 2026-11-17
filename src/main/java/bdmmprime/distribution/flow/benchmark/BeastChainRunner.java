@@ -96,10 +96,12 @@ public class BeastChainRunner {
     }
 
     /**
-     * Shuts down BEAST's thread pool so that the JVM can exit.
+     * Terminates the JVM, as BEAST itself does at the end of an analysis. This is needed because
+     * some BEAST components (e.g. ThreadedTreeLikelihood and threaded CompoundDistributions) start
+     * thread pools per instance that are never shut down and would otherwise keep the JVM alive.
      */
     static void tearDownBeast() {
-        ProgramStatus.g_exec.shutdown();
+        System.exit(0);
     }
 
     /**
