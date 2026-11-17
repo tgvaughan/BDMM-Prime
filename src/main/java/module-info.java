@@ -9,6 +9,7 @@ open module bdmmprime {
     requires javafx.controls;
     requires colt;
     requires hipparchus.core;
+    requires jdk.jfr;
 
     exports bdmmprime.distribution.classic;
     exports bdmmprime.distribution.flow;

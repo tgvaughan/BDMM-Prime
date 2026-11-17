@@ -161,6 +161,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             true
     );
 
+    public Input<Boolean> useFlowCachingInput = new Input<>(
+            "useFlowCaching",
+            "Whether to reuse the extinction probabilities and the flow while the parameterization does not " +
+                    "change. Subtree caching only takes effect if this is enabled.",
+            true
+    );
+
     private Parameterization parameterization;
 
     private InitialMatrixStrategy initialMatrixStrategy;
@@ -198,6 +205,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private SubtreeLikelihoodCache.Fingerprint[] fingerprints;
     private boolean[] needsUpdate;
     private int[] numUpdatesInSubtree;
+
+    private boolean useFlowCaching;
 
     private int numTypes;
 
@@ -242,6 +251,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         this.maxConditioningNumber = this.maxConditioningNumberInput.get();
         this.useLoucaPennellIntervals = this.useLoucaPennellIntervalsInput.get();
         this.useSubtreeCaching = this.useSubtreeCachingInput.get();
+        this.useFlowCaching = this.useFlowCachingInput.get();
 
         // reset cache
 
@@ -542,7 +552,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
      * @return a wrapper class that allows to query the extinction probabilities at any given time.
      */
     private ExtinctionProbabilities calculateExtinctionProbabilities(List<Interval> intervals) {
-        if (!this.parameterization.isDirtyCalculation() && this.currentExtinctionProbabilities != null) {
+        if (this.useFlowCaching && !this.parameterization.isDirtyCalculation() && this.currentExtinctionProbabilities != null) {
             // the parameterization hasn't changed, which means the extinction probabilities are still the same
             return this.currentExtinctionProbabilities;
         }
@@ -586,7 +596,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
      * @return a wrapper class that allows to query the flow at any given time.
      */
     private BaseFlow calculateFlow(List<Interval> intervals, ExtinctionProbabilities extinctionProbabilities) {
-        if (!this.parameterization.isDirtyCalculation() && this.currentFlow != null) {
+        if (this.useFlowCaching && !this.parameterization.isDirtyCalculation() && this.currentFlow != null) {
             // the parameterization hasn't changed, which means the flow is still the same
             return this.currentFlow;
         }
