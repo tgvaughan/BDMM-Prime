@@ -22,28 +22,36 @@ package bdmmprime.distribution.flow.benchmark;
 import beast.base.inference.MCMC;
 import jdk.jfr.Recording;
 import jdk.jfr.consumer.RecordedEvent;
-import jdk.jfr.consumer.RecordedFrame;
 import jdk.jfr.consumer.RecordedStackTrace;
 import jdk.jfr.consumer.RecordingFile;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringJoiner;
+import java.util.concurrent.locks.LockSupport;
 
 /**
  * Standalone entry point that profiles short MCMC chains of the BEAST analyses and attributes the
- * computational cost to the tree prior, the tree likelihood and everything else, writing the
- * number of profiler samples per operation to CSV.
- * <p>
- * The profiling uses the sampling profiler of the Java Flight Recorder: at a fixed interval, it
- * records the call stack of every thread executing Java code, including worker threads. A sample
- * is attributed to the operation of the innermost stack frame that belongs to the tree prior or
- * the tree likelihood, so no instrumentation of the model code is needed.
+ * cost to the tree prior, the tree likelihood and everything else, writing the number of profiler
+ * samples per operation to CSV. Two measures of cost are recorded in the same run:
+ * <ul>
+ *     <li>CPU time: the sampling profiler of the Java Flight Recorder records, at a fixed interval,
+ *     the call stack of every thread executing Java code, including worker threads. Parallel work
+ *     therefore counts once per busy thread, while time spent outside of Java code (e.g. garbage
+ *     collection or waiting for other threads) is not counted.</li>
+ *     <li>Wall-clock time: a sampler thread records, at a fixed interval, the call stack of the
+ *     thread running the MCMC loop, whether it is computing or waiting for worker threads. As this
+ *     thread drives every step of the chain, the samples are spread over the operations in
+ *     proportion to the elapsed time spent in them.</li>
+ * </ul>
+ * A sample is attributed to the operation of the innermost stack frame that belongs to the tree
+ * prior or the tree likelihood, so no instrumentation of the model code is needed.
  * <p>
  * The optional first argument is the {@code beast_benchmarks} directory of the
  * BDMM-Flow-Supplementary repository.
@@ -56,6 +64,7 @@ public class RuntimeFractionBenchmark {
     static final Duration SAMPLING_PERIOD = Duration.ofMillis(1);
 
     static final String EXECUTION_SAMPLE_EVENT = "jdk.ExecutionSample";
+    static final String WALL_CLOCK_SAMPLER_NAME = "wall-clock-sampler";
 
     /**
      * A tree prior implementation to profile.
@@ -69,7 +78,7 @@ public class RuntimeFractionBenchmark {
     );
 
     /**
-     * The parts of an analysis to which the computational cost is attributed.
+     * The parts of an analysis to which the cost is attributed.
      */
     enum Operation {
         TREE_PRIOR("Tree Prior"),
@@ -79,6 +88,20 @@ public class RuntimeFractionBenchmark {
         final String label;
 
         Operation(String label) {
+            this.label = label;
+        }
+    }
+
+    /**
+     * The measures of cost recorded by the profiler.
+     */
+    enum Measure {
+        CPU_TIME("cpu_time"),
+        WALL_CLOCK_TIME("wall_clock_time");
+
+        final String label;
+
+        Measure(String label) {
             this.label = label;
         }
     }
@@ -96,12 +119,14 @@ public class RuntimeFractionBenchmark {
             for (Configuration configuration : CONFIGURATIONS) {
                 BeastChainRunner.runChain(loadChain(xmlFile, configuration, dataset.getWarmupChainLength()));
 
-                Map<Operation, Long> sampleCounts = profileChain(loadChain(xmlFile, configuration, dataset.chainLength()));
-                for (Operation operation : Operation.values()) {
-                    BeastChainRunner.appendResult(
-                            resultsFile,
-                            getLine(dataset, configuration, operation, sampleCounts.get(operation))
-                    );
+                Map<Measure, Map<Operation, Long>> sampleCounts = profileChain(loadChain(xmlFile, configuration, dataset.chainLength()));
+                for (Measure measure : Measure.values()) {
+                    for (Operation operation : Operation.values()) {
+                        BeastChainRunner.appendResult(
+                                resultsFile,
+                                getLine(dataset, configuration, measure, operation, sampleCounts.get(measure).get(operation))
+                        );
+                    }
                 }
             }
         }
@@ -114,6 +139,7 @@ public class RuntimeFractionBenchmark {
 
         joiner.add("dataset");
         joiner.add("method");
+        joiner.add("measure");
         joiner.add("operation");
         joiner.add("chain_length");
         joiner.add("sample_count");
@@ -129,47 +155,76 @@ public class RuntimeFractionBenchmark {
     }
 
     /**
-     * Runs the chain under the flight recorder and counts the execution samples per operation.
+     * Runs the chain under both profilers and counts the samples per measure and operation.
      */
-    static Map<Operation, Long> profileChain(MCMC mcmc) throws Exception {
+    static Map<Measure, Map<Operation, Long>> profileChain(MCMC mcmc) throws Exception {
         Path recordingFile = Files.createTempFile("bdmm-benchmark", ".jfr");
         recordingFile.toFile().deleteOnExit();
+
+        WallClockSampler wallClockSampler = new WallClockSampler(Thread.currentThread());
 
         try (Recording recording = new Recording()) {
             recording.enable(EXECUTION_SAMPLE_EVENT).withPeriod(SAMPLING_PERIOD);
             recording.start();
+            wallClockSampler.start();
+
             BeastChainRunner.runChain(mcmc);
+
+            wallClockSampler.stopSampling();
             recording.stop();
             recording.dump(recordingFile);
         }
 
-        Map<Operation, Long> sampleCounts = new EnumMap<>(Operation.class);
-        for (Operation operation : Operation.values()) {
-            sampleCounts.put(operation, 0L);
-        }
+        Map<Measure, Map<Operation, Long>> sampleCounts = new EnumMap<>(Measure.class);
+        sampleCounts.put(Measure.CPU_TIME, countCpuSamples(recordingFile));
+        sampleCounts.put(Measure.WALL_CLOCK_TIME, wallClockSampler.getSampleCounts());
+        return sampleCounts;
+    }
+
+    /**
+     * Counts the execution samples of the flight recording per operation, leaving out the
+     * samples of the wall-clock sampler itself.
+     */
+    static Map<Operation, Long> countCpuSamples(Path recordingFile) throws Exception {
+        Map<Operation, Long> sampleCounts = createEmptySampleCounts();
 
         for (RecordedEvent event : RecordingFile.readAllEvents(recordingFile)) {
-            if (event.getEventType().getName().equals(EXECUTION_SAMPLE_EVENT)) {
-                sampleCounts.merge(classifySample(event.getStackTrace()), 1L, Long::sum);
-            }
+            if (!event.getEventType().getName().equals(EXECUTION_SAMPLE_EVENT))
+                continue;
+
+            if (WALL_CLOCK_SAMPLER_NAME.equals(event.getThread("sampledThread").getJavaName()))
+                continue;
+
+            sampleCounts.merge(classifyStackTrace(event.getStackTrace()), 1L, Long::sum);
         }
 
         return sampleCounts;
     }
 
-    /**
-     * Attributes a sample to the operation of its innermost recognized frame. The frames are
-     * ordered from the innermost outwards, so library code called by the tree prior or the tree
-     * likelihood (e.g. ODE integrators or substitution models) is attributed to its caller. This
-     * also holds for stacks truncated by the flight recorder, as truncation drops outer frames.
-     */
-    static Operation classifySample(RecordedStackTrace stackTrace) {
+    static Map<Operation, Long> createEmptySampleCounts() {
+        Map<Operation, Long> sampleCounts = new EnumMap<>(Operation.class);
+        for (Operation operation : Operation.values()) {
+            sampleCounts.put(operation, 0L);
+        }
+        return sampleCounts;
+    }
+
+    static Operation classifyStackTrace(RecordedStackTrace stackTrace) {
         if (stackTrace == null)
             return Operation.OTHER;
 
-        for (RecordedFrame frame : stackTrace.getFrames()) {
-            String className = frame.getMethod().getType().getName();
+        return classifyFrames(stackTrace.getFrames().stream().map(frame -> frame.getMethod().getType().getName()).toList());
+    }
 
+    /**
+     * Attributes a sample to the operation of its innermost recognized frame, given the class
+     * names of its frames from the innermost outwards. Library code called by the tree prior or
+     * the tree likelihood (e.g. ODE integrators, substitution models or waiting for worker threads)
+     * is thereby attributed to its caller. This also holds for stacks truncated by the flight
+     * recorder, as truncation drops outer frames.
+     */
+    static Operation classifyFrames(List<String> classNames) {
+        for (String className : classNames) {
             if (className.startsWith("bdmmprime.distribution.") || className.startsWith("bdmmprime.parameterization."))
                 return Operation.TREE_PRIOR;
 
@@ -180,16 +235,61 @@ public class RuntimeFractionBenchmark {
         return Operation.OTHER;
     }
 
-    static String getLine(BeastChainRunner.Dataset dataset, Configuration configuration, Operation operation, long sampleCount) {
+    static String getLine(
+            BeastChainRunner.Dataset dataset,
+            Configuration configuration,
+            Measure measure,
+            Operation operation,
+            long sampleCount
+    ) {
         StringJoiner joiner = new StringJoiner(",");
 
         joiner.add(dataset.name());
         joiner.add(configuration.method());
+        joiner.add(measure.label);
         joiner.add(operation.label);
         joiner.add(Long.toString(dataset.chainLength()));
         joiner.add(Long.toString(sampleCount));
 
         return joiner.toString();
+    }
+
+    /**
+     * Samples the call stack of one thread at a fixed interval, regardless of whether the thread
+     * is running, waiting or blocked.
+     */
+    static class WallClockSampler extends Thread {
+
+        private final Thread target;
+        private final Map<Operation, Long> sampleCounts = createEmptySampleCounts();
+        private volatile boolean isSampling = true;
+
+        WallClockSampler(Thread target) {
+            super(WALL_CLOCK_SAMPLER_NAME);
+            this.target = target;
+            this.setDaemon(true);
+        }
+
+        @Override
+        public void run() {
+            while (this.isSampling) {
+                List<String> classNames = Arrays.stream(this.target.getStackTrace())
+                        .map(StackTraceElement::getClassName)
+                        .toList();
+                this.sampleCounts.merge(classifyFrames(classNames), 1L, Long::sum);
+
+                LockSupport.parkNanos(SAMPLING_PERIOD.toNanos());
+            }
+        }
+
+        void stopSampling() throws InterruptedException {
+            this.isSampling = false;
+            this.join();
+        }
+
+        Map<Operation, Long> getSampleCounts() {
+            return this.sampleCounts;
+        }
     }
 
 }
