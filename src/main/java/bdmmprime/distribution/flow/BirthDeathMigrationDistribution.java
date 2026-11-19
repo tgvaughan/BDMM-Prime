@@ -102,7 +102,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     public Input<Double> relativeToleranceInput = new Input<>(
             "relTolerance",
             "Relative tolerance for numerical integration.",
-            1e-7
+            1e-8
     );
 
     public Input<Double> absoluteToleranceInput = new Input<>(
