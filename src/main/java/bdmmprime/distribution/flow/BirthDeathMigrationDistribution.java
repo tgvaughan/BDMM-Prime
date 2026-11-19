@@ -311,7 +311,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                 "typeTraitSet", this.typeTraitSetInput.get(),
                 "typeLabel", this.typeLabelInput.get(),
                 "conditionOnSurvival", this.conditionOnSurvivalInput.get(),
-                "conditionOnRoot", this.conditionOnRootInput.get()
+                "conditionOnRoot", this.conditionOnRootInput.get(),
+                "relTolerance", 1e-10,
+                "absTolerance", Double.MIN_VALUE,
+                "maxIntegrationIntervalFraction", 1.0 / 20
         );
     }
 
@@ -510,6 +513,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             // we decrease the maximum allowed condition number
             this.maxConditioningNumber *= 0.7;
             Log.info("Max conditioning number decreased to " + this.maxConditioningNumber);
+
+            double bdmmPrimeLikelihood2 = this.bdmmPrime.calculateTreeLogLikelihood(dummyTree);
+            System.out.println(bdmmPrimeLikelihood2);
         }
 
         if (deviation > 1e-2) {

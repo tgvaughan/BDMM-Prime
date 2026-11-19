@@ -40,11 +40,19 @@ public class P0GeSystem extends P0System {
     boolean storeIntegrationResults = false;
     ContinuousOutputModel continuousOutputModel;
 
+    /**
+     * Integration intervals longer than this are recursively split in half by safeIntegrate.
+     */
+    private final double maxIntegrationIntervalLength;
+
 	public P0GeSystem(Parameterization parameterization,
                       double absoluteTolerance,
-                      double relativeTolerance) {
+                      double relativeTolerance,
+                      double maxIntegrationIntervalFraction) {
 
 	    super(parameterization, absoluteTolerance, relativeTolerance);
+
+        this.maxIntegrationIntervalLength = this.totalProcessLength * maxIntegrationIntervalFraction;
 	}
 
     /**
@@ -126,8 +134,8 @@ public class P0GeSystem extends P0System {
     /**
      * Perform the integration of PG with initial conds in pgScaled between to and from
      * Use an adaptive-step-size integrator
-     * "Safe" because it divides the integration interval in two
-     * if the interval is (arbitrarily) judged to be too big to give reliable results
+     * "Safe" because it divides the integration interval in two if it is longer than
+     * maxIntegrationIntervalLength, which is considered too big to give reliable results
      *
      * @param pgScaled
      * @param tStart
@@ -140,8 +148,7 @@ public class P0GeSystem extends P0System {
         if (Utils.equalWithPrecision(tEnd, tStart))
             return pgScaled;
 
-        //TODO make threshold a class field
-        if (totalProcessLength > 0 && Math.abs(tEnd - tStart) > totalProcessLength / 6) {
+        if (this.totalProcessLength > 0 && Math.abs(tEnd - tStart) > this.maxIntegrationIntervalLength) {
             pgScaled = safeIntegrate(pgScaled, tStart, tEnd + (tStart - tEnd) / 2);
             pgScaled = safeIntegrate(pgScaled, tEnd + (tStart - tEnd) / 2, tEnd);
         } else {
