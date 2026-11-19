@@ -19,6 +19,7 @@
 
 package bdmmprime.distribution.flow.utils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Stream;
@@ -63,10 +64,22 @@ public class Result<T> {
 
     /** Consumes the given stream of result objects and throws the first error encountered. */
     public static <T> void throwIfFailure(Stream<Result<T>> results) {
+        Result.getAllOrThrow(results);
+    }
+
+    /**
+     * Consumes the given stream of result objects and returns the unwrapped results. The stream is
+     * fully evaluated before the first error encountered is thrown, so no computation of a parallel
+     * stream keeps running in the background.
+     */
+    public static <T> List<T> getAllOrThrow(Stream<Result<T>> results) {
         List<Result<T>> resultList = results.toList();
+
+        List<T> unwrappedResults = new ArrayList<>(resultList.size());
         for (Result<T> result : resultList) {
-            result.getOrThrow();
+            unwrappedResults.add(result.getOrThrow());
         }
+        return unwrappedResults;
     }
 
     /** Unwraps the stored result or throws the stored error. */
