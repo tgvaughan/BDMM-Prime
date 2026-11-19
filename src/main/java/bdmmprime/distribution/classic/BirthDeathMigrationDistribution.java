@@ -125,6 +125,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             "If true, save results of ge(t) integration for use " +
                     "by other models.", false);
 
+    public Input<Double> maxIntegrationIntervalFractionInput = new Input<>("maxIntegrationIntervalFraction",
+            "The maximal length of a single ODE integration interval, relative to the total process length. " +
+                    "Longer intervals are recursively split in half. (default: 1/6)",
+            1.0 / 6);
+
     private int[] nodeStates;
 
     private final boolean debug = false;
@@ -172,6 +177,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         if (startTypePriorProbsInput.get().size() != parameterization.getNTypes())
             throw new RuntimeException("Error: dimension of equilibrium frequencies " +
                     "parameter must match number of types.");
+
+        if (this.maxIntegrationIntervalFractionInput.get() <= 0)
+            throw new RuntimeException("Error: maxIntegrationIntervalFraction must be positive.");
 
         int nLeaves = tree.getLeafNodeCount();
 
@@ -272,7 +280,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         }
 
         P0GeSystem system = new P0GeSystem(parameterization,
-                absoluteToleranceInput.get(), relativeToleranceInput.get());
+                absoluteToleranceInput.get(), relativeToleranceInput.get(),
+                this.maxIntegrationIntervalFractionInput.get());
 
         updateParallelizationThreshold();
 
@@ -941,7 +950,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
             PG = new P0GeSystem(parameterization,
                     absoluteToleranceInput.get(),
-                    relativeToleranceInput.get());
+                    relativeToleranceInput.get(),
+                    maxIntegrationIntervalFractionInput.get());
         }
 
         @Override
