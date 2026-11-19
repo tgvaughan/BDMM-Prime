@@ -387,6 +387,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             extinctionProbabilities = this.calculateExtinctionProbabilities(intervals);
             flow = this.calculateFlow(intervals, extinctionProbabilities);
         } catch (NumberIsTooSmallException | SingularMatrixException | IllegalStateException e) {
+            this.logFailure("flow integration", e);
             this.numFailedEvaluationsSinceReset++;
             this.resetCache();
             return this.fallBackToBDMMPrime(dummyTree);
@@ -411,6 +412,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                     extinctionProbabilities
             );
         } catch (CompletionException | SingularMatrixException | IllegalStateException exception) {
+            this.logFailure("tree traversal", exception);
+
             // the subtrees above the failure were not recalculated and no longer match their children
             this.subtreeLikelihoodCache.invalidate();
 
@@ -541,6 +544,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             return;
 
         double failureRate = 1.0 * this.numFailedEvaluationsSinceReset / this.numEvaluationsSinceReset;
+        Log.debug("Failure rate was " + failureRate + " over the last " + this.numEvaluationsSinceReset + " evaluations.");
 
         if (failureRate > 0.05) {
             Log.warning("Failure rate was " + failureRate + ". Consider using BDMM-Prime instead of BDMM-Flow.");
@@ -806,7 +810,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         for (int i = 0; i < likelihoodEdgeStart.result().length; i++) {
             if (likelihoodEdgeStart.result()[i] < 0) {
-                throw new IllegalStateException("Negative probability detected.");
+                throw new IllegalStateException(
+                        "Negative probability detected at node %d: %s".formatted(
+                                nodeNr, Arrays.toString(likelihoodEdgeStart.result())
+                        )
+                );
             }
         }
 
@@ -1060,6 +1068,32 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         }
 
         return this.parameterization.getTypeSet().getTypeIndex(nodeTypeName);
+    }
+
+    /**
+     * Logs the details of a failed evaluation at debug level.
+     *
+     * @param stage     the stage of the likelihood calculation in which the failure occurred.
+     * @param exception the exception that caused the failure.
+     */
+    private void logFailure(String stage, RuntimeException exception) {
+        String cause = exception.getCause() == null
+                ? ""
+                : " (caused by %s: %s)".formatted(
+                        exception.getCause().getClass().getSimpleName(), exception.getCause().getMessage()
+                );
+
+        Log.debug(
+                "Evaluation %d failed during %s [dirty parameterization: %b, max conditioning number: %.3g]: %s: %s%s".formatted(
+                        this.totalNumEvaluations,
+                        stage,
+                        this.parameterization.isDirtyCalculation(),
+                        this.maxConditioningNumber,
+                        exception.getClass().getSimpleName(),
+                        exception.getMessage(),
+                        cause
+                )
+        );
     }
 
     /**
