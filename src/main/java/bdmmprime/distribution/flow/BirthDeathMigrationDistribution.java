@@ -508,8 +508,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         if (deviation > 1e-3) {
             // we decrease the maximum allowed condition number
-            this.maxConditioningNumber *= 0.3;
-            Log.debug("Max conditioning number decreased to " + this.maxConditioningNumber);
+            this.maxConditioningNumber *= 0.7;
+            Log.info("Max conditioning number decreased to " + this.maxConditioningNumber);
         }
 
         if (deviation > 1e-2) {
