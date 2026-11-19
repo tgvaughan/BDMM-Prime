@@ -973,14 +973,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                         extinctionProbabilities
                     )), this.forkJoinPool
             );
-            likelihoodChild2 = this.calculateSubTreeLikelihood(
+            Result<double[]> resultLikelihoodChild2 = Result.of(() -> this.calculateSubTreeLikelihood(
                     child2,
                     timeEdgeEnd,
                     this.parameterization.getNodeTime(child2, this.finalSampleOffset),
                     flow,
                     extinctionProbabilities
-            );
+            ));
+
+            // wait for both subtrees before throwing any error so that no computation keeps running in the background
             likelihoodChild1 = futureLikelihoodChild1.join().getOrThrow();
+            likelihoodChild2 = resultLikelihoodChild2.getOrThrow();
         } else {
             likelihoodChild1 = this.calculateSubTreeLikelihood(
                     child1,

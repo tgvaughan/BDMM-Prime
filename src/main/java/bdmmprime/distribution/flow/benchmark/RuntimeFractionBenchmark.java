@@ -65,6 +65,7 @@ public class RuntimeFractionBenchmark {
 
     static final String EXECUTION_SAMPLE_EVENT = "jdk.ExecutionSample";
     static final String WALL_CLOCK_SAMPLER_NAME = "wall-clock-sampler";
+    static final String BENCHMARK_PACKAGE = RuntimeFractionBenchmark.class.getPackageName() + ".";
 
     /**
      * A tree prior implementation to profile.
@@ -225,6 +226,10 @@ public class RuntimeFractionBenchmark {
      */
     static Operation classifyFrames(List<String> classNames) {
         for (String className : classNames) {
+            // the benchmark harness shares the tree prior's package prefix but drives the whole chain
+            if (className.startsWith(BENCHMARK_PACKAGE))
+                continue;
+
             if (className.startsWith("bdmmprime.distribution.") || className.startsWith("bdmmprime.parameterization."))
                 return Operation.TREE_PRIOR;
 

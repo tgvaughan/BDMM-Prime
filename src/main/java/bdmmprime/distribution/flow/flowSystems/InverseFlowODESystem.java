@@ -22,6 +22,7 @@ package bdmmprime.distribution.flow.flowSystems;
 import bdmmprime.distribution.flow.extinctionSystem.ExtinctionProbabilities;
 import bdmmprime.distribution.flow.intervals.Interval;
 import bdmmprime.distribution.flow.intervals.IntervalODESystem;
+import bdmmprime.distribution.flow.utils.Result;
 import bdmmprime.distribution.flow.utils.Utils;
 import bdmmprime.parameterization.Parameterization;
 import org.apache.commons.math3.linear.*;
@@ -231,7 +232,7 @@ public class InverseFlowODESystem extends IntervalODESystem implements BaseFlowO
 
                 yield initialStates;
             }
-            case average_inverse -> intervals.stream().parallel().map(interval -> {
+            case average_inverse -> Result.getAllOrThrow(intervals.stream().parallel().map(interval -> Result.of(() -> {
                 double h = interval.end() - interval.start();
                 RealMatrix startA = this.buildSystemMatrix(interval.start() + bdmmprime.util.Utils.globalPrecisionThreshold);
                 RealMatrix quarterA = this.buildSystemMatrix(
@@ -256,7 +257,7 @@ public class InverseFlowODESystem extends IntervalODESystem implements BaseFlowO
                 RealMatrix inverse = MatrixUtils.inverse(averageInvX);
 
                 return new InitialState(array, inverse);
-            }).toList();
+            })));
         };
     }
 
@@ -295,7 +296,7 @@ public class InverseFlowODESystem extends IntervalODESystem implements BaseFlowO
     private void splitUpIntervals() {
         double logMaxConditionNumber = Math.log(this.maxConditionNumber);
 
-        List<Interval> newIntervals = this.intervals.stream().parallel().map((currentOldInterval) -> {
+        List<List<Interval>> subIntervalsPerInterval = Result.getAllOrThrow(this.intervals.stream().parallel().map((currentOldInterval) -> Result.of(() -> {
             double currentIntervalStart = currentOldInterval.start();
             List<Interval> subIntervals = new ArrayList<>();
 
@@ -351,7 +352,9 @@ public class InverseFlowODESystem extends IntervalODESystem implements BaseFlowO
             };
 
             return subIntervals;
-        }).flatMap(List::stream).collect(Collectors.toList());
+        })));
+
+        List<Interval> newIntervals = subIntervalsPerInterval.stream().flatMap(List::stream).collect(Collectors.toList());
 
         // update interval indices
 
