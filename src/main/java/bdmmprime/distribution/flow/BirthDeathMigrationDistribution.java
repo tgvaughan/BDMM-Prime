@@ -102,7 +102,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     public Input<Double> relativeToleranceInput = new Input<>(
             "relTolerance",
             "Relative tolerance for numerical integration.",
-            1e-8
+            1e-7
     );
 
     public Input<Double> absoluteToleranceInput = new Input<>(
@@ -492,6 +492,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         if (this.conditionOnRoot && this.tree.getRoot().isFake()) {
             // tree root is a sampled ancestor, but we're conditioning on a root birth.
             return true;
+        }
+
+        // check if there are negative branch lengths
+        for (Node node : this.tree.getNodesAsArray()) {
+            if (node.isRoot()) continue;
+
+            if (bdmmprime.util.Utils.greaterThanWithPrecision(node.getHeight(), node.getParent().getHeight())) {
+                // we found a negative branch
+                return true;
+            }
         }
 
         // all good :)
