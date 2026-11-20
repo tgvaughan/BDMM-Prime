@@ -187,6 +187,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private double absoluteTolerance;
     private double relativeTolerance;
 
+    // lower bound for the automatic reduction of the max conditioning number
+    private static final double MIN_MAX_CONDITIONING_NUMBER = 1e2;
+
     private double maxConditioningNumber;
     private boolean useLoucaPennellIntervals;
 
@@ -513,9 +516,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         }
 
         if (deviation > 1e-3) {
-            // we decrease the maximum allowed condition number
-            this.maxConditioningNumber *= 0.7;
-            Log.info("Max conditioning number decreased to " + this.maxConditioningNumber);
+            // we decrease the maximum allowed condition number, but not below the floor
+            if (this.maxConditioningNumber > MIN_MAX_CONDITIONING_NUMBER) {
+                this.maxConditioningNumber = Math.max(0.7 * this.maxConditioningNumber, MIN_MAX_CONDITIONING_NUMBER);
+                Log.info("Max conditioning number decreased to " + this.maxConditioningNumber);
+            }
 
             double bdmmPrimeLikelihood2 = this.bdmmPrime.calculateTreeLogLikelihood(dummyTree);
             System.out.println(bdmmPrimeLikelihood2);
