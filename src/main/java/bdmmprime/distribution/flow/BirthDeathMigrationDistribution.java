@@ -411,11 +411,18 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // consider different ways to condition the tree
 
         double conditionDensity = this.calculateConditionDensityFactor(extinctionProbabilities);
-        treeLikelihood /= conditionDensity;
 
-        // turn the likelihood into log likelihood and correct for scaling
+        if (!(conditionDensity > 0)) {
+            // the conditioning event has no (or an invalid) probability
+            return Double.NEGATIVE_INFINITY;
+        }
 
-        double logTreeLikelihood = Math.log(treeLikelihood) + this.logScalingFactors[root.getNr()];
+        // turn the likelihood into log likelihood, correct for scaling and divide by the condition density.
+        // the division happens in log space, since it can overflow for tiny survival probabilities.
+
+        double logTreeLikelihood = Math.log(treeLikelihood)
+                + this.logScalingFactors[root.getNr()]
+                - Math.log(conditionDensity);
 
         // convert from oriented to labeled tree likelihood
 
