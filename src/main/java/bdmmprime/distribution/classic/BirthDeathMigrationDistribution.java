@@ -408,9 +408,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             startTypePosteriorProbs[startType] = Math.exp(startTypePosteriorProbs[startType]);
         }
 
-        PrSN = PrSN.scalarMultiplyBy(1 / conditionDensity);
-
-        logP = PrSN.log();
+        // divide in log space, since 1 / conditionDensity can overflow for tiny survival probabilities
+        logP = PrSN.log() - Math.log(conditionDensity);
 
         // Convert from oriented to labeled tree probability density:
         int internalNodeCount = tree.getLeafNodeCount() - ((Tree) tree).getDirectAncestorNodeCount() - 1;
