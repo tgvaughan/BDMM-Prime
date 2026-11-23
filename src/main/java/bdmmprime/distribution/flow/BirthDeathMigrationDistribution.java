@@ -27,7 +27,6 @@ import bdmmprime.distribution.flow.intervals.Interval;
 import bdmmprime.distribution.flow.intervals.IntervalODESystem;
 import bdmmprime.distribution.flow.intervals.IntervalUtils;
 import bdmmprime.distribution.flow.utils.Result;
-import bdmmprime.distribution.flow.utils.SubtreeLikelihoodCache;
 import bdmmprime.distribution.flow.utils.Utils;
 import bdmmprime.parameterization.Parameterization;
 import beast.base.core.*;
@@ -155,16 +154,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             false
     );
 
-    public Input<Boolean> useSubtreeCachingInput = new Input<>(
-            "useSubtreeCaching",
-            "Whether to reuse the likelihoods of subtrees that did not change since the last calculation.",
-            true
-    );
-
     public Input<Boolean> useFlowCachingInput = new Input<>(
             "useFlowCaching",
             "Whether to reuse the extinction probabilities and the flow while the parameterization does not " +
-                    "change. Subtree caching only takes effect if this is enabled.",
+                    "change.",
             true
     );
 
@@ -201,21 +194,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private int minimalSubtreeSizeForParallelization;
 
     private ForkJoinPool forkJoinPool;
-    private double parallelizeNumUpdatesThreshold;
-
-    private boolean useSubtreeCaching;
-    private SubtreeLikelihoodCache subtreeLikelihoodCache;
-    private SubtreeLikelihoodCache.Fingerprint[] fingerprints;
-    private boolean[] needsUpdate;
-    private int[] numUpdatesInSubtree;
+    private int[] subtreeSizes;
+    private double parallelizeSubtreeSizeThreshold;
 
     private boolean useFlowCaching;
 
     private int numTypes;
 
-    private double[] logScalingFactorsEdgeEnd;
+    private double[] logScalingFactors;
     private boolean[] isRhoSampled;
-    private int[] traitSetLeafTypes;
 
     private int totalNumEvaluations = 0;
     private int numEvaluationsSinceReset = 0;
@@ -253,7 +240,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         this.useInverseFlow = this.useInverseFlowInput.get();
         this.maxConditioningNumber = this.maxConditioningNumberInput.get();
         this.useLoucaPennellIntervals = this.useLoucaPennellIntervalsInput.get();
-        this.useSubtreeCaching = this.useSubtreeCachingInput.get();
         this.useFlowCaching = this.useFlowCachingInput.get();
 
         // reset cache
@@ -262,11 +248,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         this.currentExtinctionProbabilities = null;
         this.storedFlow = null;
         this.currentFlow = null;
-
-        this.subtreeLikelihoodCache = new SubtreeLikelihoodCache(this.tree.getNodeCount());
-        this.fingerprints = new SubtreeLikelihoodCache.Fingerprint[this.tree.getNodeCount()];
-        this.needsUpdate = new boolean[this.tree.getNodeCount()];
-        this.numUpdatesInSubtree = new int[this.tree.getNodeCount()];
 
         // validate type label
 
@@ -296,11 +277,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         // initialize utils
 
-        this.logScalingFactorsEdgeEnd = new double[this.tree.getNodeCount()];
+        this.logScalingFactors = new double[this.tree.getNodeCount()];
         this.startTypePosteriorProbs = new double[this.numTypes];
         this.storedStartTypePosteriorProbs = new double[this.numTypes];
         this.initializeIsRhoSampled();
-        this.initializeTraitSetLeafTypes();
         this.forkJoinPool = new ForkJoinPool();
 
         // initialize bdmm prime as a fallback if we detect numerical issues
@@ -343,21 +323,29 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     }
 
     /**
-     * Initializes the traitSetLeafTypes array with the type of every leaf if the types are specified
-     * by a trait set. In contrast to the types stored in the tree, these cannot change.
+     * Initializes the `subtreeSizes` array with the number of nodes in the subtree of
+     * each node.
      */
-    private void initializeTraitSetLeafTypes() {
-        this.traitSetLeafTypes = null;
+    private void initializeSubtreeSizes() {
+        this.subtreeSizes = new int[this.tree.getNodeCount()];
+        this.initializeSubtreeSizes(this.tree.getRoot());
+        this.parallelizeSubtreeSizeThreshold = Math.max(
+                this.subtreeSizes[this.tree.getRoot().getNr()] * this.minimalProportionForParallelization,
+                this.minimalSubtreeSizeForParallelization
+        );
+    }
 
-        if (this.numTypes == 1 || this.typeTraitSet == null) return;
-
-        int[] leafTypes = new int[this.tree.getLeafNodeCount()];
-        for (int i = 0; i < leafTypes.length; i++) {
-            String nodeTypeName = this.typeTraitSet.getStringValue(this.tree.getNode(i).getID());
-            leafTypes[i] = this.parameterization.getTypeSet().getTypeIndex(nodeTypeName);
+    /**
+     * Initializes the `subtreeSizes` array with the number of nodes in the subtree of
+     * `node`.
+     */
+    private int initializeSubtreeSizes(Node node) {
+        int subtreeSize = 1;
+        for (Node child : node.getChildren()) {
+            subtreeSize += this.initializeSubtreeSizes(child);
         }
-
-        this.traitSetLeafTypes = leafTypes;
+        this.subtreeSizes[node.getNr()] = subtreeSize;
+        return subtreeSize;
     }
 
     /**
@@ -378,6 +366,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             return Double.NEGATIVE_INFINITY;
         }
 
+        // set up subtrees for parallelization
+
+        this.initializeSubtreeSizes();
+
         // set up intervals
 
         List<Interval> intervals = IntervalUtils.getIntervals(this.parameterization);
@@ -396,11 +388,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             return this.fallBackToBDMMPrime(dummyTree);
         }
 
-        // find the subtrees whose likelihood has to be recalculated
-
-        this.subtreeLikelihoodCache.invalidateIfFlowChanged(flow);
-        this.markSubtreesToUpdate();
-
         // recursively traverse the tree to calculate the root likelihood per state
 
         Node root = this.tree.getRoot();
@@ -416,10 +403,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             );
         } catch (CompletionException | SingularMatrixException | IllegalStateException exception) {
             this.logFailure("tree traversal", exception);
-
-            // the subtrees above the failure were not recalculated and no longer match their children
-            this.subtreeLikelihoodCache.invalidate();
-
             this.numFailedEvaluationsSinceReset++;
             return this.fallBackToBDMMPrime(dummyTree);
         }
@@ -456,7 +439,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // the division happens in log space, since it can overflow for tiny survival probabilities.
 
         double logTreeLikelihood = Math.log(treeLikelihood)
-                + this.subtreeLikelihoodCache.getLogScalingFactor(root.getNr())
+                + this.logScalingFactors[root.getNr()]
                 - Math.log(conditionDensity);
 
         // convert from oriented to labeled tree likelihood
@@ -670,85 +653,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     }
 
     /**
-     * Marks the nodes whose subtree likelihood has to be recalculated. These are the nodes that
-     * changed since their likelihood was cached and all of their ancestors.
-     */
-    private void markSubtreesToUpdate() {
-        Node root = this.tree.getRoot();
-        this.markSubtreeToUpdate(root, 0);
-
-        this.parallelizeNumUpdatesThreshold = Math.max(
-                this.numUpdatesInSubtree[root.getNr()] * this.minimalProportionForParallelization,
-                this.minimalSubtreeSizeForParallelization
-        );
-    }
-
-    /**
-     * Marks the nodes in the subtree of the given node whose subtree likelihood has to be recalculated.
-     *
-     * @return the number of marked nodes in the subtree.
-     */
-    private int markSubtreeToUpdate(Node node, double timeEdgeStart) {
-        double timeEdgeEnd = this.parameterization.getNodeTime(node, this.finalSampleOffset);
-
-        int numUpdates = 0;
-        for (Node child : node.getChildren()) {
-            // direct ancestors are handled as part of their parent
-            if (child.isDirectAncestor()) continue;
-
-            numUpdates += this.markSubtreeToUpdate(child, timeEdgeEnd);
-        }
-
-        int nodeNr = node.getNr();
-        SubtreeLikelihoodCache.Fingerprint fingerprint = this.createFingerprint(node, timeEdgeStart, timeEdgeEnd);
-
-        boolean needsUpdate = !this.useSubtreeCaching
-                || 0 < numUpdates
-                || !this.subtreeLikelihoodCache.isValid(nodeNr, fingerprint);
-        if (needsUpdate) {
-            numUpdates++;
-        }
-
-        this.fingerprints[nodeNr] = fingerprint;
-        this.needsUpdate[nodeNr] = needsUpdate;
-        this.numUpdatesInSubtree[nodeNr] = numUpdates;
-
-        return numUpdates;
-    }
-
-    /**
-     * Collects everything the subtree likelihood of the given node depends on besides the flow and
-     * the subtree likelihoods of its children.
-     */
-    private SubtreeLikelihoodCache.Fingerprint createFingerprint(Node node, double timeEdgeStart, double timeEdgeEnd) {
-        if (node.isLeaf()) {
-            return new SubtreeLikelihoodCache.Fingerprint(timeEdgeStart, timeEdgeEnd, -1, -1, this.getNodeType(node));
-        }
-
-        Node child1 = node.getChild(0);
-        Node child2 = node.getChild(1);
-
-        int nodeType = -1;
-        if (child1.isDirectAncestor()) {
-            nodeType = this.getNodeType(child1);
-        } else if (child2.isDirectAncestor()) {
-            nodeType = this.getNodeType(child2);
-        }
-
-        return new SubtreeLikelihoodCache.Fingerprint(
-                timeEdgeStart, timeEdgeEnd, child1.getNr(), child2.getNr(), nodeType
-        );
-    }
-
-    /**
-     * Returns the number of nodes whose subtree likelihood had to be recalculated in the most
-     * recent tree traversal.
-     */
-    int getNumUpdatedNodes() {
-        return this.numUpdatesInSubtree[this.tree.getRoot().getNr()];
-    }
-
-    /**
      * Calculates the probability density factor due to the way the tree is conditioned.
      * <p>
      * See Tanja Stadler, How Can We Improve Accuracy of Macroevolutionary Rate Estimates?,
@@ -792,7 +696,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
     /**
      * Calculates the per-type likelihood of the subtree of the given node including the edge leading to the
-     * node. The likelihood is taken from the cache if the subtree does not have to be recalculated.
+     * node.
      */
     private double[] calculateSubTreeLikelihood(
             Node node,
@@ -801,12 +705,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             BaseFlow flow,
             ExtinctionProbabilities extinctionProbabilities
     ) {
-        int nodeNr = node.getNr();
-
-        if (!this.needsUpdate[nodeNr]) {
-            return this.subtreeLikelihoodCache.getLikelihood(nodeNr);
-        }
-
         double[] likelihoodEdgeEnd;
 
         if (node.isLeaf()) {
@@ -829,19 +727,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             if (likelihoodEdgeStart.result()[i] < 0) {
                 throw new IllegalStateException(
                         "Negative probability detected at node %d: %s".formatted(
-                                nodeNr, Arrays.toString(likelihoodEdgeStart.result())
+                                node.getNr(), Arrays.toString(likelihoodEdgeStart.result())
                         )
                 );
             }
         }
 
-        this.subtreeLikelihoodCache.put(
-                nodeNr,
-                this.fingerprints[nodeNr],
-                likelihoodEdgeStart.result(),
-                this.logScalingFactorsEdgeEnd[nodeNr] + likelihoodEdgeStart.logScalingFactor()
-        );
-
+        this.logScalingFactors[node.getNr()] += likelihoodEdgeStart.logScalingFactor();
         return likelihoodEdgeStart.result();
     }
 
@@ -896,7 +788,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             }
         }
 
-        this.logScalingFactorsEdgeEnd[node.getNr()] = Utils.rescale(likelihoodEdgeEnd);
+        this.logScalingFactors[node.getNr()] = Utils.rescale(likelihoodEdgeEnd);
 
         return likelihoodEdgeEnd;
     }
@@ -966,10 +858,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                     * likelihoodChild[daNodeType];
         }
 
-        this.logScalingFactorsEdgeEnd[node.getNr()] = Utils.rescale(
-                likelihoodEdgeEnd,
-                this.subtreeLikelihoodCache.getLogScalingFactor(child.getNr())
-        );
+        this.logScalingFactors[node.getNr()] = Utils.rescale(likelihoodEdgeEnd, this.logScalingFactors[child.getNr()]);
 
         return likelihoodEdgeEnd;
     }
@@ -993,8 +882,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         double[] likelihoodChild1;
         double[] likelihoodChild2;
 
-        if (this.parallelize && this.numUpdatesInSubtree[child1.getNr()] > this.parallelizeNumUpdatesThreshold
-                && this.numUpdatesInSubtree[child2.getNr()] > this.parallelizeNumUpdatesThreshold) {
+        if (this.parallelize && this.subtreeSizes[child1.getNr()] > this.parallelizeSubtreeSizeThreshold
+                && this.subtreeSizes[child2.getNr()] > this.parallelizeSubtreeSizeThreshold) {
             CompletableFuture<Result<double[]>> futureLikelihoodChild1 = CompletableFuture.supplyAsync(() ->
                     Result.of(() -> this.calculateSubTreeLikelihood(
                         child1,
@@ -1051,10 +940,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             }
         }
 
-        this.logScalingFactorsEdgeEnd[node.getNr()] = Utils.rescale(
+        this.logScalingFactors[node.getNr()] = Utils.rescale(
                 likelihoodEdgeEnd,
-                this.subtreeLikelihoodCache.getLogScalingFactor(child1.getNr())
-                        + this.subtreeLikelihoodCache.getLogScalingFactor(child2.getNr())
+                this.logScalingFactors[child1.getNr()] + this.logScalingFactors[child2.getNr()]
         );
 
         return likelihoodEdgeEnd;
@@ -1071,17 +959,17 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             return 0;
         }
 
-        if (this.traitSetLeafTypes != null) {
-            return this.traitSetLeafTypes[node.getNr()];
-        }
-
         String nodeTypeName;
 
-        Object metaData = node.getMetaData(this.typeLabel);
-        if (metaData instanceof Double) {
-            nodeTypeName = String.valueOf(Math.round((double) metaData));
-        } else {
-            nodeTypeName = metaData.toString();
+        if (this.typeTraitSet != null)
+            nodeTypeName = this.typeTraitSet.getStringValue(node.getID());
+        else {
+            Object metaData = node.getMetaData(this.typeLabel);
+            if (metaData instanceof Double) {
+                nodeTypeName = String.valueOf(Math.round((double) metaData));
+            } else {
+                nodeTypeName = metaData.toString();
+            }
         }
 
         return this.parameterization.getTypeSet().getTypeIndex(nodeTypeName);
@@ -1140,7 +1028,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     public void store() {
         super.store();
         System.arraycopy(this.startTypePosteriorProbs, 0, this.storedStartTypePosteriorProbs, 0, this.numTypes);
-        this.subtreeLikelihoodCache.store();
     }
 
     @Override
@@ -1162,7 +1049,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         this.currentExtinctionProbabilities = this.storedExtinctionProbabilities;
         this.currentFlow = this.storedFlow;
-        this.subtreeLikelihoodCache.restore();
 
         double[] tmp = this.startTypePosteriorProbs;
         this.startTypePosteriorProbs = this.storedStartTypePosteriorProbs;
@@ -1174,7 +1060,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         this.storedExtinctionProbabilities = null;
         this.currentFlow = null;
         this.storedFlow = null;
-        this.subtreeLikelihoodCache.clear();
     }
 
     /**

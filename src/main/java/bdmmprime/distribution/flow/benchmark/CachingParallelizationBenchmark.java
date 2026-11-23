@@ -29,8 +29,7 @@ import java.util.StringJoiner;
 
 /**
  * Standalone entry point that times short MCMC chains of the BEAST analyses with the flow tree
- * prior run with and without parallelization, flow caching and subtree caching, writing the
- * runtimes to CSV.
+ * prior run with and without parallelization and flow caching, writing the runtimes to CSV.
  * Only the tree prior settings change between configurations; the tree likelihood always uses one
  * thread per core.
  * <p>
@@ -46,14 +45,13 @@ public class CachingParallelizationBenchmark {
     /**
      * A combination of tree prior settings to time.
      */
-    record Configuration(String method, boolean parallelize, boolean useFlowCaching, boolean useSubtreeCaching) {
+    record Configuration(String method, boolean parallelize, boolean useFlowCaching) {
     }
 
     static final List<Configuration> CONFIGURATIONS = List.of(
-            new Configuration("No parallelization, no caching", false, false, false),
-            new Configuration("Parallelization, no caching", true, false, false),
-            new Configuration("Parallelization and caching, no subtree caching", true, true, false),
-            new Configuration("Parallelization and caching", true, true, true)
+            new Configuration("No parallelization, no caching", false, false),
+            new Configuration("Parallelization, no caching", true, false),
+            new Configuration("Parallelization and caching", true, true)
     );
 
     static void main(String[] args) throws Exception {
@@ -89,7 +87,6 @@ public class CachingParallelizationBenchmark {
         joiner.add("method");
         joiner.add("parallelized");
         joiner.add("flow_caching");
-        joiner.add("subtree_caching");
         joiner.add("replicate");
         joiner.add("chain_length");
         joiner.add("runtime");
@@ -105,7 +102,6 @@ public class CachingParallelizationBenchmark {
         Map<String, String> treePriorInputs = new LinkedHashMap<>(BeastChainRunner.DEFAULT_TREE_PRIOR_INPUTS);
         treePriorInputs.put("parallelize", Boolean.toString(configuration.parallelize()));
         treePriorInputs.put("useFlowCaching", Boolean.toString(configuration.useFlowCaching()));
-        treePriorInputs.put("useSubtreeCaching", Boolean.toString(configuration.useSubtreeCaching()));
 
         MCMC mcmc = BeastChainRunner.loadChain(xmlFile, treePriorInputs, chainLength, seed);
         return BeastChainRunner.runChain(mcmc);
@@ -121,7 +117,6 @@ public class CachingParallelizationBenchmark {
         joiner.add("\"%s\"".formatted(configuration.method()));
         joiner.add(Boolean.toString(configuration.parallelize()));
         joiner.add(Boolean.toString(configuration.useFlowCaching()));
-        joiner.add(Boolean.toString(configuration.useSubtreeCaching()));
         joiner.add(Integer.toString(replicate));
         joiner.add(Long.toString(dataset.chainLength()));
         joiner.add(Double.toString(duration / 1e9));

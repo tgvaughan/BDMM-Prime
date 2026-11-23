@@ -68,7 +68,7 @@ public class BeastChainRunner {
 
     /**
      * Tree prior inputs shared by all runs: the flow engine with the inverse flow and the average
-     * inverse preconditioner ("IF AIP"), parallelized and with all caching enabled.
+     * inverse preconditioner ("IF AIP"), parallelized and with flow caching enabled.
      */
     static final Map<String, String> DEFAULT_TREE_PRIOR_INPUTS = Map.of(
             "engine", "flow",
@@ -77,7 +77,6 @@ public class BeastChainRunner {
             "maxConditioningNumber", "1e8",
             "useLoucaPennellIntervals", "false",
             "parallelize", "true",
-            "useSubtreeCaching", "true",
             "useFlowCaching", "true"
     );
 

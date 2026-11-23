@@ -179,17 +179,10 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
             false
     );
 
-    public Input<Boolean> useSubtreeCachingInput = new Input<>(
-            "useSubtreeCaching",
-            "Flow engine only: whether to reuse the likelihoods of subtrees that did not change since the " +
-                    "last calculation.",
-            true
-    );
-
     public Input<Boolean> useFlowCachingInput = new Input<>(
             "useFlowCaching",
             "Flow engine only: whether to reuse the extinction probabilities and the flow while the " +
-                    "parameterization does not change. Subtree caching only takes effect if this is enabled.",
+                    "parameterization does not change.",
             true
     );
 
@@ -253,7 +246,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
         forward(impl.minimalSubtreeSizeForParallelizationInput, this.minimalSubtreeSizeForParallelizationInput, impl);
         forward(impl.maxConditioningNumberInput, this.maxConditioningNumberInput, impl);
         forward(impl.useLoucaPennellIntervalsInput, this.useLoucaPennellIntervalsInput, impl);
-        forward(impl.useSubtreeCachingInput, this.useSubtreeCachingInput, impl);
         forward(impl.useFlowCachingInput, this.useFlowCachingInput, impl);
 
         impl.initAndValidate();
