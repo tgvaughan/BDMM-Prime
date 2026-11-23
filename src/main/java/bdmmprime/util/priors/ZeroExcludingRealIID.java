@@ -36,7 +36,7 @@ public class ZeroExcludingRealIID extends IID<RealVector<NonNegativeReal>, Scala
     public ZeroExcludingRealIID() { super(); }
 
     public ZeroExcludingRealIID(RealVector<? extends NonNegativeReal> param, ScalarDistribution<?, Double> dist) {
-        initByName("param", param, "dist", dist);
+        initByName("param", param, "distr", dist);
     }
 
     @Override
@@ -52,17 +52,19 @@ public class ZeroExcludingRealIID extends IID<RealVector<NonNegativeReal>, Scala
     }
 
     @Override
-    protected double calcLogP(Double... value) {
+    public double calculateLogP() {
         refresh(); // this make sure distribution parameters are updated if they are sampled during MCMC
 
-        if (value == null)
+        if (param == null)
             throw new IllegalArgumentException("IID requires param, but it is null ! ");
-        if (value.length != dimension())
+        if (param.size() != dimension())
             throw new IllegalArgumentException("Values dimension != parameter dimension !");
-        double logP = 0.0;
+
+        logP = 0.0;
         for (int idx : indices) {
-            logP += dist.density(value[idx]);
+            logP += dist.logDensity(param.get(idx));
         }
+
         return logP;
     }
 
