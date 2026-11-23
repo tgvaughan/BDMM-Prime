@@ -233,25 +233,28 @@ public class InverseFlowODESystem extends IntervalODESystem implements BaseFlowO
                 yield initialStates;
             }
             case average_inverse -> Result.getAllOrThrow(intervals.stream().parallel().map(interval -> Result.of(() -> {
-                // we start at the approximate inverse of the inverse flow at the interval midpoint, such that the
-                // inverse flow is close to the identity there and equally well conditioned at both interval ends.
-                // the integral of the system matrix over the first half of the interval uses Simpson's rule
-
                 double h = interval.end() - interval.start();
                 RealMatrix startA = this.buildSystemMatrix(interval.start() + bdmmprime.util.Utils.globalPrecisionThreshold);
                 RealMatrix quarterA = this.buildSystemMatrix(
                         interval.start() + (interval.end() - interval.start()) / 4.0
                 );
                 RealMatrix midA = this.buildSystemMatrix((interval.start() + interval.end()) / 2.0);
+                RealMatrix endA = this.buildSystemMatrix(interval.end() - bdmmprime.util.Utils.globalPrecisionThreshold);
 
+                RealMatrix startInvX = MatrixUtils.createRealIdentityMatrix(this.parameterization.getNTypes());
                 RealMatrix midInvX = Utils.expm(
                         startA.add(quarterA.scalarMultiply(4)).add(midA).scalarMultiply(-h / 2.0 / 6.0)
                 );
+                RealMatrix endInvX = Utils.expm(
+                        startA.add(midA.scalarMultiply(4)).add(endA).scalarMultiply(-h / 6.0)
+                );
+
+                RealMatrix averageInvX = startInvX.add(midInvX.scalarMultiply(4)).add(endInvX).scalarMultiply(1.0 / 6.0);
 
                 double[] array = new double[this.parameterization.getNTypes() * this.parameterization.getNTypes()];
-                Utils.fillArray(midInvX, array);
+                Utils.fillArray(averageInvX, array);
 
-                RealMatrix inverse = MatrixUtils.inverse(midInvX);
+                RealMatrix inverse = MatrixUtils.inverse(averageInvX);
 
                 return new InitialState(array, inverse);
             })));
