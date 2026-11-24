@@ -412,7 +412,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         double conditionDensity = this.calculateConditionDensityFactor(extinctionProbabilities);
 
-        if (!(conditionDensity > 0)) {
+        if (conditionDensity <= 0 || Double.isNaN(conditionDensity)) {
             // the conditioning event has no (or an invalid) probability
             return Double.NEGATIVE_INFINITY;
         }

@@ -287,7 +287,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
 
         double conditionDensity = 0.0;
-        double[] survival = this.survivalAtOrigin;
         if (conditionOnRootInput.get()) {
 
             int intervalIndex = parameterization.getIntervalIndex(0);
@@ -301,21 +300,21 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                         continue;
 
                    conditionDensity += rate* startTypePriorProbsInput.get().get(type1)
-                           * survival[type1]
-                           * survival[type2];
+                           * this.survivalAtOrigin[type1]
+                           * this.survivalAtOrigin[type2];
                 }
             }
         } else if (conditionOnSurvivalInput.get()) {
 
             for (int type = 0; type < parameterization.getNTypes(); type++)
                 conditionDensity += startTypePriorProbsInput.get().get(type)
-                        * survival[type];
+                        * this.survivalAtOrigin[type];
 
         } else {
             conditionDensity = 1.0;
         }
 
-        if (conditionDensity <= 0)
+        if (conditionDensity < 0)
             return Double.NEGATIVE_INFINITY;
 
         P0GeState finalP0Ge;
@@ -729,7 +728,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                     pInitialConditions[indicesSortedByLeafTime[i]] =
                             pInitialConditions[indicesSortedByLeafTime[i + 1]];
                 } else {
-                    this.storeExtinctionProbabilities(survival, pInitialConditions[indicesSortedByLeafTime[i]]);
+                    for (int type = 0; type < p0System.nTypes; type++)
+                        pInitialConditions[indicesSortedByLeafTime[i]][type] = 1.0 - survival[type];
                 }
                 continue;
             }
@@ -740,43 +740,29 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             // as for the Ge calculation.
             int prevIndex = parameterization.getIntervalIndex(tprev);
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
-                this.applyRhoSampling(survival, parameterization.getRhoValues()[prevIndex]);
+                for (int type = 0; type < p0System.nTypes; type++)
+                    survival[type] += parameterization.getRhoValues()[prevIndex][type] * (1.0 - survival[type]);
             }
 
             integrateP0(tprev, t, survival, p0System);
 
-            this.storeExtinctionProbabilities(survival, pInitialConditions[indicesSortedByLeafTime[i]]);
+            for (int type = 0; type < p0System.nTypes; type++)
+                pInitialConditions[indicesSortedByLeafTime[i]][type] = 1.0 - survival[type];
             tprev = t;
         }
 
         if (Utils.greaterThanWithPrecision(tprev , 0.0)) {
             int prevIndex = parameterization.getIntervalIndex(tprev);
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
-                this.applyRhoSampling(survival, parameterization.getRhoValues()[prevIndex]);
+                for (int type = 0; type < p0System.nTypes; type++)
+                    survival[type] += parameterization.getRhoValues()[prevIndex][type] * (1.0 - survival[type]);
             }
         }
 
         integrateP0(tprev, 0, survival, p0System);
-        this.storeExtinctionProbabilities(survival, pInitialConditions[leafCount]);
+        for (int type = 0; type < p0System.nTypes; type++)
+            pInitialConditions[leafCount][type] = 1.0 - survival[type];
         this.survivalAtOrigin = survival;
-    }
-
-    /**
-     * Writes the extinction probabilities 1 - q for the given survival probabilities q into target.
-     */
-    private void storeExtinctionProbabilities(double[] survival, double[] target) {
-        for (int type = 0; type < survival.length; type++) {
-            target[type] = 1.0 - survival[type];
-        }
-    }
-
-    /**
-     * Updates the survival probabilities in place for a rho sampling event with the given sampling probabilities.
-     */
-    private void applyRhoSampling(double[] survival, double[] rho) {
-        for (int type = 0; type < survival.length; type++) {
-            survival[type] += rho[type] * (1.0 - survival[type]);
-        }
     }
 
     /**
@@ -798,7 +784,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             }
 
             if (Utils.greaterThanWithPrecision(nextTime, tEnd)) {
-                this.applyRhoSampling(survival, system.rho[thisInterval - 1]);
+                for (int i = 0; i < system.nTypes; i++)
+                    survival[i] += system.rho[thisInterval - 1][i] * (1.0 - survival[i]);
             }
 
             thisTime = nextTime;
