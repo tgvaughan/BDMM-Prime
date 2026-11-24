@@ -1017,21 +1017,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         }
     }
 
-    /**
-     * Computes the per-interval constants of the analytical solution. The constants B and B + 1 are expressed
-     * in terms of the survival probability q = 1 - p at the interval end (after rho sampling), which is stored in
-     * survivalAtIntervalEnd. This way, B + 1 keeps its relative accuracy when p is close to 1.
-     */
-    private void computeConstants(double[] A, double[] B, double[] Bplus1, double[] survivalAtIntervalEnd) {
+    private void computeConstants(double[] A, double[] B, double[] Bplus1) {
 
         for (int i=parameterization.getTotalIntervalCount()-1; i>=0; i--) {
 
-            double q_i_prev;
+            double p_i_prev;
             if (i + 1 < parameterization.getTotalIntervalCount()) {
-                q_i_prev = this.computeSurvivalProbability(i + 1, A[i + 1], survivalAtIntervalEnd[i + 1],
-                        this.parameterization.getIntervalEndTimes()[i]);
+                p_i_prev = Math.exp(get_log_p_i(parameterization.getBirthRates()[i+1][0],
+                        parameterization.getDeathRates()[i+1][0],
+                        parameterization.getSamplingRates()[i+1][0],
+                        A[i+1], B[i+1], Bplus1[i+1],
+                        parameterization.getIntervalEndTimes()[i+1],
+                        parameterization.getIntervalEndTimes()[i]));
             } else {
-                q_i_prev = 0.0;
+                p_i_prev = 1.0;
             }
 
             double rho_i = parameterization.getRhoValues()[i][0];
@@ -1049,51 +1048,16 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                                 birthRate-deathRate-samplingRate = 0 and samplingRate = 0.\s
                                 (If this is the starting state, try perturbing one of these parameters.)""");
 
-            survivalAtIntervalEnd[i] = q_i_prev + rho_i * (1.0 - q_i_prev);
-
-            double scaled_lambda_i = (1 - 2 * survivalAtIntervalEnd[i]) * lambda_i;
+            double scaled_lambda_i = (2 * (1 - rho_i) * p_i_prev - 1) * lambda_i;
             B[i] = (-scaled_lambda_i + mu_i + psi_i)/A[i];
 
-            Bplus1[i] = (this.computeAMinusNetGrowthRate(A[i], lambda_i - mu_i - psi_i, lambda_i, psi_i)
-                    + 2 * lambda_i * survivalAtIntervalEnd[i]) / A[i];
+            Bplus1[i] = (A[i] - (scaled_lambda_i - mu_i - psi_i)) / A[i];
+            if (Bplus1[i] <= 0.0) {
+                // In this case rounding errors can cause the usual expression
+                // to evaluate to 0, so we handle it specially.
+                Bplus1[i] = Math.exp(Math.log(Asq - (scaled_lambda_i - mu_i - psi_i)*A[i]) - Math.log(Asq));
+            }
         }
-    }
-
-    /**
-     * Computes the survival probability q = 1 - p at time t within the given interval, from the survival
-     * probability at the interval end (after rho sampling). With r = lambda - mu - psi, F = exp(-A (t_i - t))
-     * and qEnd the survival probability at the interval end,
-     * <p>
-     * q(t) = (2 psi (1 - F) + qEnd ((A + r) + (A - r) F)) / ((A - r) + (A + r) F + 2 lambda qEnd (1 - F)).
-     * <p>
-     * All terms are non-negative, so q keeps its relative accuracy even when it is tiny, unlike 1 - p.
-     */
-    private double computeSurvivalProbability(int interval, double A, double survivalAtIntervalEnd, double t) {
-        double lambda = this.parameterization.getBirthRates()[interval][0];
-        double psi = this.parameterization.getSamplingRates()[interval][0];
-        double netGrowthRate = lambda - this.parameterization.getDeathRates()[interval][0] - psi;
-
-        double aMinusR = this.computeAMinusNetGrowthRate(A, netGrowthRate, lambda, psi);
-        double aPlusR = this.computeAMinusNetGrowthRate(A, -netGrowthRate, lambda, psi);
-
-        double exponent = -A * (this.parameterization.getIntervalEndTimes()[interval] - t);
-        double decay = Math.exp(exponent);
-        double oneMinusDecay = -Math.expm1(exponent);
-
-        double numerator = 2 * psi * oneMinusDecay + survivalAtIntervalEnd * (aPlusR + aMinusR * decay);
-        if (numerator == 0.0)
-            return 0.0;
-
-        double denominator = aMinusR + aPlusR * decay + 2 * lambda * survivalAtIntervalEnd * oneMinusDecay;
-        return numerator / denominator;
-    }
-
-    /**
-     * Returns A - r, where A = sqrt(r^2 + 4 lambda psi), using the form that avoids cancellation for r > 0.
-     * Passing -r instead of r gives A + r.
-     */
-    private double computeAMinusNetGrowthRate(double A, double netGrowthRate, double lambda, double psi) {
-        return netGrowthRate > 0 ? 4 * lambda * psi / (A + netGrowthRate) : A - netGrowthRate;
     }
 
     private double getSingleTypeTreeLogLikelihood() {
@@ -1101,9 +1065,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         double[] A = new double[parameterization.getTotalIntervalCount()];
         double[] B = new double[parameterization.getTotalIntervalCount()];
         double[] Bplus1 = new double[parameterization.getTotalIntervalCount()];
-        double[] survivalAtIntervalEnd = new double[parameterization.getTotalIntervalCount()];
 
-        this.computeConstants(A, B, Bplus1, survivalAtIntervalEnd);
+        computeConstants(A, B, Bplus1);
 
         double logP;
 
@@ -1128,15 +1091,19 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         if (conditionOnSurvivalInput.get() || conditionOnRootInput.get()) {
             int i = parameterization.getIntervalIndex(0.0);
-            double survival = this.computeSurvivalProbability(i, A[i], survivalAtIntervalEnd[i], 0.0);
+            double p_i = Math.exp(get_log_p_i(parameterization.getBirthRates()[i][0],
+                    parameterization.getDeathRates()[i][0],
+                    parameterization.getSamplingRates()[i][0],
+                    A[i], B[i], Bplus1[i],
+                    parameterization.getIntervalEndTimes()[i], 0.0));
 
-            if (survival <= 0)
+            if (p_i == 1)
                 return Double.NEGATIVE_INFINITY; // Following BDSKY's behaviour
 
             if (conditionOnRootInput.get())
-                logP -= 2.0 * Math.log(survival);
+                logP -= 2.0 * Math.log(1.0 - p_i);
             else
-                logP -= Math.log(survival);
+                logP -= Math.log(1.0 - p_i);
         }
 
         // Account for possible label permutations
