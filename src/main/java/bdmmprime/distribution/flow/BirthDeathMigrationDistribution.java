@@ -411,11 +411,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // consider different ways to condition the tree
 
         double conditionDensity = this.calculateConditionDensityFactor(extinctionProbabilities);
-        treeLikelihood /= conditionDensity;
+
+        if (conditionDensity <= 0 || Double.isNaN(conditionDensity)) {
+            // the conditioning event has no (or an invalid) probability
+            return Double.NEGATIVE_INFINITY;
+        }
 
         // turn the likelihood into log likelihood and correct for scaling
 
-        double logTreeLikelihood = Math.log(treeLikelihood) + this.logScalingFactors[root.getNr()];
+        double logTreeLikelihood = Math.log(treeLikelihood) + this.logScalingFactors[root.getNr()] - Math.log(conditionDensity);
 
         // convert from oriented to labeled tree likelihood
 
@@ -537,9 +541,11 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         int endInterval = this.parameterization.getTotalIntervalCount() - 1;
 
+        // the system state is the survival probability 1 - p0
+
         double[] initialState = new double[this.parameterization.getNTypes()];
         for (int i = 0; i < this.parameterization.getNTypes(); i++) {
-            initialState[i] = 1 - this.parameterization.getRhoValues()[endInterval][i];
+            initialState[i] = this.parameterization.getRhoValues()[endInterval][i];
         }
 
         List<double[]> initialStates = List.of(initialState);
@@ -623,7 +629,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         double conditionDensity = 0.0;
 
         if (this.conditionOnRoot) {
-            double[] extinctionAtRoot = extinctionProbabilities.getProbability(0);
+            double[] survivalAtRoot = extinctionProbabilities.getSurvivalProbability(0);
 
             int startInterval = this.parameterization.getIntervalIndex(0);
 
@@ -634,15 +640,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                             : this.parameterization.getCrossBirthRates()[startInterval][type1][type2];
 
                     conditionDensity += rate * this.startTypePriorProbs.get(type1)
-                            * (1 - extinctionAtRoot[type1])
-                            * (1 - extinctionAtRoot[type2]);
+                            * survivalAtRoot[type1]
+                            * survivalAtRoot[type2];
                 }
             }
         } else if (this.conditionOnSurvival) {
-            double[] extinctionAtRoot = extinctionProbabilities.getProbability(0);
+            double[] survivalAtRoot = extinctionProbabilities.getSurvivalProbability(0);
 
             for (int type = 0; type < this.numTypes; type++) {
-                conditionDensity += this.startTypePriorProbs.get(type) * (1 - extinctionAtRoot[type]);
+                conditionDensity += this.startTypePriorProbs.get(type) * survivalAtRoot[type];
             }
         } else {
             conditionDensity = 1.0;

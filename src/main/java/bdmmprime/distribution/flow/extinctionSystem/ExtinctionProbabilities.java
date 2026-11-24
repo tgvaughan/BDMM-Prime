@@ -23,7 +23,8 @@ import org.apache.commons.math3.ode.ContinuousOutputModel;
 
 /**
  * This class is a lightweight wrapper of the integration output of ExtinctionProbabilitiesODESystem. It allows
- * to conveniently query the extinction probability at a given time.
+ * to conveniently query the extinction probability p0 or the survival probability 1 - p0 at a given time. The
+ * survival probability is stored directly, so it keeps its relative accuracy even when p0 is close to 1.
  */
 public class ExtinctionProbabilities {
 
@@ -41,6 +42,14 @@ public class ExtinctionProbabilities {
      * Note that this method is thread-safe.
      */
     public double[] getProbability(ContinuousOutputModel output, double time) {
+        return this.convertToExtinctionProbability(this.getSurvivalProbability(output, time));
+    }
+
+    /**
+     * Returns the survival probability (one minus the extinction probability) for the given output model at the
+     * given time. Note that this method is thread-safe.
+     */
+    public double[] getSurvivalProbability(ContinuousOutputModel output, double time) {
         double[] state = new double[this.n];
 
         synchronized (output) {
@@ -82,7 +91,7 @@ public class ExtinctionProbabilities {
             }
         }
 
-        return state;
+        return this.convertToExtinctionProbability(state);
     }
 
     /**
@@ -93,6 +102,16 @@ public class ExtinctionProbabilities {
      */
     public double[] getProbability(double time) {
         return this.getProbability(this.getOutputModel(time), time);
+    }
+
+    /**
+     * Returns the survival probability (one minus the extinction probability) at the given time.
+     * Note that this method is thread-safe.
+     * @param time the time.
+     * @return the survival probability at the given time.
+     */
+    public double[] getSurvivalProbability(double time) {
+        return this.getSurvivalProbability(this.getOutputModel(time), time);
     }
 
     /**
@@ -118,6 +137,19 @@ public class ExtinctionProbabilities {
      */
     public void validateProbabilities(boolean validateProbabilities) {
         this.validateProbabilities = validateProbabilities;
+    }
+
+    /**
+     * Returns a new array with the extinction probabilities that correspond to the given survival probabilities.
+     */
+    private double[] convertToExtinctionProbability(double[] survivalProbability) {
+        double[] extinctionProbability = new double[this.n];
+
+        for (int i = 0; i < this.n; i++) {
+            extinctionProbability[i] = 1.0 - survivalProbability[i];
+        }
+
+        return extinctionProbability;
     }
 
 }

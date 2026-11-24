@@ -137,6 +137,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     private RealScalar<? extends NonNegativeReal> finalSampleOffset;
 
     private double[][] pInitialConditions;
+    private double[] survivalAtOrigin;
 
     private static boolean isParallelizedCalculation;
     private static double minimalProportionForParallelization;
@@ -286,7 +287,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
 
         double conditionDensity = 0.0;
-        double[] extinctionProb = pInitialConditions[pInitialConditions.length - 1];
         if (conditionOnRootInput.get()) {
 
             int intervalIndex = parameterization.getIntervalIndex(0);
@@ -300,15 +300,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                         continue;
 
                    conditionDensity += rate* startTypePriorProbsInput.get().get(type1)
-                           * (1-extinctionProb[type1])
-                           * (1-extinctionProb[type2]);
+                           * this.survivalAtOrigin[type1]
+                           * this.survivalAtOrigin[type2];
                 }
             }
         } else if (conditionOnSurvivalInput.get()) {
 
             for (int type = 0; type < parameterization.getNTypes(); type++)
                 conditionDensity += startTypePriorProbsInput.get().get(type)
-                        * (1-extinctionProb[type]);
+                        * this.survivalAtOrigin[type];
 
         } else {
             conditionDensity = 1.0;
@@ -398,9 +398,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             startTypePosteriorProbs[startType] = Math.exp(startTypePosteriorProbs[startType]);
         }
 
-        PrSN = PrSN.scalarMultiplyBy(1 / conditionDensity);
-
-        logP = PrSN.log();
+        logP = PrSN.log() - Math.log(conditionDensity);
 
         // Convert from oriented to labeled tree probability density:
         int internalNodeCount = tree.getLeafNodeCount() - ((Tree) tree).getDirectAncestorNodeCount() - 1;
@@ -689,7 +687,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
     }
 
     /**
-     * Compute all initial conditions for all future integrations on p0 equations.
+     * Compute all initial conditions for all future integrations on p0 equations, and the survival probabilities
+     * at time 0. The survival probabilities 1 - p0 are integrated directly, so that the conditioning on survival
+     * keeps its relative accuracy when p0 is close to 1.
      */
     private void updateInitialConditionsForP() {
 
@@ -711,11 +711,8 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // root at time 0 (or >0)
 
 
-        // The initial value is zero, so that all modifications can be expressed
-        // as products.
-        P0State p0State = new P0State(p0System.nTypes);
-        for (int type=0; type<p0System.nTypes; type++)
-            p0State.p0[type] = 1.0;
+        // the survival probability is zero at the present
+        double[] survival = new double[p0System.nTypes];
 
         pInitialConditions = new double[leafCount + 1][p0System.nTypes];
 
@@ -731,9 +728,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                     pInitialConditions[indicesSortedByLeafTime[i]] =
                             pInitialConditions[indicesSortedByLeafTime[i + 1]];
                 } else {
-                    System.arraycopy(p0State.p0, 0,
-                            pInitialConditions[indicesSortedByLeafTime[i]], 0,
-                            p0System.nTypes);
+                    for (int type = 0; type < parameterization.getNTypes(); type++) {
+                        pInitialConditions[indicesSortedByLeafTime[i]][type] = 1.0 - survival[type];
+                    }
                 }
                 continue;
             }
@@ -745,14 +742,15 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             int prevIndex = parameterization.getIntervalIndex(tprev);
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
-                    p0State.p0[type] *= (1 - parameterization.getRhoValues()[prevIndex][type]);
+                    survival[type] += parameterization.getRhoValues()[prevIndex][type] * (1.0 - survival[type]);
                 }
             }
 
-            integrateP0(tprev, t, p0State, p0System);
+            integrateP0(tprev, t, survival, p0System);
 
-            System.arraycopy(p0State.p0, 0,
-                    pInitialConditions[indicesSortedByLeafTime[i]], 0, p0System.nTypes);
+            for (int type = 0; type < parameterization.getNTypes(); type++) {
+                pInitialConditions[indicesSortedByLeafTime[i]][type] = 1.0 - survival[type];
+            }
             tprev = t;
         }
 
@@ -760,20 +758,22 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             int prevIndex = parameterization.getIntervalIndex(tprev);
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
                 for (int type = 0; type < parameterization.getNTypes(); type++) {
-                    p0State.p0[type] *= (1 - parameterization.getRhoValues()[prevIndex][type]);
+                    survival[type] += parameterization.getRhoValues()[prevIndex][type] * (1.0 - survival[type]);
                 }
             }
         }
 
-        integrateP0(tprev, 0, p0State, p0System);
-        System.arraycopy(p0State.p0, 0,
-                pInitialConditions[leafCount], 0, p0System.nTypes);
+        integrateP0(tprev, 0, survival, p0System);
+        for (int type = 0; type < parameterization.getNTypes(); type++) {
+            pInitialConditions[leafCount][type] = 1.0 - survival[type];
+        }
+        this.survivalAtOrigin = survival;
     }
 
     /**
-     * Perform integration on differential equations p
+     * Perform integration on differential equations for the survival probabilities 1 - p0
      */
-    private void integrateP0(double tStart, double tEnd, P0State state, P0System system) {
+    private void integrateP0(double tStart, double tEnd, double[] state, P0System system) {
 
         double thisTime = tStart;
         int thisInterval = parameterization.getIntervalIndex(thisTime);
@@ -790,7 +790,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
             if (Utils.greaterThanWithPrecision(nextTime, tEnd)) {
                 for (int i = 0; i < system.nTypes; i++)
-                    state.p0[i] *= (1 - system.rho[thisInterval - 1][i]);
+                    state[i] += system.rho[thisInterval - 1][i] * (1.0 - state[i]);
             }
 
             thisTime = nextTime;

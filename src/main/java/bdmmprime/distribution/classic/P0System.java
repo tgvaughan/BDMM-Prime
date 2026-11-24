@@ -27,6 +27,10 @@ import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
 
 
 /**
+ * ODE system for the extinction probabilities p0. Its state is the survival probability q = 1 - p0 instead of p0,
+ * so that the relative tolerance applies to q. Otherwise, the absolute error of p0 can exceed q when q is tiny,
+ * which makes 1 - p0 meaningless.
+ *
  * @author dkuh004
  *         Date: May 24, 2012
  *         Time: 6:42:00 PM
@@ -90,15 +94,15 @@ public class P0System implements FirstOrderDifferentialEquations {
 
 		for (int i = 0; i< nTypes; i++){
 
-			yDot[i] = + (b[interval][i]+d[interval][i]+s[interval][i])*y[i] - d[interval][i] - b[interval][i]*y[i]*y[i] ;
+			yDot[i] = - (b[interval][i]-d[interval][i]-s[interval][i])*y[i] - s[interval][i] + b[interval][i]*y[i]*y[i] ;
 
 			for (int j = 0; j< nTypes; j++){
 
 			    if (j==i)
 			        continue;
 
-                yDot[i] += b_ij[interval][i][j]*y[i];
-                yDot[i] -= b_ij[interval][i][j]*y[i]*y[j];
+                yDot[i] -= b_ij[interval][i][j]*y[j];
+                yDot[i] += b_ij[interval][i][j]*y[i]*y[j];
 
                 yDot[i] += M[interval][i][j] * y[i];
                 yDot[i] -= M[interval][i][j] * y[j];
@@ -107,8 +111,8 @@ public class P0System implements FirstOrderDifferentialEquations {
 
 	}
 
-	public void integrate(P0State state, double tStart, double tEnd) {
-        p0Integrator.integrate(this, tStart, state.p0, tEnd, state.p0);
+	public void integrate(double[] state, double tStart, double tEnd) {
+        this.p0Integrator.integrate(this, tStart, state, tEnd, state);
     }
 }
 

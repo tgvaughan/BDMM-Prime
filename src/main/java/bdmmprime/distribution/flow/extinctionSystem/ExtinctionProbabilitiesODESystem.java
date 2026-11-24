@@ -26,7 +26,10 @@ import bdmmprime.parameterization.Parameterization;
 import java.util.List;
 
 /**
- * This class represents the ODE system for extinction probabilities.
+ * This class represents the ODE system for extinction probabilities. Its state is the survival probability
+ * q = 1 - p0 instead of the extinction probability p0, so that the relative tolerance applies to q. Otherwise,
+ * the absolute error of p0 can exceed q when q is tiny (e.g. for strongly subcritical early intervals), which
+ * makes 1 - p0 meaningless.
  */
 public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
 
@@ -63,11 +66,11 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
 
         for (int i = 0; i < this.parameterization.getNTypes(); i++) {
             yDot[i] = (
-                    this.birthRates[this.currentInterval][i]
+                    - this.birthRates[this.currentInterval][i]
                             + this.deathRates[this.currentInterval][i]
                             + this.samplingRates[this.currentInterval][i]
-                            - this.birthRates[this.currentInterval][i] * y[i]
-            )* y[i] - this.deathRates[this.currentInterval][i];
+                            + this.birthRates[this.currentInterval][i] * y[i]
+            )* y[i] - this.samplingRates[this.currentInterval][i];
 
             for (int j = 0; j < this.parameterization.getNTypes(); j++) {
                 if (i == j) {
@@ -75,7 +78,7 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
                 }
 
                 yDot[i] += (
-                        this.crossBirthRates[this.currentInterval][i][j] * (y[i] - y[i] * y[j])
+                        this.crossBirthRates[this.currentInterval][i][j] * (y[i] * y[j] - y[j])
                                 + this.migrationRates[this.currentInterval][i][j] * (y[i] - y[j])
                 );
             }
@@ -89,7 +92,7 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
         // include rho sampling effects
 
         for (int type = 0; type < this.parameterization.getNTypes(); type++) {
-            state[type] *= (1.0 - this.parameterization.getRhoValues()[newInterval][type]);
+            state[type] += this.parameterization.getRhoValues()[newInterval][type] * (1.0 - state[type]);
         }
 
         this.currentInterval--;
