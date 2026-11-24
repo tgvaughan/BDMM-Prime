@@ -60,16 +60,17 @@ public class SurvivalConditioningTest {
     private static final String NEWICK = "((t1[&type=0]:1.0,t2[&type=0]:0.5):1.5,(t3[&type=0]:2.0,t4[&type=0]:1.2):0.8);";
 
     /**
-     * Creates the test cases. Format is { engine, death rate of the early interval }. Larger death rates in the
-     * early interval give smaller survival probabilities at the origin, from about 1e-5 down to about 1e-30.
+     * Creates the test cases. Format is { engine, use analytical single-type solution, death rate of the early
+     * interval }. Larger death rates in the early interval give smaller survival probabilities at the origin, from
+     * about 1e-5 down to about 1e-30.
      */
     public static List<Arguments> getTestCases() {
         List<Arguments> testCases = new ArrayList<>();
 
-        for (Engine engine : new Engine[] {Engine.classic, Engine.flow}) {
-            for (double earlyDeathRate : new double[] {3.0, 6.0, 9.0, 12.0, 15.0}) {
-                testCases.add(Arguments.of(engine, earlyDeathRate));
-            }
+        for (double earlyDeathRate : new double[] {3.0, 6.0, 9.0, 12.0, 15.0}) {
+            testCases.add(Arguments.of(Engine.classic, false, earlyDeathRate));
+            testCases.add(Arguments.of(Engine.classic, true, earlyDeathRate));
+            testCases.add(Arguments.of(Engine.flow, false, earlyDeathRate));
         }
 
         return testCases;
@@ -77,15 +78,16 @@ public class SurvivalConditioningTest {
 
     @ParameterizedTest
     @MethodSource("getTestCases")
-    public void testSurvivalConditioningWithTinySurvivalProbability(Engine engine, double earlyDeathRate) {
-        double logLikelihoodConditioned = this.computeLogLikelihood(engine, earlyDeathRate, true);
-        double logLikelihoodUnconditioned = this.computeLogLikelihood(engine, earlyDeathRate, false);
+    public void testSurvivalConditioningWithTinySurvivalProbability(Engine engine, boolean useAnalyticalSolution,
+                                                                    double earlyDeathRate) {
+        double logLikelihoodConditioned = this.computeLogLikelihood(engine, useAnalyticalSolution, earlyDeathRate, true);
+        double logLikelihoodUnconditioned = this.computeLogLikelihood(engine, useAnalyticalSolution, earlyDeathRate, false);
 
         double logSurvivalProbability = logLikelihoodUnconditioned - logLikelihoodConditioned;
         double expectedLogSurvivalProbability = Math.log(this.computeSurvivalProbabilityAtOrigin(earlyDeathRate));
 
-        System.out.printf("engine=%s earlyDeathRate=%.1f expected log(q0)=%.6f computed log(q0)=%.6f%n",
-                engine, earlyDeathRate, expectedLogSurvivalProbability, logSurvivalProbability);
+        System.out.printf("engine=%s analytical=%s earlyDeathRate=%.1f expected log(q0)=%.6f computed log(q0)=%.6f%n",
+                engine, useAnalyticalSolution, earlyDeathRate, expectedLogSurvivalProbability, logSurvivalProbability);
 
         assertEquals(expectedLogSurvivalProbability, logSurvivalProbability, 1e-4);
     }
@@ -93,7 +95,8 @@ public class SurvivalConditioningTest {
     /**
      * Computes the log-likelihood of the test tree under the two-interval single-type model.
      */
-    private double computeLogLikelihood(Engine engine, double earlyDeathRate, boolean conditionOnSurvival) {
+    private double computeLogLikelihood(Engine engine, boolean useAnalyticalSolution, double earlyDeathRate,
+                                        boolean conditionOnSurvival) {
         RealScalarParam<NonNegativeReal> processLength = new RealScalarParam<>(PROCESS_LENGTH, NonNegativeReal.INSTANCE);
 
         Parameterization parameterization = new CanonicalParameterization();
@@ -121,7 +124,7 @@ public class SurvivalConditioningTest {
                 "conditionOnSurvival", conditionOnSurvival,
                 "tree", new TreeParser(NEWICK, false, false, true, 0),
                 "typeLabel", "type",
-                "useAnalyticalSingleTypeSolution", false,
+                "useAnalyticalSingleTypeSolution", useAnalyticalSolution,
                 "parallelize", false
         );
 
