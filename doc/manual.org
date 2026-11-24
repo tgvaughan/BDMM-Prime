@@ -1432,9 +1432,9 @@ They are ignored by the flow engine:
 Likewise, the following inputs have an effect only when the flow engine is in
 use, and are ignored by the classic engine:
 
-- =initialMatrixStrategy= (=String=, default average_inverse) :: The strategy
+- =initialMatrixStrategy= (=String=, default midpoint_inverse) :: The strategy
   used to choose the initial state of the flow integration on each interval,
-  and is one of =identity=, =random=, =average_inverse=.
+  and is one of =identity=, =random=, =average_inverse=, =midpoint_inverse=.
 - =useInverseFlow= (=Boolean=, default false) :: Indicates whether to use the
   inverse flow algorithm.  This is faster, but can lead to greater numerical
   instability.

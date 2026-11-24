@@ -233,6 +233,10 @@ public class InverseFlowODESystem extends IntervalODESystem implements BaseFlowO
                 yield initialStates;
             }
             case average_inverse -> Result.getAllOrThrow(intervals.stream().parallel().map(interval -> Result.of(() -> {
+                // we start at the average of the approximate inverses of the inverse flow at the interval start,
+                // midpoint and end, weighted with Simpson's rule. the integrals of the system matrix use Simpson's
+                // rule as well
+
                 double h = interval.end() - interval.start();
                 RealMatrix startA = this.buildSystemMatrix(interval.start() + bdmmprime.util.Utils.globalPrecisionThreshold);
                 RealMatrix quarterA = this.buildSystemMatrix(
@@ -255,6 +259,29 @@ public class InverseFlowODESystem extends IntervalODESystem implements BaseFlowO
                 Utils.fillArray(averageInvX, array);
 
                 RealMatrix inverse = MatrixUtils.inverse(averageInvX);
+
+                return new InitialState(array, inverse);
+            })));
+            case midpoint_inverse -> Result.getAllOrThrow(intervals.stream().parallel().map(interval -> Result.of(() -> {
+                // we start at the approximate inverse of the inverse flow at the interval midpoint, such that the
+                // inverse flow is close to the identity there and equally well conditioned at both interval ends.
+                // the integral of the system matrix over the first half of the interval uses Simpson's rule
+
+                double h = interval.end() - interval.start();
+                RealMatrix startA = this.buildSystemMatrix(interval.start() + bdmmprime.util.Utils.globalPrecisionThreshold);
+                RealMatrix quarterA = this.buildSystemMatrix(
+                        interval.start() + (interval.end() - interval.start()) / 4.0
+                );
+                RealMatrix midA = this.buildSystemMatrix((interval.start() + interval.end()) / 2.0);
+
+                RealMatrix midInvX = Utils.expm(
+                        startA.add(quarterA.scalarMultiply(4)).add(midA).scalarMultiply(-h / 2.0 / 6.0)
+                );
+
+                double[] array = new double[this.parameterization.getNTypes() * this.parameterization.getNTypes()];
+                Utils.fillArray(midInvX, array);
+
+                RealMatrix inverse = MatrixUtils.inverse(midInvX);
 
                 return new InitialState(array, inverse);
             })));

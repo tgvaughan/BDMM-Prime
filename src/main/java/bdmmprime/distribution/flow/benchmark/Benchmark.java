@@ -64,6 +64,7 @@ public class Benchmark {
                     InitialMatrixStrategy.identity,
                     InitialMatrixStrategy.random,
                     InitialMatrixStrategy.average_inverse,
+                    InitialMatrixStrategy.midpoint_inverse,
             };
             Boolean[] choices = new Boolean[]{
                     false, true

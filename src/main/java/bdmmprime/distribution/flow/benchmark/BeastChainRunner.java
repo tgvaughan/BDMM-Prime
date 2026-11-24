@@ -67,12 +67,12 @@ public class BeastChainRunner {
     static final String DEFAULT_BENCHMARK_DIRECTORY = "../BDMM-Flow-Supplementary/beast_benchmarks";
 
     /**
-     * Tree prior inputs shared by all runs: the flow engine with the inverse flow and the average
-     * inverse preconditioner ("IF AIP"), parallelized and with flow caching enabled.
+     * Tree prior inputs shared by all runs: the flow engine with the inverse flow and the midpoint
+     * inverse preconditioner ("IF MIP"), parallelized and with flow caching enabled.
      */
     static final Map<String, String> DEFAULT_TREE_PRIOR_INPUTS = Map.of(
             "engine", "flow",
-            "initialMatrixStrategy", "average_inverse",
+            "initialMatrixStrategy", "midpoint_inverse",
             "useInverseFlow", "true",
             "maxConditioningNumber", "1e8",
             "useLoucaPennellIntervals", "false",

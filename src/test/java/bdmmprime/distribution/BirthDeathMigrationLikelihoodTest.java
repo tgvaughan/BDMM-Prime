@@ -66,7 +66,11 @@ public class BirthDeathMigrationLikelihoodTest {
             { Engine.flow, InitialMatrixStrategy.average_inverse,  false, false, false },
             { Engine.flow, InitialMatrixStrategy.average_inverse,  false, true, false },
             { Engine.flow, InitialMatrixStrategy.average_inverse, true,  false, false },
-            { Engine.flow, InitialMatrixStrategy.average_inverse, true,  true, false }
+            { Engine.flow, InitialMatrixStrategy.average_inverse, true,  true, false },
+            { Engine.flow, InitialMatrixStrategy.midpoint_inverse,  false, false, false },
+            { Engine.flow, InitialMatrixStrategy.midpoint_inverse,  false, true, false },
+            { Engine.flow, InitialMatrixStrategy.midpoint_inverse, true,  false, false },
+            { Engine.flow, InitialMatrixStrategy.midpoint_inverse, true,  true, false }
         });
     }
 

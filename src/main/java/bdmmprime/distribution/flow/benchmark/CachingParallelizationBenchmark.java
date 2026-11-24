@@ -29,7 +29,8 @@ import java.util.StringJoiner;
 
 /**
  * Standalone entry point that times short MCMC chains of the BEAST analyses with the flow tree
- * prior run with and without parallelization and flow caching, writing the runtimes to CSV.
+ * prior run with and without parallelization and flow caching, for both the average inverse and the
+ * midpoint inverse preconditioner, writing the runtimes to CSV.
  * Only the tree prior settings change between configurations; the tree likelihood always uses one
  * thread per core.
  * <p>
@@ -45,13 +46,22 @@ public class CachingParallelizationBenchmark {
     /**
      * A combination of tree prior settings to time.
      */
-    record Configuration(String method, boolean parallelize, boolean useFlowCaching) {
+    record Configuration(
+            String preconditioner,
+            String initialMatrixStrategy,
+            String method,
+            boolean parallelize,
+            boolean useFlowCaching
+    ) {
     }
 
     static final List<Configuration> CONFIGURATIONS = List.of(
-            new Configuration("No parallelization, no caching", false, false),
-            new Configuration("Parallelization, no caching", true, false),
-            new Configuration("Parallelization and caching", true, true)
+            new Configuration("IF AIP", "average_inverse", "No parallelization, no caching", false, false),
+            new Configuration("IF AIP", "average_inverse", "Parallelization, no caching", true, false),
+            new Configuration("IF AIP", "average_inverse", "Parallelization and caching", true, true),
+            new Configuration("IF MIP", "midpoint_inverse", "No parallelization, no caching", false, false),
+            new Configuration("IF MIP", "midpoint_inverse", "Parallelization, no caching", true, false),
+            new Configuration("IF MIP", "midpoint_inverse", "Parallelization and caching", true, true)
     );
 
     static void main(String[] args) throws Exception {
@@ -84,6 +94,7 @@ public class CachingParallelizationBenchmark {
         StringJoiner joiner = new StringJoiner(",");
 
         joiner.add("dataset");
+        joiner.add("preconditioner");
         joiner.add("method");
         joiner.add("parallelized");
         joiner.add("flow_caching");
@@ -100,6 +111,7 @@ public class CachingParallelizationBenchmark {
      */
     static long runConfiguration(Path xmlFile, Configuration configuration, long chainLength, long seed) throws Exception {
         Map<String, String> treePriorInputs = new LinkedHashMap<>(BeastChainRunner.DEFAULT_TREE_PRIOR_INPUTS);
+        treePriorInputs.put("initialMatrixStrategy", configuration.initialMatrixStrategy());
         treePriorInputs.put("parallelize", Boolean.toString(configuration.parallelize()));
         treePriorInputs.put("useFlowCaching", Boolean.toString(configuration.useFlowCaching()));
 
@@ -114,6 +126,7 @@ public class CachingParallelizationBenchmark {
         StringJoiner joiner = new StringJoiner(",");
 
         joiner.add(dataset.name());
+        joiner.add("\"%s\"".formatted(configuration.preconditioner()));
         joiner.add("\"%s\"".formatted(configuration.method()));
         joiner.add(Boolean.toString(configuration.parallelize()));
         joiner.add(Boolean.toString(configuration.useFlowCaching()));

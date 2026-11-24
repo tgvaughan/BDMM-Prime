@@ -27,5 +27,6 @@ public enum InitialMatrixStrategy {
     identity,
     random,
     average_inverse,
+    midpoint_inverse,
 
 }

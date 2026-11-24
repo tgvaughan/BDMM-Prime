@@ -143,7 +143,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution {
     public Input<InitialMatrixStrategy> initialMatrixStrategyInput = new Input<>(
             "initialMatrixStrategy",
             "Flow engine only: strategy for the initial flow state.",
-            InitialMatrixStrategy.average_inverse,
+            InitialMatrixStrategy.midpoint_inverse,
             InitialMatrixStrategy.values()
     );
 

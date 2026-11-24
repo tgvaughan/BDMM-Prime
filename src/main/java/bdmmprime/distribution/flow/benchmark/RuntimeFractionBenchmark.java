@@ -74,7 +74,8 @@ public class RuntimeFractionBenchmark {
     }
 
     static final List<Configuration> CONFIGURATIONS = List.of(
-            new Configuration("IF AIP", Map.of()),
+            new Configuration("IF AIP", Map.of("initialMatrixStrategy", "average_inverse")),
+            new Configuration("IF MIP", Map.of("initialMatrixStrategy", "midpoint_inverse")),
             new Configuration("BDMM-Prime", Map.of("engine", "classic"))
     );
 
