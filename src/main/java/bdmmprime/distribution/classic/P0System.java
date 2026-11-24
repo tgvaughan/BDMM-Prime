@@ -92,30 +92,27 @@ public class P0System implements FirstOrderDifferentialEquations {
 
 	public void computeDerivatives(double t, double[] y, double[] yDot) {
 
-		for (int i = 0; i < this.nTypes; i++) {
-			double birthRate = this.b[this.interval][i];
-			double deathRate = this.d[this.interval][i];
-			double samplingRate = this.s[this.interval][i];
+		for (int i = 0; i< nTypes; i++){
 
-			// derivative of q = 1 - p0, written without the cancellation in 1 - p0
-			yDot[i] = birthRate * y[i] * y[i] - (birthRate - deathRate - samplingRate) * y[i] - samplingRate;
+			yDot[i] = - (b[interval][i]-d[interval][i]-s[interval][i])*y[i] - s[interval][i] + b[interval][i]*y[i]*y[i] ;
 
-			for (int j = 0; j < this.nTypes; j++) {
-			    if (j == i)
+			for (int j = 0; j< nTypes; j++){
+
+			    if (j==i)
 			        continue;
 
-                yDot[i] -= this.b_ij[this.interval][i][j] * (1 - y[i]) * y[j];
-                yDot[i] -= this.M[this.interval][i][j] * (y[j] - y[i]);
+                yDot[i] -= b_ij[interval][i][j]*y[j];
+                yDot[i] += b_ij[interval][i][j]*y[i]*y[j];
+
+                yDot[i] += M[interval][i][j] * y[i];
+                yDot[i] -= M[interval][i][j] * y[j];
 			}
 		}
 
 	}
 
-	/**
-	 * Integrates the survival probabilities in place from tStart to tEnd.
-	 */
-	public void integrate(double[] survivalProbability, double tStart, double tEnd) {
-        this.p0Integrator.integrate(this, tStart, survivalProbability, tEnd, survivalProbability);
+	public void integrate(double[] state, double tStart, double tEnd) {
+        this.p0Integrator.integrate(this, tStart, state, tEnd, state);
     }
 }
 

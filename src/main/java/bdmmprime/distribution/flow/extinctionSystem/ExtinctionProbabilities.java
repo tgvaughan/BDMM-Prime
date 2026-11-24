@@ -42,8 +42,7 @@ public class ExtinctionProbabilities {
      * Note that this method is thread-safe.
      */
     public double[] getProbability(ContinuousOutputModel output, double time) {
-        double[] survivalProbability = this.getSurvivalProbability(output, time);
-        return this.convertToExtinctionProbability(survivalProbability);
+        return this.convertToExtinctionProbability(this.getSurvivalProbability(output, time));
     }
 
     /**
@@ -59,7 +58,17 @@ public class ExtinctionProbabilities {
             System.arraycopy(interpolatedState, 0, state, 0, this.n);
         }
 
-        this.validateIfEnabled(state);
+        if (this.validateProbabilities) {
+            // check that all are valid probabilities
+            // (interpolation can give rise to values outside [0, 1])
+
+            for (int i = 0; i < state.length; i++) {
+                if (state[i] < -0.01 || 1.01 < state[i]) {
+                    throw new IllegalStateException("Invalid extinction probability found.");
+                }
+            }
+        }
+
         return state;
     }
 
@@ -69,10 +78,20 @@ public class ExtinctionProbabilities {
      */
     public double[] unsafeGetProbability(ContinuousOutputModel output, double time) {
         output.setInterpolatedTime(time);
-        double[] survivalProbability = output.getInterpolatedState();
+        double[] state = output.getInterpolatedState();
 
-        this.validateIfEnabled(survivalProbability);
-        return this.convertToExtinctionProbability(survivalProbability);
+        if (this.validateProbabilities) {
+            // check that all are valid probabilities
+            // (interpolation can give rise to values outside [0, 1])
+
+            for (int i = 0; i < state.length; i++) {
+                if (state[i] < -0.01 || 1.01 < state[i]) {
+                    throw new IllegalStateException("Invalid extinction probability found.");
+                }
+            }
+        }
+
+        return this.convertToExtinctionProbability(state);
     }
 
     /**
@@ -118,20 +137,6 @@ public class ExtinctionProbabilities {
      */
     public void validateProbabilities(boolean validateProbabilities) {
         this.validateProbabilities = validateProbabilities;
-    }
-
-    /**
-     * Throws an error if validation is enabled and the given survival probabilities are not valid probabilities.
-     * Interpolation can give rise to values slightly outside [0, 1].
-     */
-    private void validateIfEnabled(double[] survivalProbability) {
-        if (!this.validateProbabilities) return;
-
-        for (int i = 0; i < this.n; i++) {
-            if (survivalProbability[i] < -0.01 || 1.01 < survivalProbability[i]) {
-                throw new IllegalStateException("Invalid extinction probability found.");
-            }
-        }
     }
 
     /**

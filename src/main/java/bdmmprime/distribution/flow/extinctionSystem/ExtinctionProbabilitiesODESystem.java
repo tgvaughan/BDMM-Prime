@@ -64,24 +64,22 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
             throw new IllegalStateException("NaN detected during integration.");
         }
 
-        int interval = this.currentInterval;
-
         for (int i = 0; i < this.parameterization.getNTypes(); i++) {
-            double birthRate = this.birthRates[interval][i];
-            double deathRate = this.deathRates[interval][i];
-            double samplingRate = this.samplingRates[interval][i];
-
-            // derivative of q = 1 - p0, written without the cancellation in 1 - p0
-            yDot[i] = birthRate * y[i] * y[i] - (birthRate - deathRate - samplingRate) * y[i] - samplingRate;
+            yDot[i] = (
+                    - this.birthRates[this.currentInterval][i]
+                            + this.deathRates[this.currentInterval][i]
+                            + this.samplingRates[this.currentInterval][i]
+                            + this.birthRates[this.currentInterval][i] * y[i]
+            )* y[i] - this.samplingRates[this.currentInterval][i];
 
             for (int j = 0; j < this.parameterization.getNTypes(); j++) {
                 if (i == j) {
                     continue;
                 }
 
-                yDot[i] -= (
-                        this.crossBirthRates[interval][i][j] * (1 - y[i]) * y[j]
-                                + this.migrationRates[interval][i][j] * (y[j] - y[i])
+                yDot[i] += (
+                        this.crossBirthRates[this.currentInterval][i][j] * (y[i] * y[j] - y[j])
+                                + this.migrationRates[this.currentInterval][i][j] * (y[i] - y[j])
                 );
             }
         }
@@ -94,8 +92,7 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
         // include rho sampling effects
 
         for (int type = 0; type < this.parameterization.getNTypes(); type++) {
-            double rho = this.parameterization.getRhoValues()[newInterval][type];
-            state[type] += rho * (1.0 - state[type]);
+            state[type] += this.parameterization.getRhoValues()[newInterval][type] * (1.0 - state[type]);
         }
 
         this.currentInterval--;

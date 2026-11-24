@@ -398,7 +398,6 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             startTypePosteriorProbs[startType] = Math.exp(startTypePosteriorProbs[startType]);
         }
 
-        // divide in log space, since 1 / conditionDensity can overflow for tiny survival probabilities
         logP = PrSN.log() - Math.log(conditionDensity);
 
         // Convert from oriented to labeled tree probability density:
@@ -711,6 +710,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // integration starts from the leaves at time T and goes up to the
         // root at time 0 (or >0)
 
+
         // the survival probability is zero at the present
         double[] survival = new double[p0System.nTypes];
 
@@ -728,8 +728,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                     pInitialConditions[indicesSortedByLeafTime[i]] =
                             pInitialConditions[indicesSortedByLeafTime[i + 1]];
                 } else {
-                    for (int type = 0; type < p0System.nTypes; type++)
+                    for (int type = 0; type < parameterization.getNTypes(); type++) {
                         pInitialConditions[indicesSortedByLeafTime[i]][type] = 1.0 - survival[type];
+                    }
                 }
                 continue;
             }
@@ -740,35 +741,39 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             // as for the Ge calculation.
             int prevIndex = parameterization.getIntervalIndex(tprev);
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
-                for (int type = 0; type < p0System.nTypes; type++)
+                for (int type = 0; type < parameterization.getNTypes(); type++) {
                     survival[type] += parameterization.getRhoValues()[prevIndex][type] * (1.0 - survival[type]);
+                }
             }
 
             integrateP0(tprev, t, survival, p0System);
 
-            for (int type = 0; type < p0System.nTypes; type++)
+            for (int type = 0; type < parameterization.getNTypes(); type++) {
                 pInitialConditions[indicesSortedByLeafTime[i]][type] = 1.0 - survival[type];
+            }
             tprev = t;
         }
 
         if (Utils.greaterThanWithPrecision(tprev , 0.0)) {
             int prevIndex = parameterization.getIntervalIndex(tprev);
             if (Utils.equalWithPrecision(parameterization.getIntervalEndTimes()[prevIndex], tprev)) {
-                for (int type = 0; type < p0System.nTypes; type++)
+                for (int type = 0; type < parameterization.getNTypes(); type++) {
                     survival[type] += parameterization.getRhoValues()[prevIndex][type] * (1.0 - survival[type]);
+                }
             }
         }
 
         integrateP0(tprev, 0, survival, p0System);
-        for (int type = 0; type < p0System.nTypes; type++)
+        for (int type = 0; type < parameterization.getNTypes(); type++) {
             pInitialConditions[leafCount][type] = 1.0 - survival[type];
+        }
         this.survivalAtOrigin = survival;
     }
 
     /**
      * Perform integration on differential equations for the survival probabilities 1 - p0
      */
-    private void integrateP0(double tStart, double tEnd, double[] survival, P0System system) {
+    private void integrateP0(double tStart, double tEnd, double[] state, P0System system) {
 
         double thisTime = tStart;
         int thisInterval = parameterization.getIntervalIndex(thisTime);
@@ -780,12 +785,12 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
             if (Utils.lessThanWithPrecision(nextTime , thisTime)) {
                 system.setInterval(thisInterval);
-                system.integrate(survival, thisTime, nextTime);
+                system.integrate(state, thisTime, nextTime);
             }
 
             if (Utils.greaterThanWithPrecision(nextTime, tEnd)) {
                 for (int i = 0; i < system.nTypes; i++)
-                    survival[i] += system.rho[thisInterval - 1][i] * (1.0 - survival[i]);
+                    state[i] += system.rho[thisInterval - 1][i] * (1.0 - state[i]);
             }
 
             thisTime = nextTime;
@@ -795,7 +800,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         if (Utils.greaterThanWithPrecision(thisTime, tEnd)) {
             system.setInterval(thisInterval);
-            system.integrate(survival, thisTime, tEnd);
+            system.integrate(state, thisTime, tEnd);
         }
     }
 
@@ -1019,20 +1024,22 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
      */
     private void computeConstants(double[] A, double[] B, double[] Bplus1, double[] survivalAtIntervalEnd) {
 
-        for (int i=this.parameterization.getTotalIntervalCount()-1; i>=0; i--) {
+        for (int i=parameterization.getTotalIntervalCount()-1; i>=0; i--) {
 
-            double survivalBeforeRho = i + 1 < this.parameterization.getTotalIntervalCount()
-                    ? this.computeSurvivalProbability(i + 1, A[i + 1], survivalAtIntervalEnd[i + 1],
-                            this.parameterization.getIntervalEndTimes()[i])
-                    : 0.0;
+            double q_i_prev;
+            if (i + 1 < parameterization.getTotalIntervalCount()) {
+                q_i_prev = this.computeSurvivalProbability(i + 1, A[i + 1], survivalAtIntervalEnd[i + 1],
+                        this.parameterization.getIntervalEndTimes()[i]);
+            } else {
+                q_i_prev = 0.0;
+            }
 
-            double rho_i = this.parameterization.getRhoValues()[i][0];
-            double lambda_i = this.parameterization.getBirthRates()[i][0];
-            double mu_i = this.parameterization.getDeathRates()[i][0];
-            double psi_i = this.parameterization.getSamplingRates()[i][0];
-            double netGrowthRate = lambda_i - mu_i - psi_i;
+            double rho_i = parameterization.getRhoValues()[i][0];
+            double lambda_i = parameterization.getBirthRates()[i][0];
+            double mu_i = parameterization.getDeathRates()[i][0];
+            double psi_i = parameterization.getSamplingRates()[i][0];
 
-            double Asq = netGrowthRate*netGrowthRate + 4*lambda_i*psi_i;
+            double Asq = ((lambda_i-mu_i-psi_i)*(lambda_i-mu_i-psi_i) + 4*lambda_i*psi_i);
             A[i] = Math.sqrt(Asq);
 
             if (Asq == 0.0)
@@ -1042,11 +1049,13 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                                 birthRate-deathRate-samplingRate = 0 and samplingRate = 0.\s
                                 (If this is the starting state, try perturbing one of these parameters.)""");
 
-            survivalAtIntervalEnd[i] = survivalBeforeRho + rho_i * (1.0 - survivalBeforeRho);
+            survivalAtIntervalEnd[i] = q_i_prev + rho_i * (1.0 - q_i_prev);
 
-            double scaledSurvival = 2 * lambda_i * survivalAtIntervalEnd[i];
-            B[i] = (scaledSurvival - netGrowthRate) / A[i];
-            Bplus1[i] = (this.computeAMinusNetGrowthRate(A[i], netGrowthRate, lambda_i, psi_i) + scaledSurvival) / A[i];
+            double scaled_lambda_i = (1 - 2 * survivalAtIntervalEnd[i]) * lambda_i;
+            B[i] = (-scaled_lambda_i + mu_i + psi_i)/A[i];
+
+            Bplus1[i] = (this.computeAMinusNetGrowthRate(A[i], lambda_i - mu_i - psi_i, lambda_i, psi_i)
+                    + 2 * lambda_i * survivalAtIntervalEnd[i]) / A[i];
         }
     }
 

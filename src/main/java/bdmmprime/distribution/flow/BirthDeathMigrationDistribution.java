@@ -417,12 +417,9 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
             return Double.NEGATIVE_INFINITY;
         }
 
-        // turn the likelihood into log likelihood, correct for scaling and divide by the condition density.
-        // the division happens in log space, since it can overflow for tiny survival probabilities.
+        // turn the likelihood into log likelihood and correct for scaling
 
-        double logTreeLikelihood = Math.log(treeLikelihood)
-                + this.logScalingFactors[root.getNr()]
-                - Math.log(conditionDensity);
+        double logTreeLikelihood = Math.log(treeLikelihood) + this.logScalingFactors[root.getNr()] - Math.log(conditionDensity);
 
         // convert from oriented to labeled tree likelihood
 
