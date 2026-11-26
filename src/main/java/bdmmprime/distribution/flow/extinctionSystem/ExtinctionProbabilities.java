@@ -22,9 +22,10 @@ package bdmmprime.distribution.flow.extinctionSystem;
 import org.apache.commons.math3.ode.ContinuousOutputModel;
 
 /**
- * This class is a lightweight wrapper of the integration output of ExtinctionProbabilitiesODESystem. It allows
- * to conveniently query the extinction probability p0 or the survival probability 1 - p0 at a given time. The
- * survival probability is stored directly, so it keeps its relative accuracy even when p0 is close to 1.
+ * This class is a lightweight wrapper of the integration output of ExtinctionProbabilitiesODESystem. The output
+ * contains both the extinction probability p0 and the survival probability 1 - p0, each integrated directly.
+ * This allows to conveniently query either probability at a given time, and each keeps its relative accuracy
+ * even when it is close to 0.
  */
 public class ExtinctionProbabilities {
 
@@ -42,8 +43,9 @@ public class ExtinctionProbabilities {
      * Note that this method is thread-safe.
      */
     public double[] getProbability(ContinuousOutputModel output, double time) {
-        double[] survivalProbability = this.getSurvivalProbability(output, time);
-        return this.convertToExtinctionProbability(survivalProbability);
+        synchronized (output) {
+            return this.extractBlock(output, time, 0);
+        }
     }
 
     /**
@@ -51,16 +53,9 @@ public class ExtinctionProbabilities {
      * given time. Note that this method is thread-safe.
      */
     public double[] getSurvivalProbability(ContinuousOutputModel output, double time) {
-        double[] state = new double[this.n];
-
         synchronized (output) {
-            output.setInterpolatedTime(time);
-            double[] interpolatedState = output.getInterpolatedState();
-            System.arraycopy(interpolatedState, 0, state, 0, this.n);
+            return this.extractBlock(output, time, this.n);
         }
-
-        this.validateIfEnabled(state);
-        return state;
     }
 
     /**
@@ -68,11 +63,7 @@ public class ExtinctionProbabilities {
      * Note that this method is not thread-safe.
      */
     public double[] unsafeGetProbability(ContinuousOutputModel output, double time) {
-        output.setInterpolatedTime(time);
-        double[] survivalProbability = output.getInterpolatedState();
-
-        this.validateIfEnabled(survivalProbability);
-        return this.convertToExtinctionProbability(survivalProbability);
+        return this.extractBlock(output, time, 0);
     }
 
     /**
@@ -121,30 +112,32 @@ public class ExtinctionProbabilities {
     }
 
     /**
-     * Throws an error if validation is enabled and the given survival probabilities are not valid probabilities.
-     * Interpolation can give rise to values slightly outside [0, 1].
+     * Returns a new array with the n entries of the interpolated state that start at the given offset.
+     * Note that this method is not thread-safe.
      */
-    private void validateIfEnabled(double[] survivalProbability) {
-        if (!this.validateProbabilities) return;
+    private double[] extractBlock(ContinuousOutputModel output, double time, int offset) {
+        output.setInterpolatedTime(time);
+        double[] interpolatedState = output.getInterpolatedState();
 
-        for (int i = 0; i < this.n; i++) {
-            if (survivalProbability[i] < -0.01 || 1.01 < survivalProbability[i]) {
-                throw new IllegalStateException("Invalid extinction probability found.");
-            }
-        }
+        double[] probabilities = new double[this.n];
+        System.arraycopy(interpolatedState, offset, probabilities, 0, this.n);
+
+        this.validateIfEnabled(probabilities);
+        return probabilities;
     }
 
     /**
-     * Returns a new array with the extinction probabilities that correspond to the given survival probabilities.
+     * Throws an error if validation is enabled and the given probabilities are not valid probabilities.
+     * Interpolation can give rise to values slightly outside [0, 1].
      */
-    private double[] convertToExtinctionProbability(double[] survivalProbability) {
-        double[] extinctionProbability = new double[this.n];
+    private void validateIfEnabled(double[] probabilities) {
+        if (!this.validateProbabilities) return;
 
         for (int i = 0; i < this.n; i++) {
-            extinctionProbability[i] = 1.0 - survivalProbability[i];
+            if (probabilities[i] < -0.01 || 1.01 < probabilities[i]) {
+                throw new IllegalStateException("Invalid probability found.");
+            }
         }
-
-        return extinctionProbability;
     }
 
 }

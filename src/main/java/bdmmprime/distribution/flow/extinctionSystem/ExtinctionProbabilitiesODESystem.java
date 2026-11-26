@@ -27,10 +27,9 @@ import org.apache.commons.math3.ode.ContinuousOutputModel;
 import java.util.List;
 
 /**
- * This class represents the ODE system for extinction probabilities. Its state is the survival probability
- * q = 1 - p0 instead of the extinction probability p0, so that the relative tolerance applies to q. Otherwise,
- * the absolute error of p0 can exceed q when q is tiny (e.g. for strongly subcritical early intervals), which
- * makes 1 - p0 meaningless.
+ * This class represents the ODE system for extinction probabilities. Its state consists of two blocks of
+ * length n: the extinction probabilities p0 followed by the survival probabilities q = 1 - p0. Both blocks are
+ * integrated directly, so that the relative tolerance applies to p0 when p0 is small and to q when q is small.
  */
 public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
 
@@ -54,7 +53,7 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
 
     @Override
     public int getDimension() {
-        return this.parameterization.getNTypes();
+        return 2 * this.parameterization.getNTypes();
     }
 
     /**
@@ -73,24 +72,37 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
         }
 
         int interval = this.currentParameterizationInterval;
+        int nTypes = this.parameterization.getNTypes();
 
-        for (int i = 0; i < this.parameterization.getNTypes(); i++) {
+        for (int i = 0; i < nTypes; i++) {
             double birthRate = this.birthRates[interval][i];
             double deathRate = this.deathRates[interval][i];
             double samplingRate = this.samplingRates[interval][i];
 
-            // derivative of q = 1 - p0, written without the cancellation in 1 - p0
-            yDot[i] = birthRate * y[i] * y[i] - (birthRate - deathRate - samplingRate) * y[i] - samplingRate;
+            double extinctionProbability = y[i];
+            double survivalProbability = y[nTypes + i];
 
-            for (int j = 0; j < this.parameterization.getNTypes(); j++) {
+            // derivative of p0 with the base terms written in p0
+            yDot[i] = (birthRate + deathRate + samplingRate) * extinctionProbability
+                    - birthRate * extinctionProbability * extinctionProbability
+                    - deathRate;
+
+            // derivative of q = 1 - p0 with the base terms written in q
+            yDot[nTypes + i] = birthRate * survivalProbability * survivalProbability
+                    - (birthRate - deathRate - samplingRate) * survivalProbability
+                    - samplingRate;
+
+            for (int j = 0; j < nTypes; j++) {
                 if (i == j) {
                     continue;
                 }
 
-                yDot[i] -= (
-                        this.crossBirthRates[interval][i][j] * (1 - y[i]) * y[j]
-                                + this.migrationRates[interval][i][j] * (y[j] - y[i])
-                );
+                // the cross birth term is p0_i * q_j in both blocks, which avoids 1 - p0_j in the p0 block
+                double crossBirthFlux = this.crossBirthRates[interval][i][j] * extinctionProbability * y[nTypes + j];
+                double migrationRate = this.migrationRates[interval][i][j];
+
+                yDot[i] += crossBirthFlux + migrationRate * (extinctionProbability - y[j]);
+                yDot[nTypes + i] -= crossBirthFlux + migrationRate * (y[nTypes + j] - survivalProbability);
             }
         }
     }
@@ -101,9 +113,14 @@ public class ExtinctionProbabilitiesODESystem extends IntervalODESystem {
 
         // include rho sampling effects
 
-        for (int type = 0; type < this.parameterization.getNTypes(); type++) {
+        int nTypes = this.parameterization.getNTypes();
+
+        for (int type = 0; type < nTypes; type++) {
             double rho = this.parameterization.getRhoValues()[newInterval][type];
-            state[type] += rho * (1.0 - state[type]);
+            double extinctionProbability = state[type];
+
+            state[type] = extinctionProbability * (1.0 - rho);
+            state[nTypes + type] += rho * extinctionProbability;
         }
     }
 

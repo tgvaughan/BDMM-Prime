@@ -578,11 +578,14 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         int endInterval = this.parameterization.getTotalIntervalCount() - 1;
 
-        // the system state is the survival probability 1 - p0
+        // the system state consists of the extinction probabilities p0 followed by the survival probabilities 1 - p0
 
-        double[] initialState = new double[this.parameterization.getNTypes()];
-        for (int i = 0; i < this.parameterization.getNTypes(); i++) {
-            initialState[i] = this.parameterization.getRhoValues()[endInterval][i];
+        int nTypes = this.parameterization.getNTypes();
+        double[] initialState = new double[2 * nTypes];
+        for (int i = 0; i < nTypes; i++) {
+            double rho = this.parameterization.getRhoValues()[endInterval][i];
+            initialState[i] = 1.0 - rho;
+            initialState[nTypes + i] = rho;
         }
 
         List<double[]> initialStates = List.of(initialState);
