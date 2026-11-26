@@ -19,7 +19,7 @@
 
 package bdmmprime.distribution.flow.flowSystems;
 
-import org.apache.commons.math3.linear.RealMatrix;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 /**
  * Stores an initial state (preconditioner) and its inverse matrix.

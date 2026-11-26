@@ -40,10 +40,11 @@ import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.inference.parameter.SimplexParam;
 import beast.base.spec.type.RealScalar;
 import beast.base.spec.type.Simplex;
-import org.apache.commons.math3.special.Gamma;
-import org.apache.commons.math3.exception.NumberIsTooSmallException;
-import org.apache.commons.math3.linear.SingularMatrixException;
-import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.apache.commons.numbers.gamma.LogGamma;
+import org.apache.commons.math4.legacy.exception.MathIllegalStateException;
+import org.apache.commons.math4.legacy.exception.NumberIsTooSmallException;
+import org.apache.commons.math4.legacy.linear.SingularMatrixException;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
 
 import java.util.Arrays;
 import java.util.List;
@@ -365,7 +366,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         try {
             extinctionProbabilities = this.calculateExtinctionProbabilities(intervals);
             flow = this.calculateFlow(intervals, extinctionProbabilities);
-        } catch (NumberIsTooSmallException | SingularMatrixException | IllegalStateException e) {
+        } catch (NumberIsTooSmallException | SingularMatrixException | MathIllegalStateException | IllegalStateException e) {
             this.numFailedEvaluationsSinceReset++;
             this.resetCache();
             return this.fallBackToBDMMPrime(dummyTree);
@@ -384,7 +385,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                     flow,
                     extinctionProbabilities
             );
-        } catch (CompletionException | SingularMatrixException | IllegalStateException exception) {
+        } catch (CompletionException | SingularMatrixException | MathIllegalStateException | IllegalStateException exception) {
             this.numFailedEvaluationsSinceReset++;
             return this.fallBackToBDMMPrime(dummyTree);
         }
@@ -420,7 +421,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         // convert from oriented to labeled tree likelihood
 
         int internalNodeCount = this.tree.getLeafNodeCount() - ((Tree) this.tree).getDirectAncestorNodeCount() - 1;
-        logTreeLikelihood += Math.log(2) * internalNodeCount - Gamma.logGamma(this.tree.getLeafNodeCount() + 1);
+        logTreeLikelihood += Math.log(2) * internalNodeCount - LogGamma.value(this.tree.getLeafNodeCount() + 1);
 
         // periodically compare with BDMMPrime
 

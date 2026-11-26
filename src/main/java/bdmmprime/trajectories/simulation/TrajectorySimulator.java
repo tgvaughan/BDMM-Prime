@@ -26,7 +26,7 @@ import beast.base.spec.type.Simplex;
 import beast.base.util.Randomizer;
 
 import static bdmmprime.util.Utils.nextBinomial;
-import static org.apache.commons.math3.stat.StatUtils.sum;
+import static org.apache.commons.math4.legacy.stat.StatUtils.sum;
 
 public class TrajectorySimulator {
 

@@ -24,7 +24,7 @@ import bdmmprime.trajectories.Trajectory;
 import bdmmprime.trajectories.trajevents.SamplingEvent;
 import bdmmprime.util.Utils;
 import beast.base.util.Randomizer;
-import org.apache.commons.math3.special.Gamma;
+import org.apache.commons.numbers.gamma.LogGamma;
 
 import static bdmmprime.util.Utils.logChoose;
 import static bdmmprime.util.Utils.nextBinomial;
@@ -64,7 +64,7 @@ public class ObservedSamplingEvent extends ObservedEvent {
                     totalSamples*Math.log(param.getRhoValues()[interval][s])
                     + (trajectory.currentState[s]-totalSamples)*Math.log(1.0-param.getRhoValues()[interval][s]);
 
-            logWeightContrib += Gamma.logGamma(totalSamples + 1);
+            logWeightContrib += LogGamma.value(totalSamples + 1);
 
             // Probability of known non-removal count:
             if (nSampledAncestors > 0)
@@ -91,10 +91,10 @@ public class ObservedSamplingEvent extends ObservedEvent {
                 int S = nUnremovedLeaves + nSampledAncestors;
                 double N = trajectory.currentState[s];
 
-                logWeightContrib += Gamma.logGamma(1 + N - S)
-                        - Gamma.logGamma(1 + N)
-                        + Gamma.logGamma(1 + N - k)
-                        - Gamma.logGamma(1 + (N - k) - (S - nSampledAncestors));
+                logWeightContrib += LogGamma.value(1 + N - S)
+                        - LogGamma.value(1 + N)
+                        + LogGamma.value(1 + N - k)
+                        - LogGamma.value(1 + (N - k) - (S - nSampledAncestors));
 
             }
 

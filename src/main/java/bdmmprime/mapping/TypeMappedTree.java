@@ -32,9 +32,9 @@ import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.type.RealScalar;
 import beast.base.spec.type.Simplex;
 import beast.base.util.Randomizer;
-import org.apache.commons.math3.ode.ContinuousOutputModel;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
+import org.apache.commons.math4.legacy.ode.FirstOrderIntegrator;
+import org.apache.commons.math4.legacy.ode.nonstiff.DormandPrince54Integrator;
 
 import java.io.PrintStream;
 

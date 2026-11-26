@@ -27,12 +27,10 @@ import beast.base.inference.parameter.RealParameter;
 import beast.base.spec.domain.Real;
 import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.spec.type.RealVector;
-import cern.colt.matrix.DoubleMatrix1D;
-import cern.colt.matrix.DoubleMatrix2D;
-import cern.colt.matrix.impl.DenseDoubleMatrix2D;
-import cern.colt.matrix.linalg.Algebra;
-import cern.colt.matrix.linalg.EigenvalueDecomposition;
-import cern.colt.matrix.linalg.Property;
+import org.apache.commons.math4.legacy.linear.Array2DRowRealMatrix;
+import org.apache.commons.math4.legacy.linear.EigenDecomposition;
+import org.apache.commons.math4.legacy.linear.LUDecomposition;
+import org.apache.commons.math4.legacy.linear.RealMatrix;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,9 +54,11 @@ public class MultivariateLogNormal extends Distribution {
     RealVector<?> M, S;
     int n, m;
 
-    DoubleMatrix2D y, mu, sigma;
+    double[] y, mu;
+    RealMatrix sigma;
 
-    Algebra al = Algebra.DEFAULT;
+    /** absolute tolerance of the symmetry check on the covariance matrix */
+    static final double SYMMETRY_TOLERANCE = 1e-9;
 
     public MultivariateLogNormal() { }
 
@@ -88,9 +88,9 @@ public class MultivariateLogNormal extends Distribution {
             throw new IllegalArgumentException("S must have n*n elements, " +
                     "where n is the number of x inputs.");
 
-        y = new DenseDoubleMatrix2D(n,1);
-        mu = new DenseDoubleMatrix2D(n, 1);
-        sigma = new DenseDoubleMatrix2D(n, n);
+        y = new double[n];
+        mu = new double[n];
+        sigma = new Array2DRowRealMatrix(n, n);
     }
 
     @Override
@@ -98,33 +98,48 @@ public class MultivariateLogNormal extends Distribution {
         logP = 0.0;
 
         for (int j=0; j<n; j++) {
-            mu.set(j, 0, M.get(j));
+            mu[j] = M.get(j);
             for (int k=0; k<n; k++) {
-                sigma.setQuick(j,k, S.get(j*n + k));
+                sigma.setEntry(j, k, S.get(j*n + k));
             }
         }
 
         // Check that sigma is symmetric (required for covariance matrices):
-        if (!Property.DEFAULT.isSymmetric(sigma))
-            throw new IllegalArgumentException("Covariance matrix is not symmetric.");
+        for (int j=0; j<n; j++)
+            for (int k=j+1; k<n; k++)
+                if (!(Math.abs(sigma.getEntry(j, k) - sigma.getEntry(k, j)) <= SYMMETRY_TOLERANCE)) // also rejects NaN
+                    throw new IllegalArgumentException("Covariance matrix is not symmetric.");
 
         // Check that sigma is positive definite (required for covariance matrices):
-        EigenvalueDecomposition ed = new EigenvalueDecomposition(sigma);
-        DoubleMatrix1D evals = ed.getRealEigenvalues();
-        for (int i=0; i<evals.size(); i++)
-            if (evals.getQuick(i) < 0.0)
+        double[] evals = new EigenDecomposition(sigma).getRealEigenvalues();
+        for (double eval : evals)
+            if (eval < 0.0)
                 return Double.NEGATIVE_INFINITY;
 
-        DoubleMatrix2D sigmaInv = Algebra.DEFAULT.inverse(sigma);
+        // only an exactly zero pivot counts as singular, not the library's default of 1e-11
+        LUDecomposition lu = new LUDecomposition(sigma, Double.MIN_VALUE);
+        if (!lu.getSolver().isNonSingular())
+            throw new IllegalArgumentException("Matrix is singular.");
+        RealMatrix sigmaInv = lu.getSolver().getInverse();
+        double sigmaDet = lu.getDeterminant();
 
         for (int i=0; i<m; i++) {
-            for (int j=0; j<n; j++)
-                y.set(j, 0, Math.log(xs.get(j).get(i)) - M.get(j));
+            double ySum = 0.0;
+            for (int j=0; j<n; j++) {
+                y[j] = Math.log(xs.get(j).get(i)) - M.get(j);
+                ySum += y[j];
+            }
 
-            logP += -al.mult(al.mult(al.transpose(y), sigmaInv), y).getQuick(0,0)
+            // y^T sigmaInv y
+            double[] yTSigmaInv = sigmaInv.preMultiply(y);
+            double quadForm = 0.0;
+            for (int j=0; j<n; j++)
+                quadForm += yTSigmaInv[j] * y[j];
+
+            logP += -quadForm
                     - 0.5*n*Math.log(Math.PI)
-                    - 0.5* al.det(sigma)
-                    - y.zSum(); // results from change of variables
+                    - 0.5*sigmaDet
+                    - ySum; // results from change of variables
         }
 
         return logP;

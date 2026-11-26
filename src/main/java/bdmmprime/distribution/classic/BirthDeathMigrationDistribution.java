@@ -36,10 +36,10 @@ import beast.base.spec.inference.parameter.SimplexParam;
 import beast.base.spec.type.RealScalar;
 import beast.base.spec.type.Simplex;
 import beast.base.util.HeapSort;
-import org.apache.commons.math3.exception.MathIllegalNumberException;
-import org.apache.commons.math3.exception.MathIllegalStateException;
-import org.apache.commons.math3.ode.ContinuousOutputModel;
-import org.apache.commons.math3.special.Gamma;
+import org.apache.commons.math4.legacy.exception.MathIllegalNumberException;
+import org.apache.commons.math4.legacy.exception.MathIllegalStateException;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
+import org.apache.commons.numbers.gamma.LogGamma;
 
 import java.io.FileNotFoundException;
 import java.io.PrintStream;
@@ -404,7 +404,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
 
         // Convert from oriented to labeled tree probability density:
         int internalNodeCount = tree.getLeafNodeCount() - ((Tree) tree).getDirectAncestorNodeCount() - 1;
-        logP += Math.log(2) * internalNodeCount - Gamma.logGamma(tree.getLeafNodeCount()+1);
+        logP += Math.log(2) * internalNodeCount - LogGamma.value(tree.getLeafNodeCount()+1);
 
         if (debug) System.out.println("\nlogP = " + logP);
 
@@ -1107,7 +1107,7 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
         }
 
         // Account for possible label permutations
-        logP -= Gamma.logGamma(tree.getLeafNodeCount() + 1);
+        logP -= LogGamma.value(tree.getLeafNodeCount() + 1);
 
         return logP;
     }

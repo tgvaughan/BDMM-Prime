@@ -39,7 +39,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.apache.commons.math3.special.Gamma.logGamma;
+import org.apache.commons.numbers.gamma.LogGamma;
 
 @Citation(value = """
         Vaughan and Stadler, \"Bayesian phylodynamic inference of multi-type population trajectories using genomic data\"
@@ -269,7 +269,7 @@ public class SampledTrajectory extends CalculationNode implements Loggable {
             logTreeProbEstimate += Math.log(startTypePriorProbsInput.get().get(rootType));
         }
 
-        return logTreeProbEstimate - logGamma(mappedTree.getLeafNodeCount() + 1);
+        return logTreeProbEstimate - LogGamma.value(mappedTree.getLeafNodeCount() + 1);
     }
 
     /**

@@ -24,8 +24,8 @@ import bdmmprime.distribution.flow.intervals.Interval;
 import bdmmprime.distribution.flow.intervals.IntervalODESystem;
 import bdmmprime.distribution.flow.utils.Utils;
 import bdmmprime.parameterization.Parameterization;
-import org.apache.commons.math3.linear.*;
-import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.apache.commons.math4.legacy.linear.*;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
 
 import java.util.ArrayList;
 import java.util.Arrays;

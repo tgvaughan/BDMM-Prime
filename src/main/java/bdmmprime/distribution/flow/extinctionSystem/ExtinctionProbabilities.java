@@ -19,7 +19,7 @@
 
 package bdmmprime.distribution.flow.extinctionSystem;
 
-import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
 
 /**
  * This class is a lightweight wrapper of the integration output of ExtinctionProbabilitiesODESystem. It allows

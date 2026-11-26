@@ -29,7 +29,7 @@ import beast.base.spec.domain.UnitInterval;
 import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.inference.parameter.RealVectorParam;
 import beast.base.spec.inference.parameter.SimplexParam;
-import org.apache.commons.math3.special.Gamma;
+import org.apache.commons.numbers.gamma.LogGamma;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -84,7 +84,7 @@ public class BirthDeathMigrationLikelihoodTest {
     private double labeledTreeConversionFactor(BirthDeathMigrationDistribution density) {
         Tree tree = (Tree) density.treeInput.get();
         boolean SAmodel = density.parameterizationInput.get().getRemovalProbs()[0][0] != 1.0;
-        double factor = -Gamma.logGamma(tree.getLeafNodeCount() + 1);
+        double factor = -LogGamma.value(tree.getLeafNodeCount() + 1);
 
         if (!SAmodel)
             factor += Math.log(2) * (tree.getLeafNodeCount() - tree.getDirectAncestorNodeCount() - 1);
