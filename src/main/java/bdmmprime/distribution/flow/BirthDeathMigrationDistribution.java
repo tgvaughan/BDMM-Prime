@@ -721,15 +721,20 @@ public class BirthDeathMigrationDistribution extends SpeciesTreeDistribution imp
                 likelihoodEdgeEnd
         );
 
-        // make sure all likelihoods are positive
+        // make sure all likelihoods are positive, up to rounding errors relative to the largest likelihood
+
+        double largest = Arrays.stream(likelihoodEdgeStart.result()).map(Math::abs).max().orElse(0);
 
         for (int i = 0; i < likelihoodEdgeStart.result().length; i++) {
-            if (likelihoodEdgeStart.result()[i] < 0) {
+            if (likelihoodEdgeStart.result()[i] < -1e-5 * largest) {
                 throw new IllegalStateException(
                         "Negative probability detected at node %d: %s".formatted(
                                 node.getNr(), Arrays.toString(likelihoodEdgeStart.result())
                         )
                 );
+            }
+            if (likelihoodEdgeStart.result()[i] < 0) {
+                likelihoodEdgeStart.result()[i] = 0;
             }
         }
 
