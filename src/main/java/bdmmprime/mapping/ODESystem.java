@@ -20,10 +20,10 @@
 package bdmmprime.mapping;
 
 import bdmmprime.parameterization.Parameterization;
-import org.apache.commons.math3.exception.DimensionMismatchException;
-import org.apache.commons.math3.exception.MaxCountExceededException;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.events.EventHandler;
+import org.apache.commons.math4.legacy.exception.DimensionMismatchException;
+import org.apache.commons.math4.legacy.exception.MaxCountExceededException;
+import org.apache.commons.math4.legacy.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math4.legacy.ode.events.EventHandler;
 
 /**
  * System of p0 and ge ODEs used in stochastic mapping.

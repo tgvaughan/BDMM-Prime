@@ -20,7 +20,7 @@
 package bdmmprime.distribution.classic;
 
 import beast.base.evolution.tree.Tree;
-import org.apache.commons.math3.special.Gamma;
+import org.apache.commons.numbers.gamma.LogGamma;
 
 public abstract class LikelihoodTestClass {
 
@@ -38,7 +38,7 @@ public abstract class LikelihoodTestClass {
     protected double labeledTreeConversionFactor(BirthDeathMigrationDistribution density) {
         Tree tree = (Tree)density.treeInput.get();
         boolean SAmodel = density.parameterizationInput.get().getRemovalProbs()[0][0] != 1.0;
-        double factor = - Gamma.logGamma(tree.getLeafNodeCount() +1);
+        double factor = - LogGamma.value(tree.getLeafNodeCount() +1);
 
         if (!SAmodel)
             factor += Math.log(2) * (tree.getLeafNodeCount() - tree.getDirectAncestorNodeCount() - 1);

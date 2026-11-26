@@ -31,7 +31,7 @@ import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.inference.parameter.SimplexParam;
 import beast.base.util.Randomizer;
 import beast.base.evolution.tree.TreeParser;
-import org.apache.commons.math3.special.Gamma;
+import org.apache.commons.numbers.gamma.LogGamma;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -99,7 +99,7 @@ public class TypeMappedTreeTest {
 
         logProb = Math.log(logProb)
                 + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
-                - Gamma.logGamma(tree.getLeafNodeCount()+1);
+                - LogGamma.value(tree.getLeafNodeCount()+1);
 
         assertEquals(logProbTrue, logProb, 1e-5);
     }
@@ -167,7 +167,7 @@ public class TypeMappedTreeTest {
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
-                - Gamma.logGamma(tree.getLeafNodeCount()+1);
+                - LogGamma.value(tree.getLeafNodeCount()+1);
 
         assertEquals(logProbTrue, logProb, 1e-5);
 
@@ -236,7 +236,7 @@ public class TypeMappedTreeTest {
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2)*(tree.getInternalNodeCount()-tree.getDirectAncestorNodeCount())
-                - Gamma.logGamma(tree.getLeafNodeCount()+1);
+                - LogGamma.value(tree.getLeafNodeCount()+1);
 
         assertEquals(logProbTrue, logProb, 1e-5);
 
@@ -304,7 +304,7 @@ public class TypeMappedTreeTest {
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (tree.getInternalNodeCount() - tree.getDirectAncestorNodeCount())
-                - Gamma.logGamma(tree.getLeafNodeCount() + 1);
+                - LogGamma.value(tree.getLeafNodeCount() + 1);
 
         assertEquals(logProbTrue, logProb, 1e-5); // result from BEAST, not checked in R
     }
@@ -372,7 +372,7 @@ public class TypeMappedTreeTest {
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (simulatedTree.getInternalNodeCount() - simulatedTree.getDirectAncestorNodeCount())
-                - Gamma.logGamma(simulatedTree.getLeafNodeCount() + 1);
+                - LogGamma.value(simulatedTree.getLeafNodeCount() + 1);
 
         assertEquals(logProbTrue, logProb, 1e-5); // result from BEAST, not checked in R
     }
@@ -440,7 +440,7 @@ public class TypeMappedTreeTest {
         }
         logProb = Math.log(logProb) + logScaleFactor
                 + Math.log(2) * (simulatedTree.getInternalNodeCount() - simulatedTree.getDirectAncestorNodeCount())
-                - Gamma.logGamma(simulatedTree.getLeafNodeCount() + 1);
+                - LogGamma.value(simulatedTree.getLeafNodeCount() + 1);
 
         assertEquals(logProbTrue, logProb, 1e-4); // result from BEAST, not checked in R
     }

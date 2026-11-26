@@ -20,8 +20,8 @@
 package bdmmprime.distribution.flow.flowSystems;
 
 import bdmmprime.distribution.flow.utils.Utils;
-import org.apache.commons.math3.linear.*;
-import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.apache.commons.math4.legacy.linear.*;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
 
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;

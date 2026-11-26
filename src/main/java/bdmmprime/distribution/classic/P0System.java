@@ -21,9 +21,9 @@
 package bdmmprime.distribution.classic;
 
 import bdmmprime.parameterization.Parameterization;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
+import org.apache.commons.math4.legacy.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math4.legacy.ode.FirstOrderIntegrator;
+import org.apache.commons.math4.legacy.ode.nonstiff.DormandPrince54Integrator;
 
 
 /**

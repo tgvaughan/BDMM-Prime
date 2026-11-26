@@ -22,9 +22,10 @@ package bdmmprime.distribution.flow.intervals;
 import bdmmprime.distribution.flow.utils.Result;
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
-import org.apache.commons.math3.ode.ContinuousOutputModel;
-import org.apache.commons.math3.ode.FirstOrderDifferentialEquations;
-import org.apache.commons.math3.ode.nonstiff.*;
+import org.apache.commons.math4.legacy.exception.MathIllegalStateException;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
+import org.apache.commons.math4.legacy.ode.FirstOrderDifferentialEquations;
+import org.apache.commons.math4.legacy.ode.nonstiff.*;
 
 import java.util.List;
 import java.util.stream.IntStream;
@@ -182,7 +183,7 @@ public abstract class IntervalODESystem implements FirstOrderDifferentialEquatio
             integrator.clearStepHandlers();
 
             return intervalResult;
-        } catch (IllegalStateException e) {
+        } catch (MathIllegalStateException | IllegalStateException e) {
             // NaN was found during integration
             // we switch to the slower but more robust DormandPrince54Integrator
             // with lower relative tolerance and try again

@@ -30,7 +30,7 @@ import beast.base.spec.inference.parameter.RealScalarParam;
 import beast.base.spec.inference.parameter.SimplexParam;
 import beast.base.spec.type.RealScalar;
 import beast.base.spec.type.Simplex;
-import org.apache.commons.math3.ode.ContinuousOutputModel;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
 
 @Citation(value = "Kuehnert D, Stadler T, Vaughan TG, Drummond AJ. (2016). Phylodynamics with migration: " +
         "A computational framework to quantify population structure from genomic data. " +

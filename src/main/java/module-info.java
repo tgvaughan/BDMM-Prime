@@ -3,9 +3,10 @@ open module bdmmprime {
     requires beast.base;
     requires beast.fx;
     requires org.apache.commons.statistics.distribution;
-    requires commons.math3;
+    requires org.apache.commons.math4.legacy;
+    requires org.apache.commons.math4.legacy.exception;
+    requires org.apache.commons.numbers.gamma;
     requires javafx.controls;
-    requires colt;
     requires hipparchus.core;
 
     exports bdmmprime.distribution.classic;

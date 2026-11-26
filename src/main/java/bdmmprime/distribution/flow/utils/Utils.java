@@ -19,7 +19,7 @@
 
 package bdmmprime.distribution.flow.utils;
 
-import org.apache.commons.math3.linear.*;
+import org.apache.commons.math4.legacy.linear.*;
 
 import java.util.Arrays;
 import java.util.Random;

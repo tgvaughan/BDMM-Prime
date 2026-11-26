@@ -23,11 +23,11 @@ package bdmmprime.distribution.classic;
 
 import bdmmprime.parameterization.Parameterization;
 import bdmmprime.util.Utils;
-import org.apache.commons.math3.ode.ContinuousOutputModel;
-import org.apache.commons.math3.ode.FirstOrderIntegrator;
-import org.apache.commons.math3.ode.nonstiff.DormandPrince54Integrator;
-import org.apache.commons.math3.ode.sampling.StepHandler;
-import org.apache.commons.math3.ode.sampling.StepInterpolator;
+import org.apache.commons.math4.legacy.ode.ContinuousOutputModel;
+import org.apache.commons.math4.legacy.ode.FirstOrderIntegrator;
+import org.apache.commons.math4.legacy.ode.nonstiff.DormandPrince54Integrator;
+import org.apache.commons.math4.legacy.ode.sampling.StepHandler;
+import org.apache.commons.math4.legacy.ode.sampling.StepInterpolator;
 
 /**
  * User: Denise
