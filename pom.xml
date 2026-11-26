@@ -6,7 +6,7 @@
 
     <groupId>io.github.tgvaughan</groupId>
     <artifactId>bdmm-prime</artifactId>
-    <version>3.1.0</version>
+    <version>3.1.1</version>
 
     <name>bdmm-prime</name>
     <description>linear bith-death-sampling phylodynamics inference</description>
@@ -41,7 +41,7 @@
         <beast.main>beast.base.minimal.BeastMain</beast.main>
         <beast.args/>
         <beast.pkg.name>bdmm-prime</beast.pkg.name>
-        <beast.pkg.version>3.1.0</beast.pkg.version>
+        <beast.pkg.version>3.1.1</beast.pkg.version>
     </properties>
 
     <repositories>
