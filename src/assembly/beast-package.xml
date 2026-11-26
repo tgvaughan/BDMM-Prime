@@ -26,7 +26,7 @@
         </file>
     </files>
 
-    <!-- Module JAR only (BEAST core, JavaFX, and their transitive deps are provided by the runtime) -->
+    <!-- Module JAR plus the libraries BEAST does not ship (BEAST core, JavaFX, and their transitive deps are provided by the runtime) -->
     <dependencySets>
         <dependencySet>
             <outputDirectory>/lib</outputDirectory>
@@ -34,6 +34,7 @@
             <scope>runtime</scope>
             <includes>
                 <include>io.github.tgvaughan:bdmm-prime</include>
+                <include>org.hipparchus:hipparchus-core</include>
             </includes>
         </dependencySet>
     </dependencySets>
