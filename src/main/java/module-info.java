@@ -3,8 +3,6 @@ open module bdmmprime {
     requires beast.base;
     requires beast.fx;
     requires org.apache.commons.statistics.distribution;
-    requires org.antlr.antlr4.runtime;
-    requires com.google.common;
     requires commons.math3;
     requires javafx.controls;
     requires colt;
@@ -18,6 +16,7 @@ open module bdmmprime {
     exports bdmmprime.trajectories;
     exports bdmmprime.util;
     exports bdmmprime.distribution;
+    exports bdmmprime.beauti;
 
     provides beast.base.core.BEASTInterface with
         bdmmprime.mapping.TypeMappedTree,
